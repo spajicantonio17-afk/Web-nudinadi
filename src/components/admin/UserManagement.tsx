@@ -35,16 +35,16 @@ export default function UserManagement() {
       {/* Search & Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+          <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--c-text-muted)] text-sm" />
           <input
             type="text"
             placeholder="Pretraži korisnike..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-[var(--c-border)] rounded-lg bg-[var(--c-card)] text-[var(--c-text)] focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-[var(--c-text2)] cursor-pointer">
           <input
             type="checkbox"
             checked={bannedOnly}
@@ -53,25 +53,25 @@ export default function UserManagement() {
           />
           Samo blokirani
         </label>
-        <span className="text-sm text-gray-500 ml-auto">{total} korisnika</span>
+        <span className="text-sm text-[var(--c-text2)] ml-auto">{total} korisnika</span>
       </div>
 
       {/* Users Table */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <i className="fa-solid fa-spinner fa-spin text-2xl text-gray-400" />
+          <i className="fa-solid fa-spinner fa-spin text-2xl text-[var(--c-text-muted)]" />
         </div>
       ) : users.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-[var(--c-text-muted)]">
           <i className="fa-solid fa-users text-4xl mb-3 block" />
           <p>Nema korisnika za prikaz</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/50">
+                <tr className="border-b border-[var(--c-border)] bg-[var(--c-card-alt)]">
                   <th className="p-3 text-left">Korisnik</th>
                   <th className="p-3 text-left">Lokacija</th>
                   <th className="p-3 text-center">Level</th>
@@ -87,7 +87,7 @@ export default function UserManagement() {
                   return (
                     <tr
                       key={user.id}
-                      className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer transition-colors"
+                      className="border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] cursor-pointer transition-colors"
                       onClick={() => setSelectedUser(user)}
                     >
                       <td className="p-3">
@@ -96,18 +96,18 @@ export default function UserManagement() {
                             {user.username.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900">@{user.username}</div>
-                            <div className="text-xs text-gray-500">{user.full_name || '—'}</div>
+                            <div className="font-medium text-[var(--c-text)]">@{user.username}</div>
+                            <div className="text-xs text-[var(--c-text2)]">{user.full_name || '—'}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="p-3 text-gray-600">{user.location || '—'}</td>
+                      <td className="p-3 text-[var(--c-text2)]">{user.location || '—'}</td>
                       <td className="p-3 text-center">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
                           <i className="fa-solid fa-star text-[10px]" /> {user.level}
                         </span>
                       </td>
-                      <td className="p-3 text-center text-gray-700">{user.total_sales}</td>
+                      <td className="p-3 text-center text-[var(--c-text)]">{user.total_sales}</td>
                       <td className="p-3 text-center">
                         {user.rating_average ? (
                           <span className="inline-flex items-center gap-1 text-yellow-600">
@@ -115,7 +115,7 @@ export default function UserManagement() {
                             {user.rating_average.toFixed(1)}
                           </span>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-[var(--c-text-muted)]">—</span>
                         )}
                       </td>
                       <td className="p-3 text-center">
@@ -129,7 +129,7 @@ export default function UserManagement() {
                           </span>
                         )}
                       </td>
-                      <td className="p-3 text-xs text-gray-500 whitespace-nowrap">{formatDate(user.created_at)}</td>
+                      <td className="p-3 text-xs text-[var(--c-text2)] whitespace-nowrap">{formatDate(user.created_at)}</td>
                     </tr>
                   );
                 })}

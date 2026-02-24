@@ -65,10 +65,10 @@
 
   .dark {
     /* ===== NudiNađi Theme Variables (Dark) ===== */
-    --c-bg: #09090B;
-    --c-card: #18181B;
-    --c-card-alt: #0F0F12;
-    --c-input: #0F0F12;
+    --c-bg: #0a0c18;
+    --c-card: #121829;
+    --c-card-alt: #0d1120;
+    --c-input: #0d1120;
     --c-text: #FAFAFA;
     --c-text2: #A1A1AA;
     --c-text3: #71717A;
@@ -79,7 +79,7 @@
     --c-active: rgba(255, 255, 255, 0.1);
     --c-overlay: rgba(0, 0, 0, 0.8);
     --c-overlay-heavy: rgba(0, 0, 0, 0.9);
-    --c-glass: rgba(9, 9, 11, 0.92);
+    --c-glass: rgba(10, 12, 24, 0.92);
     --c-glass-border: rgba(255, 255, 255, 0.1);
     --c-accent: #3B82F6;
     --c-accent-hover: #2563EB;
@@ -105,7 +105,7 @@
 
   /* Dark mode: subtle diagonal gradient background */
   .dark body {
-    background: linear-gradient(135deg, #0a0a0f 0%, #0f1628 50%, #0a1020 100%);
+    background: linear-gradient(135deg, #0a0c18 0%, #111d35 50%, #0c1529 100%);
     background-attachment: fixed;
   }
 

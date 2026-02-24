@@ -27,7 +27,7 @@ function AdminDashboardContent() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <i className="fa-solid fa-spinner fa-spin text-3xl text-blue-500 mb-3 block" />
-            <p className="text-gray-500 text-sm">Provjera pristupa...</p>
+            <p className="text-[var(--c-text2)] text-sm">Provjera pristupa...</p>
           </div>
         </div>
       </MainLayout>
@@ -39,8 +39,8 @@ function AdminDashboardContent() {
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <i className="fa-solid fa-lock text-4xl text-gray-300 mb-3 block" />
-            <p className="text-gray-500">Nemate pristup ovoj stranici.</p>
+            <i className="fa-solid fa-lock text-4xl text-[var(--c-text-muted)] mb-3 block" />
+            <p className="text-[var(--c-text2)]">Nemate pristup ovoj stranici.</p>
           </div>
         </div>
       </MainLayout>
@@ -52,23 +52,23 @@ function AdminDashboardContent() {
       <div className="max-w-6xl mx-auto pb-32">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-[var(--c-text)]">
             <i className="fa-solid fa-shield-halved text-blue-500 mr-2" />
             Moderacija
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Upravljanje prijavama, korisnicima i AI moderacijom</p>
+          <p className="text-sm text-[var(--c-text2)] mt-1">Upravljanje prijavama, korisnicima i AI moderacijom</p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 overflow-x-auto">
+        <div className="flex gap-1 bg-[var(--c-card-alt)] rounded-xl p-1 mb-6 overflow-x-auto">
           {TABS.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg whitespace-nowrap transition-all ${
                 activeTab === tab.key
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-[var(--c-card)] text-[var(--c-text)] shadow-sm'
+                  : 'text-[var(--c-text2)] hover:text-[var(--c-text)]'
               }`}
             >
               <i className={`fa-solid ${tab.icon} text-xs`} />

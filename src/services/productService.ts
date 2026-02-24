@@ -24,12 +24,15 @@ export interface ProductFilters {
   offset?: number
 }
 
+// Lightweight select for list views (avoids fetching all profile/category columns)
+const LIST_SELECT = 'id,title,price,images,condition,location,views_count,favorites_count,created_at,status,seller_id,category_id,attributes,seller:profiles!seller_id(id,username,avatar_url,rating_average),category:categories!category_id(id,name,slug,icon)'
+
 // ─── Get All Products (with filters) ──────────────────
 
 export async function getProducts(filters: ProductFilters = {}): Promise<{ data: ProductFull[]; count: number }> {
   let query = supabase
     .from('products')
-    .select('*, seller:profiles!seller_id(*), category:categories!category_id(*)', { count: 'exact' })
+    .select(LIST_SELECT, { count: 'exact' })
 
   // Apply filters
   if (filters.status) query = query.eq('status', filters.status)

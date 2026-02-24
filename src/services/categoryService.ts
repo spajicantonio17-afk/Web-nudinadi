@@ -3,13 +3,15 @@ import type { Category } from '@/lib/database.types'
 
 const supabase = getSupabase()
 
-// Cache um wiederholte Lookups zu vermeiden
+// Cache with 5-minute TTL to avoid stale data
 let allCategoryCache: Category[] | null = null
+let categoryCacheTime = 0
+const CACHE_TTL = 5 * 60 * 1000
 
 // ─── Get All Categories (inkl. Unterkategorien, gecacht) ─
 
 export async function getAllCategories(): Promise<Category[]> {
-  if (allCategoryCache) return allCategoryCache
+  if (allCategoryCache && Date.now() - categoryCacheTime < CACHE_TTL) return allCategoryCache
 
   const { data, error } = await supabase
     .from('categories')
@@ -18,6 +20,7 @@ export async function getAllCategories(): Promise<Category[]> {
 
   if (error) throw error
   allCategoryCache = data ?? []
+  categoryCacheTime = Date.now()
   return allCategoryCache
 }
 

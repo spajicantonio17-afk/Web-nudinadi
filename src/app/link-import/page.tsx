@@ -157,7 +157,7 @@ export default function LinkImportPage() {
               const known = detectedPlatform;
               return (
                 <div className="flex items-center gap-2 animate-[fadeIn_0.2s_ease-out]">
-                  <div className={`w-2 h-2 rounded-full ${known ? known.color : 'bg-gray-400'}`}></div>
+                  <div className={`w-2 h-2 rounded-full ${known ? known.color : 'bg-[var(--c-text-muted)]'}`}></div>
                   <span className="text-[10px] font-black text-[var(--c-text2)] uppercase tracking-widest">
                     {known ? `${known.description} · Prepoznat portal` : host}
                   </span>
@@ -269,7 +269,7 @@ export default function LinkImportPage() {
                 </p>
                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                   {importedData.images.slice(0, 6).map((img, i) => (
-                    <div key={i} className="w-20 h-20 rounded-[12px] overflow-hidden bg-gray-100 shrink-0 border border-[var(--c-border)]">
+                    <div key={i} className="w-20 h-20 rounded-[12px] overflow-hidden bg-[var(--c-card-alt)] shrink-0 border border-[var(--c-border)]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     </div>

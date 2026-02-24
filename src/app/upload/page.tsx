@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 import { CATEGORIES } from '@/lib/constants';
 import { useToast } from '@/components/Toast';
-import ImageUpload from '@/components/ImageUpload';
-import CategoryAttributesSection from '@/components/upload/CategoryAttributesSection';
 import { useAuth } from '@/lib/auth';
 import { uploadProductImages } from '@/services/uploadService';
 import { createProduct, updateProduct, getProductById } from '@/services/productService';
@@ -16,9 +14,14 @@ import { getSupabase } from '@/lib/supabase';
 import type { ProductCondition } from '@/lib/database.types';
 import type { AttributeValues } from '@/lib/category-attributes';
 import { getCategoryFields } from '@/lib/category-attributes';
-import LocationPicker from '@/components/LocationPicker';
+import { findBrandModels } from '@/lib/vehicle-models';
 import { type City } from '@/lib/location';
 import { BAM_RATE } from '@/lib/constants';
+
+// Lazy-loaded heavy components
+const ImageUpload = lazy(() => import('@/components/ImageUpload'));
+const CategoryAttributesSection = lazy(() => import('@/components/upload/CategoryAttributesSection'));
+const LocationPicker = lazy(() => import('@/components/LocationPicker'));
 
 // Real AI functions via Gemini API routes
 const generateListingDescription = async (title: string, category: string): Promise<string> => {
@@ -406,6 +409,7 @@ function UploadPageInner() {
   const [standaloneInput, setStandaloneInput] = useState('');
   const [magicSearchInput, setMagicSearchInput] = useState('');
   const [carBrandSearch, setCarBrandSearch] = useState('');
+  const [modelSearch, setModelSearch] = useState('');
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [catSearch, setCatSearch] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
@@ -805,8 +809,10 @@ function UploadPageInner() {
   const validateForm = () => {
     const e: typeof formErrors = {};
     if (!formData.title.trim()) e.title = 'Naslov je obavezan';
-    if (!formData.price.trim()) e.price = 'Cijena je obavezna';
-    else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) e.price = 'Unesite ispravnu cijenu';
+    if (formData.priceType !== 'negotiable') {
+      if (!formData.price.trim()) e.price = 'Cijena je obavezna';
+      else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) e.price = 'Unesite ispravnu cijenu';
+    }
     setFormErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -1983,16 +1989,103 @@ function UploadPageInner() {
                     </div>
                   </div>
 
-                  {/* Model input - large & prominent */}
+                  {/* Model selector */}
                   <div className="px-5 pb-5">
                     <label className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest mb-2 block">Model</label>
-                    <input
-                      type="text"
-                      value={(attributes.model as string) || ''}
-                      onChange={(e) => setAttributes(prev => ({ ...prev, model: e.target.value }))}
-                      placeholder={formData.brand ? `npr. ${formData.brand === 'BMW' ? '320d, X5, M3...' : formData.brand === 'Volkswagen' ? 'Golf 8, Passat, Tiguan...' : formData.brand === 'Audi' ? 'A4, A6, Q5...' : formData.brand === 'Mercedes-Benz' ? 'C220, E350, GLC...' : 'Model vozila...'}` : 'Model vozila...'}
-                      className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-lg px-4 py-3.5 text-lg font-bold text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none focus:border-blue-500/50 transition-colors"
-                    />
+                    {(() => {
+                      const brandModels = findBrandModels(formData.brand, false);
+                      if (brandModels.length === 0) {
+                        // Fallback: text input for brands without model data
+                        return (
+                          <input
+                            type="text"
+                            value={(attributes.model as string) || ''}
+                            onChange={(e) => setAttributes(prev => ({ ...prev, model: e.target.value }))}
+                            placeholder="Model vozila..."
+                            className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-lg px-4 py-3.5 text-lg font-bold text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none focus:border-blue-500/50 transition-colors"
+                          />
+                        );
+                      }
+                      const filteredModels = modelSearch.trim()
+                        ? brandModels.filter(m => m.name.toLowerCase().includes(modelSearch.toLowerCase()))
+                        : brandModels;
+                      const selectedModel = brandModels.find(m => m.name === attributes.model);
+                      return (
+                        <div className="space-y-3">
+                          {/* Search if many models */}
+                          {brandModels.length > 10 && (
+                            <div className="flex items-center gap-2 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-lg px-3 py-2 focus-within:border-blue-500/40 transition-colors">
+                              <i className="fa-solid fa-magnifying-glass text-[var(--c-text3)] text-[10px]"></i>
+                              <input
+                                type="text"
+                                value={modelSearch}
+                                onChange={(e) => setModelSearch(e.target.value)}
+                                placeholder="Pretraži modele..."
+                                className="w-full bg-transparent text-sm text-[var(--c-text)] outline-none placeholder:text-[var(--c-placeholder)]"
+                              />
+                              {modelSearch && (
+                                <button onClick={() => setModelSearch('')} className="text-[var(--c-text3)] hover:text-[var(--c-text)]">
+                                  <i className="fa-solid fa-xmark text-xs"></i>
+                                </button>
+                              )}
+                            </div>
+                          )}
+                          {/* Model pills */}
+                          <div className="flex flex-wrap gap-2">
+                            {filteredModels.map((m) => (
+                              <button
+                                key={m.name}
+                                onClick={() => { setAttributes(prev => ({ ...prev, model: m.name, varijanta: '' })); setModelSearch(''); }}
+                                className={`px-3 py-2 rounded-full text-[11px] font-bold border transition-all active:scale-95 ${
+                                  attributes.model === m.name
+                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                    : 'border-[var(--c-border2)] text-[var(--c-text2)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)]'
+                                }`}
+                              >
+                                {m.name}
+                              </button>
+                            ))}
+                            {filteredModels.length === 0 && modelSearch && (
+                              <button
+                                onClick={() => { setAttributes(prev => ({ ...prev, model: modelSearch.trim() })); setModelSearch(''); }}
+                                className="px-3 py-2 rounded-full text-[11px] font-bold border border-dashed border-blue-500/40 text-blue-500 hover:bg-blue-500/10 transition-all"
+                              >
+                                Koristi &quot;{modelSearch.trim()}&quot;
+                              </button>
+                            )}
+                          </div>
+                          {/* Variant selector (if model has variants) */}
+                          {selectedModel?.variants && selectedModel.variants.length > 0 && (
+                            <div>
+                              <label className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest mb-2 block">Varijanta</label>
+                              <div className="flex flex-wrap gap-1.5">
+                                {selectedModel.variants.map((v) => (
+                                  <button
+                                    key={v}
+                                    onClick={() => setAttributes(prev => ({ ...prev, varijanta: v }))}
+                                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95 ${
+                                      attributes.varijanta === v
+                                        ? 'bg-blue-500 border-blue-500 text-white'
+                                        : 'border-[var(--c-border)] text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)]'
+                                    }`}
+                                  >
+                                    {v}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {/* Manual override input */}
+                          <input
+                            type="text"
+                            value={(typeof attributes.model === 'string' && !brandModels.find(m => m.name === attributes.model)) ? (attributes.model as string) : ''}
+                            onChange={(e) => setAttributes(prev => ({ ...prev, model: e.target.value, varijanta: '' }))}
+                            placeholder="Ili upiši ručno..."
+                            className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-lg px-3 py-2 text-xs text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none focus:border-blue-500/50 transition-colors"
+                          />
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Godište row */}
@@ -2113,32 +2206,7 @@ function UploadPageInner() {
                   </button>
                 </div>
                 <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl overflow-hidden p-4 space-y-4">
-                  {/* Price input with currency toggle */}
-                  <div className="flex items-center gap-3 border-b border-[var(--c-border)] pb-4">
-                    <button
-                      type="button"
-                      onClick={() => setCurrency(prev => prev === 'EUR' ? 'KM' : 'EUR')}
-                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--c-border2)] bg-[var(--c-hover)] hover:bg-[var(--c-active)] transition-all active:scale-95"
-                    >
-                      <span className="text-lg font-black text-[var(--c-text)]">{currency === 'EUR' ? '€' : 'KM'}</span>
-                      <i className="fa-solid fa-arrows-rotate text-[8px] text-[var(--c-text3)]"></i>
-                    </button>
-                    <input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => { setFormData({ ...formData, price: e.target.value }); if (formErrors.price) setFormErrors({...formErrors, price: undefined}); }}
-                      placeholder="0"
-                      className="w-full bg-transparent text-xl font-black text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none"
-                    />
-                    <span className={`shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${currency === 'KM' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}`}>
-                      {currency === 'KM' ? 'Konvertibilna Marka' : 'Euro'}
-                    </span>
-                  </div>
-                  {currency === 'KM' && formData.price && (
-                    <p className="text-[10px] text-[var(--c-text3)] -mt-2">
-                      ≈ € {(Number(formData.price) / BAM_RATE).toFixed(2)} EUR (kurs: 1 EUR = {BAM_RATE} KM)
-                    </p>
-                  )}
+                  {/* Price type pills — shown first so user picks type before entering price */}
                   {/* Price type pills */}
                   <div>
                     <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest block mb-2">Tip cijene</label>
@@ -2146,7 +2214,7 @@ function UploadPageInner() {
                       {[{ id: 'fixed' as const, label: 'Fiksno' }, { id: 'negotiable' as const, label: 'Po dogovoru' }, { id: 'mk' as const, label: 'MK' }].map((opt) => (
                         <button
                           key={opt.id}
-                          onClick={() => setFormData({...formData, priceType: opt.id})}
+                          onClick={() => setFormData({...formData, priceType: opt.id, ...(opt.id === 'negotiable' ? { price: '0' } : {})})}
                           className={`flex-1 py-2.5 rounded-full text-[10px] font-bold uppercase border transition-all ${formData.priceType === opt.id ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20' : 'border-[var(--c-border2)] text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)]'}`}
                         >
                           {opt.label}
@@ -2154,8 +2222,38 @@ function UploadPageInner() {
                       ))}
                     </div>
                   </div>
+                  {/* Price input — hidden when "Po dogovoru" */}
+                  {formData.priceType !== 'negotiable' && (
+                    <>
+                      <div className="flex items-center gap-3 border-t border-[var(--c-border)] pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setCurrency(prev => prev === 'EUR' ? 'KM' : 'EUR')}
+                          className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--c-border2)] bg-[var(--c-hover)] hover:bg-[var(--c-active)] transition-all active:scale-95"
+                        >
+                          <span className="text-lg font-black text-[var(--c-text)]">{currency === 'EUR' ? '€' : 'KM'}</span>
+                          <i className="fa-solid fa-arrows-rotate text-[8px] text-[var(--c-text3)]"></i>
+                        </button>
+                        <input
+                          type="number"
+                          value={formData.price}
+                          onChange={(e) => { setFormData({ ...formData, price: e.target.value }); if (formErrors.price) setFormErrors({...formErrors, price: undefined}); }}
+                          placeholder="0"
+                          className="w-full bg-transparent text-xl font-black text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none"
+                        />
+                        <span className={`shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${currency === 'KM' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}`}>
+                          {currency === 'KM' ? 'Konvertibilna Marka' : 'Euro'}
+                        </span>
+                      </div>
+                      {currency === 'KM' && formData.price && (
+                        <p className="text-[10px] text-[var(--c-text3)] -mt-2">
+                          ≈ € {(Number(formData.price) / BAM_RATE).toFixed(2)} EUR (kurs: 1 EUR = {BAM_RATE} KM)
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
-                {formErrors.price && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.price}</p>}
+                {formErrors.price && formData.priceType !== 'negotiable' && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.price}</p>}
               </div>
 
               {/* Category Attributes – Page 1 */}

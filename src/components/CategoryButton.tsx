@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Category } from '@/lib/types';
 import { CATEGORY_IMAGES } from '@/lib/constants';
 
@@ -11,7 +11,7 @@ interface CategoryButtonProps {
   flexible?: boolean;
 }
 
-export default function CategoryButton({ cat, isActive, onClick, flexible }: CategoryButtonProps) {
+function CategoryButton({ cat, isActive, onClick, flexible }: CategoryButtonProps) {
   const [imgError, setImgError] = useState(false);
 
   const sizeClass = flexible
@@ -68,3 +68,5 @@ export default function CategoryButton({ cat, isActive, onClick, flexible }: Cat
     </button>
   );
 }
+
+export default memo(CategoryButton);

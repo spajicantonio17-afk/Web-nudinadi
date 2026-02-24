@@ -14,14 +14,14 @@ export default function TermsPage() {
               <i className="fa-solid fa-file-contract text-white text-sm"></i>
             </div>
             <div>
-              <p className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em]">Pravni dokumenti</p>
+              <p className="text-[8px] font-bold text-[var(--c-text-muted)] uppercase tracking-[0.2em]">Pravni dokumenti</p>
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[var(--c-text)] uppercase leading-none tracking-tighter mb-4">
             UVJETI<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">KORIŠTENJA.</span>
           </h1>
-          <div className="w-10 h-[3px] bg-gray-400 mb-4"></div>
+          <div className="w-10 h-[3px] bg-[var(--c-text-muted)] mb-4"></div>
           <p className="text-[11px] text-[var(--c-text3)]">Posljednje ažuriranje: 01. januar 2025.</p>
         </div>
 

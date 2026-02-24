@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Product } from '@/lib/types';
@@ -11,7 +11,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+function ProductCard({ product }: ProductCardProps) {
   const router = useRouter();
   const { isFavorite: checkFavorite, toggleFavorite: toggle } = useFavorites();
   const { showToast } = useToast();
@@ -78,3 +78,5 @@ export default function ProductCard({ product }: ProductCardProps) {
     </div>
   );
 }
+
+export default memo(ProductCard);

@@ -58,31 +58,31 @@ export default function UserDetailDialog({ user, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-[var(--c-card)] rounded-2xl shadow-xl border border-[var(--c-border)] max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+        <div className="flex items-center justify-between p-5 border-b border-[var(--c-border)]">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-lg font-bold">
               {user.username.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">@{user.username}</h2>
-              <div className="text-sm text-gray-500">{user.full_name || '—'} · {user.location || 'Nepoznato'}</div>
+              <h2 className="text-lg font-semibold text-[var(--c-text)]">@{user.username}</h2>
+              <div className="text-sm text-[var(--c-text2)]">{user.full_name || '—'} · {user.location || 'Nepoznato'}</div>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500">
+          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text2)]">
             <i className="fa-solid fa-xmark" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-100">
+        <div className="flex border-b border-[var(--c-border)]">
           {tabs.map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${
-                tab === t.key ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
+                tab === t.key ? 'text-blue-600 border-b-2 border-blue-600' : 'text-[var(--c-text2)] hover:text-[var(--c-text)]'
               }`}
             >
               <i className={`fa-solid ${t.icon} mr-1.5`} />
@@ -102,31 +102,31 @@ export default function UserDetailDialog({ user, onClose }: Props) {
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-gray-50 rounded-xl p-3">
-                  <div className="text-gray-500 text-xs mb-1">Level / XP</div>
-                  <div className="font-semibold text-gray-900">{user.level} · {user.xp} XP</div>
+                <div className="bg-[var(--c-card-alt)] rounded-xl p-3">
+                  <div className="text-[var(--c-text2)] text-xs mb-1">Level / XP</div>
+                  <div className="font-semibold text-[var(--c-text)]">{user.level} · {user.xp} XP</div>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-3">
-                  <div className="text-gray-500 text-xs mb-1">Ocjena</div>
-                  <div className="font-semibold text-gray-900">
+                <div className="bg-[var(--c-card-alt)] rounded-xl p-3">
+                  <div className="text-[var(--c-text2)] text-xs mb-1">Ocjena</div>
+                  <div className="font-semibold text-[var(--c-text)]">
                     {user.rating_average ? `${user.rating_average.toFixed(1)} / 5` : '—'}
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-3">
-                  <div className="text-gray-500 text-xs mb-1">Prodaje / Kupovine</div>
-                  <div className="font-semibold text-gray-900">{user.total_sales} / {user.total_purchases}</div>
+                <div className="bg-[var(--c-card-alt)] rounded-xl p-3">
+                  <div className="text-[var(--c-text2)] text-xs mb-1">Prodaje / Kupovine</div>
+                  <div className="font-semibold text-[var(--c-text)]">{user.total_sales} / {user.total_purchases}</div>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-3">
-                  <div className="text-gray-500 text-xs mb-1">Član od</div>
-                  <div className="font-semibold text-gray-900">
+                <div className="bg-[var(--c-card-alt)] rounded-xl p-3">
+                  <div className="text-[var(--c-text2)] text-xs mb-1">Član od</div>
+                  <div className="font-semibold text-[var(--c-text)]">
                     {new Date(user.created_at).toLocaleDateString('bs', { month: 'short', year: 'numeric' })}
                   </div>
                 </div>
               </div>
               {user.bio && (
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">Bio:</div>
-                  <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">{user.bio}</p>
+                  <div className="text-xs text-[var(--c-text2)] mb-1">Bio:</div>
+                  <p className="text-sm text-[var(--c-text)] bg-[var(--c-card-alt)] rounded-lg p-3">{user.bio}</p>
                 </div>
               )}
               {/* Actions */}
@@ -160,7 +160,7 @@ export default function UserDetailDialog({ user, onClose }: Props) {
           {tab === 'warnings' && (
             <div className="space-y-3">
               {warnings.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">Nema upozorenja</div>
+                <div className="text-center py-8 text-[var(--c-text-muted)]">Nema upozorenja</div>
               ) : (
                 warnings.map(w => (
                   <div key={w.id} className="bg-amber-50 border border-amber-100 rounded-xl p-3">
@@ -170,11 +170,11 @@ export default function UserDetailDialog({ user, onClose }: Props) {
                       }`}>
                         Ozbiljnost: {w.severity}/3
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-[var(--c-text-muted)]">
                         {new Date(w.created_at).toLocaleDateString('bs', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-800">{w.reason}</p>
+                    <p className="text-sm text-[var(--c-text)]">{w.reason}</p>
                   </div>
                 ))
               )}
@@ -185,19 +185,19 @@ export default function UserDetailDialog({ user, onClose }: Props) {
           {tab === 'bans' && (
             <div className="space-y-3">
               {bans.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">Nema blokada</div>
+                <div className="text-center py-8 text-[var(--c-text-muted)]">Nema blokada</div>
               ) : (
                 bans.map(b => (
-                  <div key={b.id} className={`rounded-xl p-3 border ${b.is_active ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                  <div key={b.id} className={`rounded-xl p-3 border ${b.is_active ? 'bg-red-50 border-red-200' : 'bg-[var(--c-card-alt)] border-[var(--c-border)]'}`}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${b.is_active ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${b.is_active ? 'bg-red-100 text-red-700' : 'bg-[var(--c-card-alt)] text-[var(--c-text2)]'}`}>
                         {b.is_active ? 'Aktivna' : 'Istekla'}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-[var(--c-text-muted)]">
                         {new Date(b.banned_at).toLocaleDateString('bs', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-800">{b.reason}</p>
+                    <p className="text-sm text-[var(--c-text)]">{b.reason}</p>
                     {b.is_active && (
                       <button
                         onClick={() => handleUnban(b.id)}
@@ -215,8 +215,8 @@ export default function UserDetailDialog({ user, onClose }: Props) {
 
         {/* Warn Form */}
         {showWarnForm && (
-          <div className="border-t border-gray-100 p-5 space-y-3">
-            <h4 className="text-sm font-semibold text-gray-900">
+          <div className="border-t border-[var(--c-border)] p-5 space-y-3">
+            <h4 className="text-sm font-semibold text-[var(--c-text)]">
               <i className="fa-solid fa-triangle-exclamation text-amber-500 mr-1.5" />
               Upozori korisnika
             </h4>
@@ -224,11 +224,11 @@ export default function UserDetailDialog({ user, onClose }: Props) {
               value={warnReason}
               onChange={e => setWarnReason(e.target.value)}
               placeholder="Razlog upozorenja..."
-              className="w-full text-sm border border-gray-200 rounded-lg p-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+              className="w-full text-sm border border-[var(--c-border)] rounded-lg p-3 bg-[var(--c-input)] text-[var(--c-text)] focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
               rows={2}
             />
             <div className="flex items-center gap-3">
-              <label className="text-sm text-gray-600">Ozbiljnost:</label>
+              <label className="text-sm text-[var(--c-text2)]">Ozbiljnost:</label>
               {[1, 2, 3].map(s => (
                 <button
                   key={s}
@@ -236,7 +236,7 @@ export default function UserDetailDialog({ user, onClose }: Props) {
                   className={`w-8 h-8 rounded-lg text-sm font-medium ${
                     warnSeverity === s
                       ? s === 3 ? 'bg-red-500 text-white' : s === 2 ? 'bg-orange-500 text-white' : 'bg-amber-500 text-white'
-                      : 'bg-gray-100 text-gray-600'
+                      : 'bg-[var(--c-card-alt)] text-[var(--c-text2)]'
                   }`}
                 >
                   {s}
@@ -247,7 +247,7 @@ export default function UserDetailDialog({ user, onClose }: Props) {
               <button onClick={handleWarn} className="flex-1 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600">
                 Pošalji upozorenje
               </button>
-              <button onClick={() => setShowWarnForm(false)} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowWarnForm(false)} className="px-4 py-2 text-sm text-[var(--c-text2)] hover:text-[var(--c-text)]">
                 Otkaži
               </button>
             </div>
@@ -256,8 +256,8 @@ export default function UserDetailDialog({ user, onClose }: Props) {
 
         {/* Ban Form */}
         {showBanForm && (
-          <div className="border-t border-gray-100 p-5 space-y-3">
-            <h4 className="text-sm font-semibold text-gray-900">
+          <div className="border-t border-[var(--c-border)] p-5 space-y-3">
+            <h4 className="text-sm font-semibold text-[var(--c-text)]">
               <i className="fa-solid fa-ban text-red-500 mr-1.5" />
               Blokiraj korisnika
             </h4>
@@ -265,14 +265,14 @@ export default function UserDetailDialog({ user, onClose }: Props) {
               value={banReason}
               onChange={e => setBanReason(e.target.value)}
               placeholder="Razlog blokade..."
-              className="w-full text-sm border border-gray-200 rounded-lg p-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+              className="w-full text-sm border border-[var(--c-border)] rounded-lg p-3 bg-[var(--c-input)] text-[var(--c-text)] focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
               rows={2}
             />
             <div className="flex gap-2">
               <button onClick={handleBan} className="flex-1 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600">
                 Blokiraj permanentno
               </button>
-              <button onClick={() => setShowBanForm(false)} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowBanForm(false)} className="px-4 py-2 text-sm text-[var(--c-text2)] hover:text-[var(--c-text)]">
                 Otkaži
               </button>
             </div>

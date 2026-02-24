@@ -24,14 +24,14 @@ export default function ReportDetailDialog({ report, onClose, onAction }: Props)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-[var(--c-card)] rounded-2xl shadow-xl border border-[var(--c-border)] max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">
-            <i className="fa-solid fa-file-lines text-gray-400 mr-2" />
+        <div className="flex items-center justify-between p-5 border-b border-[var(--c-border)]">
+          <h2 className="text-lg font-semibold text-[var(--c-text)]">
+            <i className="fa-solid fa-file-lines text-[var(--c-text-muted)] mr-2" />
             Detalji prijave
           </h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500">
+          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text2)]">
             <i className="fa-solid fa-xmark" />
           </button>
         </div>
@@ -39,14 +39,14 @@ export default function ReportDetailDialog({ report, onClose, onAction }: Props)
         <div className="p-5 space-y-5">
           {/* Product info */}
           {report.product_title && (
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-4 p-4 bg-[var(--c-card-alt)] rounded-xl">
               {report.product_image && (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={report.product_image} alt="" className="w-16 h-16 rounded-xl object-cover" />
               )}
               <div>
-                <div className="font-medium text-gray-900">{report.product_title}</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-[var(--c-text)]">{report.product_title}</div>
+                <div className="text-sm text-[var(--c-text2)]">
                   Korisnik: @{report.reported_user_name || '—'}
                 </div>
               </div>
@@ -56,32 +56,32 @@ export default function ReportDetailDialog({ report, onClose, onAction }: Props)
           {/* Meta */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-500">Razlog:</span>
-              <span className="ml-2 font-medium text-gray-900">{REASON_LABELS[report.reason] || report.reason}</span>
+              <span className="text-[var(--c-text2)]">Razlog:</span>
+              <span className="ml-2 font-medium text-[var(--c-text)]">{REASON_LABELS[report.reason] || report.reason}</span>
             </div>
             <div>
-              <span className="text-gray-500">Status:</span>
-              <span className="ml-2 font-medium text-gray-900">{STATUS_LABELS[report.status] || report.status}</span>
+              <span className="text-[var(--c-text2)]">Status:</span>
+              <span className="ml-2 font-medium text-[var(--c-text)]">{STATUS_LABELS[report.status] || report.status}</span>
             </div>
             <div>
-              <span className="text-gray-500">Prioritet:</span>
-              <span className="ml-2 font-medium text-gray-900">{report.priority}/3</span>
+              <span className="text-[var(--c-text2)]">Prioritet:</span>
+              <span className="ml-2 font-medium text-[var(--c-text)]">{report.priority}/3</span>
             </div>
             <div>
-              <span className="text-gray-500">Prijavljeno:</span>
-              <span className="ml-2 font-medium text-gray-900">
+              <span className="text-[var(--c-text2)]">Prijavljeno:</span>
+              <span className="ml-2 font-medium text-[var(--c-text)]">
                 {new Date(report.created_at).toLocaleDateString('bs', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
             {report.reporter_name && (
               <div className="col-span-2">
-                <span className="text-gray-500">Prijavio:</span>
-                <span className="ml-2 font-medium text-gray-900">@{report.reporter_name}</span>
+                <span className="text-[var(--c-text2)]">Prijavio:</span>
+                <span className="ml-2 font-medium text-[var(--c-text)]">@{report.reporter_name}</span>
               </div>
             )}
             {!report.reporter_id && (
               <div className="col-span-2">
-                <span className="text-gray-500">Izvor:</span>
+                <span className="text-[var(--c-text2)]">Izvor:</span>
                 <span className="ml-2 font-medium text-purple-600">
                   <i className="fa-solid fa-robot mr-1" /> AI automatski flag
                 </span>
@@ -92,8 +92,8 @@ export default function ReportDetailDialog({ report, onClose, onAction }: Props)
           {/* Description */}
           {report.description && (
             <div>
-              <div className="text-sm text-gray-500 mb-1">Opis:</div>
-              <p className="text-sm text-gray-800 bg-gray-50 rounded-lg p-3">{report.description}</p>
+              <div className="text-sm text-[var(--c-text2)] mb-1">Opis:</div>
+              <p className="text-sm text-[var(--c-text)] bg-[var(--c-card-alt)] rounded-lg p-3">{report.description}</p>
             </div>
           )}
 
@@ -155,8 +155,8 @@ export default function ReportDetailDialog({ report, onClose, onAction }: Props)
           {/* Resolution Note */}
           {report.resolution_note && (
             <div>
-              <div className="text-sm text-gray-500 mb-1">Bilješka rješenja:</div>
-              <p className="text-sm text-gray-800 bg-green-50 rounded-lg p-3 border border-green-100">{report.resolution_note}</p>
+              <div className="text-sm text-[var(--c-text2)] mb-1">Bilješka rješenja:</div>
+              <p className="text-sm text-[var(--c-text)] bg-green-50 rounded-lg p-3 border border-green-100">{report.resolution_note}</p>
             </div>
           )}
 
@@ -167,7 +167,7 @@ export default function ReportDetailDialog({ report, onClose, onAction }: Props)
                 value={note}
                 onChange={e => setNote(e.target.value)}
                 placeholder="Bilješka (opciono)..."
-                className="w-full text-sm border border-gray-200 rounded-lg p-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full text-sm border border-[var(--c-border)] rounded-lg p-3 bg-[var(--c-input)] text-[var(--c-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 rows={2}
               />
               <div className="flex gap-2">

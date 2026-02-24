@@ -263,7 +263,7 @@ export default function ProductDetailPage() {
   }
 
   const bamPrice = (Number(product.price) * BAM_RATE).toFixed(0);
-  const sellerName = product.seller?.username || 'korisnik';
+  const sellerName = product.seller?.username || product.seller_id;
   const sellerAvatar = product.seller?.avatar_url || `https://picsum.photos/seed/${product.seller_id}/100/100`;
 
   return (
@@ -447,7 +447,14 @@ export default function ProductDetailPage() {
                 )}
 
                 {/* PRICE */}
-                <div className="border border-[var(--c-border2)] rounded-sm overflow-hidden mb-8">
+                {product.attributes?.price_type === 'Po dogovoru' || (Number(product.price) === 0 && !product.attributes?.price_type) ? (
+                  <div className="border border-[var(--c-border2)] rounded-sm overflow-hidden mb-8">
+                    <div className="bg-[var(--c-card)] p-5 flex items-center justify-center hover:bg-[var(--c-hover)] transition-colors">
+                      <span className="text-2xl font-black text-[var(--c-text)] tracking-tight uppercase">Po dogovoru</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border border-[var(--c-border2)] rounded-sm overflow-hidden mb-8">
                     <div className="bg-[var(--c-card)] p-5 flex items-center justify-between border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] transition-colors">
                         <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">EUR</span>
                         <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">€ {Number(product.price).toLocaleString()}</span>
@@ -456,7 +463,8 @@ export default function ProductDetailPage() {
                         <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">BAM</span>
                         <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">{bamPrice} KM</span>
                     </div>
-                </div>
+                  </div>
+                )}
 
                 {/* ACTIONS */}
                 <div className="flex flex-col gap-3 mb-8">
@@ -536,7 +544,7 @@ export default function ProductDetailPage() {
                                 </p>
                             </div>
                         </div>
-                        <button onClick={() => router.push(`/profile?user=${product.seller_id}`)} aria-label={`Pogledaj profil prodavača @${sellerName}`} className="text-[10px] font-bold text-[var(--c-text2)] uppercase tracking-widest hover:text-[var(--c-text)] transition-colors flex items-center gap-1">
+                        <button onClick={() => router.push(`/user/${sellerName}`)} aria-label={`Pogledaj profil prodavača @${sellerName}`} className="text-[10px] font-bold text-[var(--c-text2)] uppercase tracking-widest hover:text-[var(--c-text)] transition-colors flex items-center gap-1">
                             Profil <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </button>
                     </div>
