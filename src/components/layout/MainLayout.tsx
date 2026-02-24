@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart';
 import { useNotifications } from '@/lib/notifications';
 import { useAuth } from '@/lib/auth';
+import { getUnreadCount } from '@/services/messageService';
 import NotificationPanel from '@/components/NotificationPanel';
 import SiteFooter from '@/components/layout/SiteFooter';
 
@@ -26,6 +27,26 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
   const { items: cartItems } = useCart();
   const { unreadCount } = useNotifications();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchUnread = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const count = await getUnreadCount(user.id);
+      setUnreadMessages(count);
+    } catch { /* silent */ }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) {
+      setUnreadMessages(0);
+      return;
+    }
+    fetchUnread();
+    pollRef.current = setInterval(fetchUnread, 30000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [isAuthenticated, user?.id, fetchUnread]);
 
   const isHome = pathname === '/';
 
@@ -121,7 +142,11 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
           >
             <div className="relative" aria-hidden="true">
               <i className="fa-solid fa-comment-dots text-sm"></i>
-              <div className="absolute -top-2 -right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[var(--c-card)]"></div>
+              {unreadMessages > 0 && (
+                <div className="absolute -top-2 -right-2.5 min-w-[16px] h-[16px] md:min-w-[18px] md:h-[18px] bg-red-500 rounded-full border-2 border-[var(--c-card)] flex items-center justify-center">
+                  <span className="text-[7px] md:text-[8px] font-black text-white">{unreadMessages > 9 ? '9+' : unreadMessages}</span>
+                </div>
+              )}
             </div>
           </Link>
           )}
@@ -404,7 +429,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
         )}
 
         {/* Page Content */}
-        <main className="flex-1 px-4 md:px-8 w-full mx-auto pb-24 md:pb-6">
+        <main className="flex-1 px-4 md:px-8 w-full max-w-full mx-auto pb-24 md:pb-6">
           {children}
         </main>
 
@@ -421,8 +446,15 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
           </Link>
 
           {isAuthenticated && (
-          <Link href="/messages" aria-label="Poruke" aria-current={pathname === '/messages' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/messages' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
-            <i className="fa-solid fa-comment-dots text-[17px]" aria-hidden="true"></i>
+          <Link href="/messages" aria-label={`Poruke${unreadMessages > 0 ? ` (${unreadMessages} nepročitanih)` : ''}`} aria-current={pathname === '/messages' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 relative ${pathname === '/messages' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+            <div className="relative">
+              <i className="fa-solid fa-comment-dots text-[17px]" aria-hidden="true"></i>
+              {unreadMessages > 0 && (
+                <div className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] bg-red-500 rounded-full border-[1.5px] border-[var(--c-bg)] flex items-center justify-center">
+                  <span className="text-[7px] font-black text-white">{unreadMessages > 9 ? '9+' : unreadMessages}</span>
+                </div>
+              )}
+            </div>
             <span className="text-[10px] font-semibold">Poruke</span>
           </Link>
           )}

@@ -83,7 +83,7 @@ const ContactRow: React.FC<{
   <div
     onClick={onClick}
     className={`
-      group relative flex items-center gap-3 p-3 rounded-[16px] cursor-pointer transition-all duration-200 border overflow-hidden
+      group relative flex items-center gap-3 p-2.5 sm:p-3 rounded-[16px] cursor-pointer transition-all duration-200 border overflow-hidden
       ${isActive
         ? 'bg-blue-600/10 border-blue-500/50 shadow-[inset_0_0_20px_rgba(37,99,235,0.1)]'
         : isPinned
@@ -95,7 +95,7 @@ const ContactRow: React.FC<{
     {isPinned && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_10px_#3B82F6]"></div>}
 
     <div className="relative shrink-0">
-      <div className={`w-12 h-12 rounded-[14px] p-[2px] ${isActive ? 'bg-blue-500' : 'bg-[var(--c-active)] group-hover:bg-[var(--c-border2)]'} transition-colors`}>
+      <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[14px] p-[2px] ${isActive ? 'bg-blue-500' : 'bg-[var(--c-active)] group-hover:bg-[var(--c-border2)]'} transition-colors`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={contact.avatar} alt={contact.name} className="w-full h-full object-cover rounded-[12px] bg-[var(--c-card-alt)]" />
       </div>
@@ -136,16 +136,16 @@ const ContactRow: React.FC<{
 const ChatBubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
   const isMe = msg.sender === 'me';
   return (
-    <div className={`flex w-full mb-4 ${isMe ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex w-full mb-3 ${isMe ? 'justify-end' : 'justify-start'}`}>
       <div className={`
-          max-w-[85%] sm:max-w-[75%] rounded-[16px] sm:rounded-[20px] p-3 sm:p-4 relative text-[13px] leading-relaxed font-medium shadow-lg
+          max-w-[80%] sm:max-w-[70%] rounded-[18px] px-4 py-3 relative text-[13px] leading-relaxed font-medium
           ${isMe
-              ? 'bg-blue-600 text-white rounded-tr-sm'
-              : 'bg-[var(--c-card)] text-[var(--c-text2)] border border-[var(--c-border)] rounded-tl-sm'
+              ? 'bg-blue-600 text-white rounded-br-[6px] shadow-md shadow-blue-500/20'
+              : 'bg-[var(--c-card)] text-[var(--c-text2)] border border-[var(--c-border)] rounded-bl-[6px] shadow-sm'
           }
       `}>
-        <p>{msg.text}</p>
-        <span className={`text-[9px] absolute bottom-1 ${isMe ? 'left-2 text-blue-200' : 'right-2 text-[var(--c-text3)]'}`}>{msg.time}</span>
+        <p className="pb-3">{msg.text}</p>
+        <span className={`text-[9px] absolute bottom-1.5 ${isMe ? 'right-3 text-blue-200/70' : 'right-3 text-[var(--c-text3)]'}`}>{msg.time}</span>
       </div>
     </div>
   );
@@ -357,7 +357,7 @@ function MessagesContent() {
       <div className="flex h-[calc(100vh-140px)] max-w-5xl mx-auto w-full gap-2 sm:gap-4 md:gap-6 overflow-hidden pt-2">
 
         {/* --- LEFT SIDEBAR (People) --- */}
-        <div className="w-[48px] sm:w-[60px] md:w-[260px] lg:w-[300px] flex flex-col gap-2 sm:gap-3 shrink-0 transition-all duration-300">
+        <div className="w-[56px] sm:w-[68px] md:w-[260px] lg:w-[300px] flex flex-col gap-2 sm:gap-3 shrink-0 transition-all duration-300">
 
           {/* Search — desktop: full input, mobile: icon-only button */}
           <div className="relative group shrink-0">
@@ -434,11 +434,11 @@ function MessagesContent() {
           {activeContact ? (
             <>
               {/* Chat Header */}
-              <div className="h-16 sm:h-20 border-b border-[var(--c-border)] flex items-center justify-between px-3 sm:px-6 bg-[var(--c-card)]/80 shrink-0">
-                <div className="flex items-center gap-4">
+              <div className="h-16 sm:h-20 border-b border-[var(--c-border)] flex items-center justify-between px-4 sm:px-6 bg-[var(--c-card)]/80 shrink-0">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={activeContact.avatar} alt={activeContact.name} className="w-10 h-10 rounded-[12px] object-cover bg-[var(--c-card-alt)]" />
+                    <img src={activeContact.avatar} alt={activeContact.name} className="w-10 h-10 sm:w-11 sm:h-11 rounded-[12px] object-cover bg-[var(--c-card-alt)]" />
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-[var(--c-text)] leading-none flex gap-2 items-center">
@@ -465,7 +465,7 @@ function MessagesContent() {
               </div>
 
               {/* Messages Scroll Area */}
-              <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-2 no-scrollbar">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 no-scrollbar">
                 {loadingMessages ? (
                   <div className="flex items-center justify-center h-full opacity-50">
                     <i className="fa-solid fa-circle-notch fa-spin text-blue-400 text-xl"></i>
@@ -489,8 +489,8 @@ function MessagesContent() {
               </div>
 
               {/* Input Area */}
-              <div className="p-2 sm:p-4 bg-[var(--c-card)] border-t border-[var(--c-border)] shrink-0">
-                <div className="flex items-end gap-2 sm:gap-3 bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-[18px] sm:rounded-[24px] p-1.5 sm:p-2 focus-within:border-blue-500/50 transition-colors shadow-lg">
+              <div className="p-3 sm:p-4 bg-[var(--c-card)] border-t border-[var(--c-border)] shrink-0">
+                <div className="flex items-end gap-2 sm:gap-3 bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-[20px] sm:rounded-[24px] p-2 sm:p-2 focus-within:border-blue-500/50 transition-colors shadow-md">
                   <button className="w-10 h-10 rounded-full text-[var(--c-text3)] hover:text-blue-400 hover:bg-[var(--c-hover)] flex items-center justify-center transition-colors">
                     <i className="fa-solid fa-plus"></i>
                   </button>

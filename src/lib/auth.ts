@@ -132,6 +132,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Primary init: explicit session check (reliable across localStorage and cookie storage)
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       await setUserFromSession(session);
+    }).catch(() => {
+      // Session restore failed (corrupt cookie, network error, etc.)
+      // Clear loading state so the app doesn't hang forever
+      setUser(null);
+      setIsLoading(false);
     });
 
     // Listen for auth state changes (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED, USER_UPDATED)

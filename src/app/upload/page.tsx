@@ -1048,8 +1048,8 @@ function UploadPageInner() {
     return (
       <div className={`fixed inset-x-0 bottom-0 z-[120] transition-all duration-500 transform ${showAiWindow ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setShowAiWindow(false)}></div>
-        <div className="relative bg-[#0F161E] border-t border-white/10 rounded-t-[32px] p-4 sm:p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
-          <div className="w-12 h-1 bg-gray-800 rounded-full mx-auto mb-8"></div>
+        <div className="relative bg-[var(--c-card)] border-t border-[var(--c-border)] rounded-t-[32px] p-4 sm:p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
+          <div className="w-12 h-1 bg-[var(--c-border)] rounded-full mx-auto mb-8"></div>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -1058,11 +1058,11 @@ function UploadPageInner() {
                       <i className="fa-solid fa-wand-magic-sparkles text-2xl"></i>
                     </div>
                     <div>
-                      <h3 className="text-xl font-black text-white italic tracking-tight">NudiNađi AI</h3>
+                      <h3 className="text-xl font-black text-[var(--c-text)] italic tracking-tight">NudiNađi AI</h3>
                       <p className="text-[11px] text-blue-400 font-bold uppercase tracking-widest">Smart Studio</p>
                     </div>
                 </div>
-                <button onClick={() => setShowAiWindow(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-500 hover:bg-white/10">
+                <button onClick={() => setShowAiWindow(false)} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:bg-[var(--c-active)]">
                     <i className="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -1074,7 +1074,7 @@ function UploadPageInner() {
                         value={standaloneInput}
                         onChange={(e) => setStandaloneInput(e.target.value)}
                         placeholder="Šta želiš analizirati?"
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-sm text-white focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-gray-600"
+                        className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl py-4 px-5 text-sm text-[var(--c-text)] focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-[var(--c-placeholder)]"
                     />
                 </div>
             )}
@@ -1083,71 +1083,71 @@ function UploadPageInner() {
               <button
                 onClick={handleAiAnalyzeImage}
                 disabled={images.length === 0 || isAiLoading}
-                className="w-full bg-[#1A242D] border border-white/5 rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[#202C36]"
+                className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[var(--c-hover)]"
               >
                 <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
                   <i className="fa-solid fa-camera-retro"></i>
                 </div>
                 <div>
-                  <h4 className="text-[15px] font-bold text-white">Prepoznaj Sliku</h4>
-                  <p className="text-[11px] text-gray-500">AI popunjava sve podatke sa foto</p>
+                  <h4 className="text-[15px] font-bold text-[var(--c-text)]">Prepoznaj Sliku</h4>
+                  <p className="text-[11px] text-[var(--c-text3)]">AI popunjava sve podatke sa foto</p>
                 </div>
-                {images.length === 0 && <span className="ml-auto text-[9px] text-gray-600 font-bold uppercase">Dodaj sliku</span>}
+                {images.length === 0 && <span className="ml-auto text-[9px] text-[var(--c-text-muted)] font-bold uppercase">Dodaj sliku</span>}
               </button>
 
               <button
                 onClick={handleAiGenerateDescription}
                 disabled={!hasInput || isAiLoading}
-                className="w-full bg-[#1A242D] border border-white/5 rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[#202C36]"
+                className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[var(--c-hover)]"
               >
                 <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
                   <i className="fa-solid fa-pen-fancy"></i>
                 </div>
                 <div>
-                  <h4 className="text-[15px] font-bold text-white">Generiši Opis</h4>
-                  <p className="text-[11px] text-gray-500">Profesionalni tekst za prodaju</p>
+                  <h4 className="text-[15px] font-bold text-[var(--c-text)]">Generiši Opis</h4>
+                  <p className="text-[11px] text-[var(--c-text3)]">Profesionalni tekst za prodaju</p>
                 </div>
               </button>
 
               <button
                 onClick={handleAiImproveTitle}
                 disabled={!formData.title || isAiLoading}
-                className="w-full bg-[#1A242D] border border-white/5 rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[#202C36]"
+                className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[var(--c-hover)]"
               >
                 <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
                   <i className="fa-solid fa-heading"></i>
                 </div>
                 <div>
-                  <h4 className="text-[15px] font-bold text-white">Poboljšaj Naslov</h4>
-                  <p className="text-[11px] text-gray-500">Optimizacija naslova za bolji reach</p>
+                  <h4 className="text-[15px] font-bold text-[var(--c-text)]">Poboljšaj Naslov</h4>
+                  <p className="text-[11px] text-[var(--c-text3)]">Optimizacija naslova za bolji reach</p>
                 </div>
               </button>
 
               <button
                 onClick={handleAiSuggestPrice}
                 disabled={!hasInput || isAiLoading}
-                className="w-full bg-[#1A242D] border border-white/5 rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[#202C36]"
+                className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[var(--c-hover)]"
               >
                 <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
                   <i className="fa-solid fa-chart-line"></i>
                 </div>
                 <div>
-                  <h4 className="text-[15px] font-bold text-white">Provjeri Cijenu</h4>
-                  <p className="text-[11px] text-gray-500">Analiza tržišne vrijednosti</p>
+                  <h4 className="text-[15px] font-bold text-[var(--c-text)]">Provjeri Cijenu</h4>
+                  <p className="text-[11px] text-[var(--c-text3)]">Analiza tržišne vrijednosti</p>
                 </div>
               </button>
 
               <button
                 onClick={handleAiCategorize}
                 disabled={!hasInput || isAiLoading}
-                className="w-full bg-[#1A242D] border border-white/5 rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[#202C36]"
+                className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[var(--c-hover)]"
               >
                 <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
                   <i className="fa-solid fa-layer-group"></i>
                 </div>
                 <div>
-                  <h4 className="text-[15px] font-bold text-white">Kategoriziraj AI</h4>
-                  <p className="text-[11px] text-gray-500">Automatski odabir kategorije</p>
+                  <h4 className="text-[15px] font-bold text-[var(--c-text)]">Kategoriziraj AI</h4>
+                  <p className="text-[11px] text-[var(--c-text3)]">Automatski odabir kategorije</p>
                 </div>
               </button>
 

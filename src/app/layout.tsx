@@ -75,7 +75,7 @@ export default function RootLayout({
           referrerPolicy="no-referrer"
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased w-full min-w-0 overflow-x-hidden">
         <Providers>{children}</Providers>
       </body>
     </html>

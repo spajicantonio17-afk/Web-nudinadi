@@ -151,10 +151,9 @@ function HomeContent() {
       serverFilters.search = parsed.cleanQuery || searchQuery.trim();
     }
 
-    // Location (exact match)
-    if (selectedLocation && filters.radiusKm === 0) {
-      serverFilters.location = selectedLocation.name;
-    }
+    // Location filter — only apply when user explicitly set a radius > 0
+    // radiusKm === 0 means "no location filter" (don't restrict by saved location)
+    // radiusKm > 0 is handled client-side via distance calculation
 
     // Sort
     if (filters.sortBy === 'price_asc') { serverFilters.sortBy = 'price'; serverFilters.sortOrder = 'asc'; }
