@@ -15,6 +15,7 @@ import type { ProductCondition } from '@/lib/database.types';
 import type { AttributeValues } from '@/lib/category-attributes';
 import { getCategoryFields } from '@/lib/category-attributes';
 import { findBrandModels } from '@/lib/vehicle-models';
+import VehicleModelPicker from '@/components/upload/VehicleModelPicker';
 import { type City } from '@/lib/location';
 import { BAM_RATE } from '@/lib/constants';
 
@@ -410,6 +411,8 @@ function UploadPageInner() {
   const [magicSearchInput, setMagicSearchInput] = useState('');
   const [carBrandSearch, setCarBrandSearch] = useState('');
   const [modelSearch, setModelSearch] = useState('');
+  const [showModelPicker, setShowModelPicker] = useState(false);
+  const [pickerBrand, setPickerBrand] = useState('');
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [catSearch, setCatSearch] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
@@ -566,10 +569,25 @@ function UploadPageInner() {
   };
 
   const selectCarBrand = (brand: string) => {
-    setAttributes(prev => ({ ...prev, marka: brand }));
+    setAttributes(prev => ({ ...prev, marka: brand, model: '', varijanta: '' }));
     setFormData(prev => ({ ...prev, brand, title: brand === 'Ostalo' ? '' : `${brand} ` }));
     setCarBrandSearch('');
-    setStep('form');
+    // Check if this brand has models — if so, open the picker modal
+    const brandModels = findBrandModels(brand, false);
+    if (brandModels.length > 0 && brand !== 'Ostalo') {
+      setPickerBrand(brand);
+      setShowModelPicker(true);
+      setStep('form');
+    } else {
+      setStep('form');
+    }
+  };
+
+  const handleModelPickerSelect = (model: string, variant?: string) => {
+    setAttributes(prev => ({ ...prev, model, varijanta: variant || '' }));
+    setFormData(prev => ({ ...prev, title: `${prev.brand} ${model}${variant ? ' ' + variant : ''} ` }));
+    setShowModelPicker(false);
+    setModelSearch('');
   };
 
   const handleMagicSearch = async () => {
@@ -2006,74 +2024,34 @@ function UploadPageInner() {
                           />
                         );
                       }
-                      const filteredModels = modelSearch.trim()
-                        ? brandModels.filter(m => m.name.toLowerCase().includes(modelSearch.toLowerCase()))
-                        : brandModels;
-                      const selectedModel = brandModels.find(m => m.name === attributes.model);
+                      // Brand has model data — show selected model + button to open picker
+                      const modelName = (attributes.model as string) || '';
+                      const variantName = (attributes.varijanta as string) || '';
                       return (
-                        <div className="space-y-3">
-                          {/* Search if many models */}
-                          {brandModels.length > 10 && (
-                            <div className="flex items-center gap-2 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-lg px-3 py-2 focus-within:border-blue-500/40 transition-colors">
-                              <i className="fa-solid fa-magnifying-glass text-[var(--c-text3)] text-[10px]"></i>
-                              <input
-                                type="text"
-                                value={modelSearch}
-                                onChange={(e) => setModelSearch(e.target.value)}
-                                placeholder="Pretraži modele..."
-                                className="w-full bg-transparent text-sm text-[var(--c-text)] outline-none placeholder:text-[var(--c-placeholder)]"
-                              />
-                              {modelSearch && (
-                                <button onClick={() => setModelSearch('')} className="text-[var(--c-text3)] hover:text-[var(--c-text)]">
-                                  <i className="fa-solid fa-xmark text-xs"></i>
-                                </button>
-                              )}
-                            </div>
-                          )}
-                          {/* Model pills */}
-                          <div className="flex flex-wrap gap-2">
-                            {filteredModels.map((m) => (
-                              <button
-                                key={m.name}
-                                onClick={() => { setAttributes(prev => ({ ...prev, model: m.name, varijanta: '' })); setModelSearch(''); }}
-                                className={`px-3 py-2 rounded-full text-[11px] font-bold border transition-all active:scale-95 ${
-                                  attributes.model === m.name
-                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                    : 'border-[var(--c-border2)] text-[var(--c-text2)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)]'
-                                }`}
-                              >
-                                {m.name}
-                              </button>
-                            ))}
-                            {filteredModels.length === 0 && modelSearch && (
-                              <button
-                                onClick={() => { setAttributes(prev => ({ ...prev, model: modelSearch.trim() })); setModelSearch(''); }}
-                                className="px-3 py-2 rounded-full text-[11px] font-bold border border-dashed border-blue-500/40 text-blue-500 hover:bg-blue-500/10 transition-all"
-                              >
-                                Koristi &quot;{modelSearch.trim()}&quot;
-                              </button>
-                            )}
-                          </div>
-                          {/* Variant selector (if model has variants) */}
-                          {selectedModel?.variants && selectedModel.variants.length > 0 && (
-                            <div>
-                              <label className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest mb-2 block">Varijanta</label>
-                              <div className="flex flex-wrap gap-1.5">
-                                {selectedModel.variants.map((v) => (
-                                  <button
-                                    key={v}
-                                    onClick={() => setAttributes(prev => ({ ...prev, varijanta: v }))}
-                                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95 ${
-                                      attributes.varijanta === v
-                                        ? 'bg-blue-500 border-blue-500 text-white'
-                                        : 'border-[var(--c-border)] text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)]'
-                                    }`}
-                                  >
-                                    {v}
-                                  </button>
-                                ))}
+                        <div className="space-y-2">
+                          {modelName ? (
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 min-w-0 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-xl px-4 py-3 flex items-center gap-2">
+                                <span className="text-lg font-black text-[var(--c-text)] truncate">{modelName}</span>
+                                {variantName && (
+                                  <span className="text-xs font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-md shrink-0">{variantName}</span>
+                                )}
                               </div>
+                              <button
+                                onClick={() => { setPickerBrand(formData.brand); setShowModelPicker(true); }}
+                                className="shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 hover:bg-blue-500/20 transition-colors active:scale-95"
+                              >
+                                <i className="fa-solid fa-pen text-xs"></i>
+                              </button>
                             </div>
+                          ) : (
+                            <button
+                              onClick={() => { setPickerBrand(formData.brand); setShowModelPicker(true); }}
+                              className="w-full bg-[var(--c-hover)] border border-dashed border-blue-500/30 rounded-xl px-4 py-4 text-center text-sm font-bold text-blue-500 hover:bg-blue-500/5 transition-all active:scale-[0.98]"
+                            >
+                              <i className="fa-solid fa-plus text-xs mr-2"></i>
+                              Odaberi model
+                            </button>
                           )}
                           {/* Manual override input */}
                           <input
@@ -2519,6 +2497,15 @@ function UploadPageInner() {
           </div>
         </div>
       )}
+
+      {/* Vehicle Model Picker Modal */}
+      <VehicleModelPicker
+        open={showModelPicker}
+        brandName={pickerBrand}
+        isMotorcycle={false}
+        onSelect={handleModelPickerSelect}
+        onClose={() => setShowModelPicker(false)}
+      />
 
     </MainLayout>
   );
