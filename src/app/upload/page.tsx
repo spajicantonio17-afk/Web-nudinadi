@@ -16,6 +16,9 @@ import { getSupabase } from '@/lib/supabase';
 import type { ProductCondition } from '@/lib/database.types';
 import type { AttributeValues } from '@/lib/category-attributes';
 import { getCategoryFields } from '@/lib/category-attributes';
+import LocationPicker from '@/components/LocationPicker';
+import { type City } from '@/lib/location';
+import { BAM_RATE } from '@/lib/constants';
 
 // Real AI functions via Gemini API routes
 const generateListingDescription = async (title: string, category: string): Promise<string> => {
@@ -430,12 +433,17 @@ function UploadPageInner() {
     description: '',
     model: '',
     vin: '',
-    priceType: 'fixed' as 'fixed' | 'negotiable' | 'request',
+    priceType: 'fixed' as 'fixed' | 'negotiable' | 'mk',
     condition: 'Korišteno',
     location: '',
   });
   const [attributes, setAttributes] = useState<AttributeValues>({});
   const [formPage, setFormPage] = useState<1 | 2 | 3>(1);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const [currency, setCurrency] = useState<'EUR' | 'KM'>('EUR');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [newProductId, setNewProductId] = useState<string | null>(null);
 
   // Reset to page 1 whenever category changes
   useEffect(() => {
@@ -715,9 +723,9 @@ function UploadPageInner() {
   };
 
   const getPriceLabel = () => {
-    if (formData.priceType === 'request') return 'Na upit';
-    if (formData.priceType === 'negotiable') return `€ ${formData.price || '0'} MK`;
-    return `€ ${formData.price || '0'}`;
+    const sym = currency === 'KM' ? 'KM' : '€';
+    const suffix = formData.priceType === 'mk' ? ' MK' : formData.priceType === 'negotiable' ? ' (dogovor)' : '';
+    return `${sym} ${formData.price || '0'}${suffix}`;
   };
 
   // PhonePreview - KEEP dark colors as-is (intentionally dark-themed phone mockup)
@@ -757,7 +765,7 @@ function UploadPageInner() {
           <div className="border border-white/10 rounded-[12px] overflow-hidden mb-6">
             <div className="bg-[#121A21] p-4 flex items-center justify-between">
               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Cijena</span>
-              <span className={`text-xl font-black tracking-tight ${formData.priceType === 'request' ? 'text-blue-400 text-lg' : 'text-white'}`}>
+              <span className="text-xl font-black tracking-tight text-white">
                 {getPriceLabel()}
               </span>
             </div>
@@ -796,10 +804,8 @@ function UploadPageInner() {
   const validateForm = () => {
     const e: typeof formErrors = {};
     if (!formData.title.trim()) e.title = 'Naslov je obavezan';
-    if (formData.priceType !== 'request') {
-      if (!formData.price.trim()) e.price = 'Cijena je obavezna';
-      else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) e.price = 'Unesite ispravnu cijenu';
-    }
+    if (!formData.price.trim()) e.price = 'Cijena je obavezna';
+    else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) e.price = 'Unesite ispravnu cijenu';
     setFormErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -856,17 +862,26 @@ function UploadPageInner() {
       // 1.5 Resolve category name → UUID
       const categoryId = await resolveCategoryId(formData.category);
 
+      // Convert KM → EUR if needed
+      const priceEUR = currency === 'KM'
+        ? Math.round((Number(formData.price) / BAM_RATE) * 100) / 100
+        : Number(formData.price);
+
+      // Merge price_type into attributes
+      const priceTypeLabel = formData.priceType === 'mk' ? 'MK' : formData.priceType === 'negotiable' ? 'Po dogovoru' : 'Fiksno';
+      const mergedAttributes = { ...attributes, price_type: priceTypeLabel };
+
       if (isEditMode && editProductId) {
         // ── EDIT MODE: update existing product ────────────────
         await updateProduct(editProductId, {
           title: formData.title.trim(),
           description: formData.description.trim() || null,
-          price: Number(formData.price),
+          price: priceEUR,
           category_id: categoryId,
           condition: mapCondition(formData.condition),
           images: finalImages.length > 0 ? finalImages : undefined,
           location: formData.location.trim() || null,
-          attributes: Object.keys(attributes).length > 0 ? attributes : undefined,
+          attributes: mergedAttributes,
         });
         showToast('Oglas uspješno ažuriran!');
         router.push(`/product/${editProductId}`);
@@ -876,24 +891,34 @@ function UploadPageInner() {
           seller_id: user.id,
           title: formData.title.trim(),
           description: formData.description.trim() || null,
-          price: Number(formData.price),
+          price: priceEUR,
           category_id: categoryId,
           condition: mapCondition(formData.condition),
           images: finalImages,
           status: 'active',
           location: formData.location.trim() || null,
-          attributes: Object.keys(attributes).length > 0 ? attributes : undefined,
+          attributes: mergedAttributes,
         });
 
-        // Award XP for upload (fire-and-forget)
-        void getSupabase().from('user_activities').insert({
-          user_id: user.id,
-          activity_type: 'upload' as const,
-          xp_earned: 10,
-        });
+        // Award XP for upload
+        try {
+          await getSupabase().from('user_activities').insert({
+            user_id: user.id,
+            activity_type: 'upload' as const,
+            xp_earned: 10,
+          });
+        } catch (xpErr) {
+          console.warn('XP insert failed:', xpErr);
+        }
 
-        showToast('Oglas uspješno objavljen!');
-        router.push(`/product/${newProduct.id}`);
+        // Show success overlay, then redirect after 1.5s
+        setNewProductId(newProduct.id);
+        setUploadSuccess(true);
+        showToast('Oglas objavljen! +10 XP 🎉');
+        setTimeout(() => {
+          router.push(`/product/${newProduct.id}`);
+        }, 1500);
+        return; // Don't clear isPublishing — overlay is shown
       }
     } catch (err) {
       console.error('Upload failed:', err);
@@ -2042,19 +2067,34 @@ function UploadPageInner() {
               {/* Location */}
               <div>
                 <label className="text-[9px] font-black text-cyan-500 uppercase tracking-widest block mb-2 px-2">Lokacija</label>
-                <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-lg p-4 flex items-center gap-3 focus-within:border-cyan-500/50 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setShowLocationPicker(true)}
+                  className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-lg p-4 flex items-center gap-3 hover:border-cyan-500/50 transition-colors text-left"
+                >
                   <i className="fa-solid fa-location-dot text-cyan-400 text-sm"></i>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
-                    placeholder="Grad ili adresa"
-                    className="w-full bg-transparent text-sm font-bold text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none"
-                  />
-                </div>
+                  <span className={`text-sm font-bold ${formData.location ? 'text-[var(--c-text)]' : 'text-[var(--c-placeholder)]'}`}>
+                    {formData.location || 'Odaberi grad'}
+                  </span>
+                  <i className="fa-solid fa-chevron-right text-[var(--c-text3)] text-[10px] ml-auto"></i>
+                </button>
+                <LocationPicker
+                  isOpen={showLocationPicker}
+                  onClose={() => setShowLocationPicker(false)}
+                  onSelect={(city) => {
+                    if (city) {
+                      setSelectedCity(city);
+                      setFormData(prev => ({ ...prev, location: city.name }));
+                    } else {
+                      setSelectedCity(null);
+                      setFormData(prev => ({ ...prev, location: '' }));
+                    }
+                  }}
+                  currentCity={selectedCity}
+                />
               </div>
 
-              {/* Price + Price Type */}
+              {/* Price + Currency + Price Type */}
               <div>
                 <div className="flex items-center justify-between mb-2 px-2">
                   <label className="text-[9px] font-black text-green-500 uppercase tracking-widest">Cijena &amp; Uvjeti</label>
@@ -2072,8 +2112,16 @@ function UploadPageInner() {
                   </button>
                 </div>
                 <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl overflow-hidden p-4 space-y-4">
-                  <div className={`flex items-center gap-3 border-b border-[var(--c-border)] pb-4 transition-opacity ${formData.priceType === 'request' ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
-                    <span className="text-xl font-black text-[var(--c-text)]">&euro;</span>
+                  {/* Price input with currency toggle */}
+                  <div className="flex items-center gap-3 border-b border-[var(--c-border)] pb-4">
+                    <button
+                      type="button"
+                      onClick={() => setCurrency(prev => prev === 'EUR' ? 'KM' : 'EUR')}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--c-border2)] bg-[var(--c-hover)] hover:bg-[var(--c-active)] transition-all active:scale-95"
+                    >
+                      <span className="text-lg font-black text-[var(--c-text)]">{currency === 'EUR' ? '€' : 'KM'}</span>
+                      <i className="fa-solid fa-arrows-rotate text-[8px] text-[var(--c-text3)]"></i>
+                    </button>
                     <input
                       type="number"
                       value={formData.price}
@@ -2081,17 +2129,29 @@ function UploadPageInner() {
                       placeholder="0"
                       className="w-full bg-transparent text-xl font-black text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none"
                     />
+                    <span className={`shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${currency === 'KM' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}`}>
+                      {currency === 'KM' ? 'Konvertibilna Marka' : 'Euro'}
+                    </span>
                   </div>
-                  <div className="flex gap-2">
-                    {[{ id: 'fixed' as const, label: 'Fiksno' }, { id: 'negotiable' as const, label: 'MK' }, { id: 'request' as const, label: 'Na upit' }].map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() => setFormData({...formData, priceType: opt.id})}
-                        className={`flex-1 py-2.5 rounded-md text-[10px] font-bold uppercase border transition-all ${formData.priceType === opt.id ? 'bg-blue-600 border-blue-600 text-white' : 'border-[var(--c-border2)] text-[var(--c-text3)] hover:text-[var(--c-text)]'}`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                  {currency === 'KM' && formData.price && (
+                    <p className="text-[10px] text-[var(--c-text3)] -mt-2">
+                      ≈ € {(Number(formData.price) / BAM_RATE).toFixed(2)} EUR (kurs: 1 EUR = {BAM_RATE} KM)
+                    </p>
+                  )}
+                  {/* Price type pills */}
+                  <div>
+                    <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest block mb-2">Tip cijene</label>
+                    <div className="flex gap-2">
+                      {[{ id: 'fixed' as const, label: 'Fiksno' }, { id: 'negotiable' as const, label: 'Po dogovoru' }, { id: 'mk' as const, label: 'MK' }].map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => setFormData({...formData, priceType: opt.id})}
+                          className={`flex-1 py-2.5 rounded-full text-[10px] font-bold uppercase border transition-all ${formData.priceType === opt.id ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20' : 'border-[var(--c-border2)] text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)]'}`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 {formErrors.price && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.price}</p>}
@@ -2295,6 +2355,20 @@ function UploadPageInner() {
         </div>
 
       </div>
+      {/* Upload Success Overlay */}
+      {uploadSuccess && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[var(--c-card)] rounded-[24px] p-8 text-center shadow-2xl border border-[var(--c-border)] animate-[fadeIn_0.3s_ease-out] max-w-sm mx-4">
+            <div className="w-20 h-20 mx-auto rounded-full bg-green-500/10 border-2 border-green-500 flex items-center justify-center mb-4 animate-bounce">
+              <i className="fa-solid fa-check text-3xl text-green-500"></i>
+            </div>
+            <h3 className="text-lg font-black text-[var(--c-text)] mb-1">Oglas uspješno objavljen!</h3>
+            <p className="text-sm text-green-500 font-bold">+10 XP zarađeno 🎉</p>
+            <p className="text-xs text-[var(--c-text3)] mt-2">Preusmjeravanje...</p>
+          </div>
+        </div>
+      )}
+
       {/* AI Moderation Warning Dialog (non-blocking — user can always proceed) */}
       {aiWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4">

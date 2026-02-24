@@ -668,7 +668,7 @@ function HomeContent() {
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSmartSearch(searchQuery); }}
                   onFocus={() => setShowSearchHints(true)}
                   onBlur={() => setTimeout(() => setShowSearchHints(false), 150)}
-                  className="relative z-10 w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] py-3 pl-11 pr-4 text-[14px] focus:ring-2 focus:ring-[var(--c-accent)] focus:border-[var(--c-accent)] outline-none text-[var(--c-text)] placeholder:text-[var(--c-text3)] transition-all duration-150 shadow-subtle"
+                  className="relative z-10 w-full bg-[var(--c-input)] border border-[var(--c-border)] rounded-[14px] py-3 pl-11 pr-4 text-[14px] focus:ring-2 focus:ring-[var(--c-accent)] focus:border-[var(--c-accent)] outline-none text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] transition-all duration-150 shadow-subtle caret-[var(--c-text)]"
                 />
 
                 {/* AI SUGGESTIONS DROPDOWN — shown after Enter */}
