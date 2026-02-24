@@ -34,7 +34,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white rounded-[14px] overflow-hidden flex flex-col border border-[var(--c-border)] relative group transition-all duration-150 h-[220px] w-full cursor-pointer shadow-subtle hover:shadow-medium hover:border-[var(--c-active)]"
+      className="bg-[var(--c-card)] rounded-[14px] overflow-hidden flex flex-col border border-[var(--c-border)] relative group transition-all duration-150 h-[220px] w-full cursor-pointer shadow-subtle hover:shadow-medium hover:border-[var(--c-active)]"
     >
       {/* Image Area */}
       <div className="relative h-[150px] w-full shrink-0 overflow-hidden">
@@ -51,7 +51,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={toggleFavorite}
             className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-150 ${
-              isFavorite ? 'bg-red-600 text-white' : 'bg-white/90 text-[var(--c-text3)] hover:bg-white hover:text-red-600'
+              isFavorite ? 'bg-red-600 text-white' : 'bg-[var(--c-card)]/90 text-[var(--c-text3)] hover:bg-[var(--c-card)] hover:text-red-600'
             }`}
           >
             <i className={`${isFavorite ? 'fa-solid' : 'fa-regular'} fa-heart text-[12px]`}></i>
@@ -60,7 +60,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-2.5 flex flex-col justify-center overflow-hidden bg-white">
+      <div className="flex-1 p-2.5 flex flex-col justify-center overflow-hidden bg-[var(--c-card)]">
         <h3 className="text-[13px] font-semibold text-[var(--c-text)] leading-snug line-clamp-1 mb-1">
           {product.name}
         </h3>

@@ -67,7 +67,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
             </button>
             <button
               onClick={() => setShowHowItWorks(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[12px] font-semibold text-[var(--c-text3)] hover:text-purple-600 hover:bg-purple-50 border border-transparent hover:border-purple-200 transition-all duration-150"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[12px] font-semibold text-[var(--c-text3)] hover:text-purple-600 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/20 transition-all duration-150"
             >
               <i className="fa-solid fa-question text-[11px]"></i>
               Kako funkcioniše?
@@ -253,7 +253,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
                   className="h-8 md:h-10 w-auto object-contain rounded-xl"
                 />
                 <div>
-                  <p className="text-sm md:text-base font-black text-[#1e293b] tracking-tight leading-none">nudinađi</p>
+                  <p className="text-sm md:text-base font-black text-[var(--c-text)] tracking-tight leading-none">nudinađi</p>
                   <p className="text-[7px] md:text-[8px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-0.5">AI Powered Marketplace</p>
                 </div>
               </div>
@@ -355,7 +355,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
         <div className="fixed top-14 md:top-16 left-0 right-0 z-40 bg-[var(--c-accent)] text-white px-4 py-2 md:py-2.5 flex items-center justify-center gap-2 md:gap-3">
           <i className="fa-solid fa-user-plus text-xs opacity-80"></i>
           <span className="text-[11px] font-bold">Gost si — prijavi se ili napravi profil!</span>
-          <Link href="/login" className="ml-2 px-3 py-1 bg-white text-[var(--c-accent)] rounded-[4px] text-[12px] font-bold uppercase tracking-wider hover:bg-blue-50 transition-all duration-150">
+          <Link href="/login" className="ml-2 px-3 py-1 bg-[var(--c-card)] text-[var(--c-accent)] rounded-[4px] text-[12px] font-bold uppercase tracking-wider hover:bg-[var(--c-accent-light)] transition-all duration-150">
             Prijavi se
           </Link>
         </div>
@@ -371,7 +371,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
             <div className="relative bg-[var(--c-card)] border border-[var(--c-border)] w-full max-w-sm rounded-[10px] p-6 shadow-strong overflow-hidden animate-scaleIn">
 
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-16 h-16 rounded-[8px] bg-blue-50 border border-blue-100 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-[8px] bg-[var(--c-accent-light)] border border-[var(--c-accent)]/20 flex items-center justify-center">
                   <i className="fa-solid fa-shield-halved text-3xl text-blue-500"></i>
                 </div>
 
@@ -404,7 +404,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
         )}
 
         {/* Page Content */}
-        <main className="flex-1 px-4 md:px-8 w-full mx-auto pb-6">
+        <main className="flex-1 px-4 md:px-8 w-full mx-auto pb-24 md:pb-6">
           {children}
         </main>
 
@@ -412,39 +412,39 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
         <SiteFooter />
       </div>
 
-      {/* MOBILE BOTTOM NAV */}
-      <div className="md:hidden fixed bottom-14 left-1/2 -translate-x-1/2 z-[100]">
-        <Link href="/upload" aria-label="Novi oglas" className="w-12 h-12 blue-gradient text-white rounded-[8px] flex items-center justify-center btn-plus-shadow border-[3px] border-[var(--c-bg)] active:scale-95 transition-transform duration-150">
-          <i className="fa-solid fa-plus text-xl" aria-hidden="true"></i>
-        </Link>
-      </div>
+      {/* MOBILE BOTTOM NAV — Floating Pill */}
+      <nav aria-label="Mobilna navigacija" className="md:hidden fixed bottom-0 left-0 right-0 z-[90] px-4 pb-4">
+        <div className="flex justify-around items-center px-4 py-2 rounded-[28px] bg-[var(--c-bg)]/80 backdrop-blur-xl border border-[var(--c-glass-border)] shadow-2xl">
+          <Link href="/" aria-label="Početna" aria-current={pathname === '/' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+            <i className="fa-solid fa-house text-[17px]" aria-hidden="true"></i>
+            <span className="text-[10px] font-semibold">Početna</span>
+          </Link>
 
-      <nav aria-label="Mobilna navigacija" className="md:hidden fixed bottom-0 left-0 right-0 glass-nav px-6 py-2.5 flex justify-between items-center z-[90] border-t border-[var(--c-border)] shadow-[0_-1px_0_rgba(0,0,0,0.04)]">
-        <Link href="/" aria-label="Početna" aria-current={pathname === '/' ? 'page' : undefined} className={`flex flex-col items-center gap-1 transition-all ${pathname === '/' ? 'text-blue-600' : 'text-[var(--c-text3)]'}`}>
-          <i className="fa-solid fa-house text-lg" aria-hidden="true"></i>
-          <span className="text-[11px] font-semibold">Početna</span>
-        </Link>
+          {isAuthenticated && (
+          <Link href="/messages" aria-label="Poruke" aria-current={pathname === '/messages' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/messages' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+            <i className="fa-solid fa-comment-dots text-[17px]" aria-hidden="true"></i>
+            <span className="text-[10px] font-semibold">Poruke</span>
+          </Link>
+          )}
 
-        {isAuthenticated && (
-        <Link href="/messages" aria-label="Poruke" aria-current={pathname === '/messages' ? 'page' : undefined} className={`flex flex-col items-center gap-1 transition-all ${pathname === '/messages' ? 'text-blue-600' : 'text-[var(--c-text3)]'}`}>
-          <i className="fa-solid fa-comment-dots text-lg" aria-hidden="true"></i>
-          <span className="text-[11px] font-semibold">Poruke</span>
-        </Link>
-        )}
+          <Link href="/upload" aria-label="Novi oglas" className="flex items-center justify-center px-2">
+            <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-95 ${pathname === '/upload' ? 'blue-gradient shadow-accent' : 'blue-gradient shadow-accent'}`}>
+              <i className="fa-solid fa-plus text-white text-base" aria-hidden="true"></i>
+            </div>
+          </Link>
 
-        <div className="w-8" aria-hidden="true"></div>
+          <Link href={isAuthenticated ? '/profile' : '/login'} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} aria-current={pathname === '/profile' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/profile' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+            <i className={`fa-solid ${isAuthenticated ? 'fa-user' : 'fa-right-to-bracket'} text-[17px]`} aria-hidden="true"></i>
+            <span className="text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Login'}</span>
+          </Link>
 
-        <Link href={isAuthenticated ? '/profile' : '/login'} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} aria-current={pathname === '/profile' ? 'page' : undefined} className={`flex flex-col items-center gap-1 transition-all ${pathname === '/profile' ? 'text-blue-600' : 'text-[var(--c-text3)]'}`}>
-          <i className={`fa-solid ${isAuthenticated ? 'fa-user' : 'fa-right-to-bracket'} text-lg`} aria-hidden="true"></i>
-          <span className="text-[11px] font-semibold">{isAuthenticated ? 'Profil' : 'Login'}</span>
-        </Link>
-
-        {isAuthenticated && (
-        <Link href="/menu" aria-label="Meni" aria-current={pathname === '/menu' ? 'page' : undefined} className={`flex flex-col items-center gap-1 transition-all ${pathname === '/menu' ? 'text-blue-600' : 'text-[var(--c-text3)]'}`}>
-          <i className="fa-solid fa-bars text-lg" aria-hidden="true"></i>
-          <span className="text-[11px] font-semibold">Meni</span>
-        </Link>
-        )}
+          {isAuthenticated && (
+          <Link href="/menu" aria-label="Meni" aria-current={pathname === '/menu' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/menu' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+            <i className="fa-solid fa-bars text-[17px]" aria-hidden="true"></i>
+            <span className="text-[10px] font-semibold">Meni</span>
+          </Link>
+          )}
+        </div>
       </nav>
     </div>
   );

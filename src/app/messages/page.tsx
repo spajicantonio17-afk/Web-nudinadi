@@ -430,15 +430,15 @@ function MessagesContent() {
         </div>
 
         {/* --- RIGHT CHAT AREA --- */}
-        <div className="flex-1 min-w-0 bg-white/50 backdrop-blur-md rounded-[20px] sm:rounded-[32px] border border-[var(--c-border)] flex flex-col relative overflow-hidden shadow-2xl">
+        <div className="flex-1 min-w-0 bg-[var(--c-card)]/50 backdrop-blur-md rounded-[20px] sm:rounded-[32px] border border-[var(--c-border)] flex flex-col relative overflow-hidden shadow-2xl">
           {activeContact ? (
             <>
               {/* Chat Header */}
-              <div className="h-16 sm:h-20 border-b border-[var(--c-border)] flex items-center justify-between px-3 sm:px-6 bg-white/80 shrink-0">
+              <div className="h-16 sm:h-20 border-b border-[var(--c-border)] flex items-center justify-between px-3 sm:px-6 bg-[var(--c-card)]/80 shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={activeContact.avatar} alt={activeContact.name} className="w-10 h-10 rounded-[12px] object-cover bg-gray-800" />
+                    <img src={activeContact.avatar} alt={activeContact.name} className="w-10 h-10 rounded-[12px] object-cover bg-[var(--c-card-alt)]" />
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-[var(--c-text)] leading-none flex gap-2 items-center">

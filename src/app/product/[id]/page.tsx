@@ -461,7 +461,7 @@ export default function ProductDetailPage() {
                 {/* ACTIONS */}
                 <div className="flex flex-col gap-3 mb-8">
                     <div className="flex gap-2 sm:gap-3">
-                        <button onClick={handleContactSeller} aria-label="Pošalji poruku prodavaču" className="flex-1 bg-white text-black h-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-gray-200 transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
+                        <button onClick={handleContactSeller} aria-label="Pošalji poruku prodavaču" className="flex-1 bg-[var(--c-text)] text-[var(--c-bg)] h-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:opacity-80 transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
                             <i className="fa-regular fa-comment" aria-hidden="true"></i> <span className="truncate">Poruku</span>
                         </button>
                         <button aria-label="Pozovi prodavača telefonom" className="flex-1 bg-[var(--c-card)] text-[var(--c-text)] border border-[var(--c-border2)] h-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-[var(--c-hover)] transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
@@ -696,7 +696,7 @@ export default function ProductDetailPage() {
                       <div className="flex gap-0">
                           <input id="question-input" type="text" value={questionText} onChange={(e) => setQuestionText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSubmitQuestion()} placeholder="Zanima me..."
                               className="flex-1 bg-[var(--c-bg)] border border-[var(--c-border2)] border-r-0 text-sm text-[var(--c-text)] px-4 py-3 outline-none focus:bg-[var(--c-card-alt)] transition-colors placeholder:text-[var(--c-placeholder)] rounded-l-sm" />
-                          <button type="button" onClick={handleSubmitQuestion} aria-label="Pošalji pitanje" className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors rounded-r-sm">
+                          <button type="button" onClick={handleSubmitQuestion} aria-label="Pošalji pitanje" className="bg-[var(--c-text)] text-[var(--c-bg)] px-6 py-3 text-xs font-bold uppercase tracking-widest hover:opacity-80 transition-colors rounded-r-sm">
                               Pošalji
                           </button>
                       </div>

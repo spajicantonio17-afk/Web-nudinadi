@@ -647,7 +647,7 @@ function HomeContent() {
                 aria-label="Otvori sve kategorije"
                 aria-expanded={showAllCatsPopup}
                 aria-haspopup="dialog"
-                className="relative z-10 bg-white border border-[var(--c-border)] w-[44px] rounded-[14px] flex items-center justify-center hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 group shadow-subtle shrink-0"
+                className="relative z-10 bg-[var(--c-card)] border border-[var(--c-border)] w-[44px] rounded-[14px] flex items-center justify-center hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 group shadow-subtle shrink-0"
               >
                 <i className="fa-solid fa-bars text-[var(--c-text3)] text-[16px] group-hover:text-[var(--c-accent)] transition-colors" aria-hidden="true"></i>
               </button>
@@ -668,12 +668,12 @@ function HomeContent() {
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSmartSearch(searchQuery); }}
                   onFocus={() => setShowSearchHints(true)}
                   onBlur={() => setTimeout(() => setShowSearchHints(false), 150)}
-                  className="relative z-10 w-full bg-white border border-[var(--c-border)] rounded-[14px] py-3 pl-11 pr-4 text-[14px] focus:ring-2 focus:ring-[var(--c-accent)] focus:border-[var(--c-accent)] outline-none text-[var(--c-text)] placeholder:text-[var(--c-text3)] transition-all duration-150 shadow-subtle"
+                  className="relative z-10 w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] py-3 pl-11 pr-4 text-[14px] focus:ring-2 focus:ring-[var(--c-accent)] focus:border-[var(--c-accent)] outline-none text-[var(--c-text)] placeholder:text-[var(--c-text3)] transition-all duration-150 shadow-subtle"
                 />
 
                 {/* AI SUGGESTIONS DROPDOWN — shown after Enter */}
                 {showSearchHints && searchQuery && aiSearchSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 z-[200] bg-white border border-[var(--c-border)] rounded-[14px] shadow-strong overflow-hidden animate-fadeIn">
+                  <div className="absolute top-full left-0 right-0 mt-2 z-[200] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] shadow-strong overflow-hidden animate-fadeIn">
                     <div className="px-4 pt-3 pb-2 flex items-center gap-2 border-b border-[var(--c-border)]">
                       <i className="fa-solid fa-wand-magic-sparkles text-purple-500 text-[11px]"></i>
                       <p className="text-[12px] font-bold text-[var(--c-text2)] uppercase tracking-wider">AI prijedlozi</p>
@@ -694,7 +694,7 @@ function HomeContent() {
 
                 {/* AI SEARCH HINTS DROPDOWN */}
                 {showSearchHints && !searchQuery && (
-                  <div className="absolute top-full left-0 right-0 mt-2 z-[200] bg-white border border-[var(--c-border)] rounded-[14px] shadow-strong overflow-hidden animate-fadeIn">
+                  <div className="absolute top-full left-0 right-0 mt-2 z-[200] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] shadow-strong overflow-hidden animate-fadeIn">
                     {/* Header */}
                     <div className="px-4 pt-4 pb-2 flex items-center gap-2 border-b border-[var(--c-border)]">
                       <div className="w-7 h-7 rounded-[4px] bg-purple-50 border border-purple-100 flex items-center justify-center shrink-0">
@@ -757,7 +757,7 @@ function HomeContent() {
                 aria-label="Otvori informacije o AI pretrazi"
                 aria-expanded={showAiInfo}
                 aria-haspopup="dialog"
-                className="relative z-10 bg-white border border-[var(--c-border)] w-[44px] rounded-[14px] flex items-center justify-center hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 group shadow-subtle shrink-0"
+                className="relative z-10 bg-[var(--c-card)] border border-[var(--c-border)] w-[44px] rounded-[14px] flex items-center justify-center hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 group shadow-subtle shrink-0"
               >
                 <i className="fa-solid fa-wand-magic-sparkles text-[var(--c-accent)] text-[14px]" aria-hidden="true"></i>
               </button>
@@ -825,7 +825,7 @@ function HomeContent() {
           <div className="flex justify-center mb-2">
             <button
               onClick={() => setShowLocationPicker(true)}
-              className="flex items-center gap-2 px-4 py-1.5 bg-white border border-[var(--c-border)] rounded-[12px] text-[12px] font-semibold text-[var(--c-text2)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 shadow-subtle"
+              className="flex items-center gap-2 px-4 py-1.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[12px] text-[12px] font-semibold text-[var(--c-text2)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 shadow-subtle"
             >
               <i className="fa-solid fa-location-dot text-[var(--c-accent)] text-[11px]"></i>
               <span>{selectedLocation ? selectedLocation.name : 'Sve Lokacije'}</span>
@@ -836,12 +836,12 @@ function HomeContent() {
                   onClick={(e) => { e.stopPropagation(); setSelectedLocation(null); if (typeof window !== 'undefined') localStorage.removeItem('nudinadi_location'); }}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setSelectedLocation(null); if (typeof window !== 'undefined') localStorage.removeItem('nudinadi_location'); }}}
                   aria-label="Ukloni odabranu lokaciju"
-                  className="ml-1 w-4 h-4 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-200 cursor-pointer"
+                  className="ml-1 w-4 h-4 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text-muted)] hover:text-[var(--c-text2)] hover:bg-[var(--c-active)] cursor-pointer"
                 >
                   <i className="fa-solid fa-xmark text-[7px]" aria-hidden="true"></i>
                 </span>
               )}
-              {!selectedLocation && <i className="fa-solid fa-chevron-down text-[8px] text-gray-300"></i>}
+              {!selectedLocation && <i className="fa-solid fa-chevron-down text-[8px] text-[var(--c-text-muted)]"></i>}
             </button>
           </div>
 
@@ -885,7 +885,7 @@ function HomeContent() {
               onClick={() => setShowSecondaryCats(!showSecondaryCats)}
               aria-expanded={showSecondaryCats}
               aria-label={showSecondaryCats ? 'Sakrij dodatne kategorije' : 'Prikaži više kategorija'}
-              className="flex items-center gap-2 px-6 py-1.5 bg-white border border-[var(--c-border)] rounded-[12px] text-[12px] font-semibold text-[var(--c-text2)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 shadow-subtle"
+              className="flex items-center gap-2 px-6 py-1.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[12px] text-[12px] font-semibold text-[var(--c-text2)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 shadow-subtle"
             >
               <span>{showSecondaryCats ? 'Manje' : 'Više kategorija'}</span>
               <i className={`fa-solid fa-chevron-down transition-transform ${showSecondaryCats ? 'rotate-180' : ''}`} aria-hidden="true"></i>
@@ -894,7 +894,7 @@ function HomeContent() {
 
           {/* SECONDARY CATEGORIES */}
           {showSecondaryCats && (
-            <div className="animate-fadeIn border-t border-gray-100 pt-2 pb-2">
+            <div className="animate-fadeIn border-t border-[var(--c-border)] pt-2 pb-2">
               <div className="overflow-x-auto no-scrollbar touch-pan-x">
                 <div className="flex gap-2 px-1 justify-center flex-wrap">
                   {secondaryCategories.map((cat) => (
@@ -918,10 +918,10 @@ function HomeContent() {
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowAllCatsPopup(false); setSelectedSubGroup(null); }} onKeyDown={(e) => { if (e.key === 'Escape') { setShowAllCatsPopup(false); setSelectedSubGroup(null); }}} role="presentation"></div>
 
               {/* Modal Container */}
-              <div className="relative w-full h-full md:h-[85vh] md:max-w-5xl bg-white md:rounded-[10px] md:border md:border-[var(--c-border)] overflow-hidden flex flex-col animate-scaleIn shadow-strong">
+              <div className="relative w-full h-full md:h-[85vh] md:max-w-5xl bg-[var(--c-card)] md:rounded-[10px] md:border md:border-[var(--c-border)] overflow-hidden flex flex-col animate-scaleIn shadow-strong">
 
                 {/* Header */}
-                <div className="shrink-0 px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
+                <div className="shrink-0 px-5 py-4 border-b border-[var(--c-border)] flex items-center justify-between bg-[var(--c-card)]">
                   <div className="flex items-center gap-3">
                     {showThirdLevel && (
                       <button
@@ -933,7 +933,7 @@ function HomeContent() {
                       </button>
                     )}
                     <div>
-                      <h3 className="text-lg font-black text-gray-900 leading-none">
+                      <h3 className="text-lg font-black text-[var(--c-text)] leading-none">
                         {showThirdLevel ? selectedSubGroup : 'Kategorije'}
                       </h3>
                       <p className="text-[11px] text-[var(--c-text3)] uppercase tracking-wider mt-0.5">
@@ -953,37 +953,37 @@ function HomeContent() {
                 </div>
 
                 {/* Split Content */}
-                <div className="flex flex-1 overflow-hidden border-t border-gray-100">
+                <div className="flex flex-1 min-h-0 overflow-hidden border-t border-[var(--c-border)]">
 
                   {/* LEFT SIDEBAR — hidden on mobile when 3rd level is shown */}
-                  <div className={`${showThirdLevel ? 'hidden md:flex' : 'flex'} flex-col w-[85px] md:w-[260px] bg-gray-50 border-r border-gray-100 overflow-y-auto no-scrollbar pb-24`}>
+                  <div className={`${showThirdLevel ? 'hidden md:flex' : 'flex'} flex-col w-[85px] md:w-[260px] bg-[var(--c-card-alt)] border-r border-[var(--c-border)] overflow-y-auto no-scrollbar pb-24`}>
                     {CATEGORIES.map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => { setSelectedCatId(cat.id); setSelectedSubGroup(null); }}
-                        className={`w-full p-4 md:px-5 md:py-4 flex flex-col md:flex-row items-center md:gap-3 border-b border-gray-100 transition-all relative group ${
+                        className={`w-full p-4 md:px-5 md:py-4 flex flex-col md:flex-row items-center md:gap-3 border-b border-[var(--c-border)] transition-all relative group ${
                           selectedCatId === cat.id
-                            ? 'bg-white text-blue-600 shadow-sm'
+                            ? 'bg-[var(--c-card)] text-[var(--c-accent)] shadow-sm'
                             : 'text-[var(--c-text3)] hover:bg-[var(--c-hover)] hover:text-[var(--c-text2)]'
                         }`}
                       >
                         {selectedCatId === cat.id && (
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
                         )}
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${selectedCatId === cat.id ? 'bg-blue-50' : 'bg-transparent'}`}>
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${selectedCatId === cat.id ? 'bg-[var(--c-accent-light)]' : 'bg-transparent'}`}>
                           <i className={`fa-solid ${cat.icon} text-sm`}></i>
                         </div>
                         <span className="text-[9px] md:text-[12px] font-bold uppercase md:capitalize text-center md:text-left mt-1 md:mt-0 leading-tight">
                           {cat.name}
                         </span>
-                        <i className={`hidden md:block fa-solid fa-chevron-right ml-auto text-[10px] ${selectedCatId === cat.id ? 'text-blue-500' : 'text-gray-300 opacity-0 group-hover:opacity-100'}`}></i>
+                        <i className={`hidden md:block fa-solid fa-chevron-right ml-auto text-[10px] ${selectedCatId === cat.id ? 'text-[var(--c-accent)]' : 'text-[var(--c-text-muted)] opacity-0 group-hover:opacity-100'}`}></i>
                       </button>
                     ))}
                   </div>
 
                   {/* MIDDLE CONTENT — Sub-category groups */}
                   {!showThirdLevel && (
-                    <div className="flex-1 bg-white overflow-y-auto p-4 md:p-6 pb-24 relative">
+                    <div className="flex-1 bg-[var(--c-card)] overflow-y-auto p-4 md:p-6 pb-24 relative">
 
                       {/* Selected Category Header */}
                       <div className="mb-6 flex items-center gap-3 relative z-10">
@@ -991,7 +991,7 @@ function HomeContent() {
                           <i className={`fa-solid ${selectedCategory.icon} text-lg`}></i>
                         </div>
                         <div>
-                          <h1 className="text-xl font-black text-gray-900 uppercase tracking-tight leading-none mb-0.5">{selectedCategory.name}</h1>
+                          <h1 className="text-xl font-black text-[var(--c-text)] uppercase tracking-tight leading-none mb-0.5">{selectedCategory.name}</h1>
                           <p className="text-[12px] text-[var(--c-accent)] font-semibold uppercase tracking-wider">{selectedCategory.subCategories.length} Potkategorija</p>
                         </div>
                       </div>
@@ -1021,15 +1021,15 @@ function HomeContent() {
                                 setSelectedSubGroup(null);
                               }
                             }}
-                            className="text-left bg-[var(--c-card-alt)] border border-[var(--c-border)] p-3.5 rounded-[6px] flex justify-between items-center hover:bg-white hover:border-[var(--c-active)] hover:shadow-subtle transition-all duration-150 group active:scale-[0.99]"
+                            className="text-left bg-[var(--c-card-alt)] border border-[var(--c-border)] p-3.5 rounded-[6px] flex justify-between items-center hover:bg-[var(--c-hover)] hover:border-[var(--c-active)] hover:shadow-subtle transition-all duration-150 group active:scale-[0.99]"
                           >
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-[12px] font-bold text-gray-700 group-hover:text-gray-900 transition-colors">{sub.name}</span>
+                              <span className="text-[12px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] transition-colors">{sub.name}</span>
                               {sub.items?.length && (
                                 <span className="text-[11px] text-[var(--c-text3)]">{sub.items.length} stavki</span>
                               )}
                             </div>
-                            <i className={`fa-solid ${sub.items?.length ? 'fa-chevron-right' : 'fa-arrow-right'} text-[10px] text-gray-300 group-hover:text-blue-500 transition-colors`}></i>
+                            <i className={`fa-solid ${sub.items?.length ? 'fa-chevron-right' : 'fa-arrow-right'} text-[10px] text-[var(--c-text-muted)] group-hover:text-[var(--c-accent)] transition-colors`}></i>
                           </button>
                         ))}
                       </div>
@@ -1038,7 +1038,7 @@ function HomeContent() {
 
                   {/* THIRD LEVEL — Detailed items within sub-group */}
                   {showThirdLevel && selectedSubGroupData && (
-                    <div className="flex-1 bg-white overflow-y-auto p-4 md:p-6 pb-24 relative animate-fadeIn">
+                    <div className="flex-1 bg-[var(--c-card)] overflow-y-auto p-4 md:p-6 pb-24 relative animate-fadeIn">
 
                       {/* Sub-group header */}
                       <div className="mb-5 relative z-10">
@@ -1047,7 +1047,7 @@ function HomeContent() {
                           <i className="fa-solid fa-chevron-right text-[9px] text-[var(--c-text-muted)]"></i>
                           <span className="text-[11px] font-semibold text-[var(--c-accent)] uppercase tracking-wider">{selectedSubGroup}</span>
                         </div>
-                        <h2 className="text-xl font-black text-gray-900">{selectedSubGroup}</h2>
+                        <h2 className="text-xl font-black text-[var(--c-text)]">{selectedSubGroup}</h2>
                         <p className="text-[12px] text-[var(--c-text3)] mt-0.5">{selectedSubGroupData.items!.length} kategorija</p>
                       </div>
 
@@ -1068,10 +1068,10 @@ function HomeContent() {
                           <button
                             key={idx}
                             onClick={() => { handleCategoryChange(selectedCategory.name); setShowAllCatsPopup(false); setSelectedSubGroup(null); }}
-                            className="text-left bg-[var(--c-card-alt)] border border-[var(--c-border)] px-4 py-3 rounded-[6px] flex justify-between items-center hover:bg-white hover:border-[var(--c-accent)]/30 hover:shadow-subtle transition-all duration-150 group active:scale-[0.99]"
+                            className="text-left bg-[var(--c-card-alt)] border border-[var(--c-border)] px-4 py-3 rounded-[6px] flex justify-between items-center hover:bg-[var(--c-hover)] hover:border-[var(--c-accent)]/30 hover:shadow-subtle transition-all duration-150 group active:scale-[0.99]"
                           >
-                            <span className="text-[12px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors">{item}</span>
-                            <i className="fa-solid fa-arrow-right text-[9px] text-gray-200 group-hover:text-blue-500 transition-colors"></i>
+                            <span className="text-[12px] font-semibold text-[var(--c-text3)] group-hover:text-[var(--c-text)] transition-colors">{item}</span>
+                            <i className="fa-solid fa-arrow-right text-[9px] text-[var(--c-text-muted)] group-hover:text-[var(--c-accent)] transition-colors"></i>
                           </button>
                         ))}
                       </div>

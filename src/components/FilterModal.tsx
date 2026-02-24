@@ -147,7 +147,7 @@ export default function FilterModal({
     <div className="fixed inset-0 z-[150] flex items-start justify-center pt-16 sm:pt-24 pb-4 px-2 sm:px-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white border border-[var(--c-border)] w-full max-w-2xl rounded-[10px] shadow-strong overflow-hidden animate-scaleIn max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-7rem)] flex flex-col">
+      <div className="relative bg-[var(--c-card)] border border-[var(--c-border)] w-full max-w-2xl rounded-[10px] shadow-strong overflow-hidden animate-scaleIn max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-7rem)] flex flex-col">
 
         {/* ── Header ── */}
         <div className="relative z-10 shrink-0 px-4 sm:px-6 py-4 sm:py-5 border-b border-[var(--c-border)] flex items-center justify-between">
@@ -166,7 +166,7 @@ export default function FilterModal({
             {activeCount > 0 && (
               <button
                 onClick={handleReset}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-red-50 border border-red-200 text-red-500 text-[12px] font-semibold hover:bg-red-100 transition-all duration-150"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-red-500/10 border border-red-500/20 text-red-500 text-[12px] font-semibold hover:bg-red-500/20 transition-all duration-150"
               >
                 <i className="fa-solid fa-rotate-left text-[9px]"></i> Reset
               </button>
@@ -191,17 +191,17 @@ export default function FilterModal({
               <div className="flex gap-2">
                 <button
                   onClick={onLocationClick}
-                  className="flex-1 flex items-center gap-2 px-3 py-2.5 bg-white border border-[var(--c-border)] rounded-[6px] text-[13px] font-semibold text-[var(--c-text2)] hover:border-[var(--c-accent)]/40 transition-all duration-150"
+                  className="flex-1 flex items-center gap-2 px-3 py-2.5 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[6px] text-[13px] font-semibold text-[var(--c-text2)] hover:border-[var(--c-accent)]/40 transition-all duration-150"
                 >
                   <i className="fa-solid fa-map-marker-alt text-blue-500 text-[11px] shrink-0"></i>
                   <span className="truncate">{locationName || 'Sve Lokacije'}</span>
-                  <i className="fa-solid fa-chevron-right text-[8px] text-gray-300 ml-auto shrink-0"></i>
+                  <i className="fa-solid fa-chevron-right text-[8px] text-[var(--c-text-muted)] ml-auto shrink-0"></i>
                 </button>
                 <button
                   onClick={onDetectGPS}
                   disabled={isDetectingGPS}
                   title="Otkrij moju lokaciju"
-                  className="w-11 h-11 bg-white border border-[var(--c-border)] rounded-[6px] flex items-center justify-center text-[var(--c-accent)] hover:bg-[var(--c-accent-light)] hover:border-[var(--c-accent)]/40 transition-all duration-150 disabled:opacity-50 shrink-0"
+                  className="w-11 h-11 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[6px] flex items-center justify-center text-[var(--c-accent)] hover:bg-[var(--c-accent-light)] hover:border-[var(--c-accent)]/40 transition-all duration-150 disabled:opacity-50 shrink-0"
                 >
                   <i className={`fa-solid fa-crosshairs text-sm ${isDetectingGPS ? 'animate-spin' : ''}`}></i>
                 </button>
@@ -212,13 +212,13 @@ export default function FilterModal({
             <Section icon="fa-bullseye" label="Radius pretrage" accent="bg-purple-500">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-gray-400">Udaljenost</span>
-                  <span className="text-[13px] font-black text-gray-800">
+                  <span className="text-[11px] text-[var(--c-text-muted)]">Udaljenost</span>
+                  <span className="text-[13px] font-black text-[var(--c-text)]">
                     {filters.radiusKm === 0 ? 'Neograničeno' : `${filters.radiusKm} km`}
                   </span>
                 </div>
                 <div className="relative">
-                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-[var(--c-active)] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all"
                       style={{ width: `${radiusPct}%` }}
@@ -242,25 +242,25 @@ export default function FilterModal({
           {/* ROW 2: Price Range (full width) */}
           <Section icon="fa-euro-sign" label="Raspon Cijena" accent="bg-green-500">
             <div className="flex gap-3 items-center mb-3">
-              <div className="flex-1 bg-white border border-[var(--c-border)] rounded-[6px] px-3 py-2 focus-within:border-green-400 transition-all duration-150">
+              <div className="flex-1 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[6px] px-3 py-2 focus-within:border-green-400 transition-all duration-150">
                 <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-0.5">Min €</p>
                 <input
                   type="number"
                   value={filters.priceMin}
                   onChange={(e) => setFilters({ ...filters, priceMin: e.target.value })}
                   placeholder="0"
-                  className="w-full bg-transparent text-[15px] font-bold text-gray-800 placeholder:text-gray-300 outline-none"
+                  className="w-full bg-transparent text-[15px] font-bold text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] outline-none"
                 />
               </div>
-              <div className="text-gray-300 font-bold text-lg shrink-0">—</div>
-              <div className="flex-1 bg-white border border-[var(--c-border)] rounded-[6px] px-3 py-2 focus-within:border-green-400 transition-all duration-150">
+              <div className="text-[var(--c-text-muted)] font-bold text-lg shrink-0">—</div>
+              <div className="flex-1 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[6px] px-3 py-2 focus-within:border-green-400 transition-all duration-150">
                 <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-0.5">Max €</p>
                 <input
                   type="number"
                   value={filters.priceMax}
                   onChange={(e) => setFilters({ ...filters, priceMax: e.target.value })}
                   placeholder="∞"
-                  className="w-full bg-transparent text-[15px] font-bold text-gray-800 placeholder:text-gray-300 outline-none"
+                  className="w-full bg-transparent text-[15px] font-bold text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] outline-none"
                 />
               </div>
             </div>
@@ -277,8 +277,8 @@ export default function FilterModal({
                   onClick={() => setFilters({ ...filters, priceMax: v.max })}
                   className={`px-2 sm:px-0 sm:flex-1 py-1.5 rounded-[4px] text-[10px] sm:text-[11px] font-semibold transition-all duration-150 active:scale-95 border ${
                     filters.priceMax === v.max
-                      ? 'text-green-600 border-green-400 bg-green-50'
-                      : 'text-[var(--c-text3)] border-[var(--c-border)] hover:text-green-600 hover:border-green-300'
+                      ? 'text-green-500 border-green-500/40 bg-green-500/10'
+                      : 'text-[var(--c-text3)] border-[var(--c-border)] hover:text-green-500 hover:border-green-500/30'
                   }`}
                 >
                   {v.label}
@@ -299,7 +299,7 @@ export default function FilterModal({
                 ]}
                 value={filters.condition}
                 onChange={(v) => setFilters({ ...filters, condition: v })}
-                activeClass="bg-orange-50 text-orange-600 border-orange-300"
+                activeClass="bg-orange-500/10 text-orange-500 border-orange-500/30"
               />
             </Section>
 
@@ -313,7 +313,7 @@ export default function FilterModal({
                 ]}
                 value={filters.sortBy}
                 onChange={(v) => setFilters({ ...filters, sortBy: v })}
-                activeClass="bg-cyan-50 text-cyan-600 border-cyan-300"
+                activeClass="bg-cyan-500/10 text-cyan-500 border-cyan-500/30"
               />
             </Section>
           </div>
@@ -329,7 +329,7 @@ export default function FilterModal({
                 ]}
                 value={filters.delivery}
                 onChange={(v) => setFilters({ ...filters, delivery: v })}
-                activeClass="bg-emerald-50 text-emerald-600 border-emerald-300"
+                activeClass="bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
               />
             </Section>
 
@@ -342,7 +342,7 @@ export default function FilterModal({
                 ]}
                 value={filters.sellerType}
                 onChange={(v) => setFilters({ ...filters, sellerType: v })}
-                activeClass="bg-pink-50 text-pink-600 border-pink-300"
+                activeClass="bg-pink-500/10 text-pink-500 border-pink-500/30"
               />
             </Section>
           </div>
@@ -358,7 +358,7 @@ export default function FilterModal({
               ]}
               value={filters.timePosted}
               onChange={(v) => setFilters({ ...filters, timePosted: v })}
-              activeClass="bg-yellow-50 text-yellow-600 border-yellow-300"
+              activeClass="bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
             />
           </Section>
 
@@ -366,7 +366,7 @@ export default function FilterModal({
         </div>
 
         {/* ── Footer ── */}
-        <div className="relative z-10 shrink-0 px-3 sm:px-5 py-3 sm:py-4 border-t border-[var(--c-border)] bg-white flex gap-2 sm:gap-3">
+        <div className="relative z-10 shrink-0 px-3 sm:px-5 py-3 sm:py-4 border-t border-[var(--c-border)] bg-[var(--c-card)] flex gap-2 sm:gap-3">
           <button
             onClick={handleReset}
             className="px-5 py-3.5 rounded-[6px] bg-[var(--c-card-alt)] border border-[var(--c-border)] text-[var(--c-text2)] font-semibold text-[12px] uppercase tracking-wider hover:bg-[var(--c-active)] transition-all duration-150 active:scale-95 flex items-center gap-2"

@@ -1744,7 +1744,7 @@ function UploadPageInner() {
                   onClick={() => selectCarBrand(brand.name)}
                   className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 sm:p-3.5 flex flex-col items-center justify-center gap-1.5 sm:gap-2 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center border border-gray-100 group-hover:scale-110 transition-transform overflow-hidden">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--c-card)] flex items-center justify-center border border-[var(--c-border)] group-hover:scale-110 transition-transform overflow-hidden">
                     {brand.slug ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -1754,7 +1754,7 @@ function UploadPageInner() {
                         loading="lazy"
                       />
                     ) : brand.name === 'Ostalo' ? (
-                      <i className="fa-solid fa-ellipsis text-lg text-gray-400"></i>
+                      <i className="fa-solid fa-ellipsis text-lg text-[var(--c-text-muted)]"></i>
                     ) : (
                       <span className="text-sm font-black text-blue-400">{brand.name[0]}</span>
                     )}
@@ -1934,7 +1934,7 @@ function UploadPageInner() {
                         const brandSlug = CAR_BRANDS.find(b => b.name === formData.brand)?.slug;
                         return (
                           <div className="flex items-center gap-3 flex-1">
-                            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
+                            <div className="w-12 h-12 rounded-xl bg-[var(--c-card)] flex items-center justify-center border border-[var(--c-border)] shadow-sm shrink-0">
                               {brandSlug ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={`${CAR_LOGO_BASE}/${brandSlug}.png`} alt={formData.brand} className="w-8 h-8 object-contain" />
@@ -2108,7 +2108,7 @@ function UploadPageInner() {
 
               {/* Description (shown inline for single-page categories that have no page 2/3) */}
               {!hasPage2Fields && (
-                <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-5 focus-within:border-gray-500 transition-colors min-h-[140px]">
+                <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-5 focus-within:border-[var(--c-text3)] transition-colors min-h-[140px]">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Opis Artikla</label>
                     <button
@@ -2169,7 +2169,7 @@ function UploadPageInner() {
 
               {/* Description (only if no page 3 — otherwise description moves to page 3) */}
               {!hasPage3Fields && (
-                <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-5 focus-within:border-gray-500 transition-colors min-h-[140px]">
+                <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-5 focus-within:border-[var(--c-text3)] transition-colors min-h-[140px]">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Opis Artikla</label>
                     <button
@@ -2238,7 +2238,7 @@ function UploadPageInner() {
               />
 
               {/* Description */}
-              <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-5 focus-within:border-gray-500 transition-colors min-h-[140px]">
+              <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-5 focus-within:border-[var(--c-text3)] transition-colors min-h-[140px]">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Opis Artikla</label>
                   <button
@@ -2298,15 +2298,15 @@ function UploadPageInner() {
       {/* AI Moderation Warning Dialog (non-blocking — user can always proceed) */}
       {aiWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 max-w-md w-full overflow-hidden max-h-[90vh] overflow-y-auto">
-            <div className="p-5 border-b border-gray-100">
+          <div className="bg-[var(--c-card)] rounded-2xl shadow-xl border border-[var(--c-border)] max-w-md w-full overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div className="p-5 border-b border-[var(--c-border)]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
                   <i className="fa-solid fa-robot text-amber-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">AI Provjera</h3>
-                  <p className="text-xs text-gray-500">Naš sistem je primijetio nešto</p>
+                  <h3 className="font-semibold text-[var(--c-text)]">AI Provjera</h3>
+                  <p className="text-xs text-[var(--c-text3)]">Naš sistem je primijetio nešto</p>
                 </div>
               </div>
             </div>
@@ -2314,18 +2314,18 @@ function UploadPageInner() {
               {aiWarning.warnings.map((w, i) => (
                 <div key={i} className="flex items-start gap-2.5 text-sm">
                   <i className="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5" />
-                  <span className="text-gray-700">{w}</span>
+                  <span className="text-[var(--c-text2)]">{w}</span>
                 </div>
               ))}
-              <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mt-2">
+              <p className="text-sm text-[var(--c-text3)] bg-[var(--c-card-alt)] rounded-lg p-3 mt-2">
                 <i className="fa-solid fa-circle-info text-blue-400 mr-1.5" />
                 Jeste li sigurni da želite objaviti oglas s ovim podacima? Možete nastaviti ako je sve ispravno.
               </p>
             </div>
-            <div className="p-4 border-t border-gray-100 flex gap-3">
+            <div className="p-4 border-t border-[var(--c-border)] flex gap-3">
               <button
                 onClick={() => setAiWarning(null)}
-                className="flex-1 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                className="flex-1 py-2.5 text-sm font-medium text-[var(--c-text3)] bg-[var(--c-hover)] rounded-xl hover:bg-[var(--c-active)] transition-colors"
               >
                 <i className="fa-solid fa-pen mr-1.5" />
                 Uredi oglas

@@ -41,7 +41,7 @@ export default function OnboardingPage() {
             <div className="w-full space-y-4">
                 <button
                     onClick={() => router.push('/login')}
-                    className="w-full py-4 rounded-[24px] bg-white text-black font-black uppercase tracking-[2px] shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-[24px] bg-[var(--c-text)] text-[var(--c-bg)] font-black uppercase tracking-[2px] shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
                     <i className="fa-solid fa-arrow-right-to-bracket"></i> Prijavi se
                 </button>
