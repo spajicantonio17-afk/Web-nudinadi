@@ -85,16 +85,16 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 8 }: I
         </div>
       ) : (
         /* Thumbnails Grid */
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {previewUrls.map((url, idx) => (
             <div key={idx} className="aspect-square bg-[var(--c-card)] rounded-[16px] relative overflow-hidden border border-[var(--c-border)] group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="w-full h-full object-cover" />
               <button
                 onClick={() => removeImage(idx)}
-                className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 w-8 h-8 sm:w-6 sm:h-6 bg-black/50 rounded-full flex items-center justify-center text-red-400 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               >
-                <i className="fa-solid fa-xmark text-[10px]"></i>
+                <i className="fa-solid fa-xmark text-xs sm:text-[10px]"></i>
               </button>
               {idx === 0 && (
                 <div className="absolute bottom-0 left-0 right-0 bg-blue-600/80 text-center py-0.5">

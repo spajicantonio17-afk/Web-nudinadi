@@ -85,16 +85,16 @@ export default function LocationPicker({ isOpen, onClose, onSelect, currentCity 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4">
       <div className="absolute inset-0 bg-[var(--c-overlay)] backdrop-blur-sm" onClick={onClose}></div>
 
-      <div className="relative bg-[var(--c-card)] border border-[var(--c-border2)] w-full max-w-3xl rounded-[24px] shadow-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out] max-h-[88vh] flex flex-col">
+      <div className="relative bg-[var(--c-card)] border border-[var(--c-border2)] w-full max-w-3xl rounded-[24px] shadow-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out] max-h-[92vh] sm:max-h-[88vh] flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-[var(--c-border)]">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-xl font-black text-[var(--c-text)]">Lokacija</h2>
-              <p className="text-sm text-[var(--c-text2)] mt-1">Odaberi grad za filtriranje oglasa</p>
+        <div className="p-4 sm:p-6 border-b border-[var(--c-border)]">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <div className="min-w-0 flex-1 mr-3">
+              <h2 className="text-lg sm:text-xl font-black text-[var(--c-text)]">Lokacija</h2>
+              <p className="text-xs sm:text-sm text-[var(--c-text2)] mt-1">Odaberi grad za filtriranje oglasa</p>
             </div>
             <button onClick={onClose} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text2)] hover:text-[var(--c-text)] transition-colors">
               <i className="fa-solid fa-xmark text-base"></i>
@@ -133,7 +133,7 @@ export default function LocationPicker({ isOpen, onClose, onSelect, currentCity 
 
         {/* Current Selection */}
         {currentCity && (
-          <div className="px-6 py-3.5 border-b border-[var(--c-border)] flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-3.5 border-b border-[var(--c-border)] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <i className="fa-solid fa-location-dot text-blue-400 text-sm"></i>
               <span className="text-sm font-bold text-[var(--c-text)]">{currentCity.name}, {currentCity.country}</span>
@@ -174,12 +174,12 @@ export default function LocationPicker({ isOpen, onClose, onSelect, currentCity 
 
                       {/* Cities grid (shown when expanded or searching) */}
                       {isExpanded && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 px-2 pb-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1 sm:gap-1.5 px-1 sm:px-2 pb-1">
                           {cities.map((city) => (
                             <button
                               key={`${city.country}-${city.name}`}
                               onClick={() => handleSelect(city)}
-                              className={`text-left px-3.5 py-2.5 rounded-[8px] text-sm font-bold transition-all active:scale-95 ${
+                              className={`text-left px-2.5 sm:px-3.5 py-2.5 rounded-[8px] text-xs sm:text-sm font-bold transition-all active:scale-95 ${
                                 currentCity?.name === city.name && currentCity?.country === city.country
                                   ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                   : 'text-[var(--c-text2)] hover:bg-[var(--c-hover)] border border-transparent'

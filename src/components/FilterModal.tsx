@@ -144,13 +144,13 @@ export default function FilterModal({
   const radiusPct = (filters.radiusKm / 200) * 100;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-start justify-center pt-24 pb-4 px-4">
+    <div className="fixed inset-0 z-[150] flex items-start justify-center pt-16 sm:pt-24 pb-4 px-2 sm:px-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white border border-[var(--c-border)] w-full max-w-2xl rounded-[10px] shadow-strong overflow-hidden animate-scaleIn max-h-[calc(100vh-7rem)] flex flex-col">
+      <div className="relative bg-white border border-[var(--c-border)] w-full max-w-2xl rounded-[10px] shadow-strong overflow-hidden animate-scaleIn max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-7rem)] flex flex-col">
 
         {/* ── Header ── */}
-        <div className="relative z-10 shrink-0 px-6 py-5 border-b border-[var(--c-border)] flex items-center justify-between">
+        <div className="relative z-10 shrink-0 px-4 sm:px-6 py-4 sm:py-5 border-b border-[var(--c-border)] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-[6px] bg-[var(--c-accent)] flex items-center justify-center shadow-accent">
               <i className="fa-solid fa-sliders text-white text-sm"></i>
@@ -181,7 +181,7 @@ export default function FilterModal({
         </div>
 
         {/* ── Scrollable Content ── */}
-        <div className="relative z-10 overflow-y-auto flex-1 p-5 space-y-3">
+        <div className="relative z-10 overflow-y-auto flex-1 p-3 sm:p-5 space-y-3">
 
           {/* ROW 1: Location + Radius side by side */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -264,7 +264,7 @@ export default function FilterModal({
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {[
                 { label: 'do 50€', max: '50' },
                 { label: 'do 100€', max: '100' },
@@ -275,7 +275,7 @@ export default function FilterModal({
                 <button
                   key={v.max}
                   onClick={() => setFilters({ ...filters, priceMax: v.max })}
-                  className={`flex-1 py-1.5 rounded-[4px] text-[11px] font-semibold transition-all duration-150 active:scale-95 border ${
+                  className={`px-2 sm:px-0 sm:flex-1 py-1.5 rounded-[4px] text-[10px] sm:text-[11px] font-semibold transition-all duration-150 active:scale-95 border ${
                     filters.priceMax === v.max
                       ? 'text-green-600 border-green-400 bg-green-50'
                       : 'text-[var(--c-text3)] border-[var(--c-border)] hover:text-green-600 hover:border-green-300'
@@ -366,7 +366,7 @@ export default function FilterModal({
         </div>
 
         {/* ── Footer ── */}
-        <div className="relative z-10 shrink-0 px-5 py-4 border-t border-[var(--c-border)] bg-white flex gap-3">
+        <div className="relative z-10 shrink-0 px-3 sm:px-5 py-3 sm:py-4 border-t border-[var(--c-border)] bg-white flex gap-2 sm:gap-3">
           <button
             onClick={handleReset}
             className="px-5 py-3.5 rounded-[6px] bg-[var(--c-card-alt)] border border-[var(--c-border)] text-[var(--c-text2)] font-semibold text-[12px] uppercase tracking-wider hover:bg-[var(--c-active)] transition-all duration-150 active:scale-95 flex items-center gap-2"

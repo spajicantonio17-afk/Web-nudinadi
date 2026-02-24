@@ -1022,7 +1022,7 @@ function UploadPageInner() {
     return (
       <div className={`fixed inset-x-0 bottom-0 z-[120] transition-all duration-500 transform ${showAiWindow ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setShowAiWindow(false)}></div>
-        <div className="relative bg-[#0F161E] border-t border-white/10 rounded-t-[32px] p-6 shadow-2xl">
+        <div className="relative bg-[#0F161E] border-t border-white/10 rounded-t-[32px] p-4 sm:p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
           <div className="w-12 h-1 bg-gray-800 rounded-full mx-auto mb-8"></div>
 
           <div className="space-y-6">
@@ -1154,9 +1154,9 @@ function UploadPageInner() {
       }>
         {/* AI Image Recognition Info Popup */}
         {showAiInfo && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 md:p-10" onClick={() => setShowAiInfo(false)}>
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6 md:p-10" onClick={() => setShowAiInfo(false)}>
             <div className="absolute inset-0 bg-[var(--c-overlay)] backdrop-blur-sm"></div>
-            <div className="relative bg-[var(--c-card)] border border-[var(--c-border)] rounded-[8px] p-8 max-w-lg w-full shadow-2xl animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+            <div className="relative bg-[var(--c-card)] border border-[var(--c-border)] rounded-[8px] p-5 sm:p-8 max-w-lg w-full shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
@@ -1178,13 +1178,13 @@ function UploadPageInner() {
                 <div className="w-8 h-[2px] bg-blue-500"></div>
                 <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Kako radi?</p>
               </div>
-              <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-6">
                 {[
                   { step: '1', icon: 'fa-camera', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20', label: 'Slikaj', desc: 'Fotografiši artikal koji prodaješ' },
                   { step: '2', icon: 'fa-wand-magic-sparkles', color: 'bg-purple-500/10 text-purple-500 border-purple-500/20', label: 'AI analizira', desc: 'AI prepoznaje artikal i popunjava podatke' },
                   { step: '3', icon: 'fa-check-circle', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', label: 'Gotovo', desc: 'Naslov, kategorija, cijena — sve automatski' },
                 ].map((s) => (
-                  <div key={s.step} className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[6px] p-4 text-center hover:border-blue-500/30 transition-colors">
+                  <div key={s.step} className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[6px] p-3 sm:p-4 text-center sm:text-center hover:border-blue-500/30 transition-colors flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
                     <div className={`w-10 h-10 rounded-[6px] ${s.color} border flex items-center justify-center mx-auto mb-3`}>
                       <i className={`fa-solid ${s.icon} text-sm`}></i>
                     </div>
@@ -1737,12 +1737,12 @@ function UploadPageInner() {
             </div>
 
             {/* Brand Grid */}
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-3 gap-2">
               {filteredBrands.map((brand) => (
                 <button
                   key={brand.name}
                   onClick={() => selectCarBrand(brand.name)}
-                  className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3.5 flex flex-col items-center justify-center gap-2 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30"
+                  className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 sm:p-3.5 flex flex-col items-center justify-center gap-1.5 sm:gap-2 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30"
                 >
                   <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center border border-gray-100 group-hover:scale-110 transition-transform overflow-hidden">
                     {brand.slug ? (
@@ -2297,8 +2297,8 @@ function UploadPageInner() {
       </div>
       {/* AI Moderation Warning Dialog (non-blocking — user can always proceed) */}
       {aiWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 max-w-md w-full overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 max-w-md w-full overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="p-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">

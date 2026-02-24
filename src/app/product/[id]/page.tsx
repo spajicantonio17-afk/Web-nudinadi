@@ -409,9 +409,9 @@ export default function ProductDetailPage() {
                     </div>
                 </button>
                 {galleryImages.length > 1 && (
-                  <div className="flex border-t border-[var(--c-border2)] overflow-x-auto" role="list" aria-label="Slike oglasa">
+                  <div className="flex border-t border-[var(--c-border2)] overflow-x-auto no-scrollbar" role="list" aria-label="Slike oglasa">
                       {galleryImages.map((img, idx) => (
-                          <button key={idx} type="button" role="listitem" onClick={() => setCurrentImageIndex(idx)} aria-label={`Prikaži sliku ${idx + 1}`} aria-pressed={idx === currentImageIndex} className={`w-24 h-24 border-r border-[var(--c-border2)] cursor-pointer shrink-0 ${idx === currentImageIndex ? 'opacity-100 ring-2 ring-inset ring-blue-500' : 'opacity-60 hover:opacity-100'}`}>
+                          <button key={idx} type="button" role="listitem" onClick={() => setCurrentImageIndex(idx)} aria-label={`Prikaži sliku ${idx + 1}`} aria-pressed={idx === currentImageIndex} className={`w-20 h-20 sm:w-24 sm:h-24 border-r border-[var(--c-border2)] cursor-pointer shrink-0 ${idx === currentImageIndex ? 'opacity-100 ring-2 ring-inset ring-blue-500' : 'opacity-60 hover:opacity-100'}`}>
                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                <img src={img} alt={`${product.title} — slika ${idx + 1}`} className="w-full h-full object-cover" />
                           </button>
@@ -421,10 +421,10 @@ export default function ProductDetailPage() {
             </div>
 
             {/* RIGHT: DATA */}
-            <div className="lg:col-span-5 p-6 lg:p-8 flex flex-col">
+            <div className="lg:col-span-5 p-4 sm:p-6 lg:p-8 flex flex-col">
                 <div className="mb-2">
                     <h1 className="text-2xl md:text-3xl font-bold text-[var(--c-text)] leading-tight mb-2">{product.title}</h1>
-                    <div className="flex items-center gap-4 border-b border-[var(--c-border)] pb-4 mb-6">
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 border-b border-[var(--c-border)] pb-4 mb-6">
                         <div className="flex items-center gap-2 text-[var(--c-text2)] text-xs">
                             <i className="fa-solid fa-location-dot text-blue-500"></i>
                             <span>{product.location || 'Nepoznato'}</span>
@@ -433,7 +433,7 @@ export default function ProductDetailPage() {
                             <i className="fa-regular fa-clock"></i>
                             <span>{formatTimeLabel(product.created_at)}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-[var(--c-text2)] text-xs ml-auto">
+                        <div className="flex items-center gap-2 text-[var(--c-text2)] text-xs sm:ml-auto">
                             <i className="fa-regular fa-eye"></i>
                             <span>{product.views_count.toLocaleString()} pregleda</span>
                         </div>
@@ -460,18 +460,18 @@ export default function ProductDetailPage() {
 
                 {/* ACTIONS */}
                 <div className="flex flex-col gap-3 mb-8">
-                    <div className="flex gap-3">
-                        <button onClick={handleContactSeller} aria-label="Pošalji poruku prodavaču" className="flex-1 bg-white text-black h-12 text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors rounded-sm flex items-center justify-center gap-2">
-                            <i className="fa-regular fa-comment" aria-hidden="true"></i> Pošalji Poruku
+                    <div className="flex gap-2 sm:gap-3">
+                        <button onClick={handleContactSeller} aria-label="Pošalji poruku prodavaču" className="flex-1 bg-white text-black h-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-gray-200 transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
+                            <i className="fa-regular fa-comment" aria-hidden="true"></i> <span className="truncate">Poruku</span>
                         </button>
-                        <button aria-label="Pozovi prodavača telefonom" className="flex-1 bg-[var(--c-card)] text-[var(--c-text)] border border-[var(--c-border2)] h-12 text-xs font-bold uppercase tracking-widest hover:bg-[var(--c-hover)] transition-colors rounded-sm flex items-center justify-center gap-2">
-                            <i className="fa-solid fa-phone" aria-hidden="true"></i> Telefon
+                        <button aria-label="Pozovi prodavača telefonom" className="flex-1 bg-[var(--c-card)] text-[var(--c-text)] border border-[var(--c-border2)] h-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-[var(--c-hover)] transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
+                            <i className="fa-solid fa-phone" aria-hidden="true"></i> <span className="truncate">Telefon</span>
                         </button>
                         <button
                             onClick={() => { toggleFavorite(params.id || ''); showToast(isFavorite ? 'Uklonjeno iz favorita' : 'Dodano u favorite'); }}
                             aria-label={isFavorite ? 'Ukloni iz favorita' : 'Dodaj u favorite'}
                             aria-pressed={isFavorite}
-                            className={`w-14 h-12 border border-[var(--c-border2)] flex items-center justify-center transition-colors rounded-sm ${isFavorite ? 'bg-red-500 text-white border-red-500' : 'bg-transparent text-[var(--c-text2)] hover:border-[var(--c-text)]'}`}
+                            className={`w-12 sm:w-14 h-12 shrink-0 border border-[var(--c-border2)] flex items-center justify-center transition-colors rounded-sm ${isFavorite ? 'bg-red-500 text-white border-red-500' : 'bg-transparent text-[var(--c-text2)] hover:border-[var(--c-text)]'}`}
                         >
                             <i className={`${isFavorite ? 'fa-solid' : 'fa-regular'} fa-heart`} aria-hidden="true"></i>
                         </button>
@@ -493,24 +493,24 @@ export default function ProductDetailPage() {
                     <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-3">
                       <i className="fa-solid fa-crown mr-1"></i> Tvoj Oglas
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                       <button
                         onClick={() => router.push(`/upload?edit=${product.id}`)}
-                        className="flex-1 h-10 bg-[var(--c-card)] border border-[var(--c-border2)] text-[var(--c-text)] text-xs font-bold uppercase tracking-widest hover:bg-[var(--c-hover)] transition-colors rounded-sm flex items-center justify-center gap-2"
+                        className="flex-1 min-w-[80px] h-10 bg-[var(--c-card)] border border-[var(--c-border2)] text-[var(--c-text)] text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-[var(--c-hover)] transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2"
                       >
                         <i className="fa-solid fa-pen"></i> Uredi
                       </button>
                       <button
                         onClick={handleMarkAsSold}
                         disabled={product.status === 'sold'}
-                        className="flex-1 h-10 bg-emerald-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-emerald-500 transition-colors rounded-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="flex-1 min-w-[100px] h-10 bg-emerald-600 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-emerald-500 transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50"
                       >
                         <i className="fa-solid fa-check"></i>
-                        {product.status === 'sold' ? 'Prodano' : 'Označi Prodano'}
+                        {product.status === 'sold' ? 'Prodano' : 'Prodano'}
                       </button>
                       <button
                         onClick={handleDeleteProduct}
-                        className="w-10 h-10 border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-sm flex items-center justify-center"
+                        className="w-10 h-10 shrink-0 border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-sm flex items-center justify-center"
                       >
                         <i className="fa-solid fa-trash"></i>
                       </button>
@@ -555,7 +555,7 @@ export default function ProductDetailPage() {
         {/* REVIEW SECTION — nur für eingeloggte Nicht-Verkäufer */}
         {user && product.seller_id !== user.id && (
           <div className="mt-8">
-            <div className="bg-[var(--c-card-alt)] border border-[var(--c-border2)] p-6 md:p-8 rounded-sm">
+            <div className="bg-[var(--c-card-alt)] border border-[var(--c-border2)] p-4 sm:p-6 md:p-8 rounded-sm">
               <h3 className="text-sm font-bold text-[var(--c-text)] uppercase tracking-widest mb-6 flex items-center gap-2">
                 <i className="fa-solid fa-star text-yellow-500" aria-hidden="true"></i> Ocijeni Prodavača
               </h3>
@@ -628,7 +628,7 @@ export default function ProductDetailPage() {
 
         {/* PUBLIC Q&A */}
         <div className="mt-8">
-            <div className="bg-[var(--c-card-alt)] border border-[var(--c-border2)] p-6 md:p-8 rounded-sm">
+            <div className="bg-[var(--c-card-alt)] border border-[var(--c-border2)] p-4 sm:p-6 md:p-8 rounded-sm">
                 <h3 className="text-sm font-bold text-[var(--c-text)] uppercase tracking-widest mb-6 flex items-center gap-2">
                     <i className="fa-regular fa-comments" aria-hidden="true"></i> Javna Pitanja
                 </h3>

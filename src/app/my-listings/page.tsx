@@ -102,10 +102,10 @@ export default function MyListingsPage() {
 
   return (
     <MainLayout title="Moji Oglasi" showSigurnost={false}>
-      <div className="max-w-2xl mx-auto pt-4 pb-24">
+      <div className="max-w-2xl mx-auto pt-4 pb-24 px-3 sm:px-4">
 
         <div className="flex items-center justify-between mb-6">
-          <div>
+          <div className="min-w-0">
             <h1 className="text-xl font-black text-[var(--c-text)]">Moji Oglasi</h1>
             {!isLoading && (
               <p className="text-[11px] text-[var(--c-text3)]">{products.length} ukupno</p>
@@ -142,7 +142,7 @@ export default function MyListingsPage() {
               <div key={p.id} className="relative">
                 {/* Confirm delete overlay */}
                 {confirmDeleteId === p.id && (
-                  <div className="absolute inset-0 z-20 bg-[var(--c-card)] border border-red-500/30 rounded-[18px] flex items-center justify-between px-5 shadow-lg">
+                  <div className="absolute inset-0 z-20 bg-[var(--c-card)] border border-red-500/30 rounded-[18px] flex items-center justify-between px-3 sm:px-5 shadow-lg">
                     <p className="text-[12px] font-bold text-[var(--c-text)]">Obrisati oglas?</p>
                     <div className="flex gap-2">
                       <button
@@ -165,11 +165,11 @@ export default function MyListingsPage() {
                 )}
 
                 {/* Listing row */}
-                <div className={`bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-4 flex items-center gap-4 transition-all ${confirmDeleteId === p.id ? 'opacity-0 pointer-events-none' : ''}`}>
+                <div className={`bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-3 sm:p-4 flex items-center gap-3 sm:gap-4 transition-all ${confirmDeleteId === p.id ? 'opacity-0 pointer-events-none' : ''}`}>
                   {/* Thumbnail */}
                   <div
                     onClick={() => router.push('/product/' + p.id)}
-                    className="w-16 h-16 bg-[var(--c-card-alt)] rounded-[12px] overflow-hidden shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                    className="w-14 h-14 sm:w-16 sm:h-16 bg-[var(--c-card-alt)] rounded-[12px] overflow-hidden shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -198,7 +198,7 @@ export default function MyListingsPage() {
                   <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => setMenuOpenId(menuOpenId === p.id ? null : p.id)}
-                      className="w-8 h-8 rounded-full bg-[var(--c-hover)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors"
+                      className="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-[var(--c-hover)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors"
                     >
                       <i className="fa-solid fa-ellipsis-vertical text-xs"></i>
                     </button>

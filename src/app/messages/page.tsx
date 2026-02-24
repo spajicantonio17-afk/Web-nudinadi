@@ -138,7 +138,7 @@ const ChatBubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
   return (
     <div className={`flex w-full mb-4 ${isMe ? 'justify-end' : 'justify-start'}`}>
       <div className={`
-          max-w-[75%] rounded-[20px] p-4 relative text-[13px] leading-relaxed font-medium shadow-lg
+          max-w-[85%] sm:max-w-[75%] rounded-[16px] sm:rounded-[20px] p-3 sm:p-4 relative text-[13px] leading-relaxed font-medium shadow-lg
           ${isMe
               ? 'bg-blue-600 text-white rounded-tr-sm'
               : 'bg-[var(--c-card)] text-[var(--c-text2)] border border-[var(--c-border)] rounded-tl-sm'
@@ -354,10 +354,10 @@ function MessagesContent() {
 
   return (
     <MainLayout title="Poruke" showSigurnost={false} headerRight={null}>
-      <div className="flex h-[calc(100vh-140px)] max-w-5xl mx-auto w-full gap-4 md:gap-6 overflow-hidden pt-2">
+      <div className="flex h-[calc(100vh-140px)] max-w-5xl mx-auto w-full gap-2 sm:gap-4 md:gap-6 overflow-hidden pt-2">
 
         {/* --- LEFT SIDEBAR (People) --- */}
-        <div className="w-[60px] md:w-[260px] lg:w-[300px] flex flex-col gap-3 shrink-0 transition-all duration-300">
+        <div className="w-[48px] sm:w-[60px] md:w-[260px] lg:w-[300px] flex flex-col gap-2 sm:gap-3 shrink-0 transition-all duration-300">
 
           {/* Search — desktop: full input, mobile: icon-only button */}
           <div className="relative group shrink-0">
@@ -375,7 +375,7 @@ function MessagesContent() {
               />
             </div>
             {/* Mobile search button */}
-            <button className="w-full h-12 bg-[var(--c-card)] rounded-[16px] border border-[var(--c-border)] flex items-center justify-center md:hidden text-[var(--c-text3)]">
+            <button className="w-full h-11 sm:h-12 bg-[var(--c-card)] rounded-[12px] sm:rounded-[16px] border border-[var(--c-border)] flex items-center justify-center md:hidden text-[var(--c-text3)]">
               <i className="fa-solid fa-magnifying-glass"></i>
             </button>
           </div>
@@ -430,11 +430,11 @@ function MessagesContent() {
         </div>
 
         {/* --- RIGHT CHAT AREA --- */}
-        <div className="flex-1 bg-white/50 backdrop-blur-md rounded-[32px] border border-[var(--c-border)] flex flex-col relative overflow-hidden shadow-2xl">
+        <div className="flex-1 min-w-0 bg-white/50 backdrop-blur-md rounded-[20px] sm:rounded-[32px] border border-[var(--c-border)] flex flex-col relative overflow-hidden shadow-2xl">
           {activeContact ? (
             <>
               {/* Chat Header */}
-              <div className="h-20 border-b border-[var(--c-border)] flex items-center justify-between px-6 bg-white/80 shrink-0">
+              <div className="h-16 sm:h-20 border-b border-[var(--c-border)] flex items-center justify-between px-3 sm:px-6 bg-white/80 shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -465,7 +465,7 @@ function MessagesContent() {
               </div>
 
               {/* Messages Scroll Area */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-2 no-scrollbar">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-2 no-scrollbar">
                 {loadingMessages ? (
                   <div className="flex items-center justify-center h-full opacity-50">
                     <i className="fa-solid fa-circle-notch fa-spin text-blue-400 text-xl"></i>
@@ -489,8 +489,8 @@ function MessagesContent() {
               </div>
 
               {/* Input Area */}
-              <div className="p-4 bg-[var(--c-card)] border-t border-[var(--c-border)] shrink-0">
-                <div className="flex items-end gap-3 bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-[24px] p-2 focus-within:border-blue-500/50 transition-colors shadow-lg">
+              <div className="p-2 sm:p-4 bg-[var(--c-card)] border-t border-[var(--c-border)] shrink-0">
+                <div className="flex items-end gap-2 sm:gap-3 bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-[18px] sm:rounded-[24px] p-1.5 sm:p-2 focus-within:border-blue-500/50 transition-colors shadow-lg">
                   <button className="w-10 h-10 rounded-full text-[var(--c-text3)] hover:text-blue-400 hover:bg-[var(--c-hover)] flex items-center justify-center transition-colors">
                     <i className="fa-solid fa-plus"></i>
                   </button>

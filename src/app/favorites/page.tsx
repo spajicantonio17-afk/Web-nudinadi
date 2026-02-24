@@ -78,14 +78,14 @@ export default function FavoritesPage() {
         </button>
       }
     >
-      <div className="pt-2 pb-24">
-        <div className="mb-6 px-2">
+      <div className="pt-2 pb-24 px-2 sm:px-0">
+        <div className="mb-6 px-1 sm:px-2">
           <h1 className="text-2xl font-black text-[var(--c-text)] uppercase tracking-tight mb-1">Moji Favoriti</h1>
           <p className="text-xs text-[var(--c-text3)]">Artikli koje ste označili sa &quot;Sviđa mi se&quot;</p>
         </div>
 
         {loadingFavs ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="bg-[var(--c-card)] rounded-[16px] overflow-hidden border border-[var(--c-border)] animate-pulse">
                 <div className="aspect-square bg-[var(--c-hover)]"></div>
@@ -97,7 +97,7 @@ export default function FavoritesPage() {
             ))}
           </div>
         ) : favorites.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
             {favorites.map((fav) => {
               const p = fav.product;
               if (!p) return null;
@@ -123,9 +123,9 @@ export default function FavoritesPage() {
                       </div>
                     )}
                   </div>
-                  <div className="p-3">
-                    <h3 className="text-[11px] font-bold text-[var(--c-text)] leading-tight line-clamp-1 mb-1">{p.title}</h3>
-                    <div className="flex justify-between items-center mt-2">
+                  <div className="p-2 sm:p-3">
+                    <h3 className="text-[10px] sm:text-[11px] font-bold text-[var(--c-text)] leading-tight line-clamp-2 sm:line-clamp-1 mb-1">{p.title}</h3>
+                    <div className="flex justify-between items-center mt-1 sm:mt-2">
                       <span className="text-[12px] font-black text-[var(--c-text)]">&euro;{Number(p.price).toLocaleString()}</span>
                       <span className="text-[9px] text-[var(--c-text3)]">{formatTimeLabel(p.created_at)}</span>
                     </div>

@@ -74,10 +74,10 @@ export default function CartPage() {
         <i className="fa-solid fa-xmark"></i>
       </button>
     }>
-      <div className="pt-2 pb-24">
+      <div className="pt-2 pb-24 px-2 sm:px-0">
 
         {/* Header */}
-        <div className="mb-6 px-2">
+        <div className="mb-6 px-1 sm:px-2">
           <h1 className="text-2xl font-black text-[var(--c-text)] uppercase tracking-tight mb-1">{t('cart.title')}</h1>
           <p className="text-xs text-[var(--c-text3)]">{t('cart.itemCount', { count: cartCount })}</p>
         </div>
@@ -100,7 +100,7 @@ export default function CartPage() {
                   className="bg-[var(--c-card)] rounded-[16px] overflow-hidden flex border border-[var(--c-border)] relative group active:scale-[0.98] transition-transform cursor-pointer hover:border-[var(--c-border2)]"
                 >
                   {/* Thumbnail */}
-                  <div className="w-24 h-24 shrink-0 overflow-hidden">
+                  <div className="w-20 sm:w-24 h-20 sm:h-24 shrink-0 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/200/200`}
@@ -128,7 +128,7 @@ export default function CartPage() {
                         <button
                           onClick={(e) => handleContactSeller(e, product)}
                           disabled={contactingId === product.id}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full text-[9px] font-bold text-blue-500 hover:bg-blue-500/20 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-2 sm:py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full text-[9px] font-bold text-blue-500 hover:bg-blue-500/20 transition-colors disabled:opacity-50"
                         >
                           {contactingId === product.id
                             ? <i className="fa-solid fa-spinner animate-spin text-[8px]"></i>
@@ -142,7 +142,7 @@ export default function CartPage() {
                   {/* Remove button */}
                   <button
                     onClick={(e) => handleRemove(e, product.id)}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20"
+                    className="absolute top-2 right-2 w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-500/20"
                   >
                     <i className="fa-solid fa-trash-can text-[10px]"></i>
                   </button>
