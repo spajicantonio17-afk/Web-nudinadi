@@ -1,0 +1,7 @@
+{
+  "name": "Copy of NudiNadji",
+  "description": "A premium marketplace exclusively for boys' fashion and lifestyle, featuring a minimalist square-grid design and AI-powered listing tools.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

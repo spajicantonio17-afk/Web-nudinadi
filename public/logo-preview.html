@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>NudiNađi Logo Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f1f5f9;
+      min-height: 100vh;
+      padding: 40px;
+    }
+    h1 { color: #0f172a; margin-bottom: 40px; font-size: 28px; }
+    h2 { color: #334155; margin-bottom: 16px; font-size: 18px; font-weight: 600; }
+    .section {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .logo-item {
+      text-align: center;
+    }
+    .logo-item p {
+      margin-top: 12px;
+      color: #64748b;
+      font-size: 13px;
+    }
+    .dark-bg {
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 40px;
+    }
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 20px;
+    }
+    .comparison > div { text-align: center; }
+    .comparison img { border-radius: 12px; }
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .badge.old { background: #fef3c7; color: #92400e; }
+  </style>
+</head>
+<body>
+  <h1>NudiNađi — Logo Preview</h1>
+
+  <!-- New Icon Logo -->
+  <div class="section">
+    <h2>Neues Icon Logo</h2>
+    <div class="logo-row">
+      <div class="logo-item">
+        <img src="logo-new.svg" width="128" height="128" alt="Logo 128px">
+        <p>128px</p>
+      </div>
+      <div class="logo-item">
+        <img src="logo-new.svg" width="80" height="80" alt="Logo 80px">
+        <p>80px</p>
+      </div>
+      <div class="logo-item">
+        <img src="logo-new.svg" width="48" height="48" alt="Logo 48px">
+        <p>48px</p>
+      </div>
+      <div class="logo-item">
+        <img src="logo-new.svg" width="32" height="32" alt="Logo 32px">
+        <p>32px</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wordmark Logo -->
+  <div class="section">
+    <h2>Wordmark Logo (Horizontal)</h2>
+    <div class="logo-row">
+      <div class="logo-item">
+        <img src="logo-wordmark.svg" height="80" alt="Wordmark">
+        <p>Header-Größe</p>
+      </div>
+    </div>
+    <div style="margin-top: 24px;">
+      <div class="dark-bg">
+        <div class="logo-item">
+          <img src="logo-wordmark.svg" height="60" alt="Wordmark dark" style="filter: brightness(1.5);">
+          <p style="color: #94a3b8;">Auf dunklem Hintergrund</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Favicon -->
+  <div class="section">
+    <h2>Favicon</h2>
+    <div class="logo-row">
+      <div class="logo-item">
+        <img src="favicon.svg" width="64" height="64" alt="Favicon 64px">
+        <p>64px (Original)</p>
+      </div>
+      <div class="logo-item">
+        <img src="favicon.svg" width="32" height="32" alt="Favicon 32px">
+        <p>32px</p>
+      </div>
+      <div class="logo-item">
+        <img src="favicon.svg" width="16" height="16" alt="Favicon 16px">
+        <p>16px</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vergleich: Alt vs Neu -->
+  <div class="section">
+    <h2>Vergleich: Alt vs. Neu</h2>
+    <div class="comparison">
+      <div>
+        <span class="badge old">ALT</span>
+        <br>
+        <img src="logo2.jpeg" width="120" height="120" alt="Altes Logo" style="border-radius: 12px;">
+        <p style="color: #64748b; margin-top: 8px; font-size: 13px;">JPEG, Handshake + NN</p>
+      </div>
+      <div>
+        <span class="badge">NEU</span>
+        <br>
+        <img src="logo-new.svg" width="120" height="120" alt="Neues Logo">
+        <p style="color: #64748b; margin-top: 8px; font-size: 13px;">SVG, Gradient N + Arrows</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Design Details -->
+  <div class="section">
+    <h2>Design Details</h2>
+    <ul style="list-style: none; color: #334155; line-height: 2;">
+      <li>&#x2022; <strong>Gradient:</strong> #1E3A8A → #2563EB → #60A5FA (Deep Blue → Bright Blue)</li>
+      <li>&#x2022; <strong>Konzept:</strong> Fettes "N" mit Austausch-Pfeilen (↑ Nudi/Anbieten, ↓ Nađi/Finden)</li>
+      <li>&#x2022; <strong>Stil:</strong> Modern, geometrisch, Premium-Glow-Effekte</li>
+      <li>&#x2022; <strong>Format:</strong> SVG — skalierbar auf jede Größe</li>
+      <li>&#x2022; <strong>Border Radius:</strong> 112px (passend zum App-Design)</li>
+    </ul>
+  </div>
+</body>
+</html>
