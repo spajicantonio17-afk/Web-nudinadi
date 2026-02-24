@@ -17,17 +17,16 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { showToast } = useToast();
   const [imgError, setImgError] = useState(false);
 
-  // Strip multiplied ID suffix (e.g. "5-12" → "5") for localStorage
-  const baseId = product.id.includes('-') ? product.id.split('-')[0] : product.id;
-  const isFavorite = checkFavorite(baseId);
+  // Use the product ID directly — Supabase UUIDs contain hyphens
+  const isFavorite = checkFavorite(product.id);
 
   const handleCardClick = () => {
-    router.push(`/product/${baseId}`);
+    router.push(`/product/${product.id}`);
   };
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggle(baseId);
+    toggle(product.id);
     showToast(isFavorite ? 'Uklonjeno iz favorita' : 'Dodano u favorite');
   };
 

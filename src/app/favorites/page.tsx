@@ -63,8 +63,6 @@ export default function FavoritesPage() {
     }
   };
 
-  if (isLoading || !isAuthenticated) return null;
-
   return (
     <MainLayout
       title="Sviđanja"

@@ -380,48 +380,7 @@ function UploadPageInner() {
   const isEditMode = !!editProductId;
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.replace('/login?redirect=/upload');
-    }
-  }, [isLoading, isAuthenticated, router]);
-
-  // Show loading while auth state is settling
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (!isAuthenticated) return null;
-
-  // Load existing product data when in edit mode
-  useEffect(() => {
-    if (!editProductId || isLoading) return;
-    getProductById(editProductId)
-      .then(product => {
-        setFormData(prev => ({
-          ...prev,
-          title: product.title,
-          price: String(product.price),
-          category: product.category?.name || '',
-          description: product.description || '',
-          condition: product.condition === 'new' ? 'Novo' : product.condition === 'like_new' ? 'Kao novo' : 'Korišteno',
-          location: product.location || '',
-        }));
-        if (product.attributes && typeof product.attributes === 'object') {
-          setAttributes(product.attributes as AttributeValues);
-        }
-        setExistingImages(product.images || []);
-        setStep('form');
-      })
-      .catch(() => showToast('Oglas nije pronađen', 'error'));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editProductId, isLoading]);
+  // ── All state declarations (must be before any conditional returns) ──
   const [formErrors, setFormErrors] = useState<{ title?: string; price?: string }>({});
   const [images, setImages] = useState<File[]>([]);
   const [showAiWindow, setShowAiWindow] = useState(false);
@@ -444,25 +403,53 @@ function UploadPageInner() {
   const [currency, setCurrency] = useState<'EUR' | 'KM'>('EUR');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [newProductId, setNewProductId] = useState<string | null>(null);
-
-  // Reset to page 1 whenever category changes
-  useEffect(() => {
-    setFormPage(1);
-  }, [formData.category]);
-
   const [standaloneInput, setStandaloneInput] = useState('');
   const [magicSearchInput, setMagicSearchInput] = useState('');
   const [carBrandSearch, setCarBrandSearch] = useState('');
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [catSearch, setCatSearch] = useState('');
-
   const [isPublishing, setIsPublishing] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [showAiInfo, setShowAiInfo] = useState(false);
-
-  // AI moderation warning (non-blocking — user can dismiss and proceed)
   const [aiWarning, setAiWarning] = useState<{ warnings: string[]; recommendation: string; score: number } | null>(null);
   const [aiWarningBypass, setAiWarningBypass] = useState(false);
+
+  // ── All effects (must be before any conditional returns) ──
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/login?redirect=/upload');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  // Load existing product data when in edit mode
+  useEffect(() => {
+    if (!editProductId || isLoading || !isAuthenticated) return;
+    getProductById(editProductId)
+      .then(product => {
+        setFormData(prev => ({
+          ...prev,
+          title: product.title,
+          price: String(product.price),
+          category: product.category?.name || '',
+          description: product.description || '',
+          condition: product.condition === 'new' ? 'Novo' : product.condition === 'like_new' ? 'Kao novo' : 'Korišteno',
+          location: product.location || '',
+        }));
+        if (product.attributes && typeof product.attributes === 'object') {
+          setAttributes(product.attributes as AttributeValues);
+        }
+        setExistingImages(product.images || []);
+        setStep('form');
+      })
+      .catch(() => showToast('Oglas nije pronađen', 'error'));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editProductId, isLoading, isAuthenticated]);
+
+  // Reset to page 1 whenever category changes
+  useEffect(() => {
+    setFormPage(1);
+  }, [formData.category]);
 
   // Load pre-filled data from /link-import page (sessionStorage handoff)
   useEffect(() => {
@@ -488,6 +475,20 @@ function UploadPageInner() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Auth guards (after ALL hooks) ──
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   const selectCategory = (catName: string) => {
     if (catName.toLowerCase().includes('vozila') || catName.toLowerCase() === 'automobili') {

@@ -225,10 +225,9 @@ function HomeContent() {
     window.history.replaceState(null, '', url);
   };
 
-  // Product click handler
+  // Product click handler — use full ID (Supabase UUIDs contain hyphens)
   const handleProductClick = (productId: string) => {
-    const baseId = productId.split('-')[0];
-    router.push(`/product/${baseId}`);
+    router.push(`/product/${productId}`);
   };
 
 

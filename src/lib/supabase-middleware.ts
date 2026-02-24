@@ -30,32 +30,12 @@ export async function updateSession(request: NextRequest) {
   )
 
   // Refresh the session (important for keeping auth alive)
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // Protected routes: redirect to /login if not authenticated
-  const protectedPaths = ['/upload', '/profile', '/messages', '/favorites', '/cart', '/my-listings', '/menu']
-  const isProtected = protectedPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  )
-
-  if (isProtected && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.searchParams.set('redirect', request.nextUrl.pathname)
-    return NextResponse.redirect(url)
-  }
-
-  // Already logged in? Redirect away from auth pages
-  const authPaths = ['/login', '/register']
-  const isAuthPage = authPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  )
-
-  if (isAuthPage && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/'
-    return NextResponse.redirect(url)
-  }
+  // This ensures cookies are refreshed on every request so the client-side
+  // auth context always has a valid session.
+  // NOTE: Auth redirects are handled CLIENT-SIDE by each page's useAuth() guard.
+  // Server-side redirects were removed because they race with session refresh
+  // and cause false redirects to /login on valid sessions.
+  await supabase.auth.getUser()
 
   return supabaseResponse
 }

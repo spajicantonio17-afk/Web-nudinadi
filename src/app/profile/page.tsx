@@ -303,7 +303,17 @@ function ProfileContent() {
     router.replace('/');
   };
 
-  if (isLoading || !isAuthenticated) return null;
+  if (isLoading) {
+    return (
+      <MainLayout title="Moj Profil" showSigurnost={false}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   const displayName = user?.username || 'Gost';
   const displayLocation = user?.location || 'Nepoznato';
@@ -337,18 +347,6 @@ function ProfileContent() {
     Dojmovi: totalReviews,
     Arhiv: draftProducts.length,
   };
-
-  if (isLoading) {
-    return (
-      <MainLayout title="Moj Profil" showSigurnost={false}>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (!isAuthenticated) return null;
 
   return (
     <MainLayout title="Moj Profil" showSigurnost={false}>
