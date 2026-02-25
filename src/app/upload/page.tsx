@@ -120,84 +120,6 @@ const analyzeRawInput = async (input: string): Promise<AiAnalysisResult> => {
     return { title: input, category: 'Ostalo', description: '' };
 };
 
-const fetchVehicleSeries = async (brand: string, year: number, fuel: string, vType: string) => {
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const res = await Promise.race([
-        fetch('/api/ai/enhance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'vehicle-series', brand, year, fuel, vehicleType: vType }),
-        }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000)),
-      ]);
-      const json = await res.json();
-      if (json.success && json.data?.series && json.data.series.length > 0) {
-        return json.data.series;
-      }
-    } catch {
-      // Retry
-    }
-  }
-  // Both attempts failed → fallback to local data
-  const localModels = findBrandModelsForType(brand, vType as VehicleType);
-  if (localModels.length > 0) {
-    return localModels.map(m => ({ name: m.name, years: '' }));
-  }
-  return [];
-};
-
-const fetchVehicleEngines = async (brand: string, series: string, year: number, fuel: string, vType: string) => {
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const res = await Promise.race([
-        fetch('/api/ai/enhance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'vehicle-engines', brand, series, year, fuel, vehicleType: vType }),
-        }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000)),
-      ]);
-      const json = await res.json();
-      if (json.success && json.data?.engines && json.data.engines.length > 0) {
-        return json.data.engines;
-      }
-    } catch {
-      // Retry
-    }
-  }
-  return [];
-};
-
-const validateEngine = async (brand: string, series: string, year: number, fuel: string, engine: string, vType: string) => {
-  try {
-    const res = await fetch('/api/ai/enhance', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'validate-engine', brand, series, year, fuel, engine, vehicleType: vType }),
-    });
-    const json = await res.json();
-    if (json.success && json.data) return json.data;
-    return { valid: true };
-  } catch { return { valid: true }; }
-};
-
-const fetchModelDetails = async (brand: string, model: string, vType: string) => {
-  try {
-    const res = await Promise.race([
-      fetch('/api/ai/enhance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'model-details', brand, model, vehicleType: vType }),
-      }),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000)),
-    ]);
-    const json = await res.json();
-    if (json.success && json.data?.details) return json.data.details;
-    return [];
-  } catch { return []; }
-};
-
 // Fuel options per vehicle type
 const FUEL_OPTIONS: Record<string, string[]> = {
   car: ['Benzin', 'Dizel', 'Električni', 'Hibrid', 'Plug-in Hibrid', 'LPG/CNG'],
@@ -1505,7 +1427,7 @@ function UploadPageInner() {
   const [partsVehicleType, setPartsVehicleType] = useState<VehicleType>('car');
   const [partsCategory, setPartsCategory] = useState('');
   const [partsModelDetail, setPartsModelDetail] = useState('');
-  const [aiModelDetails, setAiModelDetails] = useState<string[]>([]);
+  const [partsModelVariants, setPartsModelVariants] = useState<string[]>([]);
   const [partsDetailSearch, setPartsDetailSearch] = useState('');
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [catSearch, setCatSearch] = useState('');
@@ -1519,19 +1441,16 @@ function UploadPageInner() {
   const [breadcrumb, setBreadcrumb] = useState<Array<{ label: string; step: UploadStep; subStep?: string }>>([]);
 
   // ── Car flow sub-steps state ──
-  const [carFlowStep, setCarFlowStep] = useState<'brand' | 'year-fuel' | 'series' | 'engine'>('brand');
+  const [carFlowStep, setCarFlowStep] = useState<'brand' | 'model' | 'variant'>('brand');
+  const [vehicleModel, setVehicleModel] = useState<string>('');
+  const [vehicleVariant, setVehicleVariant] = useState<string>('');
   const [vehicleYear, setVehicleYear] = useState<number>(new Date().getFullYear());
   const [vehicleFuel, setVehicleFuel] = useState<string>('');
-  const [vehicleSeries, setVehicleSeries] = useState<string>('');
-  const [vehicleEngine, setVehicleEngine] = useState<string>('');
-  const [aiSeries, setAiSeries] = useState<Array<{ name: string; years?: string }>>([]);
-  const [aiEngines, setAiEngines] = useState<Array<{ name: string; power: string; displacement?: string }>>([]);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [manualEngineInput, setManualEngineInput] = useState('');
-  const [manualSeriesInput, setManualSeriesInput] = useState('');
-  const [showManualSeries, setShowManualSeries] = useState(false);
-  const [showManualEngine, setShowManualEngine] = useState(false);
-  const [engineWarning, setEngineWarning] = useState<{ message: string; suggestion?: string } | null>(null);
+  const [modelSearchLocal, setModelSearchLocal] = useState('');
+  const [manualModelInput, setManualModelInput] = useState('');
+  const [showManualModel, setShowManualModel] = useState(false);
+  const [manualVariantInput, setManualVariantInput] = useState('');
+  const [showManualVariant, setShowManualVariant] = useState(false);
 
   // ── Memoized values ──
   const filteredCategories = useMemo(() =>
@@ -3271,17 +3190,19 @@ function UploadPageInner() {
             {/* Modell-Liste */}
             <div className="grid grid-cols-2 gap-2">
               {filteredModels.map((model, idx) => (
-                <button key={idx} onClick={async () => {
+                <button key={idx} onClick={() => {
                   setPartsVehicleModel(model.name);
                   setAttributes(prev => ({ ...prev, zaModel: model.name }));
                   setModelSearch('');
                   setBreadcrumb(prev => [...prev, { label: model.name, step: 'parts-sub', subStep: 'model' }]);
-                  // Fetch model details via AI
-                  setAiLoading(true);
-                  const details = await fetchModelDetails(partsVehicleBrand, model.name, partsVehicleType);
-                  setAiModelDetails(details);
-                  setAiLoading(false);
-                  setPartsSubStep('model-detail');
+                  // Use local variants
+                  const variants = model.variants || [];
+                  setPartsModelVariants(variants);
+                  if (variants.length > 0) {
+                    setPartsSubStep('model-detail');
+                  } else {
+                    setPartsSubStep('category');
+                  }
                 }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 text-left group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-amber-500/30">
                   <span className="text-[11px] font-bold text-[var(--c-text)] leading-tight">{model.name}</span>
                 </button>
@@ -3318,25 +3239,18 @@ function UploadPageInner() {
               <p className="text-sm text-[var(--c-text2)] font-medium">Odaberite specifičnu varijantu</p>
             </div>
 
-            {aiLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <i className="fa-solid fa-spinner fa-spin text-amber-500 text-xl"></i>
-                <span className="ml-2 text-sm text-[var(--c-text3)]">Učitavanje...</span>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-2">
-                {aiModelDetails.map((detail, idx) => (
-                  <button key={idx} onClick={() => {
-                    setPartsModelDetail(detail);
-                    setAttributes(prev => ({ ...prev, zaModelDetail: detail }));
-                    setBreadcrumb(prev => [...prev, { label: detail, step: 'parts-sub', subStep: 'model-detail' }]);
-                    setPartsSubStep('category');
-                  }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-amber-500/30">
-                    <span className="text-[12px] font-bold text-[var(--c-text)]">{detail}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-3 gap-2">
+              {partsModelVariants.map((detail, idx) => (
+                <button key={idx} onClick={() => {
+                  setPartsModelDetail(detail);
+                  setAttributes(prev => ({ ...prev, zaModelDetail: detail }));
+                  setBreadcrumb(prev => [...prev, { label: detail, step: 'parts-sub', subStep: 'model-detail' }]);
+                  setPartsSubStep('category');
+                }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-amber-500/30">
+                  <span className="text-[12px] font-bold text-[var(--c-text)]">{detail}</span>
+                </button>
+              ))}
+            </div>
 
             {/* Preskoči */}
             <button onClick={() => {
@@ -3613,8 +3527,8 @@ function UploadPageInner() {
     return renderSubSelection(parentSubCategory, 'Odaberite detaljnije', parentColor, details, selectDetailItem, 'Pretraži...', 'NudiNađi AI', backStep);
   }
 
-  // 3. Car Method (VIN/AI + Brand Picker) — now dynamic per vehicleType
-  // 3. Car Method — 4 sub-steps: brand → year-fuel → series → engine
+  // 3. Car Method (VIN + Brand Picker) — dynamic per vehicleType
+  // 3. Car Method — 3 sub-steps: brand → model → variant (all local data)
   if (step === 'car-method') {
     const vehicleLabels: Record<string, { title: string; icon: string; searchPlaceholder: string }> = {
       car: { title: 'Odaberi marku automobila', icon: 'fa-car', searchPlaceholder: 'Pretraži marke automobila...' },
@@ -3629,15 +3543,9 @@ function UploadPageInner() {
     const vLabel = vehicleLabels[vehicleType] || vehicleLabels.car;
 
     const handleBackFromCarFlow = () => {
-      if (carFlowStep === 'engine') {
-        // Motorcycle/ATV skip the series step — go back to year-fuel
-        if (vehicleType === 'motorcycle' || vehicleType === 'atv') { setCarFlowStep('year-fuel'); }
-        else { setCarFlowStep('series'); }
-      }
-      else if (carFlowStep === 'series') { setCarFlowStep('year-fuel'); }
-      else if (carFlowStep === 'year-fuel') { setCarFlowStep('brand'); }
+      if (carFlowStep === 'variant') { setCarFlowStep('model'); }
+      else if (carFlowStep === 'model') { setCarFlowStep('brand'); }
       else if (truckSubType) {
-        // Came from truck-sub, go back there
         setStep('truck-sub');
         setTruckSubType('');
         setBreadcrumb([{ label: 'Vozila', step: 'vehicle-sub' }, { label: 'Teretna vozila', step: 'truck-sub' }]);
@@ -3726,7 +3634,7 @@ function UploadPageInner() {
                       const base = prev.length > 0 ? prev : [{ label: 'Vozila', step: 'vehicle-sub' as UploadStep }];
                       return [...base, { label: brand.name, step: 'car-method' as UploadStep }];
                     });
-                    setCarFlowStep('year-fuel');
+                    setCarFlowStep('model');
                   }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 sm:p-3.5 flex flex-col items-center justify-center gap-1.5 sm:gap-2 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30">
                     <div className="w-12 h-12 rounded-xl bg-[var(--c-card)] flex items-center justify-center border border-[var(--c-border)] group-hover:scale-110 transition-transform overflow-hidden">
                       {brand.name === 'Ostalo' ? (
@@ -3761,7 +3669,7 @@ function UploadPageInner() {
                       const base = prev.length > 0 ? prev : [{ label: 'Vozila', step: 'vehicle-sub' as UploadStep }];
                       return [...base, { label: name, step: 'car-method' as UploadStep }];
                     });
-                    setCarFlowStep('year-fuel');
+                    setCarFlowStep('model');
                   }} className="mt-3 text-[11px] font-bold text-blue-500 hover:text-blue-400 transition-colors">
                     Koristi &quot;{carBrandSearch.trim()}&quot; kao marku
                   </button>
@@ -3773,15 +3681,16 @@ function UploadPageInner() {
       );
     }
 
-    // ── Sub-Step: YEAR + FUEL ──
-    if (carFlowStep === 'year-fuel') {
+    // ── Sub-Step: MODEL (local data) ──
+    if (carFlowStep === 'model') {
       const years = Array.from({ length: new Date().getFullYear() - 1970 + 1 }, (_, i) => new Date().getFullYear() - i);
       const fuels = FUEL_OPTIONS[vehicleType] || FUEL_OPTIONS.car;
       const isBicycle = vehicleType === 'bicycle';
       const fuelOrDrive = isBicycle ? BICYCLE_DRIVE_TYPES : fuels;
-      const canProceed = isBicycle ? true : !!vehicleFuel;
-      const isMotoOrAtv = vehicleType === 'motorcycle' || vehicleType === 'atv';
-      const localModels = isMotoOrAtv ? findBrandModelsForType(formData.brand, vehicleType) : [];
+      const localModels = findBrandModelsForType(formData.brand, vehicleType);
+      const filteredLocalModels = modelSearchLocal.trim()
+        ? localModels.filter(m => m.name.toLowerCase().includes(modelSearchLocal.toLowerCase()))
+        : localModels;
 
       return (
         <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
@@ -3823,95 +3732,79 @@ function UploadPageInner() {
               </div>
             )}
 
-            {/* Motorcycle/ATV: Local model selection instead of Dalje/Skip buttons */}
-            {isMotoOrAtv ? (
-              <div>
-                <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-3 px-1">Odaberi model</h2>
-                {localModels.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {localModels.map((model) => (
-                      <button key={model.name} onClick={() => {
-                        setVehicleSeries(model.name);
-                        setAttributes(prev => ({ ...prev, marka: formData.brand, model: model.name, godiste: vehicleYear.toString(), gorivo: vehicleFuel }));
-                        setFormData(prev => ({ ...prev, title: `${formData.brand} ${model.name} ${vehicleYear}` }));
-                        setBreadcrumb(prev => [...prev, { label: `${vehicleYear} • ${model.name}`, step: 'form' as UploadStep }]);
+            {/* Odaberi model */}
+            <div>
+              <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-3 px-1">Odaberi model</h2>
+              {localModels.length > 5 && (
+                <div className="relative mb-3">
+                  <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[var(--c-text-muted)] text-xs"></i>
+                  <input type="text" value={modelSearchLocal} onChange={e => setModelSearchLocal(e.target.value)} placeholder="Pretraži modele..." className="w-full pl-9 pr-4 py-2.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:border-blue-500/50 focus:outline-none" />
+                </div>
+              )}
+              {filteredLocalModels.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {filteredLocalModels.map((model) => (
+                    <button key={model.name} onClick={() => {
+                      setVehicleModel(model.name);
+                      setAttributes(prev => ({ ...prev, marka: formData.brand, model: model.name, godiste: vehicleYear.toString(), gorivo: vehicleFuel }));
+                      setFormData(prev => ({ ...prev, title: `${formData.brand} ${model.name} ${vehicleYear}` }));
+                      setBreadcrumb(prev => [...prev, { label: `${vehicleYear} • ${model.name}`, step: 'car-method' as UploadStep }]);
+                      // If model has variants → go to variant step, else → form
+                      if (model.variants && model.variants.length > 0) {
+                        setCarFlowStep('variant');
+                      } else {
                         setStep('form');
-                      }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 text-left group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30">
-                        <span className="text-[12px] font-bold text-[var(--c-text)] block">{model.name}</span>
-                        {model.variants && model.variants.length > 0 && <span className="text-[9px] text-[var(--c-text3)]">{model.variants.length} varijanti</span>}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-[var(--c-text3)] text-center py-4">Nema lokalnih modela za ovu marku.</p>
-                )}
-                {/* Manual model input for motorcycle/atv */}
-                {!showManualSeries ? (
-                  <button onClick={() => setShowManualSeries(true)} className="w-full mt-3 py-3 text-center text-[11px] font-bold text-blue-500 border border-dashed border-blue-500/30 rounded-xl hover:bg-blue-500/5">
-                    Ručni unos modela →
-                  </button>
-                ) : (
-                  <div className="space-y-3 mt-3">
-                    <input type="text" value={manualSeriesInput} onChange={e => setManualSeriesInput(e.target.value)} placeholder="Unesite model ručno..." className="w-full px-4 py-3 bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:border-blue-500/50 focus:outline-none" />
-                    <button disabled={!manualSeriesInput.trim()} onClick={() => {
-                      const name = manualSeriesInput.trim();
-                      setVehicleSeries(name);
-                      setAttributes(prev => ({ ...prev, marka: formData.brand, model: name, godiste: vehicleYear.toString(), gorivo: vehicleFuel }));
-                      setFormData(prev => ({ ...prev, title: `${formData.brand} ${name} ${vehicleYear}` }));
-                      setBreadcrumb(prev => [...prev, { label: `${vehicleYear} • ${name}`, step: 'form' as UploadStep }]);
-                      setManualSeriesInput('');
-                      setShowManualSeries(false);
-                      setStep('form');
-                    }} className="w-full py-3 rounded-xl text-[12px] font-bold text-white blue-gradient shadow-lg shadow-blue-500/20 disabled:opacity-40">
-                      Dalje →
+                      }
+                    }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 text-left group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30">
+                      <span className="text-[12px] font-bold text-[var(--c-text)] block">{model.name}</span>
+                      {model.variants && model.variants.length > 0 && <span className="text-[9px] text-[var(--c-text3)]">{model.variants.length} varijanti</span>}
                     </button>
-                  </div>
-                )}
-                {/* Skip to form for motorcycle/atv */}
-                <button onClick={() => {
-                  setAttributes(prev => ({ ...prev, marka: formData.brand, godiste: vehicleYear.toString(), gorivo: vehicleFuel }));
-                  setBreadcrumb(prev => [...prev, { label: `${vehicleYear}`, step: 'form' as UploadStep }]);
-                  setStep('form');
-                }} className="w-full mt-2 py-2 text-center text-[10px] font-bold text-[var(--c-text3)] hover:text-blue-500 transition-colors">
-                  Preskoči → ručni unos
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* Dalje Button — for car/truck/camper/boat */}
-                <button
-                  disabled={!canProceed || aiLoading}
-                  onClick={async () => {
-                    setAiLoading(true);
-                    const series = await fetchVehicleSeries(formData.brand, vehicleYear, vehicleFuel, vehicleType);
-                    setAiSeries(series);
-                    setAiLoading(false);
-                    setBreadcrumb(prev => [...prev, { label: `${vehicleYear}${vehicleFuel ? ' • ' + vehicleFuel : ''}`, step: 'car-method' as UploadStep }]);
-                    setCarFlowStep('series');
-                  }}
-                  className="w-full py-3.5 rounded-xl text-[13px] font-bold text-white blue-gradient shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-2"
-                >
-                  {aiLoading ? <><i className="fa-solid fa-spinner animate-spin text-sm"></i> AI traži modele...</> : <>Dalje <i className="fa-solid fa-arrow-right text-sm"></i></>}
-                </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[var(--c-text3)] text-center py-4">Nema lokalnih modela za ovu marku.</p>
+              )}
 
-                {/* Skip to form */}
-                <button onClick={() => {
-                  setAttributes(prev => ({ ...prev, godiste: vehicleYear.toString(), gorivo: vehicleFuel }));
-                  setBreadcrumb(prev => [...prev, { label: `${vehicleYear}`, step: 'form' as UploadStep }]);
-                  setStep('form');
-                }} className="w-full py-2 text-center text-[10px] font-bold text-[var(--c-text3)] hover:text-blue-500 transition-colors">
-                  Preskoči AI → ručni unos
+              {/* Manual model input */}
+              {!showManualModel ? (
+                <button onClick={() => setShowManualModel(true)} className="w-full mt-3 py-3 text-center text-[11px] font-bold text-blue-500 border border-dashed border-blue-500/30 rounded-xl hover:bg-blue-500/5">
+                  Ručni unos modela →
                 </button>
-              </>
-            )}
+              ) : (
+                <div className="space-y-3 mt-3">
+                  <input type="text" value={manualModelInput} onChange={e => setManualModelInput(e.target.value)} placeholder="Unesite model ručno..." className="w-full px-4 py-3 bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:border-blue-500/50 focus:outline-none" />
+                  <button disabled={!manualModelInput.trim()} onClick={() => {
+                    const name = manualModelInput.trim();
+                    setVehicleModel(name);
+                    setAttributes(prev => ({ ...prev, marka: formData.brand, model: name, godiste: vehicleYear.toString(), gorivo: vehicleFuel }));
+                    setFormData(prev => ({ ...prev, title: `${formData.brand} ${name} ${vehicleYear}` }));
+                    setBreadcrumb(prev => [...prev, { label: `${vehicleYear} • ${name}`, step: 'form' as UploadStep }]);
+                    setStep('form');
+                  }} className="w-full py-3 rounded-xl text-[12px] font-bold text-white blue-gradient shadow-lg shadow-blue-500/20 disabled:opacity-40">
+                    Dalje →
+                  </button>
+                </div>
+              )}
 
+              {/* Skip to form */}
+              <button onClick={() => {
+                setAttributes(prev => ({ ...prev, marka: formData.brand, godiste: vehicleYear.toString(), gorivo: vehicleFuel }));
+                setBreadcrumb(prev => [...prev, { label: `${vehicleYear}`, step: 'form' as UploadStep }]);
+                setStep('form');
+              }} className="w-full mt-2 py-2 text-center text-[10px] font-bold text-[var(--c-text3)] hover:text-blue-500 transition-colors">
+                Preskoči → ručni unos
+              </button>
+            </div>
           </div>
         </MainLayout>
       );
     }
 
-    // ── Sub-Step: SERIES (AI generated) ──
-    if (carFlowStep === 'series') {
+    // ── Sub-Step: VARIANT (local data) ──
+    if (carFlowStep === 'variant') {
+      const modelData = findBrandModelsForType(formData.brand, vehicleType).find(m => m.name === vehicleModel);
+      const variants = modelData?.variants || [];
+
       return (
         <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
           <button onClick={handleBackFromCarFlow} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
@@ -3920,190 +3813,84 @@ function UploadPageInner() {
             {renderBreadcrumb()}
 
             <div className="px-1 mb-2">
-              <div className="flex items-center gap-2 mb-1">
-                <i className="fa-solid fa-bolt text-blue-500 text-xs"></i>
-                <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px]">AI preporučuje modele</h2>
-              </div>
-              <p className="text-sm text-[var(--c-text2)] font-medium">Odaberite model/seriju za {formData.brand}</p>
+              <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-1">Odaberi varijantu</h2>
+              <p className="text-sm text-[var(--c-text2)] font-medium">{formData.brand} {vehicleModel} {vehicleYear}</p>
             </div>
 
-            {aiLoading && (
-              <div className="flex items-center justify-center py-12">
-                <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
-              </div>
-            )}
-
-            {!aiLoading && aiSeries.length > 0 && (
+            {variants.length > 0 && (
               <div className="grid grid-cols-2 gap-2">
-                {aiSeries.map((s, idx) => (
-                  <button key={idx} onClick={async () => {
-                    setVehicleSeries(s.name);
-                    setBreadcrumb(prev => [...prev, { label: s.name, step: 'car-method' as UploadStep }]);
-                    setAiLoading(true);
-                    const engines = await fetchVehicleEngines(formData.brand, s.name, vehicleYear, vehicleFuel, vehicleType);
-                    setAiEngines(engines);
-                    setAiLoading(false);
-                    setCarFlowStep('engine');
-                  }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 text-left group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30">
-                    <span className="text-[12px] font-bold text-[var(--c-text)] block">{s.name}</span>
-                    {s.years && <span className="text-[9px] text-[var(--c-text3)]">{s.years}</span>}
+                {variants.map((v, idx) => (
+                  <button key={idx} onClick={() => {
+                    setVehicleVariant(v);
+                    setAttributes(prev => ({
+                      ...prev,
+                      marka: formData.brand,
+                      model: vehicleModel,
+                      varijanta: v,
+                      godiste: vehicleYear.toString(),
+                      gorivo: vehicleFuel,
+                    }));
+                    setFormData(prev => ({
+                      ...prev,
+                      title: `${formData.brand} ${vehicleModel} ${v} ${vehicleYear}`,
+                    }));
+                    setBreadcrumb(prev => [...prev, { label: v, step: 'form' as UploadStep }]);
+                    setStep('form');
+                  }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30">
+                    <span className="text-[12px] font-bold text-[var(--c-text)]">{v}</span>
                   </button>
                 ))}
               </div>
             )}
 
-            {!aiLoading && aiSeries.length === 0 && (
+            {variants.length === 0 && (
               <div className="text-center py-8">
-                <i className="fa-solid fa-circle-exclamation text-2xl text-[var(--c-text-muted)] mb-3 block"></i>
-                <p className="text-sm text-[var(--c-text3)]">AI nije pronašao modele. Unesite ručno.</p>
+                <p className="text-sm text-[var(--c-text3)]">Nema varijanti za ovaj model.</p>
               </div>
             )}
 
-            {/* Manual input */}
-            {!showManualSeries ? (
-              <button onClick={() => setShowManualSeries(true)} className="w-full py-3 text-center text-[11px] font-bold text-blue-500 border border-dashed border-blue-500/30 rounded-xl hover:bg-blue-500/5">
-                Ručni unos modela →
+            {/* Manual variant input */}
+            {!showManualVariant ? (
+              <button onClick={() => setShowManualVariant(true)} className="w-full py-3 text-center text-[11px] font-bold text-blue-500 border border-dashed border-blue-500/30 rounded-xl hover:bg-blue-500/5">
+                Ručni unos varijante →
               </button>
             ) : (
               <div className="space-y-3">
-                <div className="relative">
-                  <input type="text" value={manualSeriesInput} onChange={e => setManualSeriesInput(e.target.value)} placeholder="Unesite model/seriju ručno..." className="w-full px-4 py-3 bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:border-blue-500/50 focus:outline-none" />
-                </div>
-                <button disabled={!manualSeriesInput.trim()} onClick={async () => {
-                  setVehicleSeries(manualSeriesInput.trim());
-                  setBreadcrumb(prev => [...prev, { label: manualSeriesInput.trim(), step: 'car-method' as UploadStep }]);
-                  setAiLoading(true);
-                  const engines = await fetchVehicleEngines(formData.brand, manualSeriesInput.trim(), vehicleYear, vehicleFuel, vehicleType);
-                  setAiEngines(engines);
-                  setAiLoading(false);
-                  setCarFlowStep('engine');
-                  setManualSeriesInput('');
-                  setShowManualSeries(false);
+                <input type="text" value={manualVariantInput} onChange={e => setManualVariantInput(e.target.value)} placeholder="Unesite varijantu ručno (npr. 2.0 TDI 150 KS)..." className="w-full px-4 py-3 bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:border-blue-500/50 focus:outline-none" />
+                <button disabled={!manualVariantInput.trim()} onClick={() => {
+                  const v = manualVariantInput.trim();
+                  setVehicleVariant(v);
+                  setAttributes(prev => ({
+                    ...prev,
+                    marka: formData.brand,
+                    model: vehicleModel,
+                    varijanta: v,
+                    godiste: vehicleYear.toString(),
+                    gorivo: vehicleFuel,
+                  }));
+                  setFormData(prev => ({
+                    ...prev,
+                    title: `${formData.brand} ${vehicleModel} ${v} ${vehicleYear}`,
+                  }));
+                  setBreadcrumb(prev => [...prev, { label: v, step: 'form' as UploadStep }]);
+                  setStep('form');
                 }} className="w-full py-3 rounded-xl text-[12px] font-bold text-white blue-gradient shadow-lg shadow-blue-500/20 disabled:opacity-40">
                   Dalje →
                 </button>
               </div>
             )}
-          </div>
-        </MainLayout>
-      );
-    }
 
-    // ── Sub-Step: ENGINE (AI generated) ──
-    if (carFlowStep === 'engine') {
-      const proceedWithEngine = (engineName: string) => {
-        setVehicleEngine(engineName);
-        const matched = aiEngines.find(e => e.name === engineName);
-        setAttributes(prev => ({
-          ...prev,
-          marka: formData.brand,
-          model: vehicleSeries,
-          motor: engineName,
-          snaga: matched?.power || '',
-          kubikaza: matched?.displacement || '',
-          godiste: vehicleYear.toString(),
-          gorivo: vehicleFuel,
-        }));
-        setFormData(prev => ({
-          ...prev,
-          title: `${formData.brand} ${vehicleSeries} ${engineName} ${vehicleYear}`,
-        }));
-        setBreadcrumb(prev => [...prev, { label: engineName, step: 'form' as UploadStep }]);
-        setStep('form');
-      };
-
-      return (
-        <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={handleBackFromCarFlow} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
-          <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
-            {renderBreadcrumb()}
-
-            <div className="px-1 mb-2">
-              <div className="flex items-center gap-2 mb-1">
-                <i className="fa-solid fa-bolt text-blue-500 text-xs"></i>
-                <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px]">Dostupni motori</h2>
-              </div>
-              <p className="text-sm text-[var(--c-text2)] font-medium">{formData.brand} {vehicleSeries} {vehicleYear}</p>
-            </div>
-
-            {aiLoading && (
-              <div className="flex items-center justify-center py-12">
-                <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
-              </div>
-            )}
-
-            {!aiLoading && aiEngines.length > 0 && (
-              <div className="space-y-2">
-                {aiEngines.map((eng, idx) => (
-                  <button key={idx} onClick={() => proceedWithEngine(eng.name)} className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex items-center justify-between group active:scale-[0.98] transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30">
-                    <div className="text-left">
-                      <span className="text-[13px] font-bold text-[var(--c-text)] block">{eng.name}</span>
-                      {eng.displacement && <span className="text-[10px] text-[var(--c-text3)]">{eng.displacement}</span>}
-                    </div>
-                    <span className="text-[12px] font-black text-blue-500 shrink-0">{eng.power}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {!aiLoading && aiEngines.length === 0 && (
-              <div className="text-center py-8">
-                <i className="fa-solid fa-circle-exclamation text-2xl text-[var(--c-text-muted)] mb-3 block"></i>
-                <p className="text-sm text-[var(--c-text3)]">AI nije pronašao motore. Unesite ručno.</p>
-              </div>
-            )}
-
-            {/* Engine warning from validation */}
-            {engineWarning && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <i className="fa-solid fa-triangle-exclamation text-amber-500"></i>
-                  <span className="text-[12px] font-bold text-amber-500">{engineWarning.message}</span>
-                </div>
-                {engineWarning.suggestion && (
-                  <p className="text-[11px] text-[var(--c-text2)]">Predloženi motor: <strong>{engineWarning.suggestion}</strong></p>
-                )}
-                <p className="text-[11px] text-[var(--c-text3)]">Jeste li sigurni da je ovo tačno?</p>
-                <div className="flex gap-2">
-                  <button onClick={() => { proceedWithEngine(manualEngineInput); setEngineWarning(null); }} className="flex-1 py-2 text-[11px] font-bold text-white bg-amber-500 rounded-lg">Da, siguran sam</button>
-                  <button onClick={() => setEngineWarning(null)} className="flex-1 py-2 text-[11px] font-bold text-[var(--c-text3)] bg-[var(--c-hover)] rounded-lg">Promijeni</button>
-                </div>
-              </div>
-            )}
-
-            {/* Manual input */}
-            {!showManualEngine ? (
-              <button onClick={() => setShowManualEngine(true)} className="w-full py-3 text-center text-[11px] font-bold text-blue-500 border border-dashed border-blue-500/30 rounded-xl hover:bg-blue-500/5">
-                Ručni unos motora →
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <input type="text" value={manualEngineInput} onChange={e => setManualEngineInput(e.target.value)} placeholder="Unesite motor ručno (npr. 2.0 TDI 150 KS)..." className="w-full px-4 py-3 bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:border-blue-500/50 focus:outline-none" />
-                <button disabled={!manualEngineInput.trim()} onClick={async () => {
-                  const result = await validateEngine(formData.brand, vehicleSeries, vehicleYear, vehicleFuel, manualEngineInput.trim(), vehicleType);
-                  if (result.valid === false) {
-                    setEngineWarning({ message: 'Ovaj motor nije pronađen u našem sistemu.', suggestion: result.suggestion });
-                  } else {
-                    proceedWithEngine(manualEngineInput.trim());
-                  }
-                }} className="w-full py-3 rounded-xl text-[12px] font-bold text-white blue-gradient shadow-lg shadow-blue-500/20 disabled:opacity-40">
-                  Provjeri i nastavi →
-                </button>
-              </div>
-            )}
-
-            {/* Skip engine selection */}
+            {/* Skip variant */}
             <button onClick={() => {
               setAttributes(prev => ({
-                ...prev, marka: formData.brand, model: vehicleSeries,
+                ...prev, marka: formData.brand, model: vehicleModel,
                 godiste: vehicleYear.toString(), gorivo: vehicleFuel,
               }));
-              setFormData(prev => ({ ...prev, title: `${formData.brand} ${vehicleSeries} ${vehicleYear}` }));
-              setBreadcrumb(prev => [...prev, { label: 'Bez motora', step: 'form' as UploadStep }]);
+              setFormData(prev => ({ ...prev, title: `${formData.brand} ${vehicleModel} ${vehicleYear}` }));
+              setBreadcrumb(prev => [...prev, { label: 'Bez varijante', step: 'form' as UploadStep }]);
               setStep('form');
             }} className="w-full py-2 text-center text-[10px] font-bold text-[var(--c-text3)] hover:text-blue-500 transition-colors">
-              Preskoči motor → ručni unos
+              Preskoči varijantu → ručni unos
             </button>
           </div>
         </MainLayout>
