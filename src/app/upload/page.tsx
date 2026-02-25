@@ -14,8 +14,9 @@ import { getSupabase } from '@/lib/supabase';
 import type { ProductCondition } from '@/lib/database.types';
 import type { AttributeValues } from '@/lib/category-attributes';
 import { getCategoryFields } from '@/lib/category-attributes';
-import { findBrandModels } from '@/lib/vehicle-models';
+import { findBrandModels, getBrandsForVehicleType, findBrandModelsForType, resolveVehicleType, type VehicleType } from '@/lib/vehicle-models';
 import VehicleModelPicker from '@/components/upload/VehicleModelPicker';
+import AiModelVerifier from '@/components/upload/AiModelVerifier';
 import { type City } from '@/lib/location';
 import { BAM_RATE } from '@/lib/constants';
 
@@ -119,7 +120,7 @@ const analyzeRawInput = async (input: string): Promise<AiAnalysisResult> => {
     return { title: input, category: 'Ostalo', description: '' };
 };
 
-type UploadStep = 'selection' | 'all-categories' | 'car-method' | 'nekretnine-sub' | 'mobile-sub' | 'moda-sub' | 'tehnika-sub' | 'services-sub' | 'poslovi-sub' | 'form';
+type UploadStep = 'selection' | 'all-categories' | 'vehicle-sub' | 'parts-sub' | 'car-method' | 'nekretnine-sub' | 'mobile-sub' | 'moda-sub' | 'tehnika-sub' | 'services-sub' | 'poslovi-sub' | 'form';
 
 const NEKRETNINE_TYPES = [
   { name: 'Stanovi i Apartmani', icon: 'fa-building' },
@@ -274,19 +275,59 @@ const SERVICES_TYPES = [
 ];
 
 const POSLOVI_TYPES = [
-  { name: 'Bau & Handwerk', icon: 'fa-hammer', subs: 'Bauarbeiter, Helfer, Maurer, Trockenbau, Fliesenleger, Maler, Dachdecker, Schreiner' },
-  { name: 'Elektro & Technik', icon: 'fa-bolt', subs: 'Elektriker, Elektroinstallationen, Netzwerktechnik, Photovoltaik, Smart-Home' },
-  { name: 'Wasser, Heizung, Klima', icon: 'fa-faucet', subs: 'Installateur, Sanitär, Heizungsbauer, Klimaanlagen' },
-  { name: 'Auto & Transport', icon: 'fa-car', subs: 'Kfz-Mechaniker, Autoelektriker, Reifenservice, Abschleppdienst, Fahrer (PKW/LKW)' },
-  { name: 'IT & Digital', icon: 'fa-laptop-code', subs: 'Softwareentwicklung, Webdesign, IT-Support, Systemadmin, Marketing/SEO' },
-  { name: 'Reinigung & Services', icon: 'fa-broom', subs: 'Gebäudereinigung, Büroreinigung, Haushalt, Fensterreinigung' },
-  { name: 'Immobilien & Facility', icon: 'fa-house-chimney', subs: 'Hausmeister, Objektbetreuung, Gartenpflege' },
-  { name: 'Gastronomie & Hotel', icon: 'fa-utensils', subs: 'Koch, Kellner, Küchenhilfe, Hotelservice' },
-  { name: 'Industrie & Produktion', icon: 'fa-industry', subs: 'Produktionsmitarbeiter, Maschinenbediener, Lager & Logistik' },
-  { name: 'Büro & Verwaltung', icon: 'fa-file-invoice', subs: 'Büroassistenz, Buchhaltung, Sekretariat' },
-  { name: 'Bildung & Betreuung', icon: 'fa-graduation-cap', subs: 'Nachhilfe, Sprachunterricht, Kinderbetreuung' },
-  { name: 'Beauty & Pflege', icon: 'fa-scissors', subs: 'Friseur, Kosmetik, Massage' },
-  { name: 'Sonstiges', icon: 'fa-briefcase', subs: 'Freelancer, Projektarbeit, Saisonarbeit, Ostalo' },
+  { name: 'Građevina i zanatstvo', icon: 'fa-hammer', subs: 'Građevinski radnik, pomoćnik, zidar, gipsar, keramičar, moler, krovopokrivač, stolar' },
+  { name: 'Elektro i tehnika', icon: 'fa-bolt', subs: 'Električar, elektroinstalacije, mrežna tehnika, solarni paneli, pametna kuća' },
+  { name: 'Vodovod, grijanje, klima', icon: 'fa-faucet', subs: 'Instalater, sanitarije, grijanje, klimatizacija' },
+  { name: 'Auto i transport', icon: 'fa-car', subs: 'Automehaničar, autoelektričar, vulkanizer, šlep služba, vozač (auto/kamion)' },
+  { name: 'IT i digitalno', icon: 'fa-laptop-code', subs: 'Razvoj softvera, web dizajn, IT podrška, sistemski admin, marketing/SEO' },
+  { name: 'Čišćenje i održavanje', icon: 'fa-broom', subs: 'Čišćenje zgrada, ureda, kućanstva, pranje prozora' },
+  { name: 'Nekretnine i upravljanje', icon: 'fa-house-chimney', subs: 'Domar, upravljanje objektima, održavanje vrta' },
+  { name: 'Ugostiteljstvo i hoteli', icon: 'fa-utensils', subs: 'Kuhar, konobar, pomoćnik u kuhinji, hotelski servis' },
+  { name: 'Industrija i proizvodnja', icon: 'fa-industry', subs: 'Proizvodni radnik, rukovalac strojevima, skladište i logistika' },
+  { name: 'Ured i administracija', icon: 'fa-file-invoice', subs: 'Uredski asistent, knjigovodstvo, sekretarijat' },
+  { name: 'Obrazovanje i njega', icon: 'fa-graduation-cap', subs: 'Instrukcije, poduka jezika, čuvanje djece' },
+  { name: 'Ljepota i njega', icon: 'fa-scissors', subs: 'Frizer, kozmetika, masaža' },
+  { name: 'Ostali poslovi', icon: 'fa-briefcase', subs: 'Freelancer, projektni rad, sezonski rad, ostalo' },
+];
+
+const VEHICLE_TYPES = [
+  { name: 'Osobni automobili', icon: 'fa-car', type: 'car' as VehicleType, desc: 'Auti, limuzine, SUV, kombi...' },
+  { name: 'Motocikli i skuteri', icon: 'fa-motorcycle', type: 'motorcycle' as VehicleType, desc: 'Sport, naked, touring, skuter...' },
+  { name: 'Teretna vozila', icon: 'fa-truck', type: 'truck' as VehicleType, desc: 'Kamioni, kombiji, autobusi...' },
+  { name: 'Bicikli', icon: 'fa-bicycle', type: 'bicycle' as VehicleType, desc: 'MTB, cestovni, e-bike, BMX...' },
+  { name: 'Kamperi i prikolice', icon: 'fa-caravan', type: 'camper' as VehicleType, desc: 'Kamperi, kamp prikolice...' },
+  { name: 'Nautika i plovila', icon: 'fa-ship', type: 'boat' as VehicleType, desc: 'Čamci, jedrilice, jet ski...' },
+  { name: 'ATV / Quad / UTV', icon: 'fa-flag-checkered', type: 'atv' as VehicleType, desc: 'ATV, quad, side-by-side...' },
+  { name: 'Prikolice', icon: 'fa-trailer', type: 'car' as VehicleType, desc: 'Auto, moto, čamac prikolice' },
+  { name: 'Ostala vozila', icon: 'fa-ellipsis', type: 'car' as VehicleType, desc: 'Traktori, golf kolica...' },
+];
+
+const PARTS_CATEGORIES = [
+  { group: 'Za automobile', items: [
+    { name: 'Motor i mjenjač', icon: 'fa-gears' },
+    { name: 'Elektrika i elektronika', icon: 'fa-bolt' },
+    { name: 'Karoserija i stakla', icon: 'fa-car-side' },
+    { name: 'Unutrašnjost', icon: 'fa-couch' },
+    { name: 'Ovjes i kočnice', icon: 'fa-circle-stop' },
+    { name: 'Felge i gume', icon: 'fa-circle' },
+    { name: 'Tuning i oprema', icon: 'fa-gauge-high' },
+    { name: 'Navigacija i auto akustika', icon: 'fa-radio' },
+    { name: 'Kozmetika i ulja', icon: 'fa-oil-can' },
+  ]},
+  { group: 'Za motocikle', items: [
+    { name: 'Motor i dijelovi', icon: 'fa-motorcycle' },
+    { name: 'Karoserija i plastika', icon: 'fa-shield' },
+    { name: 'Elektrika', icon: 'fa-plug' },
+    { name: 'Oprema za vozača', icon: 'fa-helmet-safety' },
+    { name: 'Felge i gume', icon: 'fa-circle' },
+  ]},
+  { group: 'Za bicikle', items: [
+    { name: 'Okviri, vilice, amortizeri', icon: 'fa-bicycle' },
+    { name: 'Pogon (mjenjač, pedala, lanac)', icon: 'fa-gears' },
+    { name: 'Kotači, gume, felge', icon: 'fa-circle' },
+    { name: 'Kočnice', icon: 'fa-hand' },
+    { name: 'Oprema i dodaci', icon: 'fa-lightbulb' },
+  ]},
 ];
 
 // ── Category breadcrumb info ──────────────────────────────────────────────
@@ -413,6 +454,12 @@ function UploadPageInner() {
   const [modelSearch, setModelSearch] = useState('');
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [pickerBrand, setPickerBrand] = useState('');
+  const [vehicleType, setVehicleType] = useState<VehicleType>('car');
+  const [showAiVerifier, setShowAiVerifier] = useState(false);
+  const [aiVerification, setAiVerification] = useState<{brand: string, model: string, variant?: string, confidence: number} | null>(null);
+  const [partsVehicleBrand, setPartsVehicleBrand] = useState('');
+  const [partsVehicleModel, setPartsVehicleModel] = useState('');
+  const [partsSubStep, setPartsSubStep] = useState<'brand' | 'category'>('brand');
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [catSearch, setCatSearch] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
@@ -498,9 +545,16 @@ function UploadPageInner() {
   if (!isAuthenticated) return null;
 
   const selectCategory = (catName: string) => {
+    if (catName.toLowerCase().includes('dijelovi')) {
+      setFormData({ ...formData, category: 'Dijelovi za vozila' });
+      setVehicleType('parts');
+      setPartsSubStep('brand');
+      setStep('parts-sub');
+      return;
+    }
     if (catName.toLowerCase().includes('vozila') || catName.toLowerCase() === 'automobili') {
       setFormData({ ...formData, category: catName });
-      setStep('car-method');
+      setStep('vehicle-sub');
       return;
     }
     if (catName.toLowerCase() === 'nekretnine') {
@@ -569,11 +623,24 @@ function UploadPageInner() {
   };
 
   const selectCarBrand = (brand: string) => {
+    if (vehicleType === 'parts') {
+      setPartsVehicleBrand(brand);
+      setAttributes(prev => ({ ...prev, zaVozilo: brand, zaModel: '' }));
+      setFormData(prev => ({ ...prev, brand }));
+      const brandModels = findBrandModelsForType(brand, 'car');
+      if (brandModels.length > 0 && brand !== 'Ostalo') {
+        setPickerBrand(brand);
+        setShowModelPicker(true);
+      } else {
+        setPartsSubStep('category');
+        setStep('parts-sub');
+      }
+      return;
+    }
     setAttributes(prev => ({ ...prev, marka: brand, model: '', varijanta: '' }));
     setFormData(prev => ({ ...prev, brand, title: brand === 'Ostalo' ? '' : `${brand} ` }));
     setCarBrandSearch('');
-    // Check if this brand has models — if so, open the picker modal
-    const brandModels = findBrandModels(brand, false);
+    const brandModels = findBrandModelsForType(brand, vehicleType);
     if (brandModels.length > 0 && brand !== 'Ostalo') {
       setPickerBrand(brand);
       setShowModelPicker(true);
@@ -584,6 +651,14 @@ function UploadPageInner() {
   };
 
   const handleModelPickerSelect = (model: string, variant?: string) => {
+    if (vehicleType === 'parts') {
+      setPartsVehicleModel(model);
+      setAttributes(prev => ({ ...prev, zaModel: model, zaVarijanta: variant || '' }));
+      setShowModelPicker(false);
+      setPartsSubStep('category');
+      setStep('parts-sub');
+      return;
+    }
     setAttributes(prev => ({ ...prev, model, varijanta: variant || '' }));
     setFormData(prev => ({ ...prev, title: `${prev.brand} ${model}${variant ? ' ' + variant : ''} ` }));
     setShowModelPicker(false);
@@ -1506,6 +1581,21 @@ function UploadPageInner() {
                         <button
                           key={idx}
                           onClick={() => {
+                            // Route vehicle subcategories through brand picker
+                            if (cat.id === 'vozila' || cat.name.toLowerCase().includes('vozila')) {
+                              const vType = resolveVehicleType(sub.name);
+                              setVehicleType(vType);
+                              setFormData(prev => ({ ...prev, category: `Vozila - ${sub.name}` }));
+                              setStep('car-method');
+                              return;
+                            }
+                            if (cat.id === 'dijelovi' || cat.name.toLowerCase().includes('dijelovi')) {
+                              setVehicleType('parts');
+                              setFormData(prev => ({ ...prev, category: 'Dijelovi za vozila' }));
+                              setPartsSubStep('brand');
+                              setStep('parts-sub');
+                              return;
+                            }
                             setFormData(prev => ({ ...prev, category: sub.name }));
                             setStep('form');
                           }}
@@ -1608,6 +1698,119 @@ function UploadPageInner() {
     </MainLayout>
   );
 
+  // ── Vehicle Type Sub-Selection ───────────────────────────
+  if (step === 'vehicle-sub') {
+    return (
+      <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
+        <button onClick={() => setStep('selection')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
+      }>
+        <div className="space-y-4 pt-2 pb-24">
+          <div className="px-1 mb-2">
+            <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-1">Vrsta vozila</h2>
+            <p className="text-sm text-[var(--c-text2)] font-medium">Šta želite oglasiti?</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {VEHICLE_TYPES.map((vt, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setVehicleType(vt.type);
+                  setFormData(prev => ({ ...prev, category: `Vozila - ${vt.name}` }));
+                  if (vt.name === 'Prikolice' || vt.name === 'Ostala vozila') {
+                    setStep('form');
+                  } else {
+                    setStep('car-method');
+                  }
+                }}
+                className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-4 flex flex-col items-center justify-center gap-2 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30"
+              >
+                <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 group-hover:scale-110 transition-transform">
+                  <i className={`fa-solid ${vt.icon} text-lg`}></i>
+                </div>
+                <div>
+                  <span className="text-[12px] font-bold text-[var(--c-text)] block leading-tight">{vt.name}</span>
+                  <span className="text-[9px] text-[var(--c-text3)] mt-0.5 block">{vt.desc}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Dijelovi za vozila shortcut */}
+          <button
+            onClick={() => {
+              setVehicleType('parts');
+              setFormData(prev => ({ ...prev, category: 'Dijelovi za vozila' }));
+              setPartsSubStep('brand');
+              setStep('parts-sub');
+            }}
+            className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-4 flex items-center gap-4 group active:scale-[0.98] transition-all hover:bg-[var(--c-hover)] hover:border-amber-500/30"
+          >
+            <div className="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform shrink-0">
+              <i className="fa-solid fa-gears text-lg"></i>
+            </div>
+            <div className="text-left">
+              <span className="text-[13px] font-bold text-[var(--c-text)] block">Dijelovi za vozila</span>
+              <span className="text-[9px] text-[var(--c-text3)]">Auto, moto, bicikl dijelovi i oprema</span>
+            </div>
+            <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)] ml-auto"></i>
+          </button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // ── Parts Sub-Selection (multi-step) ───────────────────
+  if (step === 'parts-sub') {
+    if (partsSubStep === 'category') {
+      // Step 2: Pick parts category
+      return (
+        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile headerRight={
+          <button onClick={() => { setPartsSubStep('brand'); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
+        }>
+          <div className="space-y-4 pt-2 pb-24">
+            {partsVehicleBrand && (
+              <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl border bg-blue-500/5 border-blue-500/20">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center"><i className="fa-solid fa-car text-blue-500 text-sm"></i></div>
+                <span className="text-[11px] font-black text-blue-500 uppercase tracking-wide">{partsVehicleBrand} {partsVehicleModel}</span>
+              </div>
+            )}
+            <div className="px-1 mb-2">
+              <h2 className="text-[11px] font-black text-amber-500 uppercase tracking-[3px] mb-1">Kategorija dijela</h2>
+              <p className="text-sm text-[var(--c-text2)] font-medium">Koji tip dijela prodajete?</p>
+            </div>
+            {PARTS_CATEGORIES.map((group, gi) => (
+              <div key={gi}>
+                <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest mb-2 px-1">{group.group}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {group.items.map((item, ii) => (
+                    <button
+                      key={ii}
+                      onClick={() => {
+                        setAttributes(prev => ({ ...prev, kategorijaDijela: `${group.group} - ${item.name}` }));
+                        setFormData(prev => ({ ...prev, category: `Dijelovi za vozila - ${item.name}` }));
+                        setStep('form');
+                      }}
+                      className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 flex items-center gap-3 text-left group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-amber-500/30"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 shrink-0">
+                        <i className={`fa-solid ${item.icon} text-sm`}></i>
+                      </div>
+                      <span className="text-[11px] font-bold text-[var(--c-text)] leading-tight">{item.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </MainLayout>
+      );
+    }
+    // Step 1 (brand): reuse car-method by switching to it
+    setStep('car-method');
+    return null;
+  }
+
   if (step === 'nekretnine-sub') {
     return renderSubSelection('Nekretnine', 'Izaberite kategoriju nekretnine', 'emerald', NEKRETNINE_TYPES, selectNekretnineSub, 'Npr. Stan u centru Sarajeva...', 'NudiNađi AI');
   }
@@ -1635,8 +1838,8 @@ function UploadPageInner() {
           {/* STICKY HEADER AREA with SEARCH BAR */}
           <div className="sticky top-0 z-20 bg-[var(--c-card-alt)]/95 backdrop-blur-md pb-4 pt-2 px-1 border-b border-[var(--c-border)] -mx-6 px-6 mb-4 shadow-2xl">
               <div className="mb-3 px-1">
-                <h2 className="text-[11px] font-black text-indigo-500 uppercase tracking-[3px] mb-1">Traži Posao</h2>
-                <p className="text-sm text-[var(--c-text2)] font-medium">Odaberi kategoriju ili pretraži direktno</p>
+                <h2 className="text-[11px] font-black text-indigo-500 uppercase tracking-[3px] mb-1">Poslovi</h2>
+                <p className="text-sm text-[var(--c-text2)] font-medium">Koju vrstu posla nudite?</p>
               </div>
 
               {/* MAGIC SEARCH BAR (Sticky) */}
@@ -1689,23 +1892,38 @@ function UploadPageInner() {
     );
   }
 
-  // 3. Car Method (VIN/AI + Brand Picker)
+  // 3. Car Method (VIN/AI + Brand Picker) — now dynamic per vehicleType
   if (step === 'car-method') {
+    const vehicleLabels: Record<string, { title: string; icon: string; searchPlaceholder: string }> = {
+      car: { title: 'Odaberi marku automobila', icon: 'fa-car', searchPlaceholder: 'Pretraži marke automobila...' },
+      motorcycle: { title: 'Odaberi marku motocikla', icon: 'fa-motorcycle', searchPlaceholder: 'Pretraži marke motocikala...' },
+      bicycle: { title: 'Odaberi marku bicikla', icon: 'fa-bicycle', searchPlaceholder: 'Pretraži marke bicikala...' },
+      truck: { title: 'Odaberi marku teretnog vozila', icon: 'fa-truck', searchPlaceholder: 'Pretraži marke kamiona...' },
+      camper: { title: 'Odaberi marku kampera', icon: 'fa-caravan', searchPlaceholder: 'Pretraži marke kampera...' },
+      boat: { title: 'Odaberi marku plovila', icon: 'fa-ship', searchPlaceholder: 'Pretraži marke plovila...' },
+      atv: { title: 'Odaberi marku ATV/Quad', icon: 'fa-flag-checkered', searchPlaceholder: 'Pretraži ATV/Quad marke...' },
+      parts: { title: 'Za koje vozilo je ovaj dio?', icon: 'fa-gears', searchPlaceholder: 'Pretraži marke vozila...' },
+    };
+    const vLabel = vehicleLabels[vehicleType] || vehicleLabels.car;
+    const currentBrands = getBrandsForVehicleType(vehicleType).map(b => ({ name: b.name, slug: b.slug }));
     const filteredBrands = carBrandSearch.trim()
-      ? CAR_BRANDS.filter(b => b.name.toLowerCase().includes(carBrandSearch.toLowerCase()))
-      : CAR_BRANDS;
+      ? currentBrands.filter(b => b.name.toLowerCase().includes(carBrandSearch.toLowerCase()))
+      : currentBrands;
+
+    const showVinSection = vehicleType === 'car' || vehicleType === 'parts';
 
     return (
-      <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
-        <button onClick={() => setStep('selection')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
+      <MainLayout title={vehicleType === 'parts' ? 'Dijelovi' : 'Vozila'} showSigurnost={false} hideSearchOnMobile headerRight={
+        <button onClick={() => setStep(vehicleType === 'parts' ? 'parts-sub' : 'vehicle-sub')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
       }>
         <div className="pb-24 pt-2 space-y-6 px-1">
 
-          {/* VIN + AI Section (compact) */}
+          {/* VIN + AI Section — only for cars/parts */}
+          {showVinSection && (
           <div className="space-y-4">
             <div className="text-center space-y-1">
                <div className="w-12 h-12 mx-auto rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                  <i className="fa-solid fa-car text-lg text-blue-400"></i>
+                  <i className={`fa-solid ${vLabel.icon} text-lg text-blue-400`}></i>
                </div>
                <h2 className="text-lg font-black text-[var(--c-text)]">Smart Identifikacija</h2>
                <p className="text-[10px] text-[var(--c-text3)]">Unesite VIN broj ili opišite vozilo</p>
@@ -1755,6 +1973,7 @@ function UploadPageInner() {
                <span className="text-blue-500">NudiNađi AI</span> automatski prepoznaje detalje vozila.
             </p>
           </div>
+          )}
 
           {/* Divider: RUČNI UNOS */}
           <div className="flex items-center gap-4">
@@ -1765,7 +1984,7 @@ function UploadPageInner() {
 
           {/* Brand Picker */}
           <div>
-            <h3 className="text-[11px] font-black text-[var(--c-text2)] uppercase tracking-[2px] mb-3 px-1">Izaberite Marku</h3>
+            <h3 className="text-[11px] font-black text-[var(--c-text2)] uppercase tracking-[2px] mb-3 px-1">{vLabel.title}</h3>
 
             {/* Brand Search */}
             <div className="relative mb-4">
@@ -1775,7 +1994,7 @@ function UploadPageInner() {
                   type="text"
                   value={carBrandSearch}
                   onChange={(e) => setCarBrandSearch(e.target.value)}
-                  placeholder="Pretraži marke..."
+                  placeholder={vLabel.searchPlaceholder}
                   className="w-full bg-transparent text-sm text-[var(--c-text)] outline-none placeholder:text-[var(--c-placeholder)]"
                 />
                 {carBrandSearch && (
@@ -1795,18 +2014,20 @@ function UploadPageInner() {
                   className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 sm:p-3.5 flex flex-col items-center justify-center gap-1.5 sm:gap-2 text-center group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30"
                 >
                   <div className="w-12 h-12 rounded-xl bg-[var(--c-card)] flex items-center justify-center border border-[var(--c-border)] group-hover:scale-110 transition-transform overflow-hidden">
-                    {brand.slug ? (
+                    {brand.name === 'Ostalo' ? (
+                      <i className="fa-solid fa-ellipsis text-lg text-[var(--c-text-muted)]"></i>
+                    ) : (vehicleType === 'car' || vehicleType === 'parts') && brand.slug ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={`${CAR_LOGO_BASE}/${brand.slug}.png`}
                         alt={brand.name}
                         className="w-9 h-9 object-contain"
                         loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const next = (e.target as HTMLImageElement).nextElementSibling; if (next) (next as HTMLElement).style.display = 'flex'; }}
                       />
-                    ) : brand.name === 'Ostalo' ? (
-                      <i className="fa-solid fa-ellipsis text-lg text-[var(--c-text-muted)]"></i>
-                    ) : (
-                      <span className="text-sm font-black text-blue-400">{brand.name[0]}</span>
+                    ) : null}
+                    {brand.name !== 'Ostalo' && (
+                      <span style={{ display: (vehicleType === 'car' || vehicleType === 'parts') && brand.slug ? 'none' : 'flex' }} className="text-lg font-black text-blue-400">{brand.name[0]}</span>
                     )}
                   </div>
                   <span className="text-[11px] font-bold text-[var(--c-text)] leading-tight">{brand.name}</span>
@@ -1833,7 +2054,7 @@ function UploadPageInner() {
   }
 
   // 4. Main Listing Form
-  const allCategoryFields = getCategoryFields(formData.category);
+  const allCategoryFields = getCategoryFields(formData.category, vehicleType);
   const hasPage2Fields = allCategoryFields.some(f => f.formPage === 2);
   const hasPage3Fields = allCategoryFields.some(f => f.formPage === 3);
   const totalPages = hasPage3Fields ? 3 : hasPage2Fields ? 2 : 1;
@@ -2011,7 +2232,7 @@ function UploadPageInner() {
                   <div className="px-5 pb-5">
                     <label className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest mb-2 block">Model</label>
                     {(() => {
-                      const brandModels = findBrandModels(formData.brand, false);
+                      const brandModels = findBrandModelsForType(formData.brand, vehicleType);
                       if (brandModels.length === 0) {
                         // Fallback: text input for brands without model data
                         return (
@@ -2502,7 +2723,7 @@ function UploadPageInner() {
       <VehicleModelPicker
         open={showModelPicker}
         brandName={pickerBrand}
-        isMotorcycle={false}
+        vehicleType={vehicleType}
         onSelect={handleModelPickerSelect}
         onClose={() => setShowModelPicker(false)}
       />

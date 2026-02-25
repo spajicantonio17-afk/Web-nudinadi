@@ -13,6 +13,9 @@ export interface CategoryField {
   unit?: string;
 }
 
+// Vehicle type union (matches vehicle-models.ts if/when VehicleType is exported)
+type VehicleType = 'car' | 'motorcycle' | 'bicycle' | 'truck' | 'camper' | 'boat' | 'atv' | 'parts';
+
 // ── Vehicle Fields ─────────────────────────────────────────
 
 const VEHICLE_FIELDS: CategoryField[] = [
@@ -148,16 +151,178 @@ const SPORT_FIELDS: CategoryField[] = [
   { key: 'godinaProizvodnje',  label: 'Godište',  type: 'number', formPage: 1, placeholder: 'npr. 2021' },
 ];
 
+// ── Motorcycle Fields ─────────────────────────────────────
+
+const MOTORCYCLE_FIELDS: CategoryField[] = [
+  // Page 1
+  { key: 'marka', label: 'Marka', type: 'text', formPage: 1, placeholder: 'npr. Yamaha' },
+  { key: 'model', label: 'Model', type: 'text', formPage: 1, placeholder: 'npr. MT-07' },
+  { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2021' },
+  { key: 'km', label: 'Kilometraža', type: 'number', formPage: 1, placeholder: 'npr. 15000', unit: 'km' },
+  { key: 'kubikaza', label: 'Kubikaža', type: 'number', formPage: 1, placeholder: 'npr. 689', unit: 'ccm' },
+  { key: 'gorivo', label: 'Gorivo', type: 'select', formPage: 1, options: ['Benzin', 'Električni'] },
+  { key: 'tipMotocikla', label: 'Tip motocikla', type: 'select', formPage: 1, options: ['Sport', 'Naked', 'Touring', 'Enduro', 'Cross', 'Cruiser', 'Chopper', 'Skuter', 'Moped', 'Supermoto', 'Custom', 'Trike'] },
+  { key: 'boja', label: 'Boja', type: 'select', formPage: 1, options: ['Crna', 'Bijela', 'Siva', 'Srebrna', 'Crvena', 'Plava', 'Zelena', 'Narančasta', 'Zlatna', 'Ostalo'] },
+  // Page 2
+  { key: 'konjskeSile', label: 'Konjske snage', type: 'number', formPage: 2, placeholder: 'npr. 73', unit: 'ks' },
+  { key: 'registracija', label: 'Registracija do', type: 'text', formPage: 2, placeholder: 'MM/GGGG' },
+  { key: 'abs', label: 'ABS', type: 'boolean', formPage: 2 },
+  { key: 'kontrolaTrakcije', label: 'Kontrola trakcije', type: 'boolean', formPage: 2 },
+  { key: 'quickshifter', label: 'Quickshifter', type: 'boolean', formPage: 2 },
+  { key: 'servisnaKnjiga', label: 'Servisna knjiga', type: 'boolean', formPage: 2 },
+  { key: 'brojVlasnika', label: 'Broj vlasnika', type: 'number', formPage: 2, placeholder: 'npr. 2' },
+];
+
+// ── Bicycle Fields ────────────────────────────────────────
+
+const BICYCLE_FIELDS: CategoryField[] = [
+  // Page 1
+  { key: 'marka', label: 'Marka', type: 'text', formPage: 1, placeholder: 'npr. Trek' },
+  { key: 'model', label: 'Model', type: 'text', formPage: 1, placeholder: 'npr. Marlin 7' },
+  { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2022' },
+  { key: 'tipBicikla', label: 'Tip bicikla', type: 'select', formPage: 1, options: ['MTB', 'Trekking / City', 'Cestovni', 'E-bike', 'Gravel', 'BMX', 'Dječji', 'Sklopivi', 'Tandem'] },
+  { key: 'velicinaOkvira', label: 'Veličina okvira', type: 'select', formPage: 1, options: ['XS (13-14")', 'S (15-16")', 'M (17-18")', 'L (19-20")', 'XL (21-22")', 'XXL (23"+)'] },
+  { key: 'velicinaKotaca', label: 'Veličina kotača', type: 'select', formPage: 1, options: ['20"', '24"', '26"', '27.5"', '28"', '29"'] },
+  { key: 'materijal', label: 'Materijal okvira', type: 'select', formPage: 1, options: ['Aluminij', 'Karbon', 'Čelik', 'Titan'] },
+  { key: 'boja', label: 'Boja', type: 'select', formPage: 1, options: ['Crna', 'Bijela', 'Siva', 'Crvena', 'Plava', 'Zelena', 'Narančasta', 'Ostalo'] },
+  // Page 2
+  { key: 'mjenjac', label: 'Mjenjač', type: 'text', formPage: 2, placeholder: 'npr. Shimano Deore 12-speed' },
+  { key: 'kocnice', label: 'Kočnice', type: 'select', formPage: 2, options: ['Disk hidrauličke', 'Disk mehaničke', 'V-brake', 'Cantilever'] },
+  { key: 'vilica', label: 'Vilica', type: 'select', formPage: 2, options: ['Rigidna', 'Amortizer air', 'Amortizer coil', 'Full suspension'] },
+  { key: 'ebikeMotor', label: 'E-bike motor', type: 'text', formPage: 2, placeholder: 'npr. Bosch Performance CX' },
+  { key: 'baterija', label: 'Baterija', type: 'text', formPage: 2, placeholder: 'npr. 625 Wh' },
+];
+
+// ── Truck Fields ──────────────────────────────────────────
+
+const TRUCK_FIELDS: CategoryField[] = [
+  // Page 1
+  { key: 'marka', label: 'Marka', type: 'text', formPage: 1, placeholder: 'npr. MAN' },
+  { key: 'model', label: 'Model', type: 'text', formPage: 1, placeholder: 'npr. TGX' },
+  { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2020' },
+  { key: 'km', label: 'Kilometraža', type: 'number', formPage: 1, placeholder: 'npr. 450000', unit: 'km' },
+  { key: 'gorivo', label: 'Gorivo', type: 'select', formPage: 1, options: ['Dizel', 'CNG', 'LNG', 'Električni', 'Hibrid'] },
+  { key: 'konjskeSile', label: 'Snaga motora', type: 'number', formPage: 1, placeholder: 'npr. 440', unit: 'ks' },
+  { key: 'mjenjac', label: 'Mjenjač', type: 'select', formPage: 1, options: ['Manuelni', 'Automatski', 'Polu-automatski'] },
+  // Page 2
+  { key: 'nosivost', label: 'Nosivost', type: 'number', formPage: 2, placeholder: 'npr. 18', unit: 't' },
+  { key: 'ukupnaMasa', label: 'Ukupna masa', type: 'number', formPage: 2, placeholder: 'npr. 40', unit: 't' },
+  { key: 'brojOsovina', label: 'Broj osovina', type: 'select', formPage: 2, options: ['2', '3', '4', '5+'] },
+  { key: 'tahograf', label: 'Tahograf', type: 'select', formPage: 2, options: ['Digitalni', 'Analogni', 'Bez'] },
+  { key: 'registracija', label: 'Registracija do', type: 'text', formPage: 2, placeholder: 'MM/GGGG' },
+  { key: 'servisnaKnjiga', label: 'Servisna knjiga', type: 'boolean', formPage: 2 },
+  { key: 'kabina', label: 'Kabina', type: 'select', formPage: 2, options: ['Dnevna kabina', 'Noćna kabina', 'Mega kabina'] },
+  { key: 'adr', label: 'ADR', type: 'boolean', formPage: 2 },
+  { key: 'euroNorma', label: 'Euro norma', type: 'select', formPage: 2, options: ['Euro 3', 'Euro 4', 'Euro 5', 'Euro 6'] },
+];
+
+// ── Camper Fields ─────────────────────────────────────────
+
+const CAMPER_FIELDS: CategoryField[] = [
+  // Page 1
+  { key: 'marka', label: 'Marka', type: 'text', formPage: 1, placeholder: 'npr. Hymer' },
+  { key: 'model', label: 'Model', type: 'text', formPage: 1, placeholder: 'npr. B-Klasse' },
+  { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2019' },
+  { key: 'km', label: 'Kilometraža', type: 'number', formPage: 1, placeholder: 'npr. 45000', unit: 'km' },
+  { key: 'sasija', label: 'Šasija', type: 'select', formPage: 1, options: ['Fiat Ducato', 'Mercedes Sprinter', 'VW Crafter', 'MAN', 'Iveco Daily', 'Ford Transit', 'Renault Master', 'Ostalo'] },
+  { key: 'tipKampera', label: 'Tip', type: 'select', formPage: 1, options: ['Integralni', 'Poluintegralni', 'Alkoven', 'Van', 'Kamp prikolica', 'Kamp kućica'] },
+  { key: 'duzinaVozila', label: 'Dužina vozila', type: 'number', formPage: 1, placeholder: 'npr. 7.2', unit: 'm' },
+  // Page 2
+  { key: 'brojLezajeva', label: 'Broj ležajeva', type: 'number', formPage: 2, placeholder: 'npr. 4' },
+  { key: 'gorivo', label: 'Gorivo', type: 'select', formPage: 2, options: ['Dizel', 'Benzin', 'LPG'] },
+  { key: 'konjskeSile', label: 'Konjske snage', type: 'number', formPage: 2, placeholder: 'npr. 140', unit: 'ks' },
+  { key: 'registracija', label: 'Registracija do', type: 'text', formPage: 2, placeholder: 'MM/GGGG' },
+  { key: 'klima', label: 'Klima', type: 'boolean', formPage: 2 },
+  { key: 'solarniPanel', label: 'Solarni panel', type: 'boolean', formPage: 2 },
+  { key: 'markiza', label: 'Markiza', type: 'boolean', formPage: 2 },
+  { key: 'satelitskaAntena', label: 'Satelitska antena', type: 'boolean', formPage: 2 },
+  { key: 'grijanje', label: 'Grijanje', type: 'select', formPage: 2, options: ['Plin', 'Dizel', 'Električni', 'Kombinirani'] },
+];
+
+// ── Boat Fields ───────────────────────────────────────────
+
+const BOAT_FIELDS: CategoryField[] = [
+  // Page 1
+  { key: 'marka', label: 'Marka', type: 'text', formPage: 1, placeholder: 'npr. Bayliner' },
+  { key: 'model', label: 'Model', type: 'text', formPage: 1, placeholder: 'npr. VR5' },
+  { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2020' },
+  { key: 'tipPlovila', label: 'Tip plovila', type: 'select', formPage: 1, options: ['Motorni čamac', 'Jedrilica', 'Gumenjak', 'Jet ski', 'Katamaran', 'Ribarski brod', 'Gliser', 'Jahta', 'Kajak / Kanu', 'Ostalo'] },
+  { key: 'duzina', label: 'Dužina', type: 'number', formPage: 1, placeholder: 'npr. 6.5', unit: 'm' },
+  { key: 'sirina', label: 'Širina', type: 'number', formPage: 1, placeholder: 'npr. 2.3', unit: 'm' },
+  // Page 2
+  { key: 'motorTip', label: 'Motor tip', type: 'select', formPage: 2, options: ['Vanbrodski', 'Unutarnji', 'Električni', 'Bez motora'] },
+  { key: 'snagaMotora', label: 'Snaga motora', type: 'number', formPage: 2, placeholder: 'npr. 150', unit: 'ks' },
+  { key: 'gorivo', label: 'Gorivo', type: 'select', formPage: 2, options: ['Benzin', 'Dizel', 'Električni'] },
+  { key: 'materijalTrupa', label: 'Materijal trupa', type: 'select', formPage: 2, options: ['Stakloplastika (GRP)', 'Aluminij', 'Drvo', 'PVC', 'Guma / Hypalon', 'Čelik'] },
+  { key: 'registracija', label: 'Registracija', type: 'text', formPage: 2, placeholder: 'MM/GGGG' },
+  { key: 'satiMotora', label: 'Sati motora', type: 'number', formPage: 2, placeholder: 'npr. 350' },
+  { key: 'brojPutnika', label: 'Broj putnika', type: 'number', formPage: 2, placeholder: 'npr. 8' },
+];
+
+// ── ATV Fields ────────────────────────────────────────────
+
+const ATV_FIELDS: CategoryField[] = [
+  // Page 1
+  { key: 'marka', label: 'Marka', type: 'text', formPage: 1, placeholder: 'npr. Polaris' },
+  { key: 'model', label: 'Model', type: 'text', formPage: 1, placeholder: 'npr. Sportsman 570' },
+  { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2022' },
+  { key: 'km', label: 'Kilometraža', type: 'number', formPage: 1, placeholder: 'npr. 5000', unit: 'km' },
+  { key: 'kubikaza', label: 'Kubikaža', type: 'number', formPage: 1, placeholder: 'npr. 570', unit: 'ccm' },
+  { key: 'tipAtv', label: 'Tip', type: 'select', formPage: 1, options: ['ATV', 'Quad', 'UTV', 'Side-by-Side', 'Buggy'] },
+  { key: 'pogon', label: 'Pogon', type: 'select', formPage: 1, options: ['2WD', '4WD', 'Prebacivi 2WD/4WD'] },
+  { key: 'boja', label: 'Boja', type: 'select', formPage: 1, options: ['Crna', 'Bijela', 'Siva', 'Crvena', 'Plava', 'Zelena', 'Narančasta', 'Maslinasta', 'Ostalo'] },
+  // Page 2
+  { key: 'konjskeSile', label: 'Konjske snage', type: 'number', formPage: 2, placeholder: 'npr. 44', unit: 'ks' },
+  { key: 'registracija', label: 'Registracija do', type: 'text', formPage: 2, placeholder: 'MM/GGGG' },
+  { key: 'vitlo', label: 'Vitlo', type: 'boolean', formPage: 2 },
+  { key: 'krovniLuk', label: 'Krovni luk', type: 'boolean', formPage: 2 },
+  { key: 'zastitaDna', label: 'Zaštita dna', type: 'boolean', formPage: 2 },
+  { key: 'servisnaKnjiga', label: 'Servisna knjiga', type: 'boolean', formPage: 2 },
+];
+
+// ── Parts Fields ──────────────────────────────────────────
+
+const PARTS_FIELDS: CategoryField[] = [
+  // Page 1
+  { key: 'zaVozilo', label: 'Za vozilo - Marka', type: 'text', formPage: 1, placeholder: 'npr. BMW' },
+  { key: 'zaModel', label: 'Za vozilo - Model', type: 'text', formPage: 1, placeholder: 'npr. Serija 3' },
+  { key: 'zaGodiste', label: 'Za vozilo - Godište', type: 'number', formPage: 1, placeholder: 'npr. 2018' },
+  { key: 'kategorijaDijela', label: 'Kategorija dijela', type: 'text', formPage: 1, placeholder: 'npr. Motor i mjenjač' },
+  { key: 'stanjeDijela', label: 'Stanje dijela', type: 'select', formPage: 1, options: ['Novo', 'Rabljeno', 'Obnovljeno', 'Ostalo'] },
+  // Page 2
+  { key: 'oemBroj', label: 'Originalni broj dijela (OEM)', type: 'text', formPage: 2, placeholder: 'npr. 11 51 7 588 096' },
+  { key: 'proizvodacDijela', label: 'Proizvođač dijela', type: 'select', formPage: 2, options: ['Original', 'Aftermarket', 'Sport / Tuning'] },
+  { key: 'garancija', label: 'Garancija', type: 'boolean', formPage: 2 },
+  { key: 'dostavaMoguca', label: 'Dostava moguća', type: 'boolean', formPage: 2 },
+];
+
 // ── Main export ───────────────────────────────────────────
 
-export function getCategoryFields(category: string): CategoryField[] {
+export function getCategoryFields(category: string, vehicleType?: VehicleType): CategoryField[] {
   const c = category.toLowerCase();
-  if (c.includes('vozila') || c === 'automobili') return VEHICLE_FIELDS;
+
+  // Parts check first
+  if (vehicleType === 'parts' || c.includes('dijelovi')) return PARTS_FIELDS;
+
+  // Vehicle type specific
+  if (c.includes('vozila') || c.includes('motocikl') || c.includes('bicikl') || c.includes('kamper') || c.includes('nautika') || c.includes('plovil') || c.includes('teretna') || c.includes('atv') || c.includes('quad') || c === 'automobili') {
+    switch (vehicleType) {
+      case 'motorcycle': return MOTORCYCLE_FIELDS;
+      case 'bicycle': return BICYCLE_FIELDS;
+      case 'truck': return TRUCK_FIELDS;
+      case 'camper': return CAMPER_FIELDS;
+      case 'boat': return BOAT_FIELDS;
+      case 'atv': return ATV_FIELDS;
+      default: return VEHICLE_FIELDS;
+    }
+  }
+
+  // Existing logic unchanged
   if (c.includes('nekretnin')) return NEKRETNINE_FIELDS;
   if (c.includes('mobilni')) return MOBILNI_FIELDS;
   if (c.includes('elektronika') || c.includes('tehnika') || c.includes('računari')) return ELEKTRONIKA_FIELDS;
   if (c.includes('cipele') || c.includes('obuća')) return CIPELE_FIELDS;
   if (c.includes('moda') || c.includes('odjeća') || c.includes('odijelo') || c.includes('ženska') || c.includes('muška')) return MODA_FIELDS;
-  if (c.includes('sport') || c.includes('bicikl') || c.includes('fitnes')) return SPORT_FIELDS;
+  if (c.includes('sport') || c.includes('fitnes')) return SPORT_FIELDS;
   return [];
 }

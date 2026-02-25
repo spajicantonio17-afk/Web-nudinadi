@@ -143,12 +143,34 @@ Kategorije (koristi TAČNO ove nazive) i primjeri subcategory:
 19. Tehnika — subcategory npr. "Televizori", "Bijela tehnika", "Smart home"
 20. Ostalo — za sve što ne pripada gore navedenim
 
+Ako je kategorija "Vozila", OBAVEZNO dodaj polje "vehicleType" sa jednom od vrijednosti:
+- "car" — osobni automobili (auti, limuzine, SUV, kombi, kabriolet, oldtajmer)
+- "motorcycle" — motocikli, skuteri, mopedi, vespe, tricikli
+- "bicycle" — bicikli, e-bicikli, romobili
+- "truck" — kamioni, teretna vozila, autobusi, kombiji, dostavna vozila
+- "camper" — kamperi, kamp prikolice, autodomovi
+- "boat" — čamci, brodovi, jedrilice, jet ski, gumenjaci, kajaci
+- "atv" — ATV, quad, UTV, side-by-side, buggy
+
+Ako je kategorija "Dijelovi za vozila", postavi vehicleType na "parts".
+
+Primjeri:
+- "Golf 7 TDI 2018" → category: "Vozila", subcategory: "Volkswagen", vehicleType: "car"
+- "Yamaha R1 2020" → category: "Vozila", subcategory: "Yamaha", vehicleType: "motorcycle"
+- "Trek Marlin 7 2022" → category: "Vozila", subcategory: "Trek", vehicleType: "bicycle"
+- "MAN TGX 18.440" → category: "Vozila", subcategory: "MAN", vehicleType: "truck"
+- "Hymer B-MC 580" → category: "Vozila", subcategory: "Hymer", vehicleType: "camper"
+- "Bayliner VR5" → category: "Vozila", subcategory: "Bayliner", vehicleType: "boat"
+- "Polaris Sportsman 570" → category: "Vozila", subcategory: "Polaris", vehicleType: "atv"
+- "Turbina za Golf 5" → category: "Dijelovi za vozila", subcategory: "Volkswagen", vehicleType: "parts"
+
 Vrati SAMO JSON:
 {
   "category": "Tačan naziv kategorije iz liste iznad",
-  "subcategory": "Što preciznija potkategorija (za Vozila = marka, za Mobilne = brend, za ostale = tip)",
-  "correctedTitle": "Ispravljeni naslov bez pravopisnih grešaka (npr. 'iphon 13' → 'iPhone 13')",
-  "confidence": broj_0_100
+  "subcategory": "Što preciznija potkategorija (za Vozila/Dijelove = marka vozila, za Mobilne = brend, za ostale = tip)",
+  "correctedTitle": "Ispravljeni naslov bez pravopisnih grešaka",
+  "confidence": broj_0_100,
+  "vehicleType": "car|motorcycle|bicycle|truck|camper|boat|atv|parts"
 }`;
 
       const raw = await textWithGemini(prompt);

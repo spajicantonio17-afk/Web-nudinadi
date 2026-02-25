@@ -1,22 +1,28 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { findBrandModels, findModelVariants, type VehicleModel } from '@/lib/vehicle-models';
+import { findBrandModelsForType, findModelVariantsForType, type VehicleModel, type VehicleType } from '@/lib/vehicle-models';
 
 interface VehicleModelPickerProps {
   open: boolean;
   brandName: string;
-  isMotorcycle: boolean;
+  vehicleType: VehicleType;
   onSelect: (model: string, variant?: string) => void;
   onClose: () => void;
 }
 
 type PickerStep = 'models' | 'variants' | 'custom';
 
+const typeLabels: Record<string, string> = {
+  car: 'model', motorcycle: 'motocikl', bicycle: 'bicikl',
+  truck: 'vozilo', camper: 'kamper', boat: 'plovilo',
+  atv: 'ATV/Quad', parts: 'vozilo',
+};
+
 export default function VehicleModelPicker({
   open,
   brandName,
-  isMotorcycle,
+  vehicleType,
   onSelect,
   onClose,
 }: VehicleModelPickerProps) {
@@ -30,8 +36,8 @@ export default function VehicleModelPicker({
   const searchRef = useRef<HTMLInputElement>(null);
   const customRef = useRef<HTMLInputElement>(null);
 
-  const models = findBrandModels(brandName, isMotorcycle);
-  const variants = selectedModel ? findModelVariants(brandName, selectedModel, isMotorcycle) : [];
+  const models = findBrandModelsForType(brandName, vehicleType);
+  const variants = selectedModel ? findModelVariantsForType(brandName, selectedModel, vehicleType) : [];
 
   // Reset on open/brand change
   useEffect(() => {
@@ -115,7 +121,7 @@ export default function VehicleModelPicker({
     ? `${brandName} ${selectedModel} — Varijanta`
     : step === 'custom'
       ? `${brandName} — Ručni unos`
-      : `${brandName} — Model auswählen`;
+      : `${brandName} — Odaberi ${typeLabels[vehicleType] || 'model'}`;
 
   const searchPlaceholder = step === 'variants'
     ? 'Pretraži varijante...'

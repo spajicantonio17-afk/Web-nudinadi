@@ -11,6 +11,29 @@ export interface VehicleBrand {
   models: VehicleModel[];
 }
 
+// ── Vehicle Type System ─────────────────────────────────────
+
+export type VehicleType = 'car' | 'motorcycle' | 'bicycle' | 'truck' | 'camper' | 'boat' | 'atv' | 'parts';
+
+export const VEHICLE_SUBCATEGORY_MAP: Record<string, VehicleType> = {
+  'osobni automobili': 'car',
+  'vozila': 'car',
+  'motocikli i skuteri': 'motorcycle',
+  'teretna vozila': 'truck',
+  'autobusi i minibusi': 'truck',
+  'bicikli': 'bicycle',
+  'kamperi i kamp prikolice': 'camper',
+  'nautika i plovila': 'boat',
+  'atv / quad / utv': 'atv',
+  'dijelovi za vozila': 'parts',
+};
+
+export function resolveVehicleType(name: string): VehicleType {
+  return VEHICLE_SUBCATEGORY_MAP[name.toLowerCase().trim()] ?? 'car';
+}
+
+// ── Car Brands with Models ──────────────────────────────────
+
 export const CAR_BRANDS_WITH_MODELS: VehicleBrand[] = [
   {
     name: 'BMW', slug: 'bmw',
@@ -111,7 +134,7 @@ export const CAR_BRANDS_WITH_MODELS: VehicleBrand[] = [
     ]
   },
   {
-    name: 'Citroën', slug: 'citroen',
+    name: 'Citro\u00ebn', slug: 'citroen',
     models: [
       { name: 'C1' }, { name: 'C3' }, { name: 'C3 Aircross' }, { name: 'C4' },
       { name: 'C4 Cactus' }, { name: 'C5 Aircross' }, { name: 'C5 X' },
@@ -160,7 +183,7 @@ export const CAR_BRANDS_WITH_MODELS: VehicleBrand[] = [
     ]
   },
   {
-    name: 'Škoda', slug: 'skoda',
+    name: '\u0160koda', slug: 'skoda',
     models: [
       { name: 'Fabia' }, { name: 'Octavia' }, { name: 'Superb' },
       { name: 'Karoq' }, { name: 'Kodiaq' }, { name: 'Kamiq' },
@@ -246,51 +269,312 @@ export const CAR_BRANDS_WITH_MODELS: VehicleBrand[] = [
       { name: 'Range Rover' }, { name: 'Range Rover Sport' }, { name: 'Range Rover Evoque' }, { name: 'Range Rover Velar' },
     ]
   },
-  // Remaining brands from CAR_BRANDS with empty models (user can type manually)
-  { name: 'Porsche', slug: 'porsche', models: [] },
-  { name: 'Smart', slug: 'smart', models: [] },
-  { name: 'Alpine', slug: 'alpine', models: [] },
-  { name: 'DS', slug: 'ds', models: [] },
-  { name: 'Alfa Romeo', slug: 'alfa-romeo', models: [] },
-  { name: 'Maserati', slug: 'maserati', models: [] },
-  { name: 'Ferrari', slug: 'ferrari', models: [] },
-  { name: 'Lamborghini', slug: 'lamborghini', models: [] },
-  { name: 'Mitsubishi', slug: 'mitsubishi', models: [] },
-  { name: 'Subaru', slug: 'subaru', models: [] },
-  { name: 'Lexus', slug: 'lexus', models: [] },
-  { name: 'Infiniti', slug: 'infiniti', models: [] },
-  { name: 'SsangYong', slug: 'ssangyong', models: [] },
-  { name: 'Saab', slug: 'saab', models: [] },
-  { name: 'Jaguar', slug: 'jaguar', models: [] },
-  { name: 'Bentley', slug: 'bentley', models: [] },
-  { name: 'Rolls-Royce', slug: 'rolls-royce', models: [] },
-  { name: 'Aston Martin', slug: 'aston-martin', models: [] },
-  { name: 'McLaren', slug: 'mclaren', models: [] },
-  { name: 'Lotus', slug: 'lotus', models: [] },
-  { name: 'MINI', slug: 'mini', models: [] },
-  { name: 'Chrysler', slug: 'chrysler', models: [] },
-  { name: 'Dodge', slug: 'dodge', models: [] },
-  { name: 'Chevrolet', slug: 'chevrolet', models: [] },
-  { name: 'Cadillac', slug: 'cadillac', models: [] },
-  { name: 'Lincoln', slug: 'lincoln', models: [] },
-  { name: 'GMC', slug: 'gmc', models: [] },
-  { name: 'RAM', slug: 'ram', models: [] },
-  { name: 'BYD', slug: 'byd', models: [] },
-  { name: 'NIO', slug: 'nio', models: [] },
-  { name: 'Geely', slug: 'geely', models: [] },
-  { name: 'MG', slug: 'mg', models: [] },
-  { name: 'Great Wall', slug: 'great-wall', models: [] },
-  { name: 'Chery', slug: 'chery', models: [] },
-  { name: 'Tata', slug: 'tata', models: [] },
-  { name: 'Mahindra', slug: 'mahindra', models: [] },
-  { name: 'Rimac', slug: 'rimac', models: [] },
-  { name: 'Zastava', slug: 'zastava', models: [] },
-  { name: 'Yugo', slug: '', models: [] },
-  { name: 'Lada', slug: 'lada', models: [] },
+  // ── Brands with models filled in ─────────────────────────
+  {
+    name: 'Porsche', slug: 'porsche',
+    models: [
+      { name: '911', variants: ['Carrera', 'Turbo', 'GT3', 'GT3 RS', 'Targa'] },
+      { name: '718 Boxster' }, { name: '718 Cayman' },
+      { name: 'Cayenne' }, { name: 'Cayenne Coup\u00e9' },
+      { name: 'Macan' }, { name: 'Panamera' },
+      { name: 'Taycan', variants: ['4S', 'Turbo', 'GTS', 'Cross Turismo'] },
+    ]
+  },
+  {
+    name: 'Alfa Romeo', slug: 'alfa-romeo',
+    models: [
+      { name: 'Giulietta' }, { name: 'Giulia' }, { name: 'Stelvio' },
+      { name: 'MiTo' }, { name: 'Tonale' },
+      { name: '147' }, { name: '156' }, { name: '159' },
+      { name: 'GT' }, { name: 'Brera' }, { name: 'Spider' }, { name: '4C' },
+    ]
+  },
+  {
+    name: 'MINI', slug: 'mini',
+    models: [
+      { name: 'Cooper', variants: ['3-door', '5-door'] },
+      { name: 'Clubman' }, { name: 'Countryman' }, { name: 'Paceman' },
+      { name: 'Convertible' }, { name: 'Electric' }, { name: 'JCW' },
+    ]
+  },
+  {
+    name: 'Mitsubishi', slug: 'mitsubishi',
+    models: [
+      { name: 'Outlander' }, { name: 'ASX' }, { name: 'Eclipse Cross' },
+      { name: 'Space Star' }, { name: 'Pajero' }, { name: 'L200' },
+      { name: 'Colt' }, { name: 'Lancer' }, { name: 'Galant' }, { name: 'i-MiEV' },
+    ]
+  },
+  {
+    name: 'Subaru', slug: 'subaru',
+    models: [
+      { name: 'Forester' }, { name: 'Outback' }, { name: 'XV / Crosstrek' },
+      { name: 'Impreza' }, { name: 'WRX' }, { name: 'Legacy' },
+      { name: 'BRZ' }, { name: 'Levorg' }, { name: 'Solterra' },
+    ]
+  },
+  {
+    name: 'Jaguar', slug: 'jaguar',
+    models: [
+      { name: 'XE' }, { name: 'XF' }, { name: 'XJ' },
+      { name: 'F-Pace' }, { name: 'E-Pace' }, { name: 'I-Pace' },
+      { name: 'F-Type' }, { name: 'S-Type' }, { name: 'X-Type' },
+    ]
+  },
+  {
+    name: 'Lexus', slug: 'lexus',
+    models: [
+      { name: 'IS' }, { name: 'ES' }, { name: 'GS' }, { name: 'LS' },
+      { name: 'NX' }, { name: 'RX' }, { name: 'UX' },
+      { name: 'LC' }, { name: 'LX' }, { name: 'RC' }, { name: 'LBX' },
+    ]
+  },
+  {
+    name: 'Ferrari', slug: 'ferrari',
+    models: [
+      { name: '296 GTB' }, { name: '296 GTS' }, { name: 'F8 Tributo' },
+      { name: 'SF90 Stradale' }, { name: 'Roma' }, { name: 'Portofino' },
+      { name: '812' }, { name: 'Purosangue' },
+      { name: '488 GTB' }, { name: '458 Italia' },
+      { name: 'California T' }, { name: 'LaFerrari' },
+    ]
+  },
+  {
+    name: 'Lamborghini', slug: 'lamborghini',
+    models: [
+      { name: 'Hurac\u00e1n', variants: ['EVO', 'STO', 'Tecnica', 'Sterrato'] },
+      { name: 'Urus', variants: ['S', 'Performante'] },
+      { name: 'Revuelto' },
+      { name: 'Aventador', variants: ['S', 'SVJ', 'Ultimae'] },
+      { name: 'Gallardo' },
+    ]
+  },
+  {
+    name: 'Maserati', slug: 'maserati',
+    models: [
+      { name: 'Ghibli' }, { name: 'Levante' }, { name: 'Quattroporte' },
+      { name: 'MC20' },
+      { name: 'Grecale', variants: ['GT', 'Modena', 'Trofeo'] },
+      { name: 'GranTurismo' }, { name: 'GranCabrio' },
+    ]
+  },
+  {
+    name: 'McLaren', slug: 'mclaren',
+    models: [
+      { name: '720S' }, { name: '765LT' }, { name: 'Artura' },
+      { name: 'GT' }, { name: '570S' }, { name: '600LT' }, { name: 'Senna' },
+    ]
+  },
+  {
+    name: 'Bentley', slug: 'bentley',
+    models: [
+      { name: 'Continental GT' }, { name: 'Continental GTC' },
+      { name: 'Flying Spur' },
+      { name: 'Bentayga', variants: ['V8', 'Speed', 'EWB'] },
+    ]
+  },
+  {
+    name: 'Rolls-Royce', slug: 'rolls-royce',
+    models: [
+      { name: 'Ghost' }, { name: 'Phantom' }, { name: 'Wraith' },
+      { name: 'Cullinan' }, { name: 'Dawn' }, { name: 'Spectre' },
+    ]
+  },
+  {
+    name: 'Aston Martin', slug: 'aston-martin',
+    models: [
+      { name: 'DB11' }, { name: 'DB12' }, { name: 'Vantage' },
+      { name: 'DBX', variants: ['707'] },
+      { name: 'DBS' }, { name: 'V8 Vantage' },
+    ]
+  },
+  {
+    name: 'Smart', slug: 'smart',
+    models: [
+      { name: 'ForTwo' }, { name: 'ForFour' }, { name: '#1' }, { name: '#3' },
+    ]
+  },
+  {
+    name: 'DS', slug: 'ds',
+    models: [
+      { name: 'DS3 Crossback' }, { name: 'DS4' }, { name: 'DS7 Crossback' }, { name: 'DS9' },
+    ]
+  },
+  {
+    name: 'Alpine', slug: 'alpine',
+    models: [
+      { name: 'A110', variants: ['Pure', 'L\u00e9gende', 'S', 'GT', 'R'] },
+      { name: 'A290' },
+    ]
+  },
+  {
+    name: 'MG', slug: 'mg',
+    models: [
+      { name: 'ZS' }, { name: 'ZS EV' }, { name: 'HS' },
+      { name: 'MG4' }, { name: 'MG5' }, { name: 'Marvel R' }, { name: 'Cyberster' },
+    ]
+  },
+  {
+    name: 'BYD', slug: 'byd',
+    models: [
+      { name: 'Atto 3' }, { name: 'Han' }, { name: 'Tang' },
+      { name: 'Seal' }, { name: 'Dolphin' }, { name: 'Song Plus' }, { name: 'Yuan Plus' },
+    ]
+  },
+  {
+    name: 'Chrysler', slug: 'chrysler',
+    models: [
+      { name: '300' }, { name: 'Pacifica' }, { name: 'Voyager' }, { name: 'PT Cruiser' },
+    ]
+  },
+  {
+    name: 'Dodge', slug: 'dodge',
+    models: [
+      { name: 'Charger' },
+      { name: 'Challenger', variants: ['R/T', 'SRT', 'Hellcat'] },
+      { name: 'Durango' }, { name: 'Journey' }, { name: 'Nitro' },
+    ]
+  },
+  {
+    name: 'Chevrolet', slug: 'chevrolet',
+    models: [
+      { name: 'Camaro' },
+      { name: 'Corvette', variants: ['C7', 'C8'] },
+      { name: 'Tahoe' }, { name: 'Suburban' }, { name: 'Silverado' },
+      { name: 'Equinox' }, { name: 'Trax' }, { name: 'Cruze' },
+      { name: 'Malibu' }, { name: 'Spark' }, { name: 'Captiva' }, { name: 'Orlando' },
+    ]
+  },
+  {
+    name: 'Cadillac', slug: 'cadillac',
+    models: [
+      { name: 'Escalade' }, { name: 'CT5' },
+      { name: 'XT4' }, { name: 'XT5' }, { name: 'XT6' }, { name: 'Lyriq' },
+    ]
+  },
+  {
+    name: 'GMC', slug: 'gmc',
+    models: [
+      { name: 'Sierra', variants: ['1500', '2500', '3500'] },
+      { name: 'Yukon', variants: ['XL', 'Denali'] },
+      { name: 'Canyon' }, { name: 'Terrain' }, { name: 'Acadia' }, { name: 'Hummer EV' },
+    ]
+  },
+  {
+    name: 'RAM', slug: 'ram',
+    models: [
+      { name: '1500', variants: ['Classic', 'Laramie', 'Limited', 'TRX'] },
+      { name: '2500' }, { name: '3500' }, { name: 'ProMaster' },
+    ]
+  },
+  {
+    name: 'SsangYong', slug: 'ssangyong',
+    models: [
+      { name: 'Tivoli' }, { name: 'Korando' }, { name: 'Rexton' },
+      { name: 'Musso' }, { name: 'Torres' },
+    ]
+  },
+  {
+    name: 'Saab', slug: 'saab',
+    models: [
+      { name: '9-3', variants: ['Sport Sedan', 'Convertible', 'SportCombi'] },
+      { name: '9-5', variants: ['Sedan', 'SportCombi'] },
+      { name: '9-4X' },
+    ]
+  },
+  {
+    name: 'Infiniti', slug: 'infiniti',
+    models: [
+      { name: 'Q30' }, { name: 'Q50' }, { name: 'Q60' }, { name: 'Q70' },
+      { name: 'QX30' }, { name: 'QX50' }, { name: 'QX60' }, { name: 'QX70' }, { name: 'QX80' },
+    ]
+  },
+  {
+    name: 'Lincoln', slug: 'lincoln',
+    models: [
+      { name: 'Navigator' }, { name: 'Aviator' }, { name: 'Corsair' }, { name: 'Nautilus' },
+    ]
+  },
+  {
+    name: 'Lotus', slug: 'lotus',
+    models: [
+      { name: 'Emira' }, { name: 'Eletre' }, { name: 'Evija' },
+      { name: 'Elise' }, { name: 'Exige' }, { name: 'Evora' },
+    ]
+  },
+  {
+    name: 'Zastava', slug: 'zastava',
+    models: [
+      { name: '101' }, { name: '128' }, { name: '750 (Fi\u0107o)' },
+      { name: 'Yugo 45' }, { name: 'Yugo 55' }, { name: 'Yugo 60' }, { name: 'Yugo 65' },
+      { name: 'Skala' }, { name: 'Florida' }, { name: 'Tempo' },
+    ]
+  },
+  {
+    name: 'Lada', slug: 'lada',
+    models: [
+      { name: 'Niva', variants: ['Legend', 'Travel'] },
+      { name: '2101 (\u017diguli)' }, { name: '2103' }, { name: '2104' },
+      { name: '2105' }, { name: '2106' }, { name: '2107' },
+      { name: 'Samara' }, { name: 'Vesta' }, { name: 'Granta' },
+    ]
+  },
+  {
+    name: 'NIO', slug: 'nio',
+    models: [
+      { name: 'ET5' }, { name: 'ET7' }, { name: 'ES6' },
+      { name: 'ES8' }, { name: 'EC6' }, { name: 'EC7' }, { name: 'EL8' },
+    ]
+  },
+  {
+    name: 'Geely', slug: 'geely',
+    models: [
+      { name: 'Coolray' }, { name: 'Atlas' }, { name: 'Emgrand' }, { name: 'Monjaro' },
+    ]
+  },
+  {
+    name: 'Great Wall', slug: 'great-wall',
+    models: [
+      { name: 'Haval H6' }, { name: 'Haval Jolion' },
+      { name: 'Haval Dargo' }, { name: 'Ora Good Cat' },
+    ]
+  },
+  {
+    name: 'Chery', slug: 'chery',
+    models: [
+      { name: 'Tiggo 4 Pro' }, { name: 'Tiggo 7 Pro' },
+      { name: 'Tiggo 8 Pro' }, { name: 'Omoda 5' },
+    ]
+  },
+  {
+    name: 'Tata', slug: 'tata',
+    models: [
+      { name: 'Nexon' }, { name: 'Harrier' }, { name: 'Safari' }, { name: 'Punch' },
+    ]
+  },
+  {
+    name: 'Mahindra', slug: 'mahindra',
+    models: [
+      { name: 'XUV700' }, { name: 'Thar' }, { name: 'Scorpio' }, { name: 'Bolero' },
+    ]
+  },
+  {
+    name: 'Rimac', slug: 'rimac',
+    models: [
+      { name: 'Nevera' }, { name: 'C Two' },
+    ]
+  },
+  {
+    name: 'Yugo', slug: 'yugo',
+    models: [
+      { name: '45' }, { name: '55' }, { name: '60' }, { name: '65' },
+      { name: 'Koral' }, { name: 'Florida' }, { name: 'Tempo' },
+    ]
+  },
   { name: 'Ostalo', slug: '', models: [] },
 ];
 
-// ── Motorrad-Marken mit Modellen ─────────────────────────────
+// ── Motorcycle Brands with Models ───────────────────────────
 
 export const MOTORCYCLE_BRANDS: VehicleBrand[] = [
   {
@@ -311,7 +595,7 @@ export const MOTORCYCLE_BRANDS: VehicleBrand[] = [
       { name: 'YZF-R1' }, { name: 'YZF-R6' }, { name: 'YZF-R3' }, { name: 'YZF-R125' },
       { name: 'MT-03' }, { name: 'MT-07' }, { name: 'MT-09' }, { name: 'MT-10' },
       { name: 'Tracer 7' }, { name: 'Tracer 9' },
-      { name: 'Ténéré 700' }, { name: 'XSR 700' }, { name: 'XSR 900' },
+      { name: 'T\u00e9n\u00e9r\u00e9 700' }, { name: 'XSR 700' }, { name: 'XSR 900' },
       { name: 'XMAX 300' }, { name: 'TMAX 560' }, { name: 'NMAX 125' },
       { name: 'WR 250' }, { name: 'YZ 250' }, { name: 'YZ 450' },
       { name: 'Bolt' }, { name: 'V-Star' }, { name: 'Drag Star' },
@@ -445,16 +729,608 @@ export const MOTORCYCLE_BRANDS: VehicleBrand[] = [
   }
 ];
 
-// ── Helper: Find brand models ────────────────────────────────
+// ── Bicycle Brands with Models ──────────────────────────────
 
-export function findBrandModels(brandName: string, isMotorcycle: boolean): VehicleModel[] {
-  const brands = isMotorcycle ? MOTORCYCLE_BRANDS : CAR_BRANDS_WITH_MODELS;
-  const brand = brands.find(b => b.name.toLowerCase() === brandName.toLowerCase());
-  return brand?.models || [];
+export const BICYCLE_BRANDS: VehicleBrand[] = [
+  {
+    name: 'Trek', slug: 'trek',
+    models: [
+      { name: 'Marlin' }, { name: 'X-Caliber' }, { name: 'Fuel EX' },
+      { name: 'Top Fuel' }, { name: 'Slash' }, { name: 'Remedy' }, { name: 'Roscoe' },
+      { name: 'Domane' }, { name: 'Emonda' }, { name: 'Madone' },
+      { name: 'Checkpoint' }, { name: 'FX' }, { name: 'Verve' },
+      { name: 'Dual Sport' }, { name: 'Rail' }, { name: 'Powerfly' },
+    ]
+  },
+  {
+    name: 'Specialized', slug: 'specialized',
+    models: [
+      { name: 'Rockhopper' }, { name: 'Chisel' }, { name: 'Epic' },
+      { name: 'Stumpjumper' }, { name: 'Enduro' },
+      { name: 'Levo' }, { name: 'Kenevo' },
+      { name: 'Tarmac' }, { name: 'Roubaix' }, { name: 'Aethos' },
+      { name: 'Crux' }, { name: 'Diverge' },
+      { name: 'Turbo Levo' }, { name: 'Turbo Creo' }, { name: 'Vado' },
+    ]
+  },
+  {
+    name: 'Giant', slug: 'giant',
+    models: [
+      { name: 'Talon' }, { name: 'Fathom' }, { name: 'Trance' }, { name: 'Reign' },
+      { name: 'TCR' }, { name: 'Defy' }, { name: 'Revolt' }, { name: 'Contend' },
+      { name: 'Explore E+' }, { name: 'Trance X E+' },
+    ]
+  },
+  {
+    name: 'Canyon', slug: 'canyon',
+    models: [
+      { name: 'Spectral' }, { name: 'Strive' }, { name: 'Neuron' }, { name: 'Lux' },
+      { name: 'Endurace' }, { name: 'Aeroad' }, { name: 'Grail' },
+      { name: 'Ultimate' }, { name: 'Inflite' },
+      { name: 'Roadlite' }, { name: 'Pathlite' },
+    ]
+  },
+  {
+    name: 'Cube', slug: 'cube',
+    models: [
+      { name: 'Attention' }, { name: 'Analog' }, { name: 'Stereo' },
+      { name: 'AMS' }, { name: 'Reaction' },
+      { name: 'Attain' }, { name: 'Agree' }, { name: 'Nuroad' },
+      { name: 'Cross' }, { name: 'Touring' }, { name: 'Kathmandu' },
+    ]
+  },
+  {
+    name: 'Scott', slug: 'scott',
+    models: [
+      { name: 'Scale' }, { name: 'Spark' }, { name: 'Genius' }, { name: 'Ransom' },
+      { name: 'Addict' }, { name: 'Speedster' }, { name: 'Contessa' }, { name: 'Sub Cross' },
+    ]
+  },
+  {
+    name: 'Cannondale', slug: 'cannondale',
+    models: [
+      { name: 'Trail' }, { name: 'Scalpel' }, { name: 'Habit' }, { name: 'Jekyll' },
+      { name: 'SuperSix' }, { name: 'Synapse' }, { name: 'Topstone' },
+      { name: 'CAAD' }, { name: 'Quick' }, { name: 'Moterra' },
+    ]
+  },
+  {
+    name: 'Merida', slug: 'merida',
+    models: [
+      { name: 'Big Nine' }, { name: 'Big Seven' },
+      { name: 'One-Twenty' }, { name: 'One-Forty' }, { name: 'One-Sixty' },
+      { name: 'Scultura' }, { name: 'Reacto' }, { name: 'Silex' },
+      { name: 'Crossway' }, { name: 'eOne-Sixty' },
+    ]
+  },
+  {
+    name: 'Orbea', slug: 'orbea',
+    models: [
+      { name: 'Alma' }, { name: 'Oiz' }, { name: 'Occam' }, { name: 'Rallon' },
+      { name: 'Orca' }, { name: 'Avant' }, { name: 'Terra' },
+      { name: 'Gain' }, { name: 'Vibe' }, { name: 'MX' },
+    ]
+  },
+  {
+    name: 'Bianchi', slug: 'bianchi',
+    models: [
+      { name: 'Magma' }, { name: 'T-Tronik' }, { name: 'Oltre' },
+      { name: 'Infinito' }, { name: 'Impulso' }, { name: 'Sprint' },
+      { name: 'Via Nirone' }, { name: 'Aria' }, { name: 'Arcadex' },
+    ]
+  },
+  {
+    name: 'KTM', slug: 'ktm',
+    models: [
+      { name: 'Chicago' }, { name: 'Scarp' }, { name: 'Prowler' },
+      { name: 'Revelator' }, { name: 'Strada' }, { name: 'Macina' }, { name: 'Ultra' },
+    ]
+  },
+  {
+    name: 'Kellys', slug: 'kellys',
+    models: [
+      { name: 'Spider' }, { name: 'Gate' }, { name: 'Tygon' },
+      { name: 'Arc' }, { name: 'Cliff' }, { name: 'Phanatic' },
+    ]
+  },
+  {
+    name: 'Capriolo', slug: 'capriolo',
+    models: [
+      { name: 'Level' }, { name: 'Fireball' }, { name: 'Attack' },
+      { name: 'Passion' }, { name: 'Sunrise' },
+    ]
+  },
+  {
+    name: 'Ghost', slug: 'ghost',
+    models: [
+      { name: 'Lector' }, { name: 'Riot' }, { name: 'SL AMR' },
+      { name: 'Nirvana' }, { name: 'Kato' }, { name: 'Lanao' }, { name: 'E-Teru' },
+    ]
+  },
+  {
+    name: 'Haibike', slug: 'haibike',
+    models: [
+      { name: 'AllMtn' }, { name: 'AllTrail' }, { name: 'Adventr' },
+      { name: 'Trekking' }, { name: 'Nduro' }, { name: 'Lyke' },
+    ]
+  },
+  {
+    name: 'Focus', slug: 'focus',
+    models: [
+      { name: 'Jam' }, { name: 'Thron' }, { name: 'Aventura' },
+      { name: 'Paralane' }, { name: 'Izalco' }, { name: 'ATLAS' }, { name: 'Whistler' },
+    ]
+  },
+  {
+    name: 'Gazelle', slug: 'gazelle',
+    models: [
+      { name: 'Medeo' }, { name: 'Ultimate' }, { name: 'CityZen' },
+      { name: 'Eclipse' }, { name: 'Arroyo' }, { name: 'Paris' },
+    ]
+  },
+  {
+    name: 'GT', slug: 'gt',
+    models: [
+      { name: 'Avalanche' }, { name: 'Sensor' }, { name: 'Force' },
+      { name: 'Grade' }, { name: 'Aggressor' }, { name: 'Palomar' }, { name: 'Performer' },
+    ]
+  },
+  {
+    name: 'BMC', slug: 'bmc',
+    models: [
+      { name: 'Twostroke' }, { name: 'Fourstroke' }, { name: 'Speedfox' },
+      { name: 'Agonist' }, { name: 'Roadmachine' }, { name: 'Teammachine' },
+      { name: 'Alpenchallenge' }, { name: 'URS' },
+    ]
+  },
+  {
+    name: 'Rose', slug: 'rose',
+    models: [
+      { name: 'Count Solo' }, { name: 'Root Miller' }, { name: 'Backroad' },
+      { name: 'The Bruce' }, { name: 'Pikes Peak' }, { name: 'Reveal' },
+    ]
+  },
+  {
+    name: 'Kona', slug: 'kona',
+    models: [
+      { name: 'Process' }, { name: 'Honzo' }, { name: 'Hei Hei' },
+      { name: 'Rove' }, { name: 'Sutra' }, { name: 'Dew' }, { name: 'Unit' },
+    ]
+  },
+  {
+    name: 'Santa Cruz', slug: 'santa-cruz',
+    models: [
+      { name: 'Hightower' }, { name: 'Megatower' }, { name: 'Bronson' },
+      { name: 'Tallboy' }, { name: '5010' }, { name: 'Chameleon' },
+      { name: 'Stigmata' }, { name: 'Blur' },
+    ]
+  },
+  {
+    name: 'Pinarello', slug: 'pinarello',
+    models: [
+      { name: 'Dogma' }, { name: 'Prince' }, { name: 'Paris' },
+      { name: 'Nytro' }, { name: 'Razha' },
+    ]
+  },
+  {
+    name: 'Cerv\u00e9lo', slug: 'cervelo',
+    models: [
+      { name: 'S5' }, { name: 'R5' }, { name: 'Caledonia' },
+      { name: 'Soloist' }, { name: 'Aspero' },
+    ]
+  },
+  { name: 'Ostalo', slug: '', models: [] },
+];
+
+// ── Truck Brands with Models ────────────────────────────────
+
+export const TRUCK_BRANDS: VehicleBrand[] = [
+  {
+    name: 'MAN', slug: 'man',
+    models: [
+      { name: 'TGX' }, { name: 'TGS' }, { name: 'TGM' }, { name: 'TGL' }, { name: 'TGE' },
+    ]
+  },
+  {
+    name: 'Scania', slug: 'scania',
+    models: [
+      { name: 'R' }, { name: 'S' }, { name: 'G' }, { name: 'P' }, { name: 'L' }, { name: 'XT' },
+    ]
+  },
+  {
+    name: 'Volvo Trucks', slug: 'volvo-trucks',
+    models: [
+      { name: 'FH' }, { name: 'FH16' }, { name: 'FM' }, { name: 'FMX' },
+      { name: 'FE' }, { name: 'FL' },
+    ]
+  },
+  {
+    name: 'DAF', slug: 'daf',
+    models: [
+      { name: 'XG+' }, { name: 'XG' }, { name: 'XF' }, { name: 'CF' }, { name: 'LF' },
+    ]
+  },
+  {
+    name: 'Iveco', slug: 'iveco',
+    models: [
+      { name: 'S-Way' }, { name: 'X-Way' }, { name: 'Eurocargo' },
+      { name: 'Daily' }, { name: 'T-Way' },
+    ]
+  },
+  {
+    name: 'Mercedes-Benz', slug: 'mercedes-benz',
+    models: [
+      { name: 'Actros' }, { name: 'Arocs' }, { name: 'Atego' },
+      { name: 'eActros' }, { name: 'Econic' }, { name: 'Unimog' }, { name: 'Zetros' },
+    ]
+  },
+  {
+    name: 'Renault Trucks', slug: 'renault-trucks',
+    models: [
+      { name: 'T' }, { name: 'T High' }, { name: 'C' },
+      { name: 'D' }, { name: 'D Wide' }, { name: 'Master' },
+    ]
+  },
+  {
+    name: 'Tatra', slug: 'tatra',
+    models: [
+      { name: 'Phoenix' }, { name: 'Force' }, { name: 'Terra' },
+    ]
+  },
+  {
+    name: 'KAMAZ', slug: 'kamaz',
+    models: [
+      { name: '5490' }, { name: '54901' }, { name: '65115' }, { name: '6520' },
+    ]
+  },
+  {
+    name: 'Isuzu', slug: 'isuzu',
+    models: [
+      { name: 'N-Series' }, { name: 'F-Series' }, { name: 'Forward' }, { name: 'Giga' },
+    ]
+  },
+  {
+    name: 'Mitsubishi Fuso', slug: 'mitsubishi-fuso',
+    models: [
+      { name: 'Canter' }, { name: 'Fighter' }, { name: 'Super Great' },
+    ]
+  },
+  {
+    name: 'Hino', slug: 'hino',
+    models: [
+      { name: '300' }, { name: '500' }, { name: '700' },
+    ]
+  },
+  {
+    name: 'Ford Trucks', slug: 'ford-trucks',
+    models: [
+      { name: 'F-Max' }, { name: 'Cargo' }, { name: 'Transit' },
+    ]
+  },
+  { name: 'Ostalo', slug: '', models: [] },
+];
+
+// ── Camper Brands with Models ───────────────────────────────
+
+export const CAMPER_BRANDS: VehicleBrand[] = [
+  {
+    name: 'Hymer', slug: 'hymer',
+    models: [
+      { name: 'B-Klasse' }, { name: 'Exsis' }, { name: 'ML-T' },
+      { name: 'Free' }, { name: 'Grand Canyon' }, { name: 'DuoMobil' },
+    ]
+  },
+  {
+    name: 'Dethleffs', slug: 'dethleffs',
+    models: [
+      { name: 'Pulse' }, { name: 'Trend' }, { name: 'Esprit' },
+      { name: 'Globebus' }, { name: 'Just Go' }, { name: 'Globetrotter' },
+    ]
+  },
+  {
+    name: 'B\u00fcrstner', slug: 'burstner',
+    models: [
+      { name: 'Lyseo' }, { name: 'Ixeo' }, { name: 'Lineo' },
+      { name: 'Copa' }, { name: 'Campeo' }, { name: 'Delfin' },
+    ]
+  },
+  {
+    name: 'Knaus', slug: 'knaus',
+    models: [
+      { name: 'BoxStar' }, { name: 'BoxDrive' }, { name: 'Van TI' },
+      { name: 'Sky TI' }, { name: 'Live' }, { name: 'Sun TI' },
+    ]
+  },
+  {
+    name: 'Adria', slug: 'adria',
+    models: [
+      { name: 'Twin' }, { name: 'Coral' }, { name: 'Matrix' },
+      { name: 'Sonic' }, { name: 'Supersonic' },
+      { name: 'Altea' }, { name: 'Adora' }, { name: 'Action' },
+    ]
+  },
+  {
+    name: 'Hobby', slug: 'hobby',
+    models: [
+      { name: 'Vantana' }, { name: 'Optima' }, { name: 'Siesta' },
+      { name: 'De Luxe' }, { name: 'Excellent' }, { name: 'Prestige' },
+    ]
+  },
+  {
+    name: 'Carthago', slug: 'carthago',
+    models: [
+      { name: 'Liner' }, { name: 'Chic' }, { name: 'Malibu' },
+      { name: 'C-Tourer' }, { name: 'C-Compactline' },
+    ]
+  },
+  {
+    name: 'Weinsberg', slug: 'weinsberg',
+    models: [
+      { name: 'CaraCompact' }, { name: 'CaraBus' }, { name: 'CaraCore' },
+      { name: 'CaraHome' }, { name: 'CaraOne' },
+    ]
+  },
+  {
+    name: 'Carado', slug: 'carado',
+    models: [
+      { name: 'V' }, { name: 'T' }, { name: 'I' }, { name: 'CV' }, { name: 'CT' },
+    ]
+  },
+  {
+    name: 'Sunlight', slug: 'sunlight',
+    models: [
+      { name: 'Cliff' }, { name: 'T-Series' }, { name: 'I-Series' }, { name: 'Van' },
+    ]
+  },
+  {
+    name: 'LMC', slug: 'lmc',
+    models: [
+      { name: 'Cruiser' }, { name: 'Explorer' }, { name: 'Innovan' },
+      { name: 'Style' }, { name: 'Vivo' },
+    ]
+  },
+  {
+    name: 'Eura Mobil', slug: 'eura-mobil',
+    models: [
+      { name: 'Integra' }, { name: 'Profila' }, { name: 'Van' },
+      { name: 'Terrestra' }, { name: 'Activa' },
+    ]
+  },
+  {
+    name: 'Fendt', slug: 'fendt',
+    models: [
+      { name: 'Bianco' }, { name: 'Tendenza' }, { name: 'Diamant' },
+      { name: 'Opal' }, { name: 'Saphir' },
+    ]
+  },
+  {
+    name: 'Concorde', slug: 'concorde',
+    models: [
+      { name: 'Liner' }, { name: 'Charisma' }, { name: 'Carver' }, { name: 'Cruiser' },
+    ]
+  },
+  {
+    name: 'Pilote', slug: 'pilote',
+    models: [
+      { name: 'Galaxy' }, { name: 'Pacific' }, { name: 'Van V' }, { name: 'Foxy Van' },
+    ]
+  },
+  { name: 'Ostalo', slug: '', models: [] },
+];
+
+// ── Boat Brands with Models ─────────────────────────────────
+
+export const BOAT_BRANDS: VehicleBrand[] = [
+  {
+    name: 'Bayliner', slug: 'bayliner',
+    models: [
+      { name: 'VR4' }, { name: 'VR5' }, { name: 'VR6' },
+      { name: 'Element' }, { name: 'Trophy' }, { name: 'DX' },
+    ]
+  },
+  {
+    name: 'Sea Ray', slug: 'sea-ray',
+    models: [
+      { name: 'SPX' }, { name: 'SLX' }, { name: 'SDX' },
+      { name: 'Sundancer' }, { name: 'Fly' },
+    ]
+  },
+  {
+    name: 'Yamaha Marine', slug: 'yamaha-marine',
+    models: [
+      { name: '190 FSH' }, { name: '195S' }, { name: '210 FSH' },
+      { name: 'AR190' }, { name: '242X' },
+      { name: 'FX Cruiser' }, { name: 'GP1800' }, { name: 'EX' },
+    ]
+  },
+  {
+    name: 'Quicksilver', slug: 'quicksilver',
+    models: [
+      { name: 'Activ 455' }, { name: 'Activ 505' }, { name: 'Activ 555' },
+      { name: 'Activ 605' }, { name: 'Activ 675' },
+      { name: 'Captur' }, { name: 'Commander' }, { name: 'Pilothouse' },
+    ]
+  },
+  {
+    name: 'Jeanneau', slug: 'jeanneau',
+    models: [
+      { name: 'Cap Camarat' }, { name: 'Merry Fisher' },
+      { name: 'Leader' }, { name: 'Sun Odyssey' },
+    ]
+  },
+  {
+    name: 'Bavaria', slug: 'bavaria',
+    models: [
+      { name: 'Vida' }, { name: 'S-Series' }, { name: 'R40' }, { name: 'Cruiser' },
+    ]
+  },
+  {
+    name: 'Beneteau', slug: 'beneteau',
+    models: [
+      { name: 'Flyer' }, { name: 'Antares' }, { name: 'Gran Turismo' },
+      { name: 'Oceanis' }, { name: 'First' },
+    ]
+  },
+  {
+    name: 'Zodiac', slug: 'zodiac',
+    models: [
+      { name: 'Cadet' }, { name: 'Medline' }, { name: 'Open' }, { name: 'Pro' },
+    ]
+  },
+  {
+    name: 'Glastron', slug: 'glastron',
+    models: [
+      { name: 'GT' }, { name: 'GTD' }, { name: 'GX' },
+    ]
+  },
+  {
+    name: 'Parker', slug: 'parker',
+    models: [
+      { name: '550' }, { name: '660' }, { name: '750' },
+      { name: '800' }, { name: '850' }, { name: '920' },
+    ]
+  },
+  {
+    name: 'Chaparral', slug: 'chaparral',
+    models: [
+      { name: 'SSi' }, { name: 'Surf' }, { name: 'OSX' },
+    ]
+  },
+  {
+    name: 'Four Winns', slug: 'four-winns',
+    models: [
+      { name: 'HD' }, { name: 'Vista' }, { name: 'Horizon' },
+    ]
+  },
+  {
+    name: 'Honda Marine', slug: 'honda-marine',
+    models: [
+      { name: 'Outboard Motors' },
+    ]
+  },
+  {
+    name: 'Suzuki Marine', slug: 'suzuki-marine',
+    models: [
+      { name: 'Outboard Motors' },
+    ]
+  },
+  { name: 'Ostalo', slug: '', models: [] },
+];
+
+// ── ATV / Quad / UTV Brands with Models ─────────────────────
+
+export const ATV_BRANDS: VehicleBrand[] = [
+  {
+    name: 'Polaris', slug: 'polaris',
+    models: [
+      { name: 'Sportsman' }, { name: 'Scrambler' },
+      { name: 'RZR' }, { name: 'Ranger' }, { name: 'General' },
+    ]
+  },
+  {
+    name: 'Can-Am', slug: 'can-am',
+    models: [
+      { name: 'Outlander' }, { name: 'Renegade' },
+      { name: 'Commander' }, { name: 'Maverick' }, { name: 'Defender' },
+    ]
+  },
+  {
+    name: 'CF Moto', slug: 'cf-moto',
+    models: [
+      { name: 'CForce' }, { name: 'ZForce' }, { name: 'UForce' },
+    ]
+  },
+  {
+    name: 'Yamaha', slug: 'yamaha',
+    models: [
+      { name: 'Grizzly' }, { name: 'Kodiak' }, { name: 'YXZ1000R' },
+      { name: 'Wolverine' }, { name: 'Viking' },
+    ]
+  },
+  {
+    name: 'Honda', slug: 'honda',
+    models: [
+      { name: 'TRX250' }, { name: 'TRX420' }, { name: 'TRX520' },
+      { name: 'Pioneer' }, { name: 'Talon' },
+    ]
+  },
+  {
+    name: 'Suzuki', slug: 'suzuki',
+    models: [
+      { name: 'KingQuad' }, { name: 'LT-Z90' }, { name: 'QuadSport Z400' },
+    ]
+  },
+  {
+    name: 'Kawasaki', slug: 'kawasaki',
+    models: [
+      { name: 'Brute Force' }, { name: 'KFX' }, { name: 'Mule' },
+      { name: 'Teryx' }, { name: 'Ridge' },
+    ]
+  },
+  {
+    name: 'Arctic Cat', slug: 'arctic-cat',
+    models: [
+      { name: 'Alterra' }, { name: 'Prowler Pro' }, { name: 'Wildcat XX' },
+    ]
+  },
+  {
+    name: 'TGB', slug: 'tgb',
+    models: [
+      { name: 'Blade' }, { name: 'Target' }, { name: 'Gunner' },
+    ]
+  },
+  {
+    name: 'Kymco', slug: 'kymco',
+    models: [
+      { name: 'MXU' }, { name: 'UXV' },
+    ]
+  },
+  {
+    name: 'Linhai', slug: 'linhai',
+    models: [
+      { name: 'M550' }, { name: 'M750' }, { name: 'T-Boss' },
+    ]
+  },
+  { name: 'Ostalo', slug: '', models: [] },
+];
+
+// ── Unified Vehicle Brand Registry ──────────────────────────
+
+const VEHICLE_BRAND_REGISTRY: Record<VehicleType, VehicleBrand[]> = {
+  car: CAR_BRANDS_WITH_MODELS,
+  motorcycle: MOTORCYCLE_BRANDS,
+  bicycle: BICYCLE_BRANDS,
+  truck: TRUCK_BRANDS,
+  camper: CAMPER_BRANDS,
+  boat: BOAT_BRANDS,
+  atv: ATV_BRANDS,
+  parts: CAR_BRANDS_WITH_MODELS,
+};
+
+// ── Helper Functions (new, type-aware) ──────────────────────
+
+export function getBrandsForVehicleType(type: VehicleType): VehicleBrand[] {
+  return VEHICLE_BRAND_REGISTRY[type] ?? CAR_BRANDS_WITH_MODELS;
 }
 
-export function findModelVariants(brandName: string, modelName: string, isMotorcycle: boolean): string[] {
-  const models = findBrandModels(brandName, isMotorcycle);
-  const model = models.find(m => m.name.toLowerCase() === modelName.toLowerCase());
-  return model?.variants || [];
+export function findBrandModelsForType(brand: string, type: VehicleType): VehicleModel[] {
+  const brands = VEHICLE_BRAND_REGISTRY[type] ?? CAR_BRANDS_WITH_MODELS;
+  const found = brands.find(b => b.name.toLowerCase() === brand.toLowerCase());
+  return found?.models || [];
+}
+
+export function findModelVariantsForType(brand: string, model: string, type: VehicleType): string[] {
+  const models = findBrandModelsForType(brand, type);
+  const found = models.find(m => m.name.toLowerCase() === model.toLowerCase());
+  return found?.variants || [];
+}
+
+// ── Backward-compatible Helper Functions ────────────────────
+
+export function findBrandModels(brand: string, isMotorcycle: boolean): VehicleModel[] {
+  return findBrandModelsForType(brand, isMotorcycle ? 'motorcycle' : 'car');
+}
+
+export function findModelVariants(brand: string, model: string, isMotorcycle: boolean): string[] {
+  return findModelVariantsForType(brand, model, isMotorcycle ? 'motorcycle' : 'car');
 }
