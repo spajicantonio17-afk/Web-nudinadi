@@ -1294,6 +1294,123 @@ export const ATV_BRANDS: VehicleBrand[] = [
   { name: 'Ostalo', slug: '', models: [] },
 ];
 
+// ── Truck Sub-Type Brands ──────────────────────────────────
+
+export const TRUCK_KAMION_BRANDS: VehicleBrand[] = [
+  { name: 'MAN', slug: 'man', models: [{ name: 'TGX', variants: ['18.440', '18.460', '18.500', '18.510', '18.540', '26.440', '26.500'] }, { name: 'TGS', variants: ['18.400', '18.440', '18.470', '26.400', '33.400', '33.440'] }, { name: 'TGM', variants: ['12.250', '15.250', '18.280', '18.320'] }, { name: 'TGL', variants: ['8.180', '10.190', '12.220', '12.250'] }, { name: 'TGE', variants: ['3.140', '3.180', '5.160'] }] },
+  { name: 'Scania', slug: 'scania', models: [{ name: 'R', variants: ['410', '450', '500', '520', '540', '560', '590', '660', '770'] }, { name: 'S', variants: ['500', '520', '540', '560', '590', '660', '770'] }, { name: 'G', variants: ['370', '410', '450', '500'] }, { name: 'P', variants: ['280', '320', '360', '410'] }, { name: 'L', variants: ['280', '320'] }, { name: 'XT' }] },
+  { name: 'Volvo Trucks', slug: 'volvo', models: [{ name: 'FH', variants: ['420', '460', '500', '540'] }, { name: 'FH16', variants: ['550', '600', '650', '700', '750'] }, { name: 'FM', variants: ['330', '370', '420', '460', '500'] }, { name: 'FMX', variants: ['370', '420', '460', '500'] }, { name: 'FE' }, { name: 'FL' }] },
+  { name: 'DAF', slug: 'daf', models: [{ name: 'XG+' }, { name: 'XG' }, { name: 'XF', variants: ['450', '480', '530'] }, { name: 'CF', variants: ['260', '300', '340', '370', '410', '450', '480'] }, { name: 'LF', variants: ['150', '180', '210', '230', '260', '280'] }] },
+  { name: 'Iveco', slug: 'iveco', models: [{ name: 'S-Way', variants: ['400', '460', '480', '510', '570'] }, { name: 'X-Way' }, { name: 'Eurocargo', variants: ['75E', '100E', '120E', '140E', '160E', '180E'] }, { name: 'T-Way' }] },
+  { name: 'Mercedes-Benz', slug: 'mercedes-benz', models: [{ name: 'Actros', variants: ['1840', '1843', '1845', '1848', '1851', '1853', '2540', '2545', '2548', '2551', '2553'] }, { name: 'Arocs', variants: ['1832', '1840', '1843', '1845', '1848', '2640', '2643', '2645', '2648', '3240', '3340', '3345', '4140', '4145'] }, { name: 'Atego', variants: ['816', '818', '824', '1018', '1024', '1218', '1224', '1524', '1530'] }, { name: 'eActros' }, { name: 'Econic' }, { name: 'Unimog' }, { name: 'Zetros' }] },
+  { name: 'Renault Trucks', slug: 'renault', models: [{ name: 'T', variants: ['430', '460', '480', '520'] }, { name: 'T High' }, { name: 'C', variants: ['380', '430', '460', '480', '520'] }, { name: 'D', variants: ['210', '240', '250', '280', '320'] }, { name: 'D Wide', variants: ['280', '320', '360'] }] },
+  { name: 'Tatra', slug: 'tatra', models: [{ name: 'Phoenix' }, { name: 'Force' }, { name: 'Terra' }] },
+  { name: 'KAMAZ', slug: 'kamaz', models: [{ name: '5490' }, { name: '54901' }, { name: '65115' }, { name: '6520' }] },
+  { name: 'Hino', slug: 'hino', models: [{ name: '300' }, { name: '500' }, { name: '700' }] },
+  { name: 'Ford Trucks', slug: 'ford', models: [{ name: 'F-Max' }, { name: 'Cargo' }] },
+  { name: 'Ostalo', slug: 'ostalo', models: [] },
+];
+
+export const TRUCK_KOMBI_BRANDS: VehicleBrand[] = [
+  { name: 'Volkswagen', slug: 'volkswagen', models: [{ name: 'Transporter', variants: ['T5', 'T6', 'T6.1', 'T7'] }, { name: 'Crafter', variants: ['30', '35', '50'] }, { name: 'Caddy', variants: ['Caddy 4', 'Caddy 5', 'Caddy Maxi'] }, { name: 'Multivan' }, { name: 'Caravelle' }] },
+  { name: 'Mercedes-Benz', slug: 'mercedes-benz', models: [{ name: 'Vito', variants: ['110', '111', '114', '116', '119', '124'] }, { name: 'Sprinter', variants: ['211', '213', '214', '216', '311', '313', '314', '316', '319', '413', '414', '416', '419', '513', '514', '516', '519'] }, { name: 'V-Klasse', variants: ['V200', 'V220', 'V250', 'V300'] }, { name: 'Citan' }] },
+  { name: 'Ford', slug: 'ford', models: [{ name: 'Transit', variants: ['2.0 TDCi 105', '2.0 TDCi 130', '2.0 TDCi 170', '2.0 EcoBlue'] }, { name: 'Transit Custom', variants: ['2.0 TDCi 105', '2.0 TDCi 130', '2.0 TDCi 170', '2.0 EcoBlue'] }, { name: 'Transit Connect' }, { name: 'Transit Courier' }, { name: 'Tourneo Custom' }, { name: 'Tourneo Connect' }] },
+  { name: 'Fiat', slug: 'fiat', models: [{ name: 'Ducato', variants: ['2.2 120', '2.2 140', '2.3 130', '2.3 140', '2.3 160', '2.3 180'] }, { name: 'Scudo' }, { name: 'Talento' }, { name: 'Doblo', variants: ['Cargo', 'Combi'] }, { name: 'Fiorino' }] },
+  { name: 'Renault', slug: 'renault', models: [{ name: 'Master', variants: ['2.3 dCi 135', '2.3 dCi 150', '2.3 dCi 165', '2.3 dCi 180'] }, { name: 'Trafic', variants: ['2.0 dCi 110', '2.0 dCi 130', '2.0 dCi 150', '2.0 dCi 170'] }, { name: 'Kangoo' }] },
+  { name: 'Peugeot', slug: 'peugeot', models: [{ name: 'Boxer' }, { name: 'Expert' }, { name: 'Partner' }, { name: 'Rifter' }] },
+  { name: 'Citroën', slug: 'citroen', models: [{ name: 'Jumper' }, { name: 'Jumpy' }, { name: 'Berlingo', variants: ['Van', 'Multispace'] }, { name: 'SpaceTourer' }] },
+  { name: 'Opel', slug: 'opel', models: [{ name: 'Movano' }, { name: 'Vivaro', variants: ['1.6 CDTi', '2.0 CDTi'] }, { name: 'Combo', variants: ['Cargo', 'Life'] }] },
+  { name: 'Iveco', slug: 'iveco', models: [{ name: 'Daily', variants: ['29L', '33S', '35S', '35C', '40C', '50C', '65C', '70C'] }] },
+  { name: 'Toyota', slug: 'toyota', models: [{ name: 'Proace' }, { name: 'Proace City' }, { name: 'HiAce' }] },
+  { name: 'Nissan', slug: 'nissan', models: [{ name: 'NV300' }, { name: 'Interstar' }, { name: 'Townstar' }, { name: 'Primastar' }] },
+  { name: 'MAN', slug: 'man', models: [{ name: 'TGE', variants: ['3.140', '3.180', '5.160'] }] },
+  { name: 'Ostalo', slug: 'ostalo', models: [] },
+];
+
+export const TRUCK_BUS_BRANDS: VehicleBrand[] = [
+  { name: 'Mercedes-Benz', slug: 'mercedes-benz', models: [{ name: 'Sprinter Minibus' }, { name: 'Tourismo' }, { name: 'Citaro' }, { name: 'Intouro' }, { name: 'Conecto' }] },
+  { name: 'MAN', slug: 'man', models: [{ name: "Lion's Coach" }, { name: "Lion's City" }, { name: "Lion's Intercity" }] },
+  { name: 'Iveco', slug: 'iveco', models: [{ name: 'Crossway' }, { name: 'Urbanway' }, { name: 'Daily Minibus', variants: ['29', '35', '50', '65', '70'] }] },
+  { name: 'Setra', slug: 'setra', models: [{ name: 'S 500' }, { name: 'S 400' }, { name: 'ComfortClass' }, { name: 'TopClass' }, { name: 'MultiClass' }] },
+  { name: 'Volvo', slug: 'volvo', models: [{ name: '9700' }, { name: '9900' }, { name: '7900' }, { name: '8900' }] },
+  { name: 'Scania', slug: 'scania', models: [{ name: 'Touring' }, { name: 'Interlink' }, { name: 'Citywide' }] },
+  { name: 'Neoplan', slug: 'neoplan', models: [{ name: 'Cityliner' }, { name: 'Tourliner' }, { name: 'Skyliner' }] },
+  { name: 'Van Hool', slug: 'van-hool', models: [{ name: 'EX' }, { name: 'TX' }, { name: 'TDX' }, { name: 'A-serija' }] },
+  { name: 'Temsa', slug: 'temsa', models: [{ name: 'HD' }, { name: 'LD' }, { name: 'MD' }, { name: 'Safari' }] },
+  { name: 'Otokar', slug: 'otokar', models: [{ name: 'Vectio' }, { name: 'Territo' }, { name: 'Kent' }] },
+  { name: 'Solaris', slug: 'solaris', models: [{ name: 'Urbino' }, { name: 'InterUrbino' }, { name: 'Vacanza' }] },
+  { name: 'Ostalo', slug: 'ostalo', models: [] },
+];
+
+export const TRUCK_DOSTAVNO_BRANDS: VehicleBrand[] = [
+  { name: 'Volkswagen', slug: 'volkswagen', models: [{ name: 'Caddy', variants: ['Caddy 4', 'Caddy 5', 'Caddy Maxi'] }, { name: 'Amarok' }, { name: 'Transporter' }] },
+  { name: 'Toyota', slug: 'toyota', models: [{ name: 'Hilux' }, { name: 'Land Cruiser' }, { name: 'Proace City' }] },
+  { name: 'Ford', slug: 'ford', models: [{ name: 'Ranger', variants: ['XL', 'XLT', 'Limited', 'Wildtrak', 'Raptor'] }, { name: 'Transit Courier' }, { name: 'Transit Connect' }] },
+  { name: 'Fiat', slug: 'fiat', models: [{ name: 'Fiorino' }, { name: 'Doblo Cargo' }, { name: 'Fullback' }] },
+  { name: 'Mitsubishi', slug: 'mitsubishi', models: [{ name: 'L200', variants: ['Inform', 'Invite', 'Intense', 'Instyle'] }] },
+  { name: 'Nissan', slug: 'nissan', models: [{ name: 'Navara', variants: ['King Cab', 'Double Cab'] }, { name: 'Townstar' }] },
+  { name: 'Isuzu', slug: 'isuzu', models: [{ name: 'D-Max', variants: ['Single Cab', 'Space Cab', 'Double Cab'] }] },
+  { name: 'SsangYong', slug: 'ssangyong', models: [{ name: 'Musso', variants: ['Crystal', 'Sapphire', 'Grand'] }, { name: 'Rexton Sports' }] },
+  { name: 'Mercedes-Benz', slug: 'mercedes-benz', models: [{ name: 'Citan' }, { name: 'X-Klasse' }] },
+  { name: 'Peugeot', slug: 'peugeot', models: [{ name: 'Partner' }, { name: 'Landtrek' }] },
+  { name: 'Citroën', slug: 'citroen', models: [{ name: 'Berlingo Van' }] },
+  { name: 'Ostalo', slug: 'ostalo', models: [] },
+];
+
+export const TRUCK_KAMPER_BRANDS: VehicleBrand[] = [
+  { name: 'Hymer', slug: 'hymer', models: [{ name: 'B-Klasse' }, { name: 'Exsis' }, { name: 'ML-T' }, { name: 'Free' }, { name: 'Grand Canyon' }, { name: 'DuoMobil' }] },
+  { name: 'Dethleffs', slug: 'dethleffs', models: [{ name: 'Pulse' }, { name: 'Trend' }, { name: 'Esprit' }, { name: 'Globebus' }, { name: 'Just Go' }, { name: 'Globetrotter' }] },
+  { name: 'Bürstner', slug: 'burstner', models: [{ name: 'Lyseo' }, { name: 'Ixeo' }, { name: 'Lineo' }, { name: 'Copa' }, { name: 'Campeo' }, { name: 'Delfin' }] },
+  { name: 'Knaus', slug: 'knaus', models: [{ name: 'BoxStar' }, { name: 'BoxDrive' }, { name: 'Van TI' }, { name: 'Sky TI' }, { name: 'Live' }, { name: 'Sun TI' }] },
+  { name: 'Adria', slug: 'adria', models: [{ name: 'Twin' }, { name: 'Coral' }, { name: 'Matrix' }, { name: 'Sonic' }, { name: 'Supersonic' }] },
+  { name: 'Hobby', slug: 'hobby', models: [{ name: 'Vantana' }, { name: 'Optima' }, { name: 'Siesta' }, { name: 'De Luxe' }, { name: 'Excellent' }, { name: 'Prestige' }] },
+  { name: 'Carthago', slug: 'carthago', models: [{ name: 'Liner' }, { name: 'Chic' }, { name: 'Malibu' }, { name: 'C-Tourer' }, { name: 'C-Compactline' }] },
+  { name: 'Weinsberg', slug: 'weinsberg', models: [{ name: 'CaraCompact' }, { name: 'CaraBus' }, { name: 'CaraCore' }, { name: 'CaraHome' }, { name: 'CaraOne' }] },
+  { name: 'Carado', slug: 'carado', models: [{ name: 'V' }, { name: 'T' }, { name: 'I' }, { name: 'CV' }, { name: 'CT' }] },
+  { name: 'Sunlight', slug: 'sunlight', models: [{ name: 'Cliff' }, { name: 'T-Series' }, { name: 'I-Series' }, { name: 'Van' }] },
+  { name: 'Fendt', slug: 'fendt', models: [{ name: 'Bianco' }, { name: 'Tendenza' }, { name: 'Diamant' }, { name: 'Opal' }, { name: 'Saphir' }] },
+  { name: 'Concorde', slug: 'concorde', models: [{ name: 'Liner' }, { name: 'Charisma' }, { name: 'Carver' }, { name: 'Cruiser' }] },
+  { name: 'Pilote', slug: 'pilote', models: [{ name: 'Galaxy' }, { name: 'Pacific' }, { name: 'Van V' }, { name: 'Foxy Van' }] },
+  { name: 'Ostalo', slug: 'ostalo', models: [] },
+];
+
+export const TRUCK_GRADEVINA_BRANDS: VehicleBrand[] = [
+  { name: 'Caterpillar', slug: 'caterpillar', models: [{ name: 'Bager' }, { name: 'Buldožer' }, { name: 'Utovarivač' }, { name: 'Damper' }, { name: 'Greder' }] },
+  { name: 'Komatsu', slug: 'komatsu', models: [{ name: 'Bager' }, { name: 'Buldožer' }, { name: 'Utovarivač' }, { name: 'Damper' }] },
+  { name: 'Volvo CE', slug: 'volvo', models: [{ name: 'Bager' }, { name: 'Utovarivač' }, { name: 'Damper' }] },
+  { name: 'Liebherr', slug: 'liebherr', models: [{ name: 'Bager' }, { name: 'Dizalica' }, { name: 'Mješalica' }, { name: 'Utovarivač' }] },
+  { name: 'JCB', slug: 'jcb', models: [{ name: 'Bager' }, { name: 'Utovarivač' }, { name: 'Teleskopski' }] },
+  { name: 'Bobcat', slug: 'bobcat', models: [{ name: 'Mini bager' }, { name: 'Skid steer' }, { name: 'Utovarivač' }] },
+  { name: 'Hitachi', slug: 'hitachi', models: [{ name: 'Bager' }, { name: 'Utovarivač' }] },
+  { name: 'Case', slug: 'case', models: [{ name: 'Bager' }, { name: 'Utovarivač' }, { name: 'Buldožer' }] },
+  { name: 'Ostalo', slug: 'ostalo', models: [] },
+];
+
+export const TRUCK_POLJOPRIVREDA_BRANDS: VehicleBrand[] = [
+  { name: 'John Deere', slug: 'john-deere', models: [{ name: 'Serija 5' }, { name: 'Serija 6' }, { name: 'Serija 7' }, { name: 'Serija 8' }, { name: 'Serija 9' }] },
+  { name: 'Fendt', slug: 'fendt', models: [{ name: '200 Vario' }, { name: '300 Vario' }, { name: '500 Vario' }, { name: '700 Vario' }, { name: '900 Vario' }, { name: '1000 Vario' }] },
+  { name: 'Massey Ferguson', slug: 'massey-ferguson', models: [{ name: 'MF 3700' }, { name: 'MF 4700' }, { name: 'MF 5700' }, { name: 'MF 6700' }, { name: 'MF 7700' }, { name: 'MF 8700' }] },
+  { name: 'New Holland', slug: 'new-holland', models: [{ name: 'T4' }, { name: 'T5' }, { name: 'T6' }, { name: 'T7' }, { name: 'T8' }, { name: 'T9' }] },
+  { name: 'Claas', slug: 'claas', models: [{ name: 'Arion' }, { name: 'Axion' }, { name: 'Xerion' }, { name: 'Elios' }, { name: 'Nexos' }] },
+  { name: 'Deutz-Fahr', slug: 'deutz-fahr', models: [{ name: '5D' }, { name: '5G' }, { name: '6C' }, { name: '6G' }, { name: '7' }, { name: '8' }, { name: '9' }] },
+  { name: 'Kubota', slug: 'kubota', models: [{ name: 'L' }, { name: 'M' }, { name: 'M7' }] },
+  { name: 'Zetor', slug: 'zetor', models: [{ name: 'Major' }, { name: 'Hortus' }, { name: 'Utilix' }, { name: 'Proxima' }, { name: 'Forterra' }, { name: 'Crystal' }] },
+  { name: 'IMT', slug: 'imt', models: [{ name: '533' }, { name: '539' }, { name: '542' }, { name: '549' }, { name: '577' }] },
+  { name: 'Ostalo', slug: 'ostalo', models: [] },
+];
+
+export function getBrandsForTruckSubType(subType: string): VehicleBrand[] {
+  const s = subType.toLowerCase();
+  if (s.includes('kamion') || s === 'kamion') return TRUCK_KAMION_BRANDS;
+  if (s.includes('kombi') || s.includes('van')) return TRUCK_KOMBI_BRANDS;
+  if (s.includes('autobus') || s.includes('minibus')) return TRUCK_BUS_BRANDS;
+  if (s.includes('dostavno') || s.includes('caddy') || s.includes('pickup')) return TRUCK_DOSTAVNO_BRANDS;
+  if (s.includes('kamper') || s.includes('autodom')) return TRUCK_KAMPER_BRANDS;
+  if (s.includes('građevinsk')) return TRUCK_GRADEVINA_BRANDS;
+  if (s.includes('poljopriv')) return TRUCK_POLJOPRIVREDA_BRANDS;
+  return TRUCK_BRANDS;
+}
+
 // ── Unified Vehicle Brand Registry ──────────────────────────
 
 const VEHICLE_BRAND_REGISTRY: Record<VehicleType, VehicleBrand[]> = {

@@ -20,7 +20,13 @@ export async function analyzeImageWithGemini(base64: string, mimeType: string, p
 
 export async function textWithGemini(prompt: string): Promise<string> {
   const genAI = getClient();
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    generationConfig: {
+      temperature: 0,
+      maxOutputTokens: 4096,
+    },
+  });
   const result = await model.generateContent(prompt);
   return result.response.text();
 }

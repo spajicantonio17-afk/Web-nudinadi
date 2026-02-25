@@ -280,6 +280,28 @@ const ATV_FIELDS: CategoryField[] = [
   { key: 'servisnaKnjiga', label: 'Servisna knjiga', type: 'boolean', formPage: 2 },
 ];
 
+// ── Prikolice Fields ─────────────────────────────────────
+
+const PRIKOLICE_FIELDS: CategoryField[] = [
+  { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2020' },
+  { key: 'nosivost', label: 'Nosivost (kg)', type: 'number', formPage: 1, placeholder: 'npr. 750' },
+  { key: 'ukupnaMasa', label: 'Ukupna masa (kg)', type: 'number', formPage: 1, placeholder: 'npr. 1300' },
+  { key: 'registracija', label: 'Registracija do', type: 'text', formPage: 1, placeholder: 'npr. 06/2026' },
+  { key: 'duzinaM', label: 'Dužina (m)', type: 'number', formPage: 1, placeholder: 'npr. 4.5' },
+  { key: 'sirinaM', label: 'Širina (m)', type: 'number', formPage: 1, placeholder: 'npr. 2.0' },
+  { key: 'kocnice', label: 'Kočnice', type: 'select', formPage: 1, options: ['S kočnicama', 'Bez kočnica'] },
+  { key: 'materijal', label: 'Materijal', type: 'select', formPage: 1, options: ['Čelik', 'Aluminij', 'Galvanizirani čelik', 'Ostalo'] },
+];
+
+// ── Ostala Vozila Fields ─────────────────────────────────
+
+const OSTALA_VOZILA_FIELDS: CategoryField[] = [
+  { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2020' },
+  { key: 'stanje', label: 'Stanje', type: 'select', formPage: 1, options: ['Novo', 'Korišteno', 'Za dijelove'] },
+  { key: 'satiRada', label: 'Sati rada', type: 'number', formPage: 1, placeholder: 'npr. 1500' },
+  { key: 'registracija', label: 'Registracija do', type: 'text', formPage: 1, placeholder: 'npr. 06/2026' },
+];
+
 // ── Parts Fields ──────────────────────────────────────────
 
 const PARTS_FIELDS: CategoryField[] = [
@@ -303,6 +325,12 @@ export function getCategoryFields(category: string, vehicleType?: VehicleType): 
 
   // Parts check first
   if (vehicleType === 'parts' || c.includes('dijelovi')) return PARTS_FIELDS;
+
+  // Prikolice — minimal fields, no marka/karoserija
+  if (c.includes('prikolice') || c.includes('prikolica')) return PRIKOLICE_FIELDS;
+
+  // Ostala vozila — minimal fields
+  if (c.includes('ostala vozila')) return OSTALA_VOZILA_FIELDS;
 
   // Vehicle type specific
   if (c.includes('vozila') || c.includes('motocikl') || c.includes('bicikl') || c.includes('kamper') || c.includes('nautika') || c.includes('plovil') || c.includes('teretna') || c.includes('atv') || c.includes('quad') || c === 'automobili') {
