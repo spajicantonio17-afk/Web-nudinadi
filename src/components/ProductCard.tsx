@@ -60,14 +60,14 @@ function ProductCard({ product }: ProductCardProps) {
 
       {/* Content Area */}
       <div className="flex-1 p-2.5 flex flex-col justify-center overflow-hidden bg-[var(--c-card)]">
-        <h3 className="text-[13px] font-semibold text-[var(--c-text)] leading-snug line-clamp-1 mb-1">
+        <h3 className="text-[13px] font-semibold text-[var(--c-text)] leading-snug mb-1">
           {product.name}
         </h3>
 
         <div className="flex justify-between items-end mt-auto">
           <div className="flex flex-col">
             <span className="text-[11px] text-[var(--c-text3)] font-medium truncate max-w-[90px]">{product.location}</span>
-            <span className="text-[11px] text-[var(--c-text-muted)]">{product.timeLabel.split(' ').pop()}</span>
+            <span className="text-[11px] text-[var(--c-text-muted)]">{product.timeLabel}</span>
           </div>
           <div className="flex flex-col items-end gap-0.5">
             <span className="text-[14px] font-bold text-[var(--c-accent)] leading-none">&euro;{product.price.toLocaleString()}</span>

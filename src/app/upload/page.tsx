@@ -120,7 +120,7 @@ const analyzeRawInput = async (input: string): Promise<AiAnalysisResult> => {
     return { title: input, category: 'Ostalo', description: '' };
 };
 
-type UploadStep = 'selection' | 'all-categories' | 'vehicle-sub' | 'parts-sub' | 'car-method' | 'nekretnine-sub' | 'mobile-sub' | 'moda-sub' | 'tehnika-sub' | 'services-sub' | 'poslovi-sub' | 'form';
+type UploadStep = 'selection' | 'all-categories' | 'vehicle-sub' | 'parts-sub' | 'car-method' | 'nekretnine-sub' | 'mobile-sub' | 'moda-sub' | 'moda-artikl' | 'tehnika-sub' | 'services-sub' | 'poslovi-sub' | 'detail-sub' | 'dom-sub' | 'sport-sub' | 'djeca-sub' | 'glazba-sub' | 'literatura-sub' | 'zivotinje-sub' | 'hrana-sub' | 'strojevi-sub' | 'umjetnost-sub' | 'form';
 
 const NEKRETNINE_TYPES = [
   { name: 'Stanovi i Apartmani', icon: 'fa-building' },
@@ -239,13 +239,112 @@ const MODA_TYPES = [
   { name: 'Ženska moda', icon: 'fa-person-dress' },
   { name: 'Muška moda', icon: 'fa-user-tie' },
   { name: 'Dječja odjeća i obuća', icon: 'fa-child-reaching' },
-  { name: 'Accessoires', icon: 'fa-hat-cowboy' },
+  { name: 'Aksesoari', icon: 'fa-hat-cowboy' },
   { name: 'Radna i zaštitna oprema', icon: 'fa-helmet-safety' },
   { name: 'Cipele', icon: 'fa-shoe-prints' },
-  { name: 'Nakit (Schmuck)', icon: 'fa-gem' },
+  { name: 'Nakit', icon: 'fa-gem' },
   { name: 'Maškare i kostimi', icon: 'fa-mask' },
   { name: 'Dodaci za odjeću', icon: 'fa-socks' },
 ];
+
+const MODA_ARTIKLI: Record<string, Array<{name: string, icon: string}>> = {
+  'Ženska moda': [
+    // Gornji dio
+    { name: 'Majice i topovi', icon: 'fa-shirt' },
+    { name: 'Bluze i košulje', icon: 'fa-vest' },
+    { name: 'Džemperi i veste', icon: 'fa-mitten' },
+    { name: 'Jakne i kaputi', icon: 'fa-vest-patches' },
+    // Donji dio
+    { name: 'Hlače i traperice', icon: 'fa-socks' },
+    { name: 'Suknje', icon: 'fa-fan' },
+    { name: 'Kratke hlače i šorcevi', icon: 'fa-scissors' },
+    { name: 'Tajice i helanke', icon: 'fa-person-running' },
+    // Komplet
+    { name: 'Haljine', icon: 'fa-person-dress' },
+    { name: 'Kombinezoni i jumpsuit', icon: 'fa-person' },
+    { name: 'Odijela i komplet', icon: 'fa-user-tie' },
+    // Ostalo
+    { name: 'Sportska odjeća', icon: 'fa-dumbbell' },
+    { name: 'Donje rublje', icon: 'fa-heart' },
+    { name: 'Pidžame i kućna odjeća', icon: 'fa-moon' },
+    { name: 'Kupaći kostimi', icon: 'fa-umbrella-beach' },
+    { name: 'Trudnička odjeća', icon: 'fa-baby' },
+    { name: 'Šalovi i marame', icon: 'fa-wind' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Muška moda': [
+    // Gornji dio
+    { name: 'Majice', icon: 'fa-shirt' },
+    { name: 'Košulje', icon: 'fa-user-tie' },
+    { name: 'Džemperi i veste', icon: 'fa-mitten' },
+    { name: 'Jakne i kaputi', icon: 'fa-vest-patches' },
+    // Donji dio
+    { name: 'Hlače i traperice', icon: 'fa-socks' },
+    { name: 'Kratke hlače i šorcevi', icon: 'fa-scissors' },
+    { name: 'Trenirke i joggers', icon: 'fa-person-running' },
+    // Komplet
+    { name: 'Odijela i sakoi', icon: 'fa-user-tie' },
+    // Ostalo
+    { name: 'Sportska odjeća', icon: 'fa-dumbbell' },
+    { name: 'Donje rublje i čarape', icon: 'fa-socks' },
+    { name: 'Kupaće hlačice', icon: 'fa-umbrella-beach' },
+    { name: 'Radna odjeća', icon: 'fa-helmet-safety' },
+    { name: 'Pidžame', icon: 'fa-moon' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Dječja odjeća i obuća': [
+    // Bebe
+    { name: 'Za bebe (0-2 god.)', icon: 'fa-baby' },
+    // Djevojčice
+    { name: 'Djevojčice — gornji dio', icon: 'fa-child-dress' },
+    { name: 'Djevojčice — donji dio', icon: 'fa-child-dress' },
+    { name: 'Djevojčice — haljine i suknje', icon: 'fa-child-dress' },
+    { name: 'Djevojčice — kompleti', icon: 'fa-child-dress' },
+    // Dječaci
+    { name: 'Dječaci — gornji dio', icon: 'fa-child-reaching' },
+    { name: 'Dječaci — donji dio (hlače, trenirke, šorcevi)', icon: 'fa-child-reaching' },
+    { name: 'Dječaci — kompleti', icon: 'fa-child-reaching' },
+    // Zajedničko
+    { name: 'Školska odjeća', icon: 'fa-school' },
+    { name: 'Sportska odjeća (dječja)', icon: 'fa-dumbbell' },
+    { name: 'Zimska odjeća (jakne, kombinezoni)', icon: 'fa-snowflake' },
+    { name: 'Pidžame (dječje)', icon: 'fa-moon' },
+    { name: 'Dječja obuća', icon: 'fa-shoe-prints' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Cipele': [
+    { name: 'Ženske cipele', icon: 'fa-shoe-prints' },
+    { name: 'Ženske čizme', icon: 'fa-shoe-prints' },
+    { name: 'Ženske sandale i papuče', icon: 'fa-umbrella-beach' },
+    { name: 'Muške cipele', icon: 'fa-shoe-prints' },
+    { name: 'Muške čizme', icon: 'fa-shoe-prints' },
+    { name: 'Muške sandale i papuče', icon: 'fa-umbrella-beach' },
+    { name: 'Tenisice / Patike', icon: 'fa-shoe-prints' },
+    { name: 'Sportska obuća', icon: 'fa-dumbbell' },
+    { name: 'Radna obuća', icon: 'fa-helmet-safety' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Aksesoari': [
+    { name: 'Torbe i ruksaci', icon: 'fa-bag-shopping' },
+    { name: 'Novčanici', icon: 'fa-wallet' },
+    { name: 'Remeni', icon: 'fa-ring' },
+    { name: 'Kape i šeširi', icon: 'fa-hat-cowboy' },
+    { name: 'Rukavice', icon: 'fa-mitten' },
+    { name: 'Naočale', icon: 'fa-glasses' },
+    { name: 'Satovi', icon: 'fa-clock' },
+    { name: 'Kišobrani', icon: 'fa-umbrella' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Nakit': [
+    { name: 'Ogrlice i lanci', icon: 'fa-gem' },
+    { name: 'Narukvice', icon: 'fa-ring' },
+    { name: 'Prstenje', icon: 'fa-ring' },
+    { name: 'Naušnice', icon: 'fa-gem' },
+    { name: 'Setovi nakita', icon: 'fa-gem' },
+    { name: 'Piercing nakit', icon: 'fa-circle-dot' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+};
 
 const TEHNIKA_TYPES = [
   { name: 'Kompjuteri (Desktop)', icon: 'fa-desktop' },
@@ -275,19 +374,19 @@ const SERVICES_TYPES = [
 ];
 
 const POSLOVI_TYPES = [
-  { name: 'Građevina i zanatstvo', icon: 'fa-hammer', subs: 'Građevinski radnik, pomoćnik, zidar, gipsar, keramičar, moler, krovopokrivač, stolar' },
-  { name: 'Elektro i tehnika', icon: 'fa-bolt', subs: 'Električar, elektroinstalacije, mrežna tehnika, solarni paneli, pametna kuća' },
-  { name: 'Vodovod, grijanje, klima', icon: 'fa-faucet', subs: 'Instalater, sanitarije, grijanje, klimatizacija' },
-  { name: 'Auto i transport', icon: 'fa-car', subs: 'Automehaničar, autoelektričar, vulkanizer, šlep služba, vozač (auto/kamion)' },
-  { name: 'IT i digitalno', icon: 'fa-laptop-code', subs: 'Razvoj softvera, web dizajn, IT podrška, sistemski admin, marketing/SEO' },
-  { name: 'Čišćenje i održavanje', icon: 'fa-broom', subs: 'Čišćenje zgrada, ureda, kućanstva, pranje prozora' },
-  { name: 'Nekretnine i upravljanje', icon: 'fa-house-chimney', subs: 'Domar, upravljanje objektima, održavanje vrta' },
-  { name: 'Ugostiteljstvo i hoteli', icon: 'fa-utensils', subs: 'Kuhar, konobar, pomoćnik u kuhinji, hotelski servis' },
-  { name: 'Industrija i proizvodnja', icon: 'fa-industry', subs: 'Proizvodni radnik, rukovalac strojevima, skladište i logistika' },
-  { name: 'Ured i administracija', icon: 'fa-file-invoice', subs: 'Uredski asistent, knjigovodstvo, sekretarijat' },
-  { name: 'Obrazovanje i njega', icon: 'fa-graduation-cap', subs: 'Instrukcije, poduka jezika, čuvanje djece' },
-  { name: 'Ljepota i njega', icon: 'fa-scissors', subs: 'Frizer, kozmetika, masaža' },
-  { name: 'Ostali poslovi', icon: 'fa-briefcase', subs: 'Freelancer, projektni rad, sezonski rad, ostalo' },
+  { name: 'Građevina i zanatstvo', icon: 'fa-hammer', subs: 'Građevinski radnik, Pomoćni radnik, Zidar, Suha gradnja, Keramičar, Moler, Krovopokrivač, Stolar' },
+  { name: 'Elektro i tehnika', icon: 'fa-bolt', subs: 'Električar, Elektroinstalacije, Mrežna tehnika, Fotonaponski sistemi, Pametna kuća' },
+  { name: 'Vodovod, grijanje, klima', icon: 'fa-faucet', subs: 'Instalater, Sanitarni radovi, Grijanje, Klima uređaji' },
+  { name: 'Auto i transport', icon: 'fa-car', subs: 'Automehaničar, Autoelektričar, Vulkanizer, Šlep služba, Vozač (osobni/teretni)' },
+  { name: 'IT i digitalno', icon: 'fa-laptop-code', subs: 'Razvoj softvera, Web dizajn, IT podrška, Sistemski admin, Marketing/SEO' },
+  { name: 'Čišćenje i održavanje', icon: 'fa-broom', subs: 'Čišćenje zgrada, Čišćenje ureda, Domaćinstvo, Pranje prozora' },
+  { name: 'Nekretnine i upravljanje', icon: 'fa-house-chimney', subs: 'Domar, Upravljanje objektima, Održavanje zelenih površina' },
+  { name: 'Ugostiteljstvo i hotelijerstvo', icon: 'fa-utensils', subs: 'Kuhar, Konobar, Pomoć u kuhinji, Hotelski servis' },
+  { name: 'Industrija i proizvodnja', icon: 'fa-industry', subs: 'Proizvodni radnik, Mašinski operater, Skladište i logistika' },
+  { name: 'Ured i administracija', icon: 'fa-file-invoice', subs: 'Uredski asistent, Računovodstvo, Sekretarijat' },
+  { name: 'Obrazovanje i njega', icon: 'fa-graduation-cap', subs: 'Instrukcije, Jezični kursevi, Čuvanje djece' },
+  { name: 'Ljepota i njega', icon: 'fa-scissors', subs: 'Frizer, Kozmetika, Masaža' },
+  { name: 'Ostalo', icon: 'fa-briefcase', subs: 'Freelancer, Projektni rad, Sezonski rad, Ostalo' },
 ];
 
 const VEHICLE_TYPES = [
@@ -329,6 +428,775 @@ const PARTS_CATEGORIES = [
     { name: 'Oprema i dodaci', icon: 'fa-lightbulb' },
   ]},
 ];
+
+// ── Sub-category arrays for categories without dedicated sub-steps ──────
+const DOM_TYPES = [
+  { name: 'Namještaj', icon: 'fa-couch' },
+  { name: 'Kuhinja', icon: 'fa-kitchen-set' },
+  { name: 'Kupatilo', icon: 'fa-shower' },
+  { name: 'Vrt i bašta', icon: 'fa-seedling' },
+  { name: 'Bijela tehnika', icon: 'fa-temperature-low' },
+  { name: 'Mala kućna tehnika', icon: 'fa-blender' },
+  { name: 'Dekoracija', icon: 'fa-image' },
+  { name: 'Tekstil za dom', icon: 'fa-bed' },
+  { name: 'Rasvjeta', icon: 'fa-lightbulb' },
+  { name: 'Grijanje i hlađenje', icon: 'fa-snowflake' },
+  { name: 'Alati', icon: 'fa-screwdriver-wrench' },
+  { name: 'Građevinski materijal', icon: 'fa-trowel-bricks' },
+  { name: 'Čišćenje i održavanje', icon: 'fa-broom' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const SPORT_TYPES = [
+  { name: 'Fitness oprema', icon: 'fa-dumbbell' },
+  { name: 'Biciklizam', icon: 'fa-bicycle' },
+  { name: 'Zimski sportovi', icon: 'fa-person-skiing' },
+  { name: 'Fudbal', icon: 'fa-futbol' },
+  { name: 'Kampovanje', icon: 'fa-campground' },
+  { name: 'Tenis / Badminton', icon: 'fa-table-tennis-paddle-ball' },
+  { name: 'Borilački sportovi', icon: 'fa-hand-fist' },
+  { name: 'Vodeni sportovi', icon: 'fa-person-swimming' },
+  { name: 'Trčanje', icon: 'fa-person-running' },
+  { name: 'Planinarenje', icon: 'fa-mountain' },
+  { name: 'Košarka', icon: 'fa-basketball' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const DJECA_TYPES = [
+  { name: 'Kolica i autosjedalice', icon: 'fa-baby-carriage' },
+  { name: 'Dječji namještaj', icon: 'fa-bed' },
+  { name: 'Igračke', icon: 'fa-cube' },
+  { name: 'Školski pribor', icon: 'fa-pencil' },
+  { name: 'Hranjenje i njega', icon: 'fa-bottle-water' },
+  { name: 'Dječja odjeća', icon: 'fa-shirt' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const GLAZBA_TYPES = [
+  { name: 'Gitare', icon: 'fa-guitar' },
+  { name: 'Klavijature i klaviri', icon: 'fa-music' },
+  { name: 'Bubnjevi i udaraljke', icon: 'fa-drum' },
+  { name: 'Duvački instrumenti', icon: 'fa-music' },
+  { name: 'Gudački instrumenti', icon: 'fa-music' },
+  { name: 'Audio oprema', icon: 'fa-volume-high' },
+  { name: 'DJ oprema', icon: 'fa-record-vinyl' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const LITERATURA_TYPES = [
+  { name: 'Knjige', icon: 'fa-book' },
+  { name: 'Stripovi i manga', icon: 'fa-book-open' },
+  { name: 'Filmovi i serije', icon: 'fa-film' },
+  { name: 'Muzika (fizička)', icon: 'fa-record-vinyl' },
+  { name: 'Časopisi', icon: 'fa-newspaper' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const ZIVOTINJE_TYPES = [
+  { name: 'Psi', icon: 'fa-dog' },
+  { name: 'Mačke', icon: 'fa-cat' },
+  { name: 'Ptice', icon: 'fa-dove' },
+  { name: 'Akvaristika', icon: 'fa-fish' },
+  { name: 'Ostale životinje', icon: 'fa-paw' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const HRANA_TYPES = [
+  { name: 'Domaći proizvodi', icon: 'fa-jar' },
+  { name: 'Piće', icon: 'fa-wine-glass' },
+  { name: 'Svježe meso', icon: 'fa-drumstick-bite' },
+  { name: 'Voće i povrće', icon: 'fa-apple-whole' },
+  { name: 'Mliječni proizvodi', icon: 'fa-cheese' },
+  { name: 'Zimnica i konzerve', icon: 'fa-jar' },
+  { name: 'Kolači i slatkiši', icon: 'fa-cake-candles' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const STROJEVI_TYPES = [
+  { name: 'Ručni alati', icon: 'fa-screwdriver-wrench' },
+  { name: 'Električni alati', icon: 'fa-screwdriver' },
+  { name: 'Građevinski strojevi', icon: 'fa-tractor' },
+  { name: 'Poljoprivredni strojevi', icon: 'fa-tractor' },
+  { name: 'Vrtni strojevi', icon: 'fa-leaf' },
+  { name: 'Industrijski strojevi', icon: 'fa-industry' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const UMJETNOST_TYPES = [
+  { name: 'Slike i grafike', icon: 'fa-paintbrush' },
+  { name: 'Skulpture', icon: 'fa-monument' },
+  { name: 'Kolekcionarstvo', icon: 'fa-coins' },
+  { name: 'Ručni rad', icon: 'fa-scissors' },
+  { name: 'Fotografije i posteri', icon: 'fa-image' },
+  { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+// ── Master detail-options for ALL subcategories (2nd tier) ──────────────
+const CATEGORY_DETAILS: Record<string, Array<{name: string, icon: string}>> = {
+  // ── NEKRETNINE ──
+  'Stanovi i Apartmani': [
+    { name: 'Jednosoban stan', icon: 'fa-door-open' },
+    { name: 'Dvosoban stan', icon: 'fa-door-open' },
+    { name: 'Trosoban stan', icon: 'fa-door-open' },
+    { name: 'Četverosoban+', icon: 'fa-door-open' },
+    { name: 'Garsonjera', icon: 'fa-bed' },
+    { name: 'Penthouse', icon: 'fa-building' },
+    { name: 'Duplex', icon: 'fa-layer-group' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Kuće': [
+    { name: 'Kuća sa okućnicom', icon: 'fa-house' },
+    { name: 'Kuća u nizu', icon: 'fa-city' },
+    { name: 'Vila', icon: 'fa-house-chimney' },
+    { name: 'Brvnara', icon: 'fa-tree' },
+    { name: 'Nedovršena kuća', icon: 'fa-hammer' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Stan na dan': [
+    { name: 'Studio apartman', icon: 'fa-bed' },
+    { name: 'Apartman (2+ sobe)', icon: 'fa-door-open' },
+    { name: 'Soba u stanu', icon: 'fa-bed' },
+    { name: 'Kuća za odmor', icon: 'fa-umbrella-beach' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Poslovni prostori': [
+    { name: 'Kancelarija / Ured', icon: 'fa-briefcase' },
+    { name: 'Trgovina / Lokal', icon: 'fa-store' },
+    { name: 'Ugostiteljski objekt', icon: 'fa-utensils' },
+    { name: 'Salon / Studio', icon: 'fa-spa' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Zemljišta': [
+    { name: 'Građevinsko zemljište', icon: 'fa-map' },
+    { name: 'Poljoprivredno zemljište', icon: 'fa-tractor' },
+    { name: 'Šuma', icon: 'fa-tree' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── ELEKTRONIKA / TEHNIKA ──
+  'Kompjuteri (Desktop)': [
+    { name: 'Gaming PC', icon: 'fa-gamepad' },
+    { name: 'Office / Radni PC', icon: 'fa-briefcase' },
+    { name: 'Mini PC', icon: 'fa-microchip' },
+    { name: 'Workstation', icon: 'fa-server' },
+    { name: 'Samo kućište', icon: 'fa-box' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Laptopi': [
+    { name: 'Gaming laptop', icon: 'fa-gamepad' },
+    { name: 'Business / Office', icon: 'fa-briefcase' },
+    { name: 'Ultrabook', icon: 'fa-feather' },
+    { name: 'Chromebook', icon: 'fa-globe' },
+    { name: '2-u-1 / Tablet laptop', icon: 'fa-tablet-screen-button' },
+    { name: 'MacBook', icon: 'fa-laptop' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Monitori / TV': [
+    { name: 'Gaming monitor', icon: 'fa-gamepad' },
+    { name: 'Office monitor', icon: 'fa-desktop' },
+    { name: 'TV (LED/OLED/QLED)', icon: 'fa-tv' },
+    { name: 'Projektor', icon: 'fa-video' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'PC Oprema': [
+    { name: 'Grafičke kartice (GPU)', icon: 'fa-microchip' },
+    { name: 'Procesori (CPU)', icon: 'fa-microchip' },
+    { name: 'RAM memorija', icon: 'fa-memory' },
+    { name: 'Matične ploče', icon: 'fa-microchip' },
+    { name: 'SSD / HDD diskovi', icon: 'fa-hard-drive' },
+    { name: 'Napajanja (PSU)', icon: 'fa-plug' },
+    { name: 'Hladnjaci i ventilatori', icon: 'fa-fan' },
+    { name: 'Kućišta', icon: 'fa-box' },
+    { name: 'Tastature', icon: 'fa-keyboard' },
+    { name: 'Miševi', icon: 'fa-computer-mouse' },
+    { name: 'USB hubovi i adapteri', icon: 'fa-usb' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Konzole': [
+    { name: 'PlayStation', icon: 'fa-gamepad' },
+    { name: 'Xbox', icon: 'fa-gamepad' },
+    { name: 'Nintendo Switch', icon: 'fa-gamepad' },
+    { name: 'Retro konzole', icon: 'fa-gamepad' },
+    { name: 'Handheld (Steam Deck, ROG Ally)', icon: 'fa-mobile-screen' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Video Igre': [
+    { name: 'PS4 / PS5 igre', icon: 'fa-compact-disc' },
+    { name: 'Xbox igre', icon: 'fa-compact-disc' },
+    { name: 'Nintendo igre', icon: 'fa-compact-disc' },
+    { name: 'PC igre (fizičke)', icon: 'fa-compact-disc' },
+    { name: 'Digitalni kodovi / Accounti', icon: 'fa-key' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Gaming Oprema': [
+    { name: 'Slušalice (headset)', icon: 'fa-headset' },
+    { name: 'Gaming stolica', icon: 'fa-chair' },
+    { name: 'Gaming stol', icon: 'fa-table' },
+    { name: 'Kontroleri / Joystick', icon: 'fa-gamepad' },
+    { name: 'VR oprema', icon: 'fa-vr-cardboard' },
+    { name: 'Streaming oprema', icon: 'fa-video' },
+    { name: 'RGB / LED oprema', icon: 'fa-lightbulb' },
+    { name: 'Podloge za miša', icon: 'fa-square' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Zvučnici / Audio': [
+    { name: 'Bluetooth zvučnici', icon: 'fa-volume-high' },
+    { name: 'Soundbar', icon: 'fa-volume-high' },
+    { name: 'Kućni Hi-Fi sistem', icon: 'fa-music' },
+    { name: 'Slušalice', icon: 'fa-headphones' },
+    { name: 'Mikrofoni', icon: 'fa-microphone' },
+    { name: 'DJ oprema', icon: 'fa-record-vinyl' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Kamere': [
+    { name: 'DSLR fotoaparat', icon: 'fa-camera' },
+    { name: 'Mirrorless fotoaparat', icon: 'fa-camera' },
+    { name: 'Kompaktni fotoaparat', icon: 'fa-camera' },
+    { name: 'Action kamera (GoPro)', icon: 'fa-camera' },
+    { name: 'Dron s kamerom', icon: 'fa-helicopter' },
+    { name: 'Video kamera', icon: 'fa-video' },
+    { name: 'Nadzorne kamere', icon: 'fa-eye' },
+    { name: 'Webcam', icon: 'fa-video' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Foto Oprema': [
+    { name: 'Objektivi', icon: 'fa-circle' },
+    { name: 'Stativi / Tripod', icon: 'fa-up-down-left-right' },
+    { name: 'Blic / Flash', icon: 'fa-bolt' },
+    { name: 'Torbe i futrole', icon: 'fa-bag-shopping' },
+    { name: 'Memorijske kartice', icon: 'fa-sd-card' },
+    { name: 'Filteri', icon: 'fa-circle' },
+    { name: 'Studio oprema (svjetla, pozadine)', icon: 'fa-lightbulb' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Gadgets': [
+    { name: 'Pametni satovi (Smartwatch)', icon: 'fa-clock' },
+    { name: 'Fitness narukvice', icon: 'fa-heart-pulse' },
+    { name: 'E-čitači (Kindle)', icon: 'fa-book' },
+    { name: 'Tableti', icon: 'fa-tablet-screen-button' },
+    { name: 'Powerbank', icon: 'fa-battery-full' },
+    { name: 'Punjači i kablovi', icon: 'fa-plug' },
+    { name: 'Smart home uređaji', icon: 'fa-house-signal' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── DOM I VRT ──
+  'Namještaj': [
+    { name: 'Sofe i fotelje', icon: 'fa-couch' },
+    { name: 'Stolovi (trpezarijski, radni)', icon: 'fa-table' },
+    { name: 'Stolice', icon: 'fa-chair' },
+    { name: 'Kreveti i madraci', icon: 'fa-bed' },
+    { name: 'Ormari i komode', icon: 'fa-box-archive' },
+    { name: 'Police i regali', icon: 'fa-layer-group' },
+    { name: 'TV stolovi i vitrine', icon: 'fa-tv' },
+    { name: 'Vrtni namještaj', icon: 'fa-umbrella-beach' },
+    { name: 'Dječji namještaj', icon: 'fa-baby' },
+    { name: 'Kancelarijski namještaj', icon: 'fa-briefcase' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Kuhinja': [
+    { name: 'Kuhinjski elementi (gornji/donji)', icon: 'fa-kitchen-set' },
+    { name: 'Sudoper i slavina', icon: 'fa-faucet' },
+    { name: 'Posuđe (lonci, tave)', icon: 'fa-bowl-food' },
+    { name: 'Pribor za jelo', icon: 'fa-utensils' },
+    { name: 'Aparati (mikser, toster, blender)', icon: 'fa-blender' },
+    { name: 'Čaše i šolje', icon: 'fa-mug-hot' },
+    { name: 'Organizacija (police, kutije)', icon: 'fa-box' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Kupatilo': [
+    { name: 'Tuš kabine i kade', icon: 'fa-shower' },
+    { name: 'Umivaonici', icon: 'fa-faucet' },
+    { name: 'WC školjke i bidei', icon: 'fa-toilet' },
+    { name: 'Ogledala i ormarići', icon: 'fa-square' },
+    { name: 'Peškiri i tekstil', icon: 'fa-vest' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Vrt i bašta': [
+    { name: 'Alati za vrt (lopata, makaze, grablje)', icon: 'fa-seedling' },
+    { name: 'Kosilice i trimeri', icon: 'fa-leaf' },
+    { name: 'Saksije i žardinjere', icon: 'fa-seedling' },
+    { name: 'Sjeme i sadnice', icon: 'fa-seedling' },
+    { name: 'Navodnjavanje', icon: 'fa-faucet' },
+    { name: 'Staklenici i plasticnici', icon: 'fa-house' },
+    { name: 'Bazeni i oprema', icon: 'fa-water-ladder' },
+    { name: 'Roštilji i oprema', icon: 'fa-fire' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Bijela tehnika': [
+    { name: 'Veš mašina', icon: 'fa-shirt' },
+    { name: 'Sušilica', icon: 'fa-wind' },
+    { name: 'Frižider / Zamrzivač', icon: 'fa-temperature-low' },
+    { name: 'Šporet / Rerna', icon: 'fa-fire-burner' },
+    { name: 'Perilica posuđa', icon: 'fa-faucet' },
+    { name: 'Aspirator / Napa', icon: 'fa-wind' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Mala kućna tehnika': [
+    { name: 'Usisivač', icon: 'fa-broom' },
+    { name: 'Pegla', icon: 'fa-temperature-high' },
+    { name: 'Aparat za kafu', icon: 'fa-mug-hot' },
+    { name: 'Mikser / Blender', icon: 'fa-blender' },
+    { name: 'Toster / Grill', icon: 'fa-fire' },
+    { name: 'Friteza (Air fryer)', icon: 'fa-bowl-food' },
+    { name: 'Robot za kuhanje', icon: 'fa-gears' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Dekoracija': [
+    { name: 'Slike i posteri', icon: 'fa-image' },
+    { name: 'Vaze i skulpture', icon: 'fa-wine-glass' },
+    { name: 'Svijeće i difuzeri', icon: 'fa-fire' },
+    { name: 'Satovi (zidni)', icon: 'fa-clock' },
+    { name: 'Tepisi', icon: 'fa-rug' },
+    { name: 'Zavjese i draperije', icon: 'fa-window-maximize' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Tekstil za dom': [
+    { name: 'Posteljina', icon: 'fa-bed' },
+    { name: 'Jastučnice i jastuki', icon: 'fa-cloud' },
+    { name: 'Deke i pokrivači', icon: 'fa-bed' },
+    { name: 'Stolnjaci', icon: 'fa-table' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Rasvjeta': [
+    { name: 'Lustri i plafonjere', icon: 'fa-lightbulb' },
+    { name: 'Stojeće lampe', icon: 'fa-lightbulb' },
+    { name: 'Stolne lampe', icon: 'fa-lightbulb' },
+    { name: 'LED trake', icon: 'fa-lightbulb' },
+    { name: 'Vrtna rasvjeta', icon: 'fa-sun' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Grijanje i hlađenje': [
+    { name: 'Klima uređaji', icon: 'fa-snowflake' },
+    { name: 'Radijatori / Grijači', icon: 'fa-temperature-high' },
+    { name: 'Kamini i peći', icon: 'fa-fire' },
+    { name: 'Ventilatori', icon: 'fa-fan' },
+    { name: 'Bojleri', icon: 'fa-faucet' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── SPORT I REKREACIJA ──
+  'Fitness oprema': [
+    { name: 'Utezi i bučice', icon: 'fa-dumbbell' },
+    { name: 'Klupe za vježbanje', icon: 'fa-dumbbell' },
+    { name: 'Traka za trčanje', icon: 'fa-person-running' },
+    { name: 'Sobni bicikl / Eliptical', icon: 'fa-bicycle' },
+    { name: 'Otporne trake / Gume', icon: 'fa-ring' },
+    { name: 'Prostirke za yogu', icon: 'fa-rug' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Biciklizam': [
+    { name: 'Kacige', icon: 'fa-helmet-safety' },
+    { name: 'Odjeća za biciklizam', icon: 'fa-shirt' },
+    { name: 'Svjetla i reflektori', icon: 'fa-lightbulb' },
+    { name: 'Brave i lokoti', icon: 'fa-lock' },
+    { name: 'Torbe i nosači', icon: 'fa-bag-shopping' },
+    { name: 'Pumpe i alat', icon: 'fa-wrench' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Zimski sportovi': [
+    { name: 'Skije i štapovi', icon: 'fa-person-skiing' },
+    { name: 'Snowboard', icon: 'fa-snowflake' },
+    { name: 'Skijaška odjeća', icon: 'fa-vest-patches' },
+    { name: 'Skijaška obuća', icon: 'fa-shoe-prints' },
+    { name: 'Kacige i naočale', icon: 'fa-helmet-safety' },
+    { name: 'Klizaljke', icon: 'fa-snowflake' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Fudbal': [
+    { name: 'Kopačke', icon: 'fa-shoe-prints' },
+    { name: 'Lopte', icon: 'fa-futbol' },
+    { name: 'Dresovi i oprema', icon: 'fa-shirt' },
+    { name: 'Golmanski pribor', icon: 'fa-hand' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Kampovanje': [
+    { name: 'Šatori', icon: 'fa-campground' },
+    { name: 'Vreće za spavanje', icon: 'fa-bed' },
+    { name: 'Ruksaci / Torbe', icon: 'fa-bag-shopping' },
+    { name: 'Kuhalo / Roštilj za kampovanje', icon: 'fa-fire' },
+    { name: 'Lampe i rasvjeta', icon: 'fa-lightbulb' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Tenis / Badminton': [
+    { name: 'Reketi', icon: 'fa-table-tennis-paddle-ball' },
+    { name: 'Loptice / Perilice', icon: 'fa-circle' },
+    { name: 'Odjeća i obuća', icon: 'fa-shirt' },
+    { name: 'Torbe za rekete', icon: 'fa-bag-shopping' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Borilački sportovi': [
+    { name: 'Rukavice za boks', icon: 'fa-hand-fist' },
+    { name: 'Vreće za udaranje', icon: 'fa-hand-fist' },
+    { name: 'Štitnici i oprema', icon: 'fa-shield' },
+    { name: 'Kimono / Gi', icon: 'fa-shirt' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Vodeni sportovi': [
+    { name: 'Oprema za plivanje', icon: 'fa-person-swimming' },
+    { name: 'Oprema za ronjenje', icon: 'fa-water' },
+    { name: 'Daske za surfanje / SUP', icon: 'fa-water' },
+    { name: 'Kajaci i kanui', icon: 'fa-ship' },
+    { name: 'Plovni prsluci', icon: 'fa-vest' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── DJECA I BEBE ──
+  'Kolica i autosjedalice': [
+    { name: 'Kolica (sportska)', icon: 'fa-baby-carriage' },
+    { name: 'Kolica (duboka)', icon: 'fa-baby-carriage' },
+    { name: 'Kolica (3u1 / kombinirane)', icon: 'fa-baby-carriage' },
+    { name: 'Autosjedalice (0-13 kg)', icon: 'fa-car' },
+    { name: 'Autosjedalice (9-36 kg)', icon: 'fa-car' },
+    { name: 'Boosteri', icon: 'fa-car' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Dječji namještaj': [
+    { name: 'Krevetići', icon: 'fa-bed' },
+    { name: 'Komode za previjanje', icon: 'fa-box' },
+    { name: 'Stolice za hranjenje', icon: 'fa-chair' },
+    { name: 'Ljuljačke i ležaljke', icon: 'fa-baby' },
+    { name: 'Ograde i prepreke', icon: 'fa-shield' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Igračke': [
+    { name: 'Za bebe (0-1 god.)', icon: 'fa-baby' },
+    { name: 'Edukativne igračke', icon: 'fa-graduation-cap' },
+    { name: 'Lego i kocke', icon: 'fa-cube' },
+    { name: 'Lutke i figurice', icon: 'fa-child-dress' },
+    { name: 'Autići i vlakovi', icon: 'fa-car' },
+    { name: 'Igračke za vani', icon: 'fa-sun' },
+    { name: 'Društvene igre', icon: 'fa-dice' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Školski pribor': [
+    { name: 'Školske torbe', icon: 'fa-bag-shopping' },
+    { name: 'Pernice', icon: 'fa-pencil' },
+    { name: 'Bilježnice i papir', icon: 'fa-book' },
+    { name: 'Pribor za crtanje', icon: 'fa-paintbrush' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Hranjenje i njega': [
+    { name: 'Bočice i dude', icon: 'fa-bottle-water' },
+    { name: 'Sterilizatori', icon: 'fa-shield' },
+    { name: 'Posuđe za djecu', icon: 'fa-utensils' },
+    { name: 'Pelene i vlažne maramice', icon: 'fa-baby' },
+    { name: 'Kozmetika za djecu', icon: 'fa-pump-soap' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── GLAZBA I INSTRUMENTI ──
+  'Gitare': [
+    { name: 'Akustična gitara', icon: 'fa-guitar' },
+    { name: 'Električna gitara', icon: 'fa-guitar' },
+    { name: 'Bas gitara', icon: 'fa-guitar' },
+    { name: 'Klasična gitara', icon: 'fa-guitar' },
+    { name: 'Ukulele', icon: 'fa-guitar' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Klavijature i klaviri': [
+    { name: 'Digitalni klavir', icon: 'fa-music' },
+    { name: 'Sintisajzer / Keyboard', icon: 'fa-music' },
+    { name: 'MIDI kontroler', icon: 'fa-sliders' },
+    { name: 'Akustični klavir', icon: 'fa-music' },
+    { name: 'Harmonika', icon: 'fa-music' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Bubnjevi i udaraljke': [
+    { name: 'Akustični bubnjevi', icon: 'fa-drum' },
+    { name: 'Elektronski bubnjevi', icon: 'fa-drum' },
+    { name: 'Cajón', icon: 'fa-drum' },
+    { name: 'Činele', icon: 'fa-circle' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Duvački instrumenti': [
+    { name: 'Flauta', icon: 'fa-music' },
+    { name: 'Saksofon', icon: 'fa-music' },
+    { name: 'Truba / Trombon', icon: 'fa-music' },
+    { name: 'Klarinet', icon: 'fa-music' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Gudački instrumenti': [
+    { name: 'Violina', icon: 'fa-music' },
+    { name: 'Viola / Čelo', icon: 'fa-music' },
+    { name: 'Kontrabas', icon: 'fa-music' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Audio oprema': [
+    { name: 'Pojačala za gitaru', icon: 'fa-volume-high' },
+    { name: 'Miksete', icon: 'fa-sliders' },
+    { name: 'Mikrofoni', icon: 'fa-microphone' },
+    { name: 'Zvučnici (PA)', icon: 'fa-volume-high' },
+    { name: 'Audio interface', icon: 'fa-sliders' },
+    { name: 'Efekt pedale', icon: 'fa-circle-nodes' },
+    { name: 'Kablovi i konektori', icon: 'fa-plug' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'DJ oprema': [
+    { name: 'DJ kontroler', icon: 'fa-record-vinyl' },
+    { name: 'Gramofon', icon: 'fa-record-vinyl' },
+    { name: 'DJ mikseta', icon: 'fa-sliders' },
+    { name: 'Slušalice za DJ', icon: 'fa-headphones' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── LITERATURA I MEDIJI ──
+  'Knjige': [
+    { name: 'Romani i beletristika', icon: 'fa-book' },
+    { name: 'Stručne i naučne', icon: 'fa-graduation-cap' },
+    { name: 'Udžbenici (škola/fakultet)', icon: 'fa-school' },
+    { name: 'Dječje knjige', icon: 'fa-child-reaching' },
+    { name: 'Kuharske knjige', icon: 'fa-utensils' },
+    { name: 'Religijske knjige', icon: 'fa-book-bible' },
+    { name: 'Biografije', icon: 'fa-user' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Stripovi i manga': [
+    { name: 'Stripovi', icon: 'fa-book-open' },
+    { name: 'Manga', icon: 'fa-book-open' },
+    { name: 'Graphic novels', icon: 'fa-book-open' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Filmovi i serije': [
+    { name: 'DVD', icon: 'fa-compact-disc' },
+    { name: 'Blu-ray', icon: 'fa-compact-disc' },
+    { name: 'VHS (retro)', icon: 'fa-film' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Muzika (fizička)': [
+    { name: 'Vinili / Ploče', icon: 'fa-record-vinyl' },
+    { name: 'CD-ovi', icon: 'fa-compact-disc' },
+    { name: 'Kasete', icon: 'fa-tape' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── ŽIVOTINJE ──
+  'Psi': [
+    { name: 'Štenci na prodaju', icon: 'fa-dog' },
+    { name: 'Hrana za pse', icon: 'fa-bowl-food' },
+    { name: 'Oprema (povodci, ogrlice)', icon: 'fa-link' },
+    { name: 'Kućice i krevetići', icon: 'fa-house' },
+    { name: 'Igračke za pse', icon: 'fa-bone' },
+    { name: 'Odjeća za pse', icon: 'fa-shirt' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Mačke': [
+    { name: 'Mačići na prodaju', icon: 'fa-cat' },
+    { name: 'Hrana za mačke', icon: 'fa-bowl-food' },
+    { name: 'Oprema (posude, toalet)', icon: 'fa-box' },
+    { name: 'Grebalice i igračke', icon: 'fa-cat' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Ptice': [
+    { name: 'Ptice na prodaju', icon: 'fa-dove' },
+    { name: 'Kavezi', icon: 'fa-box' },
+    { name: 'Hrana i dodaci', icon: 'fa-bowl-food' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Akvaristika': [
+    { name: 'Ribe', icon: 'fa-fish' },
+    { name: 'Akvariji', icon: 'fa-water' },
+    { name: 'Filteri i pumpe', icon: 'fa-filter' },
+    { name: 'Hrana za ribe', icon: 'fa-bowl-food' },
+    { name: 'Dekoracija za akvarij', icon: 'fa-seedling' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Ostale životinje': [
+    { name: 'Zečevi i glodavci', icon: 'fa-paw' },
+    { name: 'Gmizavci', icon: 'fa-worm' },
+    { name: 'Terariji', icon: 'fa-box' },
+    { name: 'Konji i oprema', icon: 'fa-horse' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── STROJEVI I ALATI ──
+  'Ručni alati': [
+    { name: 'Odvijači, kliješta, ključevi', icon: 'fa-screwdriver-wrench' },
+    { name: 'Čekići', icon: 'fa-hammer' },
+    { name: 'Pile i testere (ručne)', icon: 'fa-gears' },
+    { name: 'Mjerni alati', icon: 'fa-ruler' },
+    { name: 'Setovi alata', icon: 'fa-toolbox' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Električni alati': [
+    { name: 'Bušilice i udarne bušilice', icon: 'fa-screwdriver' },
+    { name: 'Brusilice', icon: 'fa-gears' },
+    { name: 'Kružne pile i ubodne pile', icon: 'fa-gears' },
+    { name: 'Aku odvijači', icon: 'fa-screwdriver' },
+    { name: 'Zavarivači (varilice)', icon: 'fa-fire' },
+    { name: 'Kompresori', icon: 'fa-wind' },
+    { name: 'Generatori', icon: 'fa-bolt' },
+    { name: 'Visokotlačni perači', icon: 'fa-faucet' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Građevinski strojevi': [
+    { name: 'Mini bageri', icon: 'fa-tractor' },
+    { name: 'Skele i ljestve', icon: 'fa-layer-group' },
+    { name: 'Betonski mikseri', icon: 'fa-gears' },
+    { name: 'Vibro ploče', icon: 'fa-square' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Poljoprivredni strojevi': [
+    { name: 'Traktori', icon: 'fa-tractor' },
+    { name: 'Priključci za traktor', icon: 'fa-gears' },
+    { name: 'Kosilice (profesionalne)', icon: 'fa-leaf' },
+    { name: 'Motokultivatori', icon: 'fa-tractor' },
+    { name: 'Motorne pile', icon: 'fa-tree' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── UMJETNOST I KOLEKCIONARSTVO ──
+  'Slike i grafike': [
+    { name: 'Uljane slike', icon: 'fa-paintbrush' },
+    { name: 'Akvareli', icon: 'fa-droplet' },
+    { name: 'Grafike i printovi', icon: 'fa-print' },
+    { name: 'Digitalna umjetnost', icon: 'fa-laptop' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Skulpture': [
+    { name: 'Kamene skulpture', icon: 'fa-monument' },
+    { name: 'Drvene skulpture', icon: 'fa-tree' },
+    { name: 'Metalne skulpture', icon: 'fa-gears' },
+    { name: 'Keramika', icon: 'fa-wine-glass' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Kolekcionarstvo': [
+    { name: 'Poštanske marke', icon: 'fa-stamp' },
+    { name: 'Kovanice i novčanice', icon: 'fa-coins' },
+    { name: 'Figurice i modeli', icon: 'fa-chess-knight' },
+    { name: 'Starine i antikviteti', icon: 'fa-hourglass' },
+    { name: 'Razglednice', icon: 'fa-image' },
+    { name: 'Vojni predmeti', icon: 'fa-shield' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Ručni rad': [
+    { name: 'Heklanje / Pletenje', icon: 'fa-scissors' },
+    { name: 'Šivanje i patchwork', icon: 'fa-scissors' },
+    { name: 'Nakit (ručna izrada)', icon: 'fa-gem' },
+    { name: 'Drvorezbarstvo', icon: 'fa-tree' },
+    { name: 'Materijali za ručni rad', icon: 'fa-palette' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── HRANA I PIĆE ──
+  'Domaći proizvodi': [
+    { name: 'Med i pčelinji proizvodi', icon: 'fa-jar' },
+    { name: 'Džemovi i pekmezi', icon: 'fa-jar' },
+    { name: 'Sirevi', icon: 'fa-cheese' },
+    { name: 'Suhomesnati proizvodi', icon: 'fa-drumstick-bite' },
+    { name: 'Ulje (maslinovo, bučino)', icon: 'fa-bottle-droplet' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Piće': [
+    { name: 'Vino', icon: 'fa-wine-glass' },
+    { name: 'Rakija / Loza', icon: 'fa-whiskey-glass' },
+    { name: 'Pivo (craft)', icon: 'fa-beer-mug-empty' },
+    { name: 'Sokovi', icon: 'fa-glass-water' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── USLUGE (detail for each service type) ──
+  'Zanatstvo i Popravke': [
+    { name: 'Vodoinstalater', icon: 'fa-faucet' },
+    { name: 'Električar', icon: 'fa-bolt' },
+    { name: 'Stolar', icon: 'fa-hammer' },
+    { name: 'Bravar', icon: 'fa-key' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Građevina i Renoviranje': [
+    { name: 'Molerski radovi', icon: 'fa-paintbrush' },
+    { name: 'Keramičarski radovi', icon: 'fa-border-all' },
+    { name: 'Suha gradnja (gips)', icon: 'fa-layer-group' },
+    { name: 'Fasade', icon: 'fa-building' },
+    { name: 'Krovopokrivanje', icon: 'fa-house-chimney' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+
+  // ── POSLOVI (detail for each job type) ──
+  'Građevina i zanatstvo': [
+    { name: 'Građevinski radnik', icon: 'fa-helmet-safety' },
+    { name: 'Pomoćni radnik', icon: 'fa-person-digging' },
+    { name: 'Zidar', icon: 'fa-trowel-bricks' },
+    { name: 'Keramičar', icon: 'fa-border-all' },
+    { name: 'Moler', icon: 'fa-paintbrush' },
+    { name: 'Krovopokrivač', icon: 'fa-house-chimney' },
+    { name: 'Stolar', icon: 'fa-hammer' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Elektro i tehnika': [
+    { name: 'Električar', icon: 'fa-bolt' },
+    { name: 'Elektroinstalacije', icon: 'fa-plug' },
+    { name: 'Mrežna tehnika', icon: 'fa-network-wired' },
+    { name: 'Fotonaponski sistemi', icon: 'fa-solar-panel' },
+    { name: 'Pametna kuća', icon: 'fa-house-signal' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Vodovod, grijanje, klima': [
+    { name: 'Instalater', icon: 'fa-faucet' },
+    { name: 'Sanitarni radovi', icon: 'fa-shower' },
+    { name: 'Grijanje', icon: 'fa-temperature-high' },
+    { name: 'Klima uređaji', icon: 'fa-snowflake' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Auto i transport': [
+    { name: 'Automehaničar', icon: 'fa-wrench' },
+    { name: 'Autoelektričar', icon: 'fa-bolt' },
+    { name: 'Vulkanizer', icon: 'fa-circle' },
+    { name: 'Šlep služba', icon: 'fa-truck-pickup' },
+    { name: 'Vozač', icon: 'fa-id-card' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'IT i digitalno': [
+    { name: 'Razvoj softvera', icon: 'fa-code' },
+    { name: 'Web dizajn', icon: 'fa-palette' },
+    { name: 'IT podrška', icon: 'fa-headset' },
+    { name: 'Sistemski admin', icon: 'fa-server' },
+    { name: 'Marketing / SEO', icon: 'fa-chart-line' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Ugostiteljstvo i hotelijerstvo': [
+    { name: 'Kuhar', icon: 'fa-utensils' },
+    { name: 'Konobar', icon: 'fa-martini-glass' },
+    { name: 'Pomoć u kuhinji', icon: 'fa-kitchen-set' },
+    { name: 'Hotelski servis', icon: 'fa-hotel' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+  'Industrija i proizvodnja': [
+    { name: 'Proizvodni radnik', icon: 'fa-industry' },
+    { name: 'Mašinski operater', icon: 'fa-gears' },
+    { name: 'Skladište i logistika', icon: 'fa-warehouse' },
+    { name: 'Ostalo', icon: 'fa-ellipsis' },
+  ],
+};
+
+// Map subcategory → parent color for detail-sub back navigation
+const DETAIL_COLOR_MAP: Record<string, { color: string; parentStep: UploadStep; parentCategory: string }> = {};
+// Nekretnine
+for (const t of NEKRETNINE_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'emerald', parentStep: 'nekretnine-sub', parentCategory: 'Nekretnine' };
+// Tehnika
+for (const t of TEHNIKA_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'purple', parentStep: 'tehnika-sub', parentCategory: 'Elektronika' };
+// Dom
+for (const t of DOM_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'teal', parentStep: 'dom-sub', parentCategory: 'Dom i vrt' };
+// Sport
+for (const t of SPORT_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'green', parentStep: 'sport-sub', parentCategory: 'Sport i rekreacija' };
+// Djeca
+for (const t of DJECA_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'pink', parentStep: 'djeca-sub', parentCategory: 'Djeca i bebe' };
+// Glazba
+for (const t of GLAZBA_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'indigo', parentStep: 'glazba-sub', parentCategory: 'Glazba i instrumenti' };
+// Literatura
+for (const t of LITERATURA_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'orange', parentStep: 'literatura-sub', parentCategory: 'Literatura i mediji' };
+// Životinje
+for (const t of ZIVOTINJE_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'amber', parentStep: 'zivotinje-sub', parentCategory: 'Životinje' };
+// Hrana
+for (const t of HRANA_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'red', parentStep: 'hrana-sub', parentCategory: 'Hrana i piće' };
+// Strojevi
+for (const t of STROJEVI_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'gray', parentStep: 'strojevi-sub', parentCategory: 'Strojevi i alati' };
+// Umjetnost
+for (const t of UMJETNOST_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'rose', parentStep: 'umjetnost-sub', parentCategory: 'Umjetnost i kolekcionarstvo' };
+// Usluge
+for (const t of SERVICES_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'cyan', parentStep: 'services-sub', parentCategory: 'Usluge' };
+// Poslovi
+for (const t of POSLOVI_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'indigo', parentStep: 'poslovi-sub', parentCategory: 'Poslovi' };
 
 // ── Category breadcrumb info ──────────────────────────────────────────────
 function getCategoryBreadcrumb(category: string, brand?: string): { main: string; sub?: string; icon: string; color: string } {
@@ -400,6 +1268,9 @@ const BREADCRUMB_COLORS: Record<string, { bg: string; text: string; iconBg: stri
   green:   { bg: 'bg-green-500/5',   text: 'text-green-500',   iconBg: 'bg-green-500/10',   border: 'border-green-500/20' },
   orange:  { bg: 'bg-orange-500/5',  text: 'text-orange-500',  iconBg: 'bg-orange-500/10',  border: 'border-orange-500/20' },
   pink:    { bg: 'bg-pink-500/5',    text: 'text-pink-500',    iconBg: 'bg-pink-500/10',    border: 'border-pink-500/20' },
+  teal:    { bg: 'bg-teal-500/5',    text: 'text-teal-500',    iconBg: 'bg-teal-500/10',    border: 'border-teal-500/20' },
+  red:     { bg: 'bg-red-500/5',     text: 'text-red-500',     iconBg: 'bg-red-500/10',     border: 'border-red-500/20' },
+  gray:    { bg: 'bg-gray-500/5',    text: 'text-gray-500',    iconBg: 'bg-gray-500/10',    border: 'border-gray-500/20' },
 };
 
 // Map UI condition labels to DB enum values
@@ -419,6 +1290,10 @@ function UploadPageInner() {
   const { showToast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [step, setStep] = useState<UploadStep>('selection');
+  const [modaSubCategory, setModaSubCategory] = useState('');
+  const [parentSubCategory, setParentSubCategory] = useState('');
+  const [parentColor, setParentColor] = useState('blue');
+  const [previousStep, setPreviousStep] = useState<UploadStep>('selection');
 
   // Edit mode
   const editProductId = searchParams.get('edit');
@@ -581,6 +1456,42 @@ function UploadPageInner() {
         setStep('poslovi-sub');
         return;
     }
+    if (catName.toLowerCase().includes('dom') || catName.toLowerCase().includes('vrt')) {
+        setStep('dom-sub');
+        return;
+    }
+    if (catName.toLowerCase().includes('sport') || catName.toLowerCase().includes('rekreacij')) {
+        setStep('sport-sub');
+        return;
+    }
+    if (catName.toLowerCase().includes('djeca') || catName.toLowerCase().includes('bebe') || catName.toLowerCase().includes('igračk')) {
+        setStep('djeca-sub');
+        return;
+    }
+    if (catName.toLowerCase().includes('glazba') || catName.toLowerCase().includes('instrument')) {
+        setStep('glazba-sub');
+        return;
+    }
+    if (catName.toLowerCase().includes('literatura') || catName.toLowerCase().includes('knjig') || catName.toLowerCase().includes('mediji')) {
+        setStep('literatura-sub');
+        return;
+    }
+    if (catName.toLowerCase().includes('životinj') || catName.toLowerCase().includes('ljubimci')) {
+        setStep('zivotinje-sub');
+        return;
+    }
+    if (catName.toLowerCase().includes('hrana') || catName.toLowerCase().includes('piće')) {
+        setStep('hrana-sub');
+        return;
+    }
+    if (catName.toLowerCase().includes('strojevi') || catName.toLowerCase().includes('alati')) {
+        setStep('strojevi-sub');
+        return;
+    }
+    if (catName.toLowerCase().includes('umjetnost') || catName.toLowerCase().includes('kolekcion')) {
+        setStep('umjetnost-sub');
+        return;
+    }
     setAttributes({});
     setFormData({ ...formData, category: catName });
     setStep('form');
@@ -588,8 +1499,17 @@ function UploadPageInner() {
 
   const selectNekretnineSub = (subCat: string) => {
       setAttributes({});
-      setFormData({ ...formData, category: `Nekretnine - ${subCat}` });
-      setStep('form');
+      const details = CATEGORY_DETAILS[subCat];
+      if (details && details.length > 0) {
+        setParentSubCategory(subCat);
+        setParentColor('emerald');
+        setPreviousStep('nekretnine-sub');
+        setFormData({ ...formData, category: `Nekretnine - ${subCat}` });
+        setStep('detail-sub');
+      } else {
+        setFormData({ ...formData, category: `Nekretnine - ${subCat}` });
+        setStep('form');
+      }
   };
 
   const selectMobileSub = (brand: string) => {
@@ -600,25 +1520,84 @@ function UploadPageInner() {
 
   const selectModaSub = (type: string) => {
     setAttributes({});
-    setFormData({ ...formData, category: `Moda - ${type}` });
+    const artikli = MODA_ARTIKLI[type];
+    if (artikli && artikli.length > 0) {
+      setModaSubCategory(type);
+      setFormData(prev => ({ ...prev, category: `Moda - ${type}` }));
+      setStep('moda-artikl');
+    } else {
+      setFormData(prev => ({ ...prev, category: `Moda - ${type}` }));
+      setStep('form');
+    }
+  };
+
+  const selectModaArtikl = (artikl: string) => {
+    setFormData(prev => ({ ...prev, category: `Moda - ${modaSubCategory} - ${artikl}` }));
     setStep('form');
   };
 
   const selectTehnikaSub = (type: string) => {
     setAttributes({});
-    setFormData({ ...formData, category: `Elektronika - ${type}` });
-    setStep('form');
+    const details = CATEGORY_DETAILS[type];
+    if (details && details.length > 0) {
+      setParentSubCategory(type);
+      setParentColor('purple');
+      setPreviousStep('tehnika-sub');
+      setFormData({ ...formData, category: `Elektronika - ${type}` });
+      setStep('detail-sub');
+    } else {
+      setFormData({ ...formData, category: `Elektronika - ${type}` });
+      setStep('form');
+    }
   };
 
   const selectServicesSub = (type: string) => {
     setAttributes({});
-    setFormData({ ...formData, category: `Usluge - ${type}` });
-    setStep('form');
+    const details = CATEGORY_DETAILS[type];
+    if (details && details.length > 0) {
+      setParentSubCategory(type);
+      setParentColor('cyan');
+      setPreviousStep('services-sub');
+      setFormData({ ...formData, category: `Usluge - ${type}` });
+      setStep('detail-sub');
+    } else {
+      setFormData({ ...formData, category: `Usluge - ${type}` });
+      setStep('form');
+    }
   };
 
   const selectPosloviSub = (type: string) => {
     setAttributes({});
-    setFormData({ ...formData, category: `Poslovi - ${type}` });
+    const details = CATEGORY_DETAILS[type];
+    if (details && details.length > 0) {
+      setParentSubCategory(type);
+      setParentColor('indigo');
+      setPreviousStep('poslovi-sub');
+      setFormData({ ...formData, category: `Poslovi - ${type}` });
+      setStep('detail-sub');
+    } else {
+      setFormData({ ...formData, category: `Poslovi - ${type}` });
+      setStep('form');
+    }
+  };
+
+  const selectGenericSub = (parentCat: string, color: string, parentStep: UploadStep, type: string) => {
+    setAttributes({});
+    const details = CATEGORY_DETAILS[type];
+    if (details && details.length > 0) {
+      setParentSubCategory(type);
+      setParentColor(color);
+      setPreviousStep(parentStep);
+      setFormData(prev => ({ ...prev, category: `${parentCat} - ${type}` }));
+      setStep('detail-sub');
+    } else {
+      setFormData(prev => ({ ...prev, category: `${parentCat} - ${type}` }));
+      setStep('form');
+    }
+  };
+
+  const selectDetailItem = (itemName: string) => {
+    setFormData(prev => ({ ...prev, category: `${prev.category} - ${itemName}` }));
     setStep('form');
   };
 
@@ -631,6 +1610,7 @@ function UploadPageInner() {
       if (brandModels.length > 0 && brand !== 'Ostalo') {
         setPickerBrand(brand);
         setShowModelPicker(true);
+        setStep('form');
       } else {
         setPartsSubStep('category');
         setStep('parts-sub');
@@ -716,10 +1696,19 @@ function UploadPageInner() {
         } else if (catLower.includes('odjeća') || catLower.includes('obuća') || catLower.includes('moda')) {
           const matchedSub = findMatch(MODA_TYPES, sub);
           if (matchedSub) {
-            setAttributes({});
-            setFormData(prev => ({ ...prev, title: result.title, category: `Moda - ${matchedSub.name}`, description: result.description || prev.description }));
-            setStep('form');
-            showToast(`AI: Moda → ${matchedSub.name}`);
+            const artikli = MODA_ARTIKLI[matchedSub.name];
+            if (artikli && artikli.length > 0) {
+              setAttributes({});
+              setModaSubCategory(matchedSub.name);
+              setFormData(prev => ({ ...prev, title: result.title, category: `Moda - ${matchedSub.name}`, description: result.description || prev.description }));
+              setStep('moda-artikl');
+              showToast(`AI: Moda → ${matchedSub.name}`);
+            } else {
+              setAttributes({});
+              setFormData(prev => ({ ...prev, title: result.title, category: `Moda - ${matchedSub.name}`, description: result.description || prev.description }));
+              setStep('form');
+              showToast(`AI: Moda → ${matchedSub.name}`);
+            }
           } else {
             setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
             setStep('moda-sub');
@@ -1007,8 +1996,8 @@ function UploadPageInner() {
             activity_type: 'upload' as const,
             xp_earned: 10,
           });
-        } catch (xpErr) {
-          console.warn('XP insert failed:', xpErr);
+        } catch {
+          // XP insert failed silently — non-critical
         }
 
         // Show success overlay, then redirect after 1.5s
@@ -1021,7 +2010,6 @@ function UploadPageInner() {
         return; // Don't clear isPublishing — overlay is shown
       }
     } catch (err) {
-      console.error('Upload failed:', err);
       showToast('Greška pri objavljivanju. Pokušajte ponovo.', 'error');
     } finally {
       setIsPublishing(false);
@@ -1596,8 +2584,19 @@ function UploadPageInner() {
                               setStep('parts-sub');
                               return;
                             }
-                            setFormData(prev => ({ ...prev, category: sub.name }));
-                            setStep('form');
+                            // Check if this subcategory has detail options
+                            const catDetails = CATEGORY_DETAILS[sub.name];
+                            if (catDetails && catDetails.length > 0) {
+                              const colorInfo = DETAIL_COLOR_MAP[sub.name];
+                              setParentSubCategory(sub.name);
+                              setParentColor(colorInfo?.color || 'blue');
+                              setPreviousStep('all-categories');
+                              setFormData(prev => ({ ...prev, category: `${cat.name} - ${sub.name}` }));
+                              setStep('detail-sub');
+                            } else {
+                              setFormData(prev => ({ ...prev, category: `${cat.name} - ${sub.name}` }));
+                              setStep('form');
+                            }
                           }}
                           className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-[var(--c-hover)] transition-colors group/sub"
                         >
@@ -1637,10 +2636,11 @@ function UploadPageInner() {
     items: { name: string; icon: string; type?: string }[],
     onSelect: (name: string) => void,
     searchPlaceholder: string,
-    aiLabel: string
+    aiLabel: string,
+    backStep: UploadStep = 'selection'
   ) => (
     <MainLayout title={title} showSigurnost={false} hideSearchOnMobile headerRight={
-      <button onClick={() => setStep('selection')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
+      <button onClick={() => setStep(backStep)} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
     }>
       <div className="space-y-4 pt-2 pb-24">
         <div className="px-1 mb-2">
@@ -1815,16 +2815,20 @@ function UploadPageInner() {
     return renderSubSelection('Nekretnine', 'Izaberite kategoriju nekretnine', 'emerald', NEKRETNINE_TYPES, selectNekretnineSub, 'Npr. Stan u centru Sarajeva...', 'NudiNađi AI');
   }
   if (step === 'mobile-sub') {
-    return renderSubSelection('Mobilni', 'Izaberite Brend', 'rose', MOBILE_BRANDS, selectMobileSub, 'Npr. iPhone 13 Pro Max plavi...', 'NudiNađi AI');
+    return renderSubSelection('Mobilni', 'Odaberite brend', 'rose', MOBILE_BRANDS, selectMobileSub, 'Npr. iPhone 13 Pro Max plavi...', 'NudiNađi AI');
   }
   if (step === 'moda-sub') {
-    return renderSubSelection('Moda', 'Kategorije Mode', 'amber', MODA_TYPES, selectModaSub, 'Npr. Crvena haljina M veličina...', 'NudiNađi AI');
+    return renderSubSelection('Moda', 'Koju vrstu odjeće prodajete?', 'amber', MODA_TYPES, selectModaSub, 'Npr. Crvena haljina M veličina...', 'NudiNađi AI');
+  }
+  if (step === 'moda-artikl') {
+    const artikli = MODA_ARTIKLI[modaSubCategory] || [];
+    return renderSubSelection(modaSubCategory, 'Odaberite vrstu artikla', 'amber', artikli, selectModaArtikl, 'Npr. Majica, haljina, cipele...', 'NudiNađi AI', 'moda-sub');
   }
   if (step === 'tehnika-sub') {
-    return renderSubSelection('Elektronika', 'IT & Gaming', 'purple', TEHNIKA_TYPES, selectTehnikaSub, 'Npr. Gaming PC RTX 3060...', 'NudiNađi AI');
+    return renderSubSelection('Elektronika', 'IT i Gaming', 'purple', TEHNIKA_TYPES, selectTehnikaSub, 'Npr. Gaming PC RTX 3060...', 'NudiNađi AI');
   }
   if (step === 'services-sub') {
-    return renderSubSelection('Usluge', 'Kategorije Usluga', 'cyan', SERVICES_TYPES, selectServicesSub, 'Npr. Popravka veš mašine...', 'NudiNađi AI');
+    return renderSubSelection('Usluge', 'Koju vrstu usluge nudite?', 'cyan', SERVICES_TYPES, selectServicesSub, 'Npr. Popravka veš mašine...', 'NudiNađi AI');
   }
 
   // Poslovi Sub-Selection (unique layout with sticky search)
@@ -1854,7 +2858,7 @@ function UploadPageInner() {
                             value={magicSearchInput}
                             onChange={(e) => setMagicSearchInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleMagicSearch()}
-                            placeholder="Traži posao (npr. Vozač kamiona)..."
+                            placeholder="Npr. Električar za stan u Sarajevu..."
                             className="w-full bg-transparent text-[11px] font-medium text-[var(--c-text)] px-3 focus:outline-none placeholder:text-[var(--c-placeholder)]"
                         />
                         <button
@@ -1890,6 +2894,43 @@ function UploadPageInner() {
         </div>
       </MainLayout>
     );
+  }
+
+  // ── Generic sub-steps for extra categories ──
+  if (step === 'dom-sub') {
+    return renderSubSelection('Dom i vrt', 'Koja kategorija doma?', 'teal', DOM_TYPES, (name) => selectGenericSub('Dom i vrt', 'teal', 'dom-sub', name), 'Npr. Kauč, frižider, lampa...', 'NudiNađi AI');
+  }
+  if (step === 'sport-sub') {
+    return renderSubSelection('Sport i rekreacija', 'Koji sport ili oprema?', 'green', SPORT_TYPES, (name) => selectGenericSub('Sport i rekreacija', 'green', 'sport-sub', name), 'Npr. Bučice, bicikl, skije...', 'NudiNađi AI');
+  }
+  if (step === 'djeca-sub') {
+    return renderSubSelection('Djeca i bebe', 'Što prodajete?', 'pink', DJECA_TYPES, (name) => selectGenericSub('Djeca i bebe', 'pink', 'djeca-sub', name), 'Npr. Kolica, igračke, krevetić...', 'NudiNađi AI');
+  }
+  if (step === 'glazba-sub') {
+    return renderSubSelection('Glazba i instrumenti', 'Koji instrument ili oprema?', 'indigo', GLAZBA_TYPES, (name) => selectGenericSub('Glazba i instrumenti', 'indigo', 'glazba-sub', name), 'Npr. Akustična gitara, bubnjevi...', 'NudiNađi AI');
+  }
+  if (step === 'literatura-sub') {
+    return renderSubSelection('Literatura i mediji', 'Koju vrstu medija?', 'orange', LITERATURA_TYPES, (name) => selectGenericSub('Literatura i mediji', 'orange', 'literatura-sub', name), 'Npr. Roman, udžbenik, vinil...', 'NudiNađi AI');
+  }
+  if (step === 'zivotinje-sub') {
+    return renderSubSelection('Životinje', 'Koja vrsta životinje?', 'amber', ZIVOTINJE_TYPES, (name) => selectGenericSub('Životinje', 'amber', 'zivotinje-sub', name), 'Npr. Štene, mačić, akvarij...', 'NudiNađi AI');
+  }
+  if (step === 'hrana-sub') {
+    return renderSubSelection('Hrana i piće', 'Koja vrsta hrane?', 'red', HRANA_TYPES, (name) => selectGenericSub('Hrana i piće', 'red', 'hrana-sub', name), 'Npr. Domaći med, rakija, sir...', 'NudiNađi AI');
+  }
+  if (step === 'strojevi-sub') {
+    return renderSubSelection('Strojevi i alati', 'Koji tip stroja ili alata?', 'gray', STROJEVI_TYPES, (name) => selectGenericSub('Strojevi i alati', 'gray', 'strojevi-sub', name), 'Npr. Bušilica, traktor, kompresor...', 'NudiNađi AI');
+  }
+  if (step === 'umjetnost-sub') {
+    return renderSubSelection('Umjetnost i kolekcionarstvo', 'Koja vrsta?', 'rose', UMJETNOST_TYPES, (name) => selectGenericSub('Umjetnost i kolekcionarstvo', 'rose', 'umjetnost-sub', name), 'Npr. Uljana slika, marke, antikviteti...', 'NudiNađi AI');
+  }
+
+  // ── Generic detail-sub step (2nd tier for ALL categories) ──
+  if (step === 'detail-sub') {
+    const details = CATEGORY_DETAILS[parentSubCategory] || [];
+    const backInfo = DETAIL_COLOR_MAP[parentSubCategory];
+    const backStep = backInfo?.parentStep || previousStep || 'selection';
+    return renderSubSelection(parentSubCategory, 'Odaberite detaljnije', parentColor, details, selectDetailItem, 'Pretraži...', 'NudiNađi AI', backStep);
   }
 
   // 3. Car Method (VIN/AI + Brand Picker) — now dynamic per vehicleType

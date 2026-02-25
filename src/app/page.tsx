@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import ProductCard from '@/components/ProductCard';
 import CategoryButton from '@/components/CategoryButton';
@@ -69,7 +69,7 @@ function matchesTimeFilter(timeLabel: string, filter: string): boolean {
 }
 
 function HomeContent() {
-  const router = useRouter();
+
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'Sve';
 
@@ -224,10 +224,6 @@ function HomeContent() {
     window.history.replaceState(null, '', url);
   };
 
-  // Product click handler — use full ID (Supabase UUIDs contain hyphens)
-  const handleProductClick = (productId: string) => {
-    router.push(`/product/${productId}`);
-  };
 
 
   // GPS detection handler
@@ -1098,7 +1094,7 @@ function HomeContent() {
             </div>
             <div className="flex overflow-x-auto no-scrollbar gap-3 pb-4 pr-4">
               {vehicleProducts.slice(0, 10).map((p) => (
-                <div key={`vozila-${p.id}`} className="min-w-[180px] w-[180px] shrink-0 cursor-pointer" onClick={() => handleProductClick(p.id)}>
+                <div key={`vozila-${p.id}`} className="min-w-[180px] w-[180px] shrink-0">
                   <ProductCard product={p} />
                 </div>
               ))}
@@ -1138,7 +1134,7 @@ function HomeContent() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 md:gap-4">
               {displayedProducts.map((p) => (
-                <div key={p.id} className="cursor-pointer" onClick={() => handleProductClick(p.id)}>
+                <div key={p.id}>
                   <ProductCard product={p} />
                 </div>
               ))}
