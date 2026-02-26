@@ -33,7 +33,7 @@ function ProductCard({ product }: ProductCardProps) {
   return (
     <div
       onClick={handleCardClick}
-      className="bg-[var(--c-card)] rounded-[14px] overflow-hidden flex flex-col border border-[var(--c-border)] relative group transition-all duration-150 h-[220px] w-full cursor-pointer shadow-subtle hover:shadow-medium hover:border-[var(--c-active)]"
+      className="bg-[var(--c-card)] rounded-[14px] overflow-hidden flex flex-col border border-[var(--c-border)] relative group transition-all duration-150 h-[240px] w-full cursor-pointer shadow-subtle hover:shadow-medium hover:border-[var(--c-active)]"
     >
       {/* Image Area */}
       <div className="relative h-[150px] w-full shrink-0 overflow-hidden">
@@ -59,8 +59,8 @@ function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-2.5 flex flex-col justify-center overflow-hidden bg-[var(--c-card)]">
-        <h3 className="text-[13px] font-semibold text-[var(--c-text)] leading-snug mb-1">
+      <div className="flex-1 p-2.5 flex flex-col justify-center min-w-0 overflow-hidden bg-[var(--c-card)]">
+        <h3 className="text-[13px] font-semibold text-[var(--c-text)] leading-snug mb-1 line-clamp-2 min-w-0 w-full">
           {product.name}
         </h3>
 
@@ -70,7 +70,7 @@ function ProductCard({ product }: ProductCardProps) {
             <span className="text-[11px] text-[var(--c-text-muted)]">{product.timeLabel}</span>
           </div>
           <div className="flex flex-col items-end gap-0.5">
-            <span className="text-[14px] font-bold text-[var(--c-accent)] leading-none">&euro;{product.price.toLocaleString()}</span>
+            <span className="text-[14px] font-bold text-[var(--c-accent)] leading-none">{product.price.toLocaleString()} &euro;</span>
             <span className="text-[12px] font-semibold text-[var(--c-accent)]/60 leading-none">{product.secondaryPriceLabel}</span>
           </div>
         </div>

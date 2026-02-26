@@ -447,7 +447,7 @@ export default function ProductDetailPage() {
                 )}
 
                 {/* PRICE */}
-                {product.attributes?.price_type === 'Po dogovoru' || (Number(product.price) === 0 && !product.attributes?.price_type) ? (
+                {product.attributes?.price_type === 'Po dogovoru' || ((!product.price && product.price !== 0) || isNaN(Number(product.price))) || (Number(product.price) === 0 && !product.attributes?.price_type) ? (
                   <div className="border border-[var(--c-border2)] rounded-sm overflow-hidden mb-8">
                     <div className="bg-[var(--c-card)] p-5 flex items-center justify-center hover:bg-[var(--c-hover)] transition-colors">
                       <span className="text-2xl font-black text-[var(--c-text)] tracking-tight uppercase">Po dogovoru</span>
@@ -457,7 +457,7 @@ export default function ProductDetailPage() {
                   <div className="border border-[var(--c-border2)] rounded-sm overflow-hidden mb-8">
                     <div className="bg-[var(--c-card)] p-5 flex items-center justify-between border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] transition-colors">
                         <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">EUR</span>
-                        <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">€ {Number(product.price).toLocaleString()}</span>
+                        <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">{Number(product.price).toLocaleString()} €</span>
                     </div>
                     <div className="bg-[var(--c-card)] p-5 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors">
                         <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">BAM</span>

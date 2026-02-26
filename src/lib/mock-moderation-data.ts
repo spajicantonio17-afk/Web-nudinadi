@@ -27,6 +27,8 @@ export const MOCK_ADMIN_PROFILE: Profile = {
   total_purchases: 0,
   rating_average: null,
   location: 'Sarajevo',
+  instagram_url: null,
+  facebook_url: null,
   is_admin: true,
   created_at: '2025-01-01T00:00:00Z',
   updated_at: '2025-01-01T00:00:00Z',
@@ -36,37 +38,37 @@ export const MOCK_USERS: Profile[] = [
   {
     id: 'user_01', username: 'marko_bh', full_name: 'Marko Petrović', avatar_url: null,
     bio: 'Prodajem rabljenu elektroniku', phone: '+387 61 123 456', email_verified: true, level: 3, xp: 350, total_sales: 12, total_purchases: 5,
-    rating_average: 4.2, location: 'Banja Luka', is_admin: false,
+    rating_average: 4.2, location: 'Banja Luka', instagram_url: null, facebook_url: null, is_admin: false,
     created_at: '2025-06-15T10:00:00Z', updated_at: '2026-02-20T10:00:00Z',
   },
   {
     id: 'user_02', username: 'amina_sa', full_name: 'Amina Hadžić', avatar_url: null,
     bio: 'Dizajnerska odjeća i aksesori', phone: null, email_verified: true, level: 5, xp: 1200, total_sales: 38, total_purchases: 15,
-    rating_average: 4.8, location: 'Sarajevo', is_admin: false,
+    rating_average: 4.8, location: 'Sarajevo', instagram_url: null, facebook_url: null, is_admin: false,
     created_at: '2025-03-10T08:00:00Z', updated_at: '2026-02-22T14:00:00Z',
   },
   {
     id: 'user_03', username: 'dejan_mo', full_name: 'Dejan Jovanović', avatar_url: null,
     bio: null, phone: null, email_verified: false, level: 1, xp: 20, total_sales: 1, total_purchases: 0,
-    rating_average: 2.0, location: 'Mostar', is_admin: false,
+    rating_average: 2.0, location: 'Mostar', instagram_url: null, facebook_url: null, is_admin: false,
     created_at: '2026-02-01T12:00:00Z', updated_at: '2026-02-23T09:00:00Z',
   },
   {
     id: 'user_04', username: 'lejla_tz', full_name: 'Lejla Mujić', avatar_url: null,
     bio: 'Knjige i vintage stvari', phone: '+387 62 789 012', email_verified: true, level: 4, xp: 700, total_sales: 22, total_purchases: 30,
-    rating_average: 4.9, location: 'Tuzla', is_admin: false,
+    rating_average: 4.9, location: 'Tuzla', instagram_url: null, facebook_url: null, is_admin: false,
     created_at: '2025-05-20T14:00:00Z', updated_at: '2026-02-24T08:00:00Z',
   },
   {
     id: 'user_05', username: 'spam_bot_99', full_name: '', avatar_url: null,
     bio: 'BUY NOW CHEAP!!!', phone: null, email_verified: false, level: 1, xp: 0, total_sales: 0, total_purchases: 0,
-    rating_average: null, location: null, is_admin: false,
+    rating_average: null, location: null, instagram_url: null, facebook_url: null, is_admin: false,
     created_at: '2026-02-23T22:00:00Z', updated_at: '2026-02-23T22:00:00Z',
   },
   {
     id: 'user_06', username: 'emir_ze', full_name: 'Emir Begović', avatar_url: null,
     bio: 'Auto dijelovi originalni', phone: null, email_verified: false, level: 2, xp: 150, total_sales: 6, total_purchases: 2,
-    rating_average: 3.5, location: 'Zenica', is_admin: false,
+    rating_average: 3.5, location: 'Zenica', instagram_url: null, facebook_url: null, is_admin: false,
     created_at: '2025-09-01T10:00:00Z', updated_at: '2026-02-21T16:00:00Z',
   },
 ];
@@ -231,7 +233,7 @@ export const MOCK_REPORTS: (ModerationReport & {
     reported_user_id: 'user_01',
     reporter_id: null,
     reason: 'personal_info',
-    description: 'AI detektovao lične podatke u opisu — IBAN broj.',
+    description: 'AI detektovao osobne podatke u opisu — IBAN broj.',
     ai_moderation_result: { score: 30, isBlocked: false, level: 'Upozorenje', warnings: ['IBAN broj u opisu'], blockedReasons: [], recommendation: 'Provjeri' },
     ai_score: 30,
     status: 'approved',
@@ -300,7 +302,7 @@ export const MOCK_WARNINGS: UserWarning[] = [
   },
   {
     id: 'warn_02', user_id: 'user_01', admin_id: 'admin_01', report_id: 'report_08',
-    reason: 'Objavljivanje ličnih podataka (IBAN) u opisu oglasa.',
+    reason: 'Objavljivanje osobnih podataka (IBAN) u opisu oglasa.',
     severity: 1, acknowledged: true, created_at: '2026-02-21T15:00:00Z',
   },
   {
@@ -395,7 +397,7 @@ export const MOCK_ACTIONS: ModerationAction[] = [
   {
     id: 'action_04', report_id: 'report_08', admin_id: 'admin_01', action_type: 'warn',
     target_user_id: 'user_01', target_product_id: null,
-    reason: 'Lični podaci u opisu', metadata: null, created_at: '2026-02-21T15:00:00Z',
+    reason: 'Osobni podaci u opisu', metadata: null, created_at: '2026-02-21T15:00:00Z',
   },
   {
     id: 'action_05', report_id: 'report_05', admin_id: 'admin_01', action_type: 'approve',
@@ -425,7 +427,7 @@ export const MOCK_STATS = {
     { reason: 'prohibited_content', label: 'Zabranjeno', count: 15, color: '#dc2626' },
     { reason: 'inappropriate', label: 'Neprimjereno', count: 12, color: '#f97316' },
     { reason: 'fake_listing', label: 'Lažni oglas', count: 8, color: '#8b5cf6' },
-    { reason: 'personal_info', label: 'Lični podaci', count: 5, color: '#06b6d4' },
+    { reason: 'personal_info', label: 'Osobni podaci', count: 5, color: '#06b6d4' },
     { reason: 'other', label: 'Ostalo', count: 3, color: '#94a3b8' },
   ],
   reportsOverTime: [
@@ -448,7 +450,7 @@ export const REASON_LABELS: Record<string, string> = {
   duplicate: 'Duplikat',
   inappropriate: 'Neprimjereno',
   fake_listing: 'Lažni oglas',
-  personal_info: 'Lični podaci',
+  personal_info: 'Osobni podaci',
   other: 'Ostalo',
 };
 

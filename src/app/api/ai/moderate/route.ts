@@ -104,7 +104,7 @@ Broj slika: ${images || 0}
 Provjeri na:
 1. Prevare i lažne ponude (preniski cijena, phishing, advance-fee fraud)
 2. Zabranjeni sadržaj (oružje, droge, ilegalne usluge)
-3. Lični podaci u opisu (IBAN, broj kartice, lozinka)
+3. Osobni podaci u opisu (IBAN, broj kartice, lozinka)
 4. Spam i reklamni sadržaj
 5. Preopćeniti opis koji ne opisuje stvarni artikl
 6. Neadekvatna cijena za kategoriju

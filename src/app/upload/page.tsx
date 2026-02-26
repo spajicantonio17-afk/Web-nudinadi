@@ -104,7 +104,7 @@ const analyzeRawInput = async (input: string): Promise<AiAnalysisResult> => {
       return { title: input, category: 'Elektronika', description: '' };
     // Children & babies
     if (/koli.?c|beb|dje[cč].?j|igra[cč]|auto.?sjed/i.test(l))
-      return { title: input, category: 'Djeca i bebe', description: '' };
+      return { title: input, category: 'Odjeća za djecu', description: '' };
     // Music & instruments
     if (/gitar|bubn|klavir|sintesa|violi|saksof|trub|harmoni/i.test(l))
       return { title: input, category: 'Glazba i instrumenti', description: '' };
@@ -745,12 +745,12 @@ const UMJETNOST_TYPES = [
 ];
 
 const VIDEOIGRE_TYPES = [
-  { name: 'PlayStation', icon: 'fa-playstation' },
-  { name: 'Xbox', icon: 'fa-xbox' },
+  { name: 'PlayStation', icon: 'fa-playstation', type: 'brands' },
+  { name: 'Xbox', icon: 'fa-xbox', type: 'brands' },
   { name: 'Nintendo', icon: 'fa-gamepad' },
   { name: 'PC igre', icon: 'fa-computer' },
   { name: 'Retro igre i konzole', icon: 'fa-ghost' },
-  { name: 'Gaming oprema', icon: 'fa-headset' },
+  { name: 'Gaming Oprema', icon: 'fa-headset' },
 ];
 
 const OSTALO_TYPES = [
@@ -1413,7 +1413,7 @@ for (const t of DOM_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name
 // Sport
 for (const t of SPORT_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'green', parentStep: 'sport-sub', parentCategory: 'Sport i rekreacija' };
 // Djeca
-for (const t of DJECA_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'pink', parentStep: 'djeca-sub', parentCategory: 'Djeca i bebe' };
+for (const t of DJECA_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'pink', parentStep: 'djeca-sub', parentCategory: 'Odjeća za djecu' };
 // Glazba
 for (const t of GLAZBA_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'indigo', parentStep: 'glazba-sub', parentCategory: 'Glazba i instrumenti' };
 // Literatura
@@ -2141,78 +2141,79 @@ function UploadPageInner() {
 
   const getPriceLabel = () => {
     const sym = currency === 'KM' ? 'KM' : '€';
+    const price = formData.price || '0';
     const suffix = formData.priceType === 'mk' ? ' MK' : formData.priceType === 'negotiable' ? ' (dogovor)' : '';
-    return `${sym} ${formData.price || '0'}${suffix}`;
+    return `${price}${suffix} ${sym}`;
   };
 
-  // PhonePreview - KEEP dark colors as-is (intentionally dark-themed phone mockup)
+  // PhonePreview — adapts to current theme (light/dark)
   const PhonePreview = () => (
-    <div className="w-full h-[700px] bg-[#060E14] border-[8px] border-[#121C26] rounded-[40px] shadow-2xl overflow-hidden relative flex flex-col">
+    <div className="w-full h-[700px] bg-[var(--c-bg)] border-[8px] border-[var(--c-border)] rounded-[40px] shadow-2xl overflow-hidden relative flex flex-col">
       <div className="h-6 w-full flex justify-between px-6 items-center pt-2 opacity-50">
-        <span className="text-[9px] font-bold text-white">9:41</span>
+        <span className="text-[9px] font-bold text-[var(--c-text)]">9:41</span>
         <div className="flex gap-1">
-          <div className="w-3 h-3 bg-white rounded-full"></div>
-          <div className="w-3 h-3 bg-white rounded-full"></div>
+          <div className="w-3 h-3 bg-[var(--c-text)] rounded-full opacity-40"></div>
+          <div className="w-3 h-3 bg-[var(--c-text)] rounded-full opacity-40"></div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto no-scrollbar relative bg-[#0B1219]">
-        <div className="aspect-square bg-[#080D11] relative flex items-center justify-center border-b border-white/5">
+      <div className="flex-1 overflow-y-auto no-scrollbar relative bg-[var(--c-bg)]">
+        <div className="aspect-square bg-[var(--c-card-alt)] relative flex items-center justify-center border-b border-[var(--c-border)]">
           {previewUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
           ) : (
-            <i className="fa-regular fa-image text-4xl text-gray-700"></i>
+            <i className="fa-regular fa-image text-4xl text-[var(--c-text-muted)]"></i>
           )}
           <div className="absolute top-4 left-0 bg-blue-600 text-white px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-r-sm shadow-sm">
             {formData.condition}
           </div>
         </div>
         <div className="p-6">
-          <h2 className="text-xl font-bold text-white leading-tight mb-2">{formData.title || 'Naslov Artikla'}</h2>
-          <div className="flex items-center gap-4 border-b border-white/5 pb-4 mb-4">
-            <div className="flex items-center gap-2 text-gray-400 text-[10px]">
+          <h2 className="text-xl font-bold text-[var(--c-text)] leading-tight mb-2">{formData.title || 'Naslov Artikla'}</h2>
+          <div className="flex items-center gap-4 border-b border-[var(--c-border)] pb-4 mb-4">
+            <div className="flex items-center gap-2 text-[var(--c-text3)] text-[10px]">
               <i className="fa-solid fa-location-dot text-blue-500"></i>
               <span>{formData.location || 'Lokacija'}</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-400 text-[10px]">
+            <div className="flex items-center gap-2 text-[var(--c-text3)] text-[10px]">
               <i className="fa-regular fa-clock"></i>
               <span>Upravo sada</span>
             </div>
           </div>
-          <div className="border border-white/10 rounded-[12px] overflow-hidden mb-6">
-            <div className="bg-[#121A21] p-4 flex items-center justify-between">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Cijena</span>
-              <span className="text-xl font-black tracking-tight text-white">
+          <div className="border border-[var(--c-border)] rounded-[12px] overflow-hidden mb-6">
+            <div className="bg-[var(--c-card)] p-4 flex items-center justify-between">
+              <span className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Cijena</span>
+              <span className="text-xl font-black tracking-tight text-[var(--c-text)]">
                 {getPriceLabel()}
               </span>
             </div>
           </div>
           {(formData.category.includes('Mobilni') || formData.category.includes('Mobiteli')) && (
             <div className="grid grid-cols-3 gap-2 mb-6">
-              <div className="bg-[#121C26] p-2 rounded-[8px] text-center border border-white/5">
-                <i className="fa-solid fa-microchip text-gray-500 text-xs mb-1"></i>
-                <span className="block text-[9px] text-white font-bold mt-1">{(attributes.memorija as string) || '-'}</span>
+              <div className="bg-[var(--c-card)] p-2 rounded-[8px] text-center border border-[var(--c-border)]">
+                <i className="fa-solid fa-microchip text-[var(--c-text-muted)] text-xs mb-1"></i>
+                <span className="block text-[9px] text-[var(--c-text)] font-bold mt-1">{(attributes.memorija as string) || '-'}</span>
               </div>
-              <div className="bg-[#121C26] p-2 rounded-[8px] text-center border border-white/5">
-                <i className="fa-solid fa-battery-half text-gray-500 text-xs mb-1"></i>
-                <span className="block text-[9px] text-white font-bold mt-1">{(attributes.baterija as string) || '-'}</span>
+              <div className="bg-[var(--c-card)] p-2 rounded-[8px] text-center border border-[var(--c-border)]">
+                <i className="fa-solid fa-battery-half text-[var(--c-text-muted)] text-xs mb-1"></i>
+                <span className="block text-[9px] text-[var(--c-text)] font-bold mt-1">{(attributes.baterija as string) || '-'}</span>
               </div>
-              <div className="bg-[#121C26] p-2 rounded-[8px] text-center border border-white/5">
-                <i className="fa-solid fa-shield text-gray-500 text-xs mb-1"></i>
-                <span className="block text-[9px] text-white font-bold mt-1">{attributes.garancija ? 'Da' : 'Ne'}</span>
+              <div className="bg-[var(--c-card)] p-2 rounded-[8px] text-center border border-[var(--c-border)]">
+                <i className="fa-solid fa-shield text-[var(--c-text-muted)] text-xs mb-1"></i>
+                <span className="block text-[9px] text-[var(--c-text)] font-bold mt-1">{attributes.garancija ? 'Da' : 'Ne'}</span>
               </div>
             </div>
           )}
           <div>
-            <h3 className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 border-l-2 border-blue-500 pl-2">Opis</h3>
-            <p className="text-xs text-gray-300 font-mono leading-relaxed whitespace-pre-line">
+            <h3 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest mb-2 border-l-2 border-blue-500 pl-2">Opis</h3>
+            <p className="text-xs text-[var(--c-text2)] font-mono leading-relaxed whitespace-pre-line">
               {formData.description || 'Ovdje će se pojaviti opis vašeg artikla.'}
             </p>
           </div>
         </div>
       </div>
-      <div className="h-16 bg-[#060E14] border-t border-white/10 flex items-center justify-between px-6">
-        <div className="w-8 h-8 rounded-full border border-white/10"></div>
+      <div className="h-16 bg-[var(--c-bg)] border-t border-[var(--c-border)] flex items-center justify-between px-6">
+        <div className="w-8 h-8 rounded-full border border-[var(--c-border)]"></div>
         <div className="w-32 h-10 bg-blue-600 rounded-[10px]"></div>
       </div>
     </div>
@@ -3922,7 +3923,7 @@ function UploadPageInner() {
     return renderSubSelection('Sport i rekreacija', 'Koji sport ili oprema?', 'green', SPORT_TYPES, (name) => selectGenericSub('Sport i rekreacija', 'green', 'sport-sub', name), 'Npr. Bučice, bicikl, skije...', 'NudiNađi AI');
   }
   if (step === 'djeca-sub') {
-    return renderSubSelection('Djeca i bebe', 'Što prodajete?', 'pink', DJECA_TYPES, (name) => selectGenericSub('Djeca i bebe', 'pink', 'djeca-sub', name), 'Npr. Kolica, igračke, krevetić...', 'NudiNađi AI');
+    return renderSubSelection('Odjeća za djecu', 'Što prodajete?', 'pink', DJECA_TYPES, (name) => selectGenericSub('Odjeća za djecu', 'pink', 'djeca-sub', name), 'Npr. Kolica, igračke, krevetić...', 'NudiNađi AI');
   }
   if (step === 'glazba-sub') {
     return renderSubSelection('Glazba i instrumenti', 'Koji instrument ili oprema?', 'indigo', GLAZBA_TYPES, (name) => selectGenericSub('Glazba i instrumenti', 'indigo', 'glazba-sub', name), 'Npr. Akustična gitara, bubnjevi...', 'NudiNađi AI');

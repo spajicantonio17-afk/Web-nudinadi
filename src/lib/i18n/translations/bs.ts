@@ -150,7 +150,7 @@ const bs: Record<string, string> = {
   'menu.finishedListings': 'Završeni Oglasi',
   'menu.archivedListings': 'Arhiv Oglasi',
   'menu.account': 'Račun',
-  'menu.personalInfo': 'Lični podaci',
+  'menu.personalInfo': 'Osobni podaci',
   'menu.security': 'Sigurnost i lozinka',
   'menu.settings': 'Postavke',
   'menu.mainSettings': 'Glavne Postavke',

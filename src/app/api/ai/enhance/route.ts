@@ -119,7 +119,7 @@ VAŽNO: Korisnik može pisati s greškama! Primjeri:
 - "patike nik" → Nike patike → Odjeća i obuća, subcategory: "Cipele"
 - "playstejšn" → PlayStation → Elektronika, subcategory: "Konzole"
 - "stan sarajevo" → Stan Sarajevo → Nekretnine, subcategory: "Stanovi i Apartmani"
-- "dječja kolica" → Dječja kolica → Djeca i bebe, subcategory: "Oprema za bebe"
+- "dječja kolica" → Dječja kolica → Odjeća za djecu, subcategory: "Oprema za bebe"
 
 Kategorije (koristi TAČNO ove nazive) i primjeri subcategory:
 1. Vozila — subcategory = MARKA vozila (npr. "BMW", "Volkswagen", "Audi", "Mercedes-Benz", "Toyota", "Fiat", "Renault", "Škoda", "Opel")
@@ -130,7 +130,7 @@ Kategorije (koristi TAČNO ove nazive) i primjeri subcategory:
 6. Odjeća i obuća — subcategory jedan od: "Ženska moda", "Muška moda", "Dječja odjeća i obuća", "Cipele", "Nakit (Schmuck)", "Accessoires"
 7. Dom i vrt — subcategory npr. "Namještaj", "Vrt", "Rasvjeta", "Alati"
 8. Sport i rekreacija — subcategory npr. "Fitness", "Biciklizam", "Zimski sportovi", "Planinarenje"
-9. Djeca i bebe — subcategory npr. "Oprema za bebe", "Dječje igračke", "Dječja odjeća"
+9. Odjeća za djecu — subcategory npr. "Oprema za bebe", "Dječje igračke", "Dječja odjeća"
 10. Glazba i instrumenti — subcategory npr. "Gitare", "Bubnjevi", "Klavijature", "PA sustavi"
 11. Literatura i mediji — subcategory npr. "Knjige", "Stripovi", "Filmovi"
 12. Video igre — subcategory npr. "PlayStation", "Xbox", "Nintendo", "PC igre"

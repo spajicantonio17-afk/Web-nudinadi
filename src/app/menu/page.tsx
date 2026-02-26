@@ -159,6 +159,8 @@ export default function MenuPage() {
     email: '',
     bio: '',
     fullName: '',
+    instagram: '',
+    facebook: '',
   });
   const [accountSaving, setAccountSaving] = useState(false);
 
@@ -170,6 +172,8 @@ export default function MenuPage() {
         email: user.email || '',
         bio: user.bio || '',
         fullName: user.fullName || '',
+        instagram: user.instagramUrl || '',
+        facebook: user.facebookUrl || '',
       });
     }
   }, [user]);
@@ -184,6 +188,8 @@ export default function MenuPage() {
           username: accountForm.username,
           full_name: accountForm.fullName,
           bio: accountForm.bio,
+          instagram_url: accountForm.instagram || null,
+          facebook_url: accountForm.facebook || null,
         })
         .eq('id', user.id);
 
@@ -537,6 +543,40 @@ export default function MenuPage() {
                           placeholder="Kratki opis o sebi..."
                           className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-lg p-3 text-sm text-[var(--c-text)] focus:border-blue-500 outline-none resize-none"
                         />
+                    </div>
+
+                    {/* Social Media Links */}
+                    <div className="pt-2 border-t border-[var(--c-border)]">
+                      <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-3">Društvene Mreže</p>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-[var(--c-text3)] block mb-1">
+                            <i className="fa-brands fa-instagram mr-1"></i> Instagram
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[11px] text-[var(--c-text3)]">@</span>
+                            <input
+                              type="text"
+                              value={accountForm.instagram}
+                              onChange={(e) => setAccountForm(prev => ({ ...prev, instagram: e.target.value.replace('@', '') }))}
+                              placeholder="username"
+                              className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-lg p-3 pl-8 text-sm text-[var(--c-text)] focus:border-blue-500 outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-[var(--c-text3)] block mb-1">
+                            <i className="fa-brands fa-facebook-f mr-1"></i> Facebook
+                          </label>
+                          <input
+                            type="text"
+                            value={accountForm.facebook}
+                            onChange={(e) => setAccountForm(prev => ({ ...prev, facebook: e.target.value }))}
+                            placeholder="facebook.com/username ili ime profila"
+                            className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-lg p-3 text-sm text-[var(--c-text)] focus:border-blue-500 outline-none"
+                          />
+                        </div>
+                      </div>
                     </div>
                 </div>
 

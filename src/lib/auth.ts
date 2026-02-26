@@ -42,6 +42,8 @@ export interface AuthUser {
   location?: string;
   level: number;
   xp: number;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
   isAdmin: boolean;
   createdAt?: string;
   totalSales?: number;
@@ -80,6 +82,8 @@ function toAuthUser(user: User, profile?: Profile | null): AuthUser {
     location: profile?.location || undefined,
     level: profile?.level || 1,
     xp: profile?.xp || 0,
+    instagramUrl: profile?.instagram_url ?? null,
+    facebookUrl: profile?.facebook_url ?? null,
     isAdmin: profile?.is_admin || false,
     createdAt: profile?.created_at || user.created_at,
     totalSales: profile?.total_sales || 0,

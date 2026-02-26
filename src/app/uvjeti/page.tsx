@@ -50,7 +50,7 @@ export default function TermsPage() {
             },
             {
               title: '6. Privatnost i zaštita podataka',
-              content: 'Obradu ličnih podataka reguliše naša Politika privatnosti. Prikupljamo samo podatke neophodne za funkcionisanje platforme. Detaljne informacije o obradi podataka dostupne su u našoj Politici privatnosti.',
+              content: 'Obradu osobnih podataka reguliše naša Politika privatnosti. Prikupljamo samo podatke neophodne za funkcionisanje platforme. Detaljne informacije o obradi podataka dostupne su u našoj Politici privatnosti.',
             },
             {
               title: '7. Ograničenje odgovornosti',

@@ -34,6 +34,8 @@ export interface Profile {
   total_purchases: number
   rating_average: number | null
   location: string | null
+  instagram_url: string | null
+  facebook_url: string | null
   is_admin: boolean
   created_at: string
   updated_at: string
@@ -201,6 +203,8 @@ export interface ProfileUpdate {
   phone?: string | null
   email_verified?: boolean
   location?: string | null
+  instagram_url?: string | null
+  facebook_url?: string | null
 }
 
 export interface ProductUpdate {

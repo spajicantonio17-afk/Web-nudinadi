@@ -42,7 +42,7 @@ export default function PrivacyPage() {
             },
             {
               title: '4. Dijeljenje podataka',
-              content: 'Ne prodajemo vaše lične podatke trećim stranama. Podatke dijelimo samo sa: pružaocima usluga koji nam pomažu u radu (hosting, analitika), nadležnim organima kada je to zakonski obavezno, drugim korisnicima samo u mjeri u kojoj je neophodno za transakcije (npr. kontakt za oglas).',
+              content: 'Ne prodajemo vaše osobne podatke trećim stranama. Podatke dijelimo samo sa: pružaocima usluga koji nam pomažu u radu (hosting, analitika), nadležnim organima kada je to zakonski obavezno, drugim korisnicima samo u mjeri u kojoj je neophodno za transakcije (npr. kontakt za oglas).',
             },
             {
               title: '5. Vaša prava',

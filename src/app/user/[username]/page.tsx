@@ -211,6 +211,45 @@ function UserProfileContent() {
                     </span>
                   )}
                 </div>
+
+                {/* Social Media Links */}
+                {(profile.instagram_url || profile.facebook_url) && (
+                  <div className="flex items-center gap-2 mt-2">
+                    {profile.instagram_url && (
+                      <a
+                        href={`https://instagram.com/${profile.instagram_url.replace('@', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--c-hover)] border border-[var(--c-border)] text-[10px] font-bold text-[var(--c-text3)] hover:text-[var(--c-text)] hover:border-[var(--c-border2)] transition-all"
+                      >
+                        <i className="fa-brands fa-instagram text-pink-500"></i>
+                        @{profile.instagram_url.replace('@', '')}
+                      </a>
+                    )}
+                    {profile.facebook_url && (
+                      <a
+                        href={profile.facebook_url.startsWith('http') ? profile.facebook_url : `https://facebook.com/${profile.facebook_url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--c-hover)] border border-[var(--c-border)] text-[10px] font-bold text-[var(--c-text3)] hover:text-[var(--c-text)] hover:border-[var(--c-border2)] transition-all"
+                      >
+                        <i className="fa-brands fa-facebook-f text-blue-500"></i>
+                        Facebook
+                      </a>
+                    )}
+                  </div>
+                )}
+                {isOwnProfile && !profile.instagram_url && !profile.facebook_url && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={() => router.push('/menu')}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--c-hover)] border border-dashed border-[var(--c-border2)] text-[10px] font-bold text-[var(--c-text-muted)] hover:text-[var(--c-text3)] transition-all"
+                    >
+                      <i className="fa-solid fa-plus text-[8px]"></i>
+                      Poveži društvene mreže
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Level (number only, no XP bar) */}

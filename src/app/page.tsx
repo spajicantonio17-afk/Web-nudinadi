@@ -46,7 +46,7 @@ function dbToDisplayProduct(p: ProductFull): Product {
     id: p.id,
     name: p.title,
     price: Number(p.price),
-    secondaryPriceLabel: `${(Number(p.price) * BAM_RATE).toFixed(0)} KM`,
+    secondaryPriceLabel: `${Number((Number(p.price) * BAM_RATE).toFixed(0)).toLocaleString()} KM`,
     location: p.location || 'Nepoznato',
     timeLabel: formatTimeLabel(p.created_at),
     description: p.description || '',

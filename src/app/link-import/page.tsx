@@ -86,14 +86,15 @@ export default function LinkImportPage() {
       if (json.success && json.data) {
         setImportedData(json.data);
         setStatus('success');
-        showToast('Oglas uspješno importiran!');
+        showToast(json.data._fallback ? 'Parcijalni import (samo osnovni podaci)' : 'Oglas uspješno importiran!');
       } else {
         setStatus('error');
-        setErrorMsg(json.error || 'Import nije uspio. Provjeri URL i pokušaj ponovo.');
+        const hint = json.hint ? `\n${json.hint}` : '';
+        setErrorMsg((json.error || 'Import nije uspio. Provjeri URL i pokušaj ponovo.') + hint);
       }
     } catch {
       setStatus('error');
-      setErrorMsg('Greška mreže. Provjeri internet konekciju.');
+      setErrorMsg('Greška mreže. Provjeri internet konekciju.\nProvjeri da imaš stabilnu internet vezu i pokušaj ponovo.');
     }
   };
 
@@ -219,7 +220,7 @@ export default function LinkImportPage() {
           {status === 'error' && errorMsg && (
             <div id="import-error" role="alert" className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-[14px] px-4 py-3 animate-[fadeIn_0.2s_ease-out]">
               <i className="fa-solid fa-circle-exclamation text-red-500 text-sm mt-0.5 shrink-0" aria-hidden="true"></i>
-              <p className="text-[11px] text-red-600 font-medium leading-relaxed">{errorMsg}</p>
+              <p className="text-[11px] text-red-600 font-medium leading-relaxed whitespace-pre-line">{errorMsg}</p>
             </div>
           )}
 

@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 
+// ── Fix D: URL normalization ──────────────────────────────
+function normalizeUrl(raw: string): string {
+  let url = raw.trim();
+  // Strip tracking params
+  url = url.replace(/[?&](utm_\w+|fbclid|gclid|ref|source|mc_cid|mc_eid)=[^&]*/gi, '');
+  // Clean up leftover ? or &
+  url = url.replace(/[?&]$/, '');
+  // Ensure protocol
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  return url;
+}
+
 /** Validate that the URL is a proper https URL */
 function isValidUrl(url: string): boolean {
   try {
@@ -10,6 +22,31 @@ function isValidUrl(url: string): boolean {
     return false;
   }
 }
+
+// ── Fix A: Multiple header sets for retry ─────────────────
+const HEADER_SETS: Record<string, string>[] = [
+  {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'hr,bs;q=0.9,sr;q=0.8,en;q=0.7',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Cache-Control': 'no-cache',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+  },
+  {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'bs-BA,bs;q=0.9,hr;q=0.8,en-US;q=0.7',
+    'Cache-Control': 'no-cache',
+  },
+  {
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+  },
+];
 
 /** Extract image URLs from HTML before stripping tags */
 function extractImages(html: string): string[] {
@@ -110,49 +147,117 @@ function htmlToText(html: string): string {
     .trim();
 }
 
+// ── Fix A: Fetch with retry (up to 3 attempts with different headers) ──
+async function fetchWithRetry(url: string): Promise<{ html: string; finalUrl: string }> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < HEADER_SETS.length; attempt++) {
+    try {
+      const response = await fetch(url, {
+        headers: HEADER_SETS[attempt],
+        signal: AbortSignal.timeout(20000), // 20s timeout (up from 12s)
+        redirect: 'follow',
+      });
+
+      if (response.ok) {
+        const html = await response.text();
+        return { html, finalUrl: response.url || url };
+      }
+
+      // 403/429 → try next header set
+      if (response.status === 403 || response.status === 429) {
+        lastError = new Error(`HTTP ${response.status}`);
+        continue;
+      }
+
+      // Other HTTP errors → don't retry
+      throw new Error(`HTTP_${response.status}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const isTimeout = msg.includes('timeout') || msg.includes('AbortError');
+      const isRetryable = msg.includes('403') || msg.includes('429') || isTimeout;
+
+      lastError = err instanceof Error ? err : new Error(msg);
+
+      if (!isRetryable || attempt === HEADER_SETS.length - 1) {
+        throw lastError;
+      }
+      // Small delay before retry
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
+  throw lastError || new Error('Fetch failed');
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { url } = body;
+    let { url } = body;
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json({ success: false, error: 'URL je obavezan' }, { status: 400 });
     }
 
+    // Fix D: Normalize URL
+    url = normalizeUrl(url);
+
     if (!isValidUrl(url)) {
       return NextResponse.json({ success: false, error: 'Nevažeći URL — mora počinjati sa http:// ili https://' }, { status: 400 });
     }
 
-    // Fetch the page server-side
+    // Fix A: Fetch with retry and multiple header sets
     let html: string;
+    let finalUrl: string = url;
     try {
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'hr,bs;q=0.9,sr;q=0.8,en;q=0.7',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Cache-Control': 'no-cache',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-        },
-        signal: AbortSignal.timeout(12000),
-        redirect: 'follow',
-      });
-
-      if (!response.ok) {
-        return NextResponse.json(
-          { success: false, error: `Stranica nije dostupna (HTTP ${response.status}). Moguće da stranica blokira automatski pristup.` },
-          { status: 400 }
-        );
-      }
-      html = await response.text();
+      const result = await fetchWithRetry(url);
+      html = result.html;
+      finalUrl = result.finalUrl;
     } catch (fetchErr) {
       const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
       const isTimeout = msg.includes('timeout') || msg.includes('AbortError');
+      const isBlocked = msg.includes('403');
+      const isRateLimited = msg.includes('429');
+
+      let errorMessage: string;
+      let hint: string | undefined;
+
+      if (isTimeout) {
+        errorMessage = 'Stranica se nije učitala na vrijeme (timeout).';
+        hint = 'Pokušaj ponovo za minutu — stranica je možda spora.';
+      } else if (isBlocked) {
+        errorMessage = 'Stranica blokira automatski pristup (403 Forbidden).';
+        hint = 'Neki portali blokiraju servere. Probaj kopirati tekst oglasa ručno.';
+      } else if (isRateLimited) {
+        errorMessage = 'Previše zahtjeva — portal ograničava pristup (429).';
+        hint = 'Sačekaj 1-2 minute pa pokušaj ponovo.';
+      } else {
+        errorMessage = 'Nije moguće dohvatiti stranicu.';
+        hint = 'Provjeri da je link ispravan i da stranica postoji.';
+      }
+
       return NextResponse.json(
-        { success: false, error: isTimeout ? 'Stranica se nije učitala na vrijeme (timeout). Pokušaj ponovo.' : 'Nije moguće dohvatiti stranicu.' },
+        { success: false, error: errorMessage, hint },
+        { status: 400 }
+      );
+    }
+
+    // Fix E: Content validation — check that we got meaningful HTML
+    if (html.length < 500) {
+      return NextResponse.json(
+        { success: false, error: 'Stranica je prazna ili nema dovoljno sadržaja za analizu.', hint: 'Provjeri da link vodi na konkretni oglas, a ne na naslovnu stranicu.' },
+        { status: 400 }
+      );
+    }
+
+    // Check for bot/captcha blocks (common on OLX, njuskalo)
+    const lowerHtml = html.toLowerCase();
+    if (
+      (lowerHtml.includes('captcha') || lowerHtml.includes('cloudflare') || lowerHtml.includes('just a moment')) &&
+      !lowerHtml.includes('product') && !lowerHtml.includes('oglas') && !lowerHtml.includes('cijena')
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Stranica prikazuje CAPTCHA ili zaštitu od botova.', hint: 'Pokušaj ponovo za minutu. Ako se ponavlja, kopiraj tekst oglasa ručno.' },
         { status: 400 }
       );
     }
@@ -162,6 +267,23 @@ export async function POST(req: NextRequest) {
     const meta = extractMeta(html);
     const jsonLd = extractJsonLd(html);
 
+    // Fix B: Meta-tag fallback — if Gemini fails, we can still build basic data
+    const metaFallback = {
+      title: meta['og:title'] || meta.title || null,
+      description: meta['og:description'] || meta.description || null,
+      price: null as number | null,
+      images: images.slice(0, 6),
+      location: null as string | null,
+      originalUrl: finalUrl,
+    };
+
+    // Try to extract price from meta/JSON-LD
+    const priceStr = meta['product:price:amount'] || meta['price'];
+    if (priceStr) {
+      const parsed = parseFloat(priceStr.replace(/[^0-9.,]/g, '').replace(',', '.'));
+      if (!isNaN(parsed)) metaFallback.price = parsed;
+    }
+
     // Clean text for Gemini (cut to 10k chars, focusing on body content)
     const bodyMatch = html.match(/<body[\s\S]*?>([\s\S]*?)<\/body>/i);
     const bodyHtml = bodyMatch ? bodyMatch[1] : html;
@@ -169,7 +291,7 @@ export async function POST(req: NextRequest) {
 
     const prompt = `Izvuci podatke oglasa sa sljedeće stranice. Koristi SVE dostupne izvore podataka.
 
-URL: ${url}
+URL: ${finalUrl}
 
 OG META TAGOVI (pouzdani):
 ${Object.entries(meta).map(([k, v]) => `${k}: ${sanitizeForPrompt(v, 500)}`).join('\n') || '(nema)'}
@@ -202,14 +324,44 @@ Vrati SAMO validan JSON:
   "seller": "ime prodavača ili null",
   "phone": "telefon ili null",
   "attributes": {"ključ": "vrijednost"},
-  "originalUrl": "${url}"
+  "originalUrl": "${finalUrl}"
 }
 
 Polje "images" je već popunjeno gore izvučenim slikama — samo ih zadrži ili dopuni ako pronađeš bolje URL-ove u tekstu.
 Ako podatak nije pronađen, postavi null.`;
 
-    const raw = await textWithGemini(prompt);
-    const data = parseJsonResponse(raw) as Record<string, unknown>;
+    // Fix B: Robust Gemini parsing with fallback
+    let data: Record<string, unknown>;
+    try {
+      const raw = await textWithGemini(prompt);
+      data = parseJsonResponse(raw) as Record<string, unknown>;
+    } catch (geminiErr) {
+      console.warn('[/api/ai/import] Gemini failed, using meta-tag fallback:', geminiErr);
+      // Fallback to meta-extracted data
+      if (metaFallback.title) {
+        data = {
+          title: metaFallback.title,
+          description: metaFallback.description,
+          price: metaFallback.price,
+          currency: null,
+          category: null,
+          subcategory: null,
+          condition: null,
+          location: metaFallback.location,
+          images: metaFallback.images,
+          seller: null,
+          phone: null,
+          attributes: {},
+          originalUrl: metaFallback.originalUrl,
+          _fallback: true,
+        };
+      } else {
+        return NextResponse.json(
+          { success: false, error: 'AI nije mogao analizirati stranicu.', hint: 'Probaj ponovo ili kopiraj podatke ručno.' },
+          { status: 500 }
+        );
+      }
+    }
 
     // Ensure images are always included (fallback to pre-extracted)
     if (!data.images || !Array.isArray(data.images) || (data.images as string[]).length === 0) {
@@ -220,7 +372,7 @@ Ako podatak nije pronađen, postavi null.`;
   } catch (err) {
     console.error('[/api/ai/import]', err);
     return NextResponse.json(
-      { success: false, error: 'Greška pri importu oglasa', details: err instanceof Error ? err.message : String(err) },
+      { success: false, error: 'Greška pri importu oglasa.', hint: 'Pokušaj ponovo. Ako se problem ponavlja, kopiraj oglas ručno.', details: err instanceof Error ? err.message : String(err) },
       { status: 500 }
     );
   }
