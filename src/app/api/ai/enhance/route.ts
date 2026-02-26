@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { textWithGemini, parseJsonResponse } from '@/lib/gemini';
+import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
       if (!title) return NextResponse.json({ error: 'Naslov je obavezan' }, { status: 400 });
 
       const prompt = `Poboljšaj ovaj naslov oglasa za second-hand marketplace na bosanskom/hrvatskom jeziku.
-Originalni naslov: "${title}"
-Kategorija: ${category || 'nepoznato'}
+Originalni naslov: "${sanitizeForPrompt(title, 200)}"
+Kategorija: ${sanitizeForPrompt(category || 'nepoznato', 100)}
 
 Pravila:
 - Maksimalno 60 znakova
@@ -35,9 +35,9 @@ Vrati SAMO JSON: {"improvedTitle": "poboljšani naslov", "explanation": "kratko 
       if (!title) return NextResponse.json({ error: 'Naslov je obavezan' }, { status: 400 });
 
       const prompt = `Napiši profesionalan opis oglasa za second-hand marketplace na bosanskom/hrvatskom jeziku.
-Naslov: "${title}"
-Kategorija: ${category || 'nepoznato'}
-${description ? `Postojeći opis (poboljšaj ga): "${description}"` : ''}
+Naslov: "${sanitizeForPrompt(title, 200)}"
+Kategorija: ${sanitizeForPrompt(category || 'nepoznato', 100)}
+${description ? `Postojeći opis (poboljšaj ga): "${sanitizeForPrompt(description, 2000)}"` : ''}
 ${price ? `Cijena: ${price} KM` : ''}
 
 Struktura opisa:
@@ -60,9 +60,9 @@ Vrati SAMO JSON: {"description": "cijeli opis", "bulletPoints": ["točka 1", "to
       if (!title) return NextResponse.json({ error: 'Naslov je obavezan' }, { status: 400 });
 
       const prompt = `Procijeni kvalitetu ovog oglasa za second-hand marketplace i daj ocjenu.
-Naslov: "${title}"
-Opis: "${description || '(nema opisa)'}"
-Kategorija: ${category || 'nepoznato'}
+Naslov: "${sanitizeForPrompt(title, 200)}"
+Opis: "${sanitizeForPrompt(description || '(nema opisa)', 2000)}"
+Kategorija: ${sanitizeForPrompt(category || 'nepoznato', 100)}
 Broj slika: ${images || 0}
 Cijena: ${price ? price + ' KM' : '(nije postavljena)'}
 
@@ -87,9 +87,9 @@ Vrati SAMO JSON:
       if (!title) return NextResponse.json({ error: 'Naslov je obavezan' }, { status: 400 });
 
       const prompt = `Generiši relevantne tagove/ključne riječi za oglas na bosanskom/hrvatskom/srpskom jeziku.
-Naslov: "${title}"
-Opis: "${description || ''}"
-Kategorija: ${category || 'nepoznato'}
+Naslov: "${sanitizeForPrompt(title, 200)}"
+Opis: "${sanitizeForPrompt(description || '', 2000)}"
+Kategorija: ${sanitizeForPrompt(category || 'nepoznato', 100)}
 
 Pravila:
 - 8-12 tagova
@@ -110,7 +110,7 @@ Vrati SAMO JSON: {"tags": ["tag1", "tag2", "tag3", ...]}`;
 
       const prompt = `Kategoriziraj ovaj oglas za second-hand marketplace. Korisnik može pisati s pravopisnim greškama, prekucama ili skraćenicama — ispravi ih i prepoznaj šta korisnik zapravo misli.
 
-Tekst korisnika: "${title}${description ? ' - ' + description : ''}"
+Tekst korisnika: "${sanitizeForPrompt(title, 200)}${description ? ' - ' + sanitizeForPrompt(description, 2000) : ''}"
 
 VAŽNO: Korisnik može pisati s greškama! Primjeri:
 - "iphon" → iPhone → Mobilni uređaji, subcategory: "Apple"
@@ -182,7 +182,7 @@ Vrati SAMO JSON:
       const { vin } = body;
       if (!vin || vin.length !== 17) return NextResponse.json({ error: 'VIN mora imati 17 znakova' }, { status: 400 });
 
-      const prompt = `Dekodiraj ovaj VIN (Vehicle Identification Number): "${vin}"
+      const prompt = `Dekodiraj ovaj VIN (Vehicle Identification Number): "${sanitizeForPrompt(vin, 17)}"
 
 Na osnovu VIN broja odredi informacije o vozilu. Koristi standardne WMI (World Manufacturer Identifier) kodove.
 

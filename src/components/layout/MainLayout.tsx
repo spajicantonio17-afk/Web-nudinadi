@@ -63,11 +63,11 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
             onClick={() => router.push('/')}
             onKeyDown={(e) => e.key === 'Enter' && router.push('/')}
             aria-label="NudiNađi — idi na početnu stranicu"
-            className="flex items-center gap-2 md:gap-3 cursor-pointer group"
+            className="flex items-center gap-1 md:gap-1.5 cursor-pointer group"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logo2.jpeg"
+              src="/emblem.png"
               alt="NudiNađi emblem"
               className="h-8 md:h-10 w-auto object-contain rounded-[4px]"
             />
@@ -270,10 +270,10 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
 
             {/* HEADER */}
             <div className="shrink-0 flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-[var(--c-border)]">
-              <div className="flex items-center gap-2 md:gap-3">
+              <div className="flex items-center gap-1 md:gap-1.5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/logo2.jpeg"
+                  src="/emblem.png"
                   alt="NudiNađi emblem"
                   className="h-8 md:h-10 w-auto object-contain rounded-xl"
                 />

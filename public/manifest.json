@@ -16,7 +16,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/logo2.jpeg",
+      "src": "/emblem.png",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any"

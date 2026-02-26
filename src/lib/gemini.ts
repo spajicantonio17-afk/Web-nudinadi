@@ -31,6 +31,18 @@ export async function textWithGemini(prompt: string): Promise<string> {
   return result.response.text();
 }
 
+/** Sanitize user input before embedding in AI prompts */
+export function sanitizeForPrompt(input: string, maxLength = 2000): string {
+  return input
+    .slice(0, maxLength)
+    // Remove control characters except newline and tab
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Compress excessive whitespace
+    .replace(/\n{4,}/g, '\n\n\n')
+    .replace(/ {4,}/g, '   ')
+    .trim();
+}
+
 export function parseJsonResponse(text: string): unknown {
   // Strip markdown code fences if present
   const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();

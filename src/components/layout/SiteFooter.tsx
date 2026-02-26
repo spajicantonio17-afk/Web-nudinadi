@@ -12,10 +12,9 @@ export default function SiteFooter() {
 
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-[4px] blue-gradient flex items-center justify-center">
-                <span className="font-black text-white italic text-sm">N</span>
-              </div>
+            <div className="flex items-center gap-1 mb-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/emblem.png" alt="NudiNađi emblem" className="h-8 w-auto object-contain rounded-[4px]" />
               <span className="text-lg font-black text-[var(--c-text)] tracking-tighter">NudiNađi</span>
             </div>
             <p className="text-[13px] text-[var(--c-text3)] leading-relaxed mb-4 max-w-[220px]">
@@ -54,7 +53,7 @@ export default function SiteFooter() {
             <h4 className="text-[12px] font-extrabold text-[var(--c-text)] uppercase tracking-wider mb-4">Kompanija</h4>
             <ul className="space-y-2.5">
               <li><Link href="/o-nama" className={linkClass}>O Nama</Link></li>
-              <li><Link href="/karijere" className={linkClass}>Karijere</Link></li>
+              <li><Link href="/kako-funkcionira" className={linkClass}>Kako funkcionira?</Link></li>
               <li><Link href="/press" className={linkClass}>Press</Link></li>
               <li><Link href="/blog" className={linkClass}>Blog</Link></li>
               <li><Link href="/partneri" className={linkClass}>Partneri</Link></li>
@@ -78,17 +77,17 @@ export default function SiteFooter() {
         <div className="py-6 border-t border-[var(--c-border)]">
           <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-3">Preuzmi Aplikaciju</p>
           <div className="flex gap-2">
-            <span className="flex items-center gap-2 px-3 py-2 bg-[var(--c-text)] border border-[var(--c-text)] rounded-[6px] cursor-pointer hover:opacity-90 transition-all duration-150">
+            <span className="flex items-center gap-2 px-3 py-2 bg-black border border-white/20 rounded-[6px] cursor-pointer hover:bg-gray-900 transition-all duration-150">
               <i className="fa-brands fa-apple text-white text-lg"></i>
               <div>
-                <p className="text-[10px] text-[var(--c-text-muted)] leading-none">Dostupno na</p>
+                <p className="text-[10px] text-gray-400 leading-none">Dostupno na</p>
                 <p className="text-[12px] font-bold text-white leading-tight">App Store</p>
               </div>
             </span>
-            <span className="flex items-center gap-2 px-3 py-2 bg-[var(--c-text)] border border-[var(--c-text)] rounded-[6px] cursor-pointer hover:opacity-90 transition-all duration-150">
+            <span className="flex items-center gap-2 px-3 py-2 bg-black border border-white/20 rounded-[6px] cursor-pointer hover:bg-gray-900 transition-all duration-150">
               <i className="fa-brands fa-google-play text-white text-lg"></i>
               <div>
-                <p className="text-[10px] text-[var(--c-text-muted)] leading-none">Preuzmi na</p>
+                <p className="text-[10px] text-gray-400 leading-none">Preuzmi na</p>
                 <p className="text-[12px] font-bold text-white leading-tight">Google Play</p>
               </div>
             </span>

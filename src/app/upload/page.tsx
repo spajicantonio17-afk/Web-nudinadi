@@ -134,21 +134,148 @@ const FUEL_OPTIONS: Record<string, string[]> = {
 // Bicycle drive types (instead of fuel)
 const BICYCLE_DRIVE_TYPES = ['Mehanički', 'E-bike (električni)'];
 
-type UploadStep = 'selection' | 'all-categories' | 'vehicle-sub' | 'parts-sub' | 'car-method' | 'truck-sub' | 'prikolice-sub' | 'nekretnine-sub' | 'mobile-sub' | 'moda-sub' | 'moda-artikl' | 'tehnika-sub' | 'services-sub' | 'poslovi-sub' | 'detail-sub' | 'dom-sub' | 'sport-sub' | 'djeca-sub' | 'glazba-sub' | 'literatura-sub' | 'zivotinje-sub' | 'hrana-sub' | 'strojevi-sub' | 'umjetnost-sub' | 'form';
+type UploadStep = 'selection' | 'all-categories' | 'vehicle-sub' | 'parts-sub' | 'car-method' | 'truck-sub' | 'prikolice-sub' | 'nekretnine-sub' | 'nekretnine-quicktap' | 'elektronika-quicktap' | 'mobile-sub' | 'moda-sub' | 'moda-artikl' | 'tehnika-sub' | 'services-sub' | 'poslovi-sub' | 'detail-sub' | 'dom-sub' | 'sport-sub' | 'djeca-sub' | 'glazba-sub' | 'literatura-sub' | 'zivotinje-sub' | 'hrana-sub' | 'strojevi-sub' | 'umjetnost-sub' | 'videoigre-sub' | 'ostalo-sub' | 'form';
 
 const NEKRETNINE_TYPES = [
-  { name: 'Stanovi i Apartmani', icon: 'fa-building' },
-  { name: 'Stan na dan', icon: 'fa-suitcase' },
+  { name: 'Stanovi i apartmani', icon: 'fa-building' },
   { name: 'Kuće', icon: 'fa-house' },
   { name: 'Poslovni prostori', icon: 'fa-briefcase' },
-  { name: 'Vikendice', icon: 'fa-tree' },
-  { name: 'Skladišta i hale', icon: 'fa-warehouse' },
   { name: 'Sobe', icon: 'fa-bed' },
   { name: 'Zemljišta', icon: 'fa-map' },
   { name: 'Garaže', icon: 'fa-dungeon' },
-  { name: 'Montažni objekti', icon: 'fa-hammer' },
+  { name: 'Stan na dan', icon: 'fa-suitcase' },
+  { name: 'Vikendice', icon: 'fa-tree' },
+  { name: 'Skladišta i hale', icon: 'fa-warehouse' },
+  { name: 'Tražim cimera/icu', icon: 'fa-user-group' },
   { name: 'Ostalo', icon: 'fa-ellipsis' },
 ];
+
+// ── Nekretnine Quick-Tap Questions per Type ───────────────────
+type QuickTapQuestion = {
+  key: string;
+  label: string;
+  options: string[];
+  multi?: boolean; // Multi-Select (z.B. Komunalije)
+  customInput?: {
+    type: 'number' | 'text';
+    unit: string;       // "GB", '"' (Zoll), etc.
+    placeholder: string; // "Unesi vrijednost"
+    min?: number;
+    max?: number;
+    step?: number;       // z.B. 0.1 für Dijagonala
+  };
+};
+
+const NEKRETNINE_QUESTIONS: Record<string, QuickTapQuestion[]> = {
+  'Stanovi i apartmani': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'stanjeNekretnine', label: 'Stanje?', options: ['Novogradnja', 'Renoviran', 'Dobro stanje', 'Za renoviranje', 'U izgradnji'] },
+    { key: 'brojSoba', label: 'Broj soba?', options: ['Garsonjera', '1', '1.5', '2', '2.5', '3', '3.5', '4', '5+'] },
+    { key: 'sprat', label: 'Sprat?', options: ['Suteren', 'Prizemlje', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10+', 'Potkrovlje'] },
+    { key: 'namjestenost', label: 'Namještenost?', options: ['Namješteno', 'Polunamješteno', 'Nenamješteno'] },
+  ],
+  'Kuće': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'stanjeNekretnine', label: 'Stanje?', options: ['Novogradnja', 'Renovirana', 'Dobro stanje', 'Za renoviranje', 'U izgradnji'] },
+    { key: 'brojSoba', label: 'Broj soba?', options: ['1', '2', '3', '4', '5', '6', '7', '8+'] },
+    { key: 'brojEtaza', label: 'Broj etaža?', options: ['1', '2', '3', '4+'] },
+    { key: 'namjestenost', label: 'Namještenost?', options: ['Namješteno', 'Polunamješteno', 'Nenamješteno'] },
+  ],
+  'Poslovni prostori': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'tipProstora', label: 'Tip prostora?', options: ['Ured', 'Trgovina', 'Ugostiteljski', 'Salon / Ordinacija', 'Skladište', 'Ostalo'] },
+    { key: 'stanjeNekretnine', label: 'Stanje?', options: ['Novogradnja', 'Renoviran', 'Dobro stanje', 'Za renoviranje', 'U izgradnji'] },
+    { key: 'namjestenost', label: 'Namještenost?', options: ['Namješteno', 'Polunamješteno', 'Nenamješteno'] },
+  ],
+  'Zemljišta': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'tipZemljista', label: 'Tip zemljišta?', options: ['Građevinsko', 'Poljoprivredno', 'Šumsko', 'Industrijsko', 'Ostalo'] },
+    { key: 'povrsina', label: 'Površina?', options: ['< 500 m²', '500–1000 m²', '1000–2000 m²', '2000–5000 m²', '5000–10000 m²', '10000+ m²'] },
+    { key: 'komunalije', label: 'Komunalije?', options: ['Struja', 'Voda', 'Kanalizacija', 'Plin', 'Sve priključeno', 'Bez'], multi: true },
+  ],
+  'Garaže': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'tipGaraze', label: 'Tip?', options: ['Garaža', 'Garažno mjesto', 'Vanjsko natkriveno', 'Vanjsko nenatkriveno'] },
+    { key: 'kvadratura', label: 'Veličina?', options: ['< 15 m²', '15–25 m²', '25–40 m²', '40+ m²'] },
+  ],
+  'Vikendice': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'stanjeNekretnine', label: 'Stanje?', options: ['Novogradnja', 'Renovirana', 'Dobro stanje', 'Za renoviranje', 'U izgradnji'] },
+    { key: 'brojSoba', label: 'Broj soba?', options: ['1', '2', '3', '4', '5+'] },
+    { key: 'brojEtaza', label: 'Broj etaža?', options: ['1', '2', '3'] },
+    { key: 'grijanje', label: 'Grijanje?', options: ['Centralno', 'Etažno plin', 'Etažno struja', 'Na drva', 'Klima', 'Bez'] },
+  ],
+  'Sobe': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'namjestenost', label: 'Namještenost?', options: ['Namješteno', 'Polunamješteno', 'Nenamješteno'] },
+    { key: 'kupatilo', label: 'Kupatilo?', options: ['Vlastito', 'Zajedničko'] },
+    { key: 'zaStudente', label: 'Za studente?', options: ['Da', 'Ne'] },
+  ],
+  'Skladišta i hale': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'tipObjekta', label: 'Tip objekta?', options: ['Skladište', 'Hala', 'Magacin', 'Hangar', 'Ostalo'] },
+    { key: 'stanjeNekretnine', label: 'Stanje?', options: ['Novogradnja', 'Dobro stanje', 'Za renoviranje', 'U izgradnji'] },
+    { key: 'kvadratura', label: 'Veličina?', options: ['< 100 m²', '100–300 m²', '300–500 m²', '500–1000 m²', '1000–3000 m²', '3000+ m²'] },
+    { key: 'rampaUtovar', label: 'Rampa za utovar?', options: ['Da', 'Ne'] },
+  ],
+  'Stan na dan': [
+    { key: 'brojSoba', label: 'Broj soba?', options: ['Garsonjera', '1', '2', '3', '4', '5+'] },
+    { key: 'sprat', label: 'Sprat?', options: ['Prizemlje', '1', '2', '3', '4', '5+', 'Potkrovlje'] },
+    { key: 'klima', label: 'Klima?', options: ['Da', 'Ne'] },
+  ],
+  'Tražim cimera/icu': [
+    { key: 'brojSoba', label: 'Broj soba u stanu?', options: ['1', '1.5', '2', '2.5', '3', '3.5', '4', '5+'] },
+    { key: 'sprat', label: 'Sprat?', options: ['Suteren', 'Prizemlje', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10+', 'Potkrovlje'] },
+    { key: 'namjestenost', label: 'Namještenost?', options: ['Namješteno', 'Polunamješteno', 'Nenamješteno'] },
+  ],
+  'Ostalo': [
+    { key: 'tipPonude', label: 'Prodaja ili iznajmljivanje?', options: ['Prodaja', 'Iznajmljivanje'] },
+    { key: 'stanjeNekretnine', label: 'Stanje?', options: ['Novogradnja', 'Renovirano', 'Dobro stanje', 'Za renoviranje'] },
+  ],
+};
+
+// ── Elektronika Quick-Tap Questions ──────────────────────
+const ELEKTRONIKA_QUICKTAP_TYPES = ['Laptopi', 'Kompjuteri (Desktop)', 'Monitori / TV', 'Konzole'];
+
+const ELEKTRONIKA_QUESTIONS: Record<string, QuickTapQuestion[]> = {
+  'Laptopi': [
+    { key: 'tipLaptopa', label: 'Tip laptopa?', options: ['Gaming', 'Business / Office', 'Ultrabook', 'Ostalo'] },
+    { key: 'marka', label: 'Marka?', options: ['Apple', 'Lenovo', 'HP', 'Dell', 'Asus', 'Acer', 'MSI', 'Samsung', 'Toshiba', 'Ostalo'] },
+    { key: 'stanjeUredaja', label: 'Stanje?', options: ['Novo', 'Korišteno', 'Neispravno'] },
+    { key: 'ram', label: 'RAM?', options: ['4 GB', '8 GB', '16 GB', '32 GB', '64 GB+'],
+      customInput: { type: 'number', unit: 'GB', placeholder: 'npr. 24', min: 1, max: 512 },
+    },
+    { key: 'disk', label: 'Disk / Storage?', options: ['128 GB', '256 GB', '512 GB', '1 TB', '2 TB+'],
+      customInput: { type: 'number', unit: 'GB', placeholder: 'npr. 750', min: 16, max: 16000 },
+    },
+    { key: 'dijagonala', label: 'Dijagonala ekrana?', options: ['13"', '14"', '15.6"', '16"', '17"'],
+      customInput: { type: 'number', unit: '"', placeholder: 'npr. 11.6', min: 10, max: 21, step: 0.1 },
+    },
+  ],
+  'Kompjuteri (Desktop)': [
+    { key: 'tipDesktopa', label: 'Tip?', options: ['Gaming PC', 'Office / Radni', 'Workstation', 'Server', 'Ostalo'] },
+    { key: 'stanjeUredaja', label: 'Stanje?', options: ['Novo', 'Korišteno', 'Neispravno'] },
+    { key: 'ram', label: 'RAM?', options: ['4 GB', '8 GB', '16 GB', '32 GB', '64 GB', '128 GB+'],
+      customInput: { type: 'number', unit: 'GB', placeholder: 'npr. 24', min: 1, max: 512 },
+    },
+    { key: 'disk', label: 'Disk / Storage?', options: ['256 GB', '512 GB', '1 TB', '2 TB', '4 TB+'],
+      customInput: { type: 'number', unit: 'GB', placeholder: 'npr. 3000', min: 16, max: 32000 },
+    },
+    { key: 'procesor', label: 'Procesor?', options: ['Intel', 'AMD', 'Ostalo'] },
+  ],
+  'Monitori / TV': [
+    { key: 'tipEkrana', label: 'Tip?', options: ['Gaming monitor', 'Office monitor', 'TV', 'Projektor', 'Ostalo'] },
+    { key: 'stanjeUredaja', label: 'Stanje?', options: ['Novo', 'Korišteno'] },
+    { key: 'dijagonala', label: 'Veličina ekrana?', options: ['24"', '27"', '32"', '40"', '43"', '50"', '55"', '65"', '75"+'],
+      customInput: { type: 'number', unit: '"', placeholder: 'npr. 34', min: 15, max: 120 },
+    },
+  ],
+  'Konzole': [
+    { key: 'platforma', label: 'Platforma?', options: ['PlayStation', 'Xbox', 'Nintendo', 'Ostalo'] },
+    { key: 'stanjeUredaja', label: 'Stanje?', options: ['Novo', 'Korišteno'] },
+    { key: 'sadrzaj', label: 'Šta prodajete?', options: ['Konzola', 'Konzola + Igrice', 'Samo igrice', 'Oprema'] },
+  ],
+};
 
 const MOBILE_BRANDS = [
   { name: 'Apple', icon: 'fa-apple', type: 'brands' },
@@ -615,6 +742,26 @@ const UMJETNOST_TYPES = [
   { name: 'Ručni rad', icon: 'fa-scissors' },
   { name: 'Fotografije i posteri', icon: 'fa-image' },
   { name: 'Ostalo', icon: 'fa-ellipsis' },
+];
+
+const VIDEOIGRE_TYPES = [
+  { name: 'PlayStation', icon: 'fa-playstation' },
+  { name: 'Xbox', icon: 'fa-xbox' },
+  { name: 'Nintendo', icon: 'fa-gamepad' },
+  { name: 'PC igre', icon: 'fa-computer' },
+  { name: 'Retro igre i konzole', icon: 'fa-ghost' },
+  { name: 'Gaming oprema', icon: 'fa-headset' },
+];
+
+const OSTALO_TYPES = [
+  { name: 'Karte i ulaznice', icon: 'fa-ticket' },
+  { name: 'Kozmetika i ljepota', icon: 'fa-spa' },
+  { name: 'Medicinska pomagala', icon: 'fa-kit-medical' },
+  { name: 'Vjenčanja', icon: 'fa-ring' },
+  { name: 'Investicijsko zlato i srebro', icon: 'fa-coins' },
+  { name: 'Grobna mjesta', icon: 'fa-cross' },
+  { name: 'Poklanjam (besplatno)', icon: 'fa-gift' },
+  { name: 'Sve ostalo', icon: 'fa-ellipsis' },
 ];
 
 // ── Master detail-options for ALL subcategories (2nd tier) ──────────────
@@ -1283,6 +1430,10 @@ for (const t of UMJETNOST_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[
 for (const t of SERVICES_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'cyan', parentStep: 'services-sub', parentCategory: 'Usluge' };
 // Poslovi
 for (const t of POSLOVI_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'indigo', parentStep: 'poslovi-sub', parentCategory: 'Poslovi' };
+// Video igre
+for (const t of VIDEOIGRE_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'violet', parentStep: 'videoigre-sub', parentCategory: 'Video igre' };
+// Ostalo
+for (const t of OSTALO_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'slate', parentStep: 'ostalo-sub', parentCategory: 'Ostalo' };
 
 // ── Category breadcrumb info ──────────────────────────────────────────────
 function getCategoryBreadcrumb(category: string, brand?: string): { main: string; sub?: string; icon: string; color: string } {
@@ -1387,8 +1538,9 @@ function UploadPageInner() {
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
   // ── All state declarations (must be before any conditional returns) ──
-  const [formErrors, setFormErrors] = useState<{ title?: string; price?: string }>({});
+  const [formErrors, setFormErrors] = useState<{ title?: string; price?: string; images?: string; category?: string }>({});
   const [images, setImages] = useState<File[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showAiWindow, setShowAiWindow] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -1436,6 +1588,12 @@ function UploadPageInner() {
   const [showAiInfo, setShowAiInfo] = useState(false);
   const [aiWarning, setAiWarning] = useState<{ warnings: string[]; recommendation: string; score: number } | null>(null);
   const [aiWarningBypass, setAiWarningBypass] = useState(false);
+
+  // ── Quick-Tap state ──
+  const [nekretSubType, setNekretSubType] = useState('');
+  const [elektronikaSub, setElektronikaSub] = useState('');
+  const [customInputOpen, setCustomInputOpen] = useState<Record<string, boolean>>({});
+  const [customInputValues, setCustomInputValues] = useState<Record<string, string>>({});
 
   // ── Breadcrumb state ──
   const [breadcrumb, setBreadcrumb] = useState<Array<{ label: string; step: UploadStep; subStep?: string }>>([]);
@@ -1504,6 +1662,23 @@ function UploadPageInner() {
     setFormPage(1);
   }, [formData.category]);
 
+  // Preview URL cleanup (PhonePreview memory leak fix)
+  useEffect(() => {
+    if (images.length > 0) {
+      const url = URL.createObjectURL(images[0]);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [images]);
+
+  // Reset custom input states when subcategory changes
+  useEffect(() => {
+    setCustomInputOpen({});
+    setCustomInputValues({});
+  }, [elektronikaSub, nekretSubType]);
+
   // Load pre-filled data from /link-import page (sessionStorage handoff)
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1568,7 +1743,7 @@ function UploadPageInner() {
         setStep('moda-sub');
         return;
     }
-    if (catName.toLowerCase().includes('tehnika') || catName.toLowerCase().includes('elektronika') || catName.toLowerCase().includes('računari')) {
+    if (catName.toLowerCase().includes('tehnika') || catName.toLowerCase().includes('elektronika') || catName.toLowerCase().includes('računala')) {
         setStep('tehnika-sub');
         return;
     }
@@ -1616,22 +1791,43 @@ function UploadPageInner() {
         setStep('umjetnost-sub');
         return;
     }
+    if (catName.toLowerCase().includes('video ig') || catName.toLowerCase() === 'video igre') {
+        setStep('videoigre-sub');
+        return;
+    }
+    if (catName.toLowerCase() === 'ostalo') {
+        setStep('ostalo-sub');
+        return;
+    }
     setAttributes({});
     setFormData({ ...formData, category: catName });
     setStep('form');
   };
 
   const selectNekretnineSub = (subCat: string) => {
-      setAttributes({});
-      const details = CATEGORY_DETAILS[subCat];
-      if (details && details.length > 0) {
+      // Detailkategorien (CATEGORY_DETAILS) normal behandeln
+      if (CATEGORY_DETAILS[subCat]) {
         setParentSubCategory(subCat);
         setParentColor('emerald');
         setPreviousStep('nekretnine-sub');
-        setFormData({ ...formData, category: `Nekretnine - ${subCat}` });
+        setFormData(prev => ({ ...prev, category: `Nekretnine - ${subCat}` }));
         setStep('detail-sub');
+        return;
+      }
+
+      setAttributes({});
+      setNekretSubType(subCat);
+      setFormData(prev => ({ ...prev, category: `Nekretnine - ${subCat}` }));
+      setBreadcrumb([
+        { label: 'Nekretnine', step: 'nekretnine-sub' },
+        { label: subCat, step: 'nekretnine-quicktap' },
+      ]);
+
+      // Quick-Tap wenn Fragen vorhanden, sonst direkt Formular
+      const questions = NEKRETNINE_QUESTIONS[subCat];
+      if (questions && questions.length > 0) {
+        setStep('nekretnine-quicktap');
       } else {
-        setFormData({ ...formData, category: `Nekretnine - ${subCat}` });
         setStep('form');
       }
   };
@@ -1662,15 +1858,26 @@ function UploadPageInner() {
 
   const selectTehnikaSub = (type: string) => {
     setAttributes({});
+
+    // Typen mit Quick-Tap: detail-sub überspringen, direkt Quick-Tap
+    if (ELEKTRONIKA_QUICKTAP_TYPES.includes(type)) {
+      setElektronikaSub(type);
+      setFormData(prev => ({ ...prev, category: `Elektronika - ${type}` }));
+      setPreviousStep('tehnika-sub');
+      setStep('elektronika-quicktap');
+      return;
+    }
+
+    // Alle anderen: bestehende Logik (detail-sub oder direkt form)
     const details = CATEGORY_DETAILS[type];
     if (details && details.length > 0) {
       setParentSubCategory(type);
       setParentColor('purple');
       setPreviousStep('tehnika-sub');
-      setFormData({ ...formData, category: `Elektronika - ${type}` });
+      setFormData(prev => ({ ...prev, category: `Elektronika - ${type}` }));
       setStep('detail-sub');
     } else {
-      setFormData({ ...formData, category: `Elektronika - ${type}` });
+      setFormData(prev => ({ ...prev, category: `Elektronika - ${type}` }));
       setStep('form');
     }
   };
@@ -1950,9 +2157,9 @@ function UploadPageInner() {
       </div>
       <div className="flex-1 overflow-y-auto no-scrollbar relative bg-[#0B1219]">
         <div className="aspect-square bg-[#080D11] relative flex items-center justify-center border-b border-white/5">
-          {images.length > 0 ? (
+          {previewUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={URL.createObjectURL(images[0])} alt="Preview" className="w-full h-full object-cover" />
+            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
           ) : (
             <i className="fa-regular fa-image text-4xl text-gray-700"></i>
           )}
@@ -2018,6 +2225,8 @@ function UploadPageInner() {
       if (!formData.price.trim()) e.price = 'Cijena je obavezna';
       else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) e.price = 'Unesite ispravnu cijenu';
     }
+    if (images.length === 0 && existingImages.length === 0) e.images = 'Dodajte barem jednu sliku';
+    if (!formData.category.trim()) e.category = 'Odaberite kategoriju';
     setFormErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -2742,6 +2951,193 @@ function UploadPageInner() {
     );
   }
 
+  // ── Shared Quick-Tap Renderer ──
+  const renderQuickTap = (
+    title: string,
+    color: string,
+    questions: QuickTapQuestion[],
+    backStep: UploadStep,
+  ) => (
+    <MainLayout title={title} showSigurnost={false} hideSearchOnMobile headerRight={
+      <button onClick={() => setStep(backStep)} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]">
+        <i className="fa-solid fa-arrow-left"></i>
+      </button>
+    }>
+      <div className="max-w-4xl mx-auto pt-2 pb-32">
+        {/* Überschrift */}
+        <div className="px-1 mb-5">
+          <h2 className={`text-[11px] font-black text-${color}-500 uppercase tracking-[3px] mb-1`}>Brzo popunite</h2>
+          <p className="text-sm text-[var(--c-text2)] font-medium">Odaberite opcije koje odgovaraju vašem oglasu</p>
+        </div>
+
+        {/* Frage-Cards */}
+        <div className="space-y-4">
+          {questions.map((q) => {
+            const currentValue = String(attributes[q.key] || '');
+            const selectedValues = q.multi ? currentValue.split(',').filter(Boolean) : [];
+            const isCustomOpen = customInputOpen[q.key] || false;
+            const customVal = customInputValues[q.key] || '';
+            const isCustomValueActive = q.customInput && currentValue && !q.options.includes(currentValue);
+
+            return (
+              <div key={q.key} className={`bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-4 hover:border-${color}-500/20 transition-colors`}>
+                <p className={`text-[10px] font-black text-${color}-400 uppercase tracking-[2px] mb-3`}>
+                  {q.label}
+                  {q.multi && <span className="normal-case tracking-normal font-medium text-[var(--c-text-muted)] ml-1">(više odgovora)</span>}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {/* Standard Option-Buttons */}
+                  {q.options.map((opt) => {
+                    const isSelected = q.multi
+                      ? selectedValues.includes(opt)
+                      : currentValue === opt;
+
+                    return (
+                      <button
+                        key={opt}
+                        onClick={() => {
+                          if (isCustomOpen) {
+                            setCustomInputOpen(prev => ({ ...prev, [q.key]: false }));
+                            setCustomInputValues(prev => ({ ...prev, [q.key]: '' }));
+                          }
+                          if (q.multi) {
+                            const exclusive = ['Sve priključeno', 'Sve', 'Bez'];
+                            let newVals: string[];
+                            if (exclusive.includes(opt)) {
+                              newVals = selectedValues.includes(opt) ? [] : [opt];
+                            } else {
+                              const cleaned = selectedValues.filter(v => !exclusive.includes(v));
+                              newVals = cleaned.includes(opt) ? cleaned.filter(v => v !== opt) : [...cleaned, opt];
+                            }
+                            setAttributes(prev => ({ ...prev, [q.key]: newVals.join(',') }));
+                          } else {
+                            setAttributes(prev => ({
+                              ...prev,
+                              [q.key]: prev[q.key] === opt ? '' : opt,
+                            }));
+                          }
+                        }}
+                        className={`px-4 py-2.5 rounded-[14px] text-[12px] font-bold transition-all active:scale-95 ${
+                          isSelected
+                            ? `bg-${color}-600 text-white shadow-lg shadow-${color}-600/25`
+                            : `bg-[var(--c-hover)] text-[var(--c-text)] border border-[var(--c-border)] hover:border-${color}-500/40`
+                        }`}
+                      >
+                        {q.multi && isSelected && <i className="fa-solid fa-check text-[9px] mr-1.5" />}
+                        {opt}
+                      </button>
+                    );
+                  })}
+
+                  {/* Custom Input Toggle-Button */}
+                  {q.customInput && !isCustomOpen && !isCustomValueActive && (
+                    <button
+                      onClick={() => {
+                        setCustomInputOpen(prev => ({ ...prev, [q.key]: true }));
+                        if (currentValue && q.options.includes(currentValue)) {
+                          setAttributes(prev => ({ ...prev, [q.key]: '' }));
+                        }
+                      }}
+                      className={`px-4 py-2.5 rounded-[14px] text-[12px] font-bold transition-all active:scale-95 border border-dashed border-${color}-500/40 text-${color}-400 hover:bg-${color}-500/10`}
+                    >
+                      <i className="fa-solid fa-pen text-[9px] mr-1.5" />
+                      Unesi
+                    </button>
+                  )}
+
+                  {/* Aktiver Custom-Wert Chip */}
+                  {q.customInput && isCustomValueActive && !isCustomOpen && (
+                    <button
+                      onClick={() => {
+                        setAttributes(prev => ({ ...prev, [q.key]: '' }));
+                        setCustomInputValues(prev => ({ ...prev, [q.key]: '' }));
+                      }}
+                      className={`px-4 py-2.5 rounded-[14px] text-[12px] font-bold bg-${color}-600 text-white shadow-lg shadow-${color}-600/25 transition-all active:scale-95`}
+                    >
+                      {currentValue}
+                      <i className="fa-solid fa-xmark text-[9px] ml-2 opacity-70" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Custom Input Inline-Feld */}
+                {q.customInput && isCustomOpen && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className={`flex-1 flex items-center bg-[var(--c-hover)] border border-${color}-500/40 rounded-[14px] px-3 py-2 focus-within:border-${color}-500`}>
+                      <input
+                        type={q.customInput.type}
+                        value={customVal}
+                        onChange={(e) => setCustomInputValues(prev => ({ ...prev, [q.key]: e.target.value }))}
+                        placeholder={q.customInput.placeholder}
+                        min={q.customInput.min}
+                        max={q.customInput.max}
+                        step={q.customInput.step}
+                        className="flex-1 bg-transparent text-[var(--c-text)] text-[13px] font-bold outline-none placeholder:text-[var(--c-text-muted)] placeholder:font-normal [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && customVal.trim()) {
+                            const val = `${customVal.trim()} ${q.customInput!.unit}`;
+                            setAttributes(prev => ({ ...prev, [q.key]: val }));
+                            setCustomInputOpen(prev => ({ ...prev, [q.key]: false }));
+                          }
+                        }}
+                      />
+                      <span className={`text-[12px] font-bold text-${color}-400 ml-1`}>{q.customInput.unit}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (customVal.trim()) {
+                          const val = `${customVal.trim()} ${q.customInput!.unit}`;
+                          setAttributes(prev => ({ ...prev, [q.key]: val }));
+                          setCustomInputOpen(prev => ({ ...prev, [q.key]: false }));
+                        }
+                      }}
+                      disabled={!customVal.trim()}
+                      className={`w-10 h-10 rounded-[14px] flex items-center justify-center transition-all active:scale-95 ${
+                        customVal.trim()
+                          ? `bg-${color}-600 text-white`
+                          : 'bg-[var(--c-hover)] text-[var(--c-text-muted)]'
+                      }`}
+                    >
+                      <i className="fa-solid fa-check text-sm" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setCustomInputOpen(prev => ({ ...prev, [q.key]: false }));
+                        setCustomInputValues(prev => ({ ...prev, [q.key]: '' }));
+                      }}
+                      className="w-10 h-10 rounded-[14px] flex items-center justify-center bg-[var(--c-hover)] text-[var(--c-text-muted)] hover:text-red-400 transition-all active:scale-95"
+                    >
+                      <i className="fa-solid fa-xmark text-sm" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sticky Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 border-t border-[var(--c-border)]" style={{ background: 'var(--c-bg)' }}>
+        <div className="max-w-4xl mx-auto px-4 py-3 flex gap-3">
+          <button
+            onClick={() => setStep('form')}
+            className="flex-1 py-3 rounded-[14px] font-bold text-[12px] bg-[var(--c-card)] text-[var(--c-text2)] border border-[var(--c-border)] active:scale-95 transition-all hover:bg-[var(--c-hover)]"
+          >
+            Preskoči
+          </button>
+          <button
+            onClick={() => setStep('form')}
+            className={`flex-[2] py-3 rounded-[14px] text-white font-bold text-[12px] bg-${color}-600 hover:bg-${color}-700 active:scale-95 transition-all shadow-lg shadow-${color}-600/25`}
+          >
+            Dalje <i className="fa-solid fa-arrow-right ml-1.5 text-[10px]" />
+          </button>
+        </div>
+      </div>
+    </MainLayout>
+  );
+
   // ── Breadcrumb render function ──
   const renderBreadcrumb = () => {
     if (breadcrumb.length === 0) return null;
@@ -2797,7 +3193,7 @@ function UploadPageInner() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-           {items.map((item, index) => (
+           {items.filter(item => item.name !== 'Ostalo').map((item, index) => (
               <button
                   key={index}
                   onClick={() => onSelect(item.name)}
@@ -2812,6 +3208,22 @@ function UploadPageInner() {
               </button>
            ))}
         </div>
+
+        {/* Ostalo — full-width */}
+        {items.find(item => item.name === 'Ostalo') && (
+          <button
+            onClick={() => onSelect('Ostalo')}
+            className={`w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-4 flex items-center gap-4 group active:scale-[0.98] transition-all hover:bg-[var(--c-hover)] hover:border-${color}-500/30`}
+          >
+            <div className={`w-11 h-11 rounded-xl bg-${color}-500/10 flex items-center justify-center text-${color}-400 border border-${color}-500/20 group-hover:scale-110 transition-transform shrink-0`}>
+              <i className="fa-solid fa-ellipsis text-lg"></i>
+            </div>
+            <div className="text-left">
+              <span className="text-[13px] font-bold text-[var(--c-text)] block">Ostalo</span>
+            </div>
+            <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)] ml-auto"></i>
+          </button>
+        )}
 
         {/* MAGIC SEARCH BAR */}
         <div className="mt-4 border-t border-[var(--c-border)] pt-6 pb-2">
@@ -3408,6 +3820,13 @@ function UploadPageInner() {
   if (step === 'nekretnine-sub') {
     return renderSubSelection('Nekretnine', 'Izaberite kategoriju nekretnine', 'emerald', NEKRETNINE_TYPES, selectNekretnineSub, 'Npr. Stan u centru Sarajeva...', 'NudiNađi AI');
   }
+
+  // ── Nekretnine Quick-Tap Screen ───────────────────────────
+  if (step === 'nekretnine-quicktap') {
+    const questions = NEKRETNINE_QUESTIONS[nekretSubType] || [];
+    return renderQuickTap(nekretSubType, 'emerald', questions, 'nekretnine-sub');
+  }
+
   if (step === 'mobile-sub') {
     return renderSubSelection('Mobilni', 'Odaberite brend', 'rose', MOBILE_BRANDS, selectMobileSub, 'Npr. iPhone 13 Pro Max plavi...', 'NudiNađi AI');
   }
@@ -3420,6 +3839,11 @@ function UploadPageInner() {
   }
   if (step === 'tehnika-sub') {
     return renderSubSelection('Elektronika', 'IT i Gaming', 'purple', TEHNIKA_TYPES, selectTehnikaSub, 'Npr. Gaming PC RTX 3060...', 'NudiNađi AI');
+  }
+  // ── Elektronika Quick-Tap Screen ───────────────────────────
+  if (step === 'elektronika-quicktap') {
+    const questions = ELEKTRONIKA_QUESTIONS[elektronikaSub] || [];
+    return renderQuickTap(elektronikaSub, 'purple', questions, 'tehnika-sub');
   }
   if (step === 'services-sub') {
     return renderSubSelection('Usluge', 'Koju vrstu usluge nudite?', 'cyan', SERVICES_TYPES, selectServicesSub, 'Npr. Popravka veš mašine...', 'NudiNađi AI');
@@ -3517,6 +3941,12 @@ function UploadPageInner() {
   }
   if (step === 'umjetnost-sub') {
     return renderSubSelection('Umjetnost i kolekcionarstvo', 'Koja vrsta?', 'rose', UMJETNOST_TYPES, (name) => selectGenericSub('Umjetnost i kolekcionarstvo', 'rose', 'umjetnost-sub', name), 'Npr. Uljana slika, marke, antikviteti...', 'NudiNađi AI');
+  }
+  if (step === 'videoigre-sub') {
+    return renderSubSelection('Video igre', 'Koja platforma?', 'violet', VIDEOIGRE_TYPES, (name) => selectGenericSub('Video igre', 'violet', 'videoigre-sub', name), 'Npr. PS5 igra, Xbox kontroler...', 'NudiNađi AI');
+  }
+  if (step === 'ostalo-sub') {
+    return renderSubSelection('Ostalo', 'Koja kategorija?', 'slate', OSTALO_TYPES, (name) => selectGenericSub('Ostalo', 'slate', 'ostalo-sub', name), 'Npr. Parfem, karte za koncert...', 'NudiNađi AI');
   }
 
   // ── Generic detail-sub step (2nd tier for ALL categories) ──
@@ -3993,7 +4423,8 @@ function UploadPageInner() {
               )}
 
               {/* Image Upload */}
-              <ImageUpload images={images} onImagesChange={setImages} />
+              <ImageUpload images={images} onImagesChange={(imgs) => { setImages(imgs); if (formErrors.images && imgs.length > 0) setFormErrors(prev => ({ ...prev, images: undefined })); }} />
+              {formErrors.images && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.images}</p>}
 
               {/* OCR Button - only for vehicle parts */}
               {(formData.category.includes('Dijelovi') || formData.category.includes('dijelovi')) && images.length > 0 && (

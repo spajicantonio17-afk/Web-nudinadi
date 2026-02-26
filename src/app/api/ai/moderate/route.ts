@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { textWithGemini, parseJsonResponse } from '@/lib/gemini';
+import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { createClient } from '@supabase/supabase-js';
 
 // Auto-log AI results + auto-flag to moderation_reports if needed
@@ -66,9 +66,9 @@ export async function POST(req: NextRequest) {
       if (!title) return NextResponse.json({ error: 'Naslov je obavezan' }, { status: 400 });
 
       const prompt = `Provjeri da li je ovaj oglas duplicirani oglas koji se često objavljuje na marketplaceu.
-Naslov: "${title}"
-Kategorija: ${category || 'nepoznato'}
-Opis: "${description || ''}"
+Naslov: "${sanitizeForPrompt(title, 200)}"
+Kategorija: ${sanitizeForPrompt(category || 'nepoznato', 100)}
+Opis: "${sanitizeForPrompt(description || '', 2000)}"
 
 Procijeni:
 1. Da li izgleda kao oglas koji se mogao već vidjeti (generički, spam, prevara)?
@@ -95,10 +95,10 @@ Vrati SAMO JSON:
       if (!title) return NextResponse.json({ error: 'Naslov je obavezan' }, { status: 400 });
 
       const prompt = `Moderiran oglas za second-hand marketplace. Provjeri da li je oglas siguran za objavu.
-Naslov: "${title}"
-Opis: "${description || '(nema opisa)'}"
+Naslov: "${sanitizeForPrompt(title, 200)}"
+Opis: "${sanitizeForPrompt(description || '(nema opisa)', 2000)}"
 Cijena: ${price ? price + ' KM' : '(nije navedena)'}
-Kategorija: ${category || 'nepoznato'}
+Kategorija: ${sanitizeForPrompt(category || 'nepoznato', 100)}
 Broj slika: ${images || 0}
 
 Provjeri na:

@@ -89,19 +89,27 @@ const VEHICLE_FIELDS: CategoryField[] = [
 // ── Real Estate Fields ────────────────────────────────────
 
 const NEKRETNINE_FIELDS: CategoryField[] = [
-  { key: 'tipPonude',       label: 'Tip ponude',        type: 'select', formPage: 1, options: ['Prodaja', 'Najam', 'Zakup'] },
-  { key: 'povrsina',        label: 'Površina',          type: 'number', formPage: 1, placeholder: 'npr. 65', unit: 'm²' },
-  { key: 'etaza',           label: 'Etaža',             type: 'number', formPage: 1, placeholder: 'npr. 3' },
-  { key: 'ukupnoEtaza',     label: 'Ukupno etaža',      type: 'number', formPage: 1, placeholder: 'npr. 6' },
-  { key: 'sobe',            label: 'Broj soba',         type: 'select', formPage: 1, options: ['Garsonijera', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4+'] },
-  { key: 'grijanje',        label: 'Grijanje',          type: 'select', formPage: 2, options: ['Centralno', 'Plin', 'El. grijanje', 'Klima', 'Podno grijanje', 'Toplotna pumpa'] },
-  { key: 'parking',         label: 'Parking',           type: 'select', formPage: 2, options: ['Nema', 'Ulična', 'Garaža', 'Parkiralište'] },
-  { key: 'balkon',          label: 'Balkon / Terasa',   type: 'boolean', formPage: 2 },
-  { key: 'lift',            label: 'Lift',              type: 'boolean', formPage: 2 },
-  { key: 'podrum',          label: 'Podrum',            type: 'boolean', formPage: 2 },
-  { key: 'internet',        label: 'Internet / Kabel',  type: 'boolean', formPage: 2 },
-  { key: 'namjesteno',      label: 'Namješteno',        type: 'boolean', formPage: 2 },
-  { key: 'klimatizovano',   label: 'Klimatizovano',     type: 'boolean', formPage: 2 },
+  // Page 1 — Grunddaten (Quick-Tap Daten kommen über attributes)
+  { key: 'povrsina',        label: 'Površina (m²)',          type: 'number', formPage: 1, placeholder: 'npr. 65' },
+  { key: 'godinaIzgradnje', label: 'Godina izgradnje',       type: 'number', formPage: 1, placeholder: 'npr. 2005' },
+  { key: 'brojKupatila',    label: 'Broj kupatila',          type: 'select', formPage: 1, options: ['1', '2', '3', '4', '5+'] },
+  { key: 'ukupnoEtaza',     label: 'Ukupno etaža u zgradi', type: 'number', formPage: 1, placeholder: 'npr. 6' },
+  // Page 2 — Dodatne informacije
+  { key: 'energetskirazred', label: 'Energetski razred',    type: 'select', formPage: 2, options: ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+  { key: 'orijentacija',    label: 'Orijentacija',           type: 'select', formPage: 2, options: ['Sjever', 'Jug', 'Zapad', 'Istok'] },
+  { key: 'parking',         label: 'Parking',                type: 'select', formPage: 2, options: ['Nema', 'Ulična', 'Garaža', 'Parkiralište'] },
+  { key: 'vrstaPoda',       label: 'Vrsta poda',             type: 'select', formPage: 2, options: ['Parket', 'Laminat', 'Brodski', 'Keramika', 'Beton', 'Ostalo'] },
+  // Page 2 — Checkboxen
+  { key: 'balkon',          label: 'Balkon / Terasa',         type: 'boolean', formPage: 2 },
+  { key: 'lift',            label: 'Lift',                    type: 'boolean', formPage: 2 },
+  { key: 'podrum',          label: 'Podrum',                  type: 'boolean', formPage: 2 },
+  { key: 'internet',        label: 'Internet / Kabel',        type: 'boolean', formPage: 2 },
+  { key: 'klimatizovano',   label: 'Klima uređaj',            type: 'boolean', formPage: 2 },
+  { key: 'alarm',           label: 'Alarmni sustav',           type: 'boolean', formPage: 2 },
+  { key: 'blindiranaVrata', label: 'Blindirana vrata',        type: 'boolean', formPage: 2 },
+  { key: 'videoNadzor',     label: 'Video nadzor',            type: 'boolean', formPage: 2 },
+  { key: 'kuciLjubimci',    label: 'Kućni ljubimci dozvoljeni', type: 'boolean', formPage: 2 },
+  { key: 'uknjizeno',       label: 'Uknjiženo / ZK',          type: 'boolean', formPage: 2 },
 ];
 
 // ── Mobile Devices ────────────────────────────────────────
@@ -318,10 +326,257 @@ const PARTS_FIELDS: CategoryField[] = [
   { key: 'dostavaMoguca', label: 'Dostava moguća', type: 'boolean', formPage: 2 },
 ];
 
+// ── Nekretnine Feature Checkboxes per Sub-Type ───────────
+const NEKRETNINE_FEATURES: Record<string, { key: string; label: string }[]> = {
+  stanovi: [
+    { key: 'lift', label: 'Lift' },
+    { key: 'balkon', label: 'Balkon' },
+    { key: 'terasa', label: 'Terasa' },
+    { key: 'garaza', label: 'Garaža' },
+    { key: 'parking', label: 'Parking' },
+    { key: 'klima', label: 'Klima' },
+    { key: 'internet', label: 'Internet' },
+    { key: 'podrum', label: 'Podrum' },
+    { key: 'alarm', label: 'Alarm' },
+    { key: 'blindiranaVrata', label: 'Blindirana vrata' },
+    { key: 'videoNadzor', label: 'Video nadzor' },
+    { key: 'uknjizeno', label: 'Uknjiženo / ZK' },
+    { key: 'kucniLjubimci', label: 'Kućni ljubimci' },
+  ],
+  kuce: [
+    { key: 'garaza', label: 'Garaža' },
+    { key: 'dvoriste', label: 'Dvorište / Vrt' },
+    { key: 'balkon', label: 'Balkon' },
+    { key: 'bazen', label: 'Bazen' },
+    { key: 'klima', label: 'Klima' },
+    { key: 'internet', label: 'Internet' },
+    { key: 'podrum', label: 'Podrum' },
+    { key: 'alarm', label: 'Alarm' },
+    { key: 'kamin', label: 'Kamin' },
+    { key: 'uknjizeno', label: 'Uknjiženo / ZK' },
+  ],
+  poslovni: [
+    { key: 'lift', label: 'Lift' },
+    { key: 'klima', label: 'Klima' },
+    { key: 'internet', label: 'Internet' },
+    { key: 'parking', label: 'Parking' },
+    { key: 'alarm', label: 'Alarm' },
+    { key: 'videoNadzor', label: 'Video nadzor' },
+    { key: 'pristupInvalidi', label: 'Pristup za invalide' },
+    { key: 'uknjizeno', label: 'Uknjiženo / ZK' },
+  ],
+  zemljista: [
+    { key: 'pristupniPut', label: 'Pristupni put' },
+    { key: 'ogradeno', label: 'Ograđeno' },
+    { key: 'uknjizeno', label: 'Uknjiženo / ZK' },
+  ],
+  garaze: [
+    { key: 'struja', label: 'Struja' },
+    { key: 'ventilacija', label: 'Ventilacija' },
+    { key: 'videoNadzor', label: 'Video nadzor' },
+    { key: 'pristup24h', label: 'Pristup 24/7' },
+  ],
+  vikendice: [
+    { key: 'dvoriste', label: 'Dvorište' },
+    { key: 'bazen', label: 'Bazen' },
+    { key: 'klima', label: 'Klima' },
+    { key: 'kamin', label: 'Kamin' },
+    { key: 'internet', label: 'Internet' },
+    { key: 'uknjizeno', label: 'Uknjiženo / ZK' },
+  ],
+  sobe: [
+    { key: 'internet', label: 'Internet' },
+    { key: 'klima', label: 'Klima' },
+    { key: 'kucniLjubimci', label: 'Kućni ljubimci' },
+    { key: 'ukljuceniTroskovi', label: 'Uključeni troškovi' },
+  ],
+  montazni: [
+    { key: 'garaza', label: 'Garaža' },
+    { key: 'dvoriste', label: 'Dvorište' },
+    { key: 'klima', label: 'Klima' },
+    { key: 'internet', label: 'Internet' },
+    { key: 'uknjizeno', label: 'Uknjiženo / ZK' },
+  ],
+  skladista: [
+    { key: 'struja', label: 'Struja' },
+    { key: 'voda', label: 'Voda' },
+    { key: 'rampaUtovar', label: 'Rampa za utovar' },
+    { key: 'parkingKamioni', label: 'Parking za kamione' },
+    { key: 'alarm', label: 'Alarm' },
+    { key: 'uknjizeno', label: 'Uknjiženo / ZK' },
+  ],
+  stan_na_dan: [
+    { key: 'klima', label: 'Klima' },
+    { key: 'internet', label: 'Internet' },
+    { key: 'parking', label: 'Parking' },
+    { key: 'balkon', label: 'Balkon' },
+    { key: 'lift', label: 'Lift' },
+  ],
+};
+
+// ── Nekretnine per-Type Fields ───────────────────────────
+
+export function getNekretnineFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+  const fields: CategoryField[] = [];
+
+  // === Page 1: Hauptfelder ===
+
+  // Kvadratura m² (alle Typen)
+  fields.push({
+    key: 'kvadraturaM2', label: 'Kvadratura (m²)', type: 'number',
+    formPage: 1, placeholder: 'Unesite tačnu kvadraturu',
+  });
+
+  // Površina zemljišta (Kuće, Vikendice, Montažni)
+  if (['kuć', 'vikendic', 'montažn', 'montazn'].some(t => s.includes(t))) {
+    fields.push({
+      key: 'povrsinaZemljistaM2', label: 'Površina zemljišta (m²)', type: 'number',
+      formPage: 1, placeholder: 'Unesite površinu okućnice',
+    });
+  }
+
+  // Godina izgradnje (nicht für Zemljišta, Sobe)
+  if (!s.includes('zemljišt') && !s.includes('zemljist') && !s.includes('sob')) {
+    fields.push({
+      key: 'godinaIzgradnje', label: 'Godina izgradnje', type: 'number',
+      formPage: 1, placeholder: 'npr. 2005',
+    });
+  }
+
+  // Grijanje (Stanovi, Kuće, Vikendice, Montažni, Stan na dan)
+  if (['stanovi', 'apartman', 'kuć', 'vikendic', 'montažn', 'montazn', 'stan na dan'].some(t => s.includes(t))) {
+    fields.push({
+      key: 'grijanje', label: 'Grijanje', type: 'select',
+      formPage: 1, options: ['Centralno', 'Etažno plin', 'Etažno struja', 'Na drva/pelete', 'Klima', 'Podno grijanje', 'Bez grijanja', 'Ostalo'],
+    });
+  }
+
+  // Ukupno katova u zgradi (nur Stanovi)
+  if (s.includes('stanovi') || s.includes('apartman')) {
+    fields.push({
+      key: 'ukupnoKatova', label: 'Ukupno katova u zgradi', type: 'number', formPage: 1,
+    });
+  }
+
+  // === Page 2: Dodatne pogodnosti (Checkboxen) ===
+
+  // Finde passende Feature-Liste
+  let featureKey = 'stanovi';
+  if (s.includes('stanovi') || s.includes('apartman')) featureKey = 'stanovi';
+  else if (s.includes('kuć')) featureKey = 'kuce';
+  else if (s.includes('poslovni')) featureKey = 'poslovni';
+  else if (s.includes('zemljišt') || s.includes('zemljist')) featureKey = 'zemljista';
+  else if (s.includes('garaž') || s.includes('garaz')) featureKey = 'garaze';
+  else if (s.includes('vikendic')) featureKey = 'vikendice';
+  else if (s.includes('sob')) featureKey = 'sobe';
+  else if (s.includes('montažn') || s.includes('montazn')) featureKey = 'montazni';
+  else if (s.includes('skladišt') || s.includes('skladist') || s.includes('hal')) featureKey = 'skladista';
+  else if (s.includes('stan na dan')) featureKey = 'stan_na_dan';
+
+  const features = NEKRETNINE_FEATURES[featureKey] || [];
+  features.forEach(f => {
+    fields.push({ key: f.key, label: f.label, type: 'boolean', formPage: 2 });
+  });
+
+  return fields;
+}
+
+// ── Elektronika Feature Checkboxes per Sub-Type ──────────
+const ELEKTRONIKA_FEATURES: Record<string, { key: string; label: string }[]> = {
+  laptopi: [
+    { key: 'touchscreen', label: 'Touchscreen' },
+    { key: 'webcam', label: 'Webcam' },
+    { key: 'tastaturaNasaSlova', label: 'Tastatura naša slova' },
+    { key: 'torba', label: 'Torba uključena' },
+    { key: 'fingerprint', label: 'Fingerprint' },
+  ],
+  desktop: [
+    { key: 'wifi', label: 'WiFi' },
+    { key: 'bluetooth', label: 'Bluetooth' },
+    { key: 'ssdUgradjen', label: 'SSD ugrađen' },
+  ],
+  monitori_tv: [
+    { key: 'smartTv', label: 'Smart TV' },
+    { key: 'hdr', label: 'HDR' },
+    { key: 'wifi', label: 'WiFi' },
+  ],
+  konzole: [
+    { key: 'kompletPaket', label: 'Komplet (kutija + kablovi)' },
+    { key: 'originalniKontroler', label: 'Originalni kontroler' },
+  ],
+};
+
+// ── Elektronika per-Type Fields ──────────────────────────
+
+export function getElektronikaFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+  const fields: CategoryField[] = [];
+
+  // === Page 1: Hauptfelder (verschieden pro Typ) ===
+  if (s.includes('laptop')) {
+    fields.push(
+      { key: 'procesor', label: 'Procesor', type: 'select', formPage: 1, options: ['Intel i3', 'Intel i5', 'Intel i7', 'Intel i9', 'AMD Ryzen 3', 'AMD Ryzen 5', 'AMD Ryzen 7', 'AMD Ryzen 9', 'Apple M1', 'Apple M2', 'Apple M3', 'Apple M4', 'Ostalo'] },
+      { key: 'disk', label: 'SSD / HDD (GB)', type: 'number', formPage: 1, placeholder: 'npr. 512' },
+      { key: 'garancija', label: 'Garancija', type: 'select', formPage: 1, options: ['Bez garancije', '3 mjeseca', '6 mjeseci', '12 mjeseci', '24 mjeseca'] },
+      { key: 'godinaProizvodnje', label: 'Godina proizvodnje', type: 'select', formPage: 1, options: ['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', 'Starije'] },
+    );
+  } else if (s.includes('desktop') || s.includes('kompjuter')) {
+    fields.push(
+      { key: 'graficka', label: 'Grafička kartica', type: 'select', formPage: 1, options: ['Integrisana', 'NVIDIA', 'AMD', 'Ostalo'] },
+      { key: 'disk', label: 'SSD / HDD (GB)', type: 'number', formPage: 1, placeholder: 'npr. 1000' },
+      { key: 'garancija', label: 'Garancija', type: 'select', formPage: 1, options: ['Bez garancije', '3 mjeseca', '6 mjeseci', '12 mjeseci', '24 mjeseca'] },
+      { key: 'godinaProizvodnje', label: 'Godina proizvodnje', type: 'select', formPage: 1, options: ['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', 'Starije'] },
+    );
+  } else if (s.includes('monitor') || s.includes('tv')) {
+    fields.push(
+      { key: 'garancija', label: 'Garancija', type: 'select', formPage: 1, options: ['Bez garancije', '6 mjeseci', '12 mjeseci', '24 mjeseca'] },
+      { key: 'godinaProizvodnje', label: 'Godina proizvodnje', type: 'select', formPage: 1, options: ['2026', '2025', '2024', '2023', '2022', '2021', '2020', 'Starije'] },
+    );
+  } else if (s.includes('konzol')) {
+    fields.push(
+      { key: 'brojKontrolera', label: 'Broj kontrolera', type: 'select', formPage: 1, options: ['0', '1', '2', '3+'] },
+      { key: 'garancija', label: 'Garancija', type: 'select', formPage: 1, options: ['Bez garancije', '3 mjeseca', '6 mjeseci', '12 mjeseci'] },
+    );
+  } else {
+    // Default: alles andere (Gaming Oprema, Audio, Kamere, etc.)
+    fields.push(
+      { key: 'garancija', label: 'Garancija', type: 'select', formPage: 1, options: ['Bez garancije', '3 mjeseca', '6 mjeseci', '12 mjeseci', '24 mjeseca'] },
+      { key: 'godinaProizvodnje', label: 'Godina', type: 'number', formPage: 1, placeholder: 'npr. 2023' },
+    );
+  }
+
+  // === Page 2: Checkboxen ===
+  let featureKey = '';
+  if (s.includes('laptop')) featureKey = 'laptopi';
+  else if (s.includes('desktop') || s.includes('kompjuter')) featureKey = 'desktop';
+  else if (s.includes('monitor') || s.includes('tv')) featureKey = 'monitori_tv';
+  else if (s.includes('konzol')) featureKey = 'konzole';
+
+  const features = ELEKTRONIKA_FEATURES[featureKey] || [];
+  features.forEach(f => {
+    fields.push({ key: f.key, label: f.label, type: 'boolean', formPage: 2 });
+  });
+
+  return fields;
+}
+
 // ── Main export ───────────────────────────────────────────
 
 export function getCategoryFields(category: string, vehicleType?: VehicleType): CategoryField[] {
   const c = category.toLowerCase();
+
+  // Nekretnine: per-Typ Felder
+  if (c.includes('nekretnine')) {
+    const subType = category.includes(' - ') ? category.split(' - ')[1] : category;
+    return getNekretnineFields(subType);
+  }
+
+  // Elektronika: per-Typ Felder
+  if (c.includes('elektronika')) {
+    const subType = category.includes(' - ') ? category.split(' - ')[1] : category;
+    return getElektronikaFields(subType);
+  }
 
   // Parts check first
   if (vehicleType === 'parts' || c.includes('dijelovi')) return PARTS_FIELDS;

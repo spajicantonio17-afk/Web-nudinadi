@@ -8,7 +8,8 @@ import { useToast } from '@/components/Toast';
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/';
+  const rawRedirect = searchParams.get('redirect') || '/';
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.includes('//') ? rawRedirect : '/';
   const { login, loginWithOAuth, resetPassword, lastError } = useAuth();
   const { showToast } = useToast();
   const [formData, setFormData] = useState({ email: '', password: '' });

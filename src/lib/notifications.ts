@@ -113,12 +113,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           // Verify this conversation involves the current user
           const { data: conv } = await supabase
             .from('conversations')
-            .select('buyer_id, seller_id')
+            .select('user1_id, user2_id')
             .eq('id', msg.conversation_id)
             .single();
 
           if (!conv) return;
-          if (conv.buyer_id !== user.id && conv.seller_id !== user.id) return;
+          if (conv.user1_id !== user.id && conv.user2_id !== user.id) return;
 
           // Fetch sender name
           const { data: sender } = await supabase

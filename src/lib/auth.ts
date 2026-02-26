@@ -8,6 +8,7 @@ import React from 'react';
 import { getSupabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 import type { Profile } from '@/lib/database.types';
+import { logDailyLogin } from '@/services/levelService';
 
 // Translate Supabase auth error messages to Bosnian
 function translateAuthError(message: string): string {
@@ -104,14 +105,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   // Set user from Supabase session — resilient: always resolves even on profile fetch error
-  const setUserFromSession = useCallback(async (session: Session | null) => {
+  const setUserFromSession = useCallback(async (session: Session | null, isInitial = false) => {
     if (!session?.user) {
       setUser(null);
       setIsLoading(false);
       return;
     }
-    // Signal loading while session is being processed — prevents false "not authenticated" redirects
-    setIsLoading(true);
+    // Only show loading on initial session check — not on token refresh,
+    // which would cause the whole page to flash a spinner
+    if (isInitial) {
+      setIsLoading(true);
+    }
     try {
       // Timeout after 8s — prevents hanging if DB is slow or RLS blocks the query
       const profile = await Promise.race([
@@ -131,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Primary init: explicit session check (reliable across localStorage and cookie storage)
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      await setUserFromSession(session);
+      await setUserFromSession(session, true);
     }).catch(() => {
       // Session restore failed (corrupt cookie, network error, etc.)
       // Clear loading state so the app doesn't hang forever
@@ -170,6 +174,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (data.session) {
       await setUserFromSession(data.session);
+      // Award daily login XP (5 XP, once per day)
+      if (data.session.user?.id) {
+        logDailyLogin(data.session.user.id).catch(() => {/* non-critical */});
+      }
       return true;
     }
 
@@ -211,6 +219,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Case 1: Session received directly (autoconfirm enabled in Supabase dashboard)
   if (data.session) {
     await setUserFromSession(data.session);
+    if (data.session.user?.id) {
+      logDailyLogin(data.session.user.id).catch(() => {});
+    }
     return 'success';
   }
 

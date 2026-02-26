@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { textWithGemini, parseJsonResponse } from '@/lib/gemini';
+import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     }
 
     const prompt = `Analiziraj ovaj upit za pretragu second-hand marketplace oglasa i izvuci strukturirane informacije.
-Upit: "${query}"
+Upit: "${sanitizeForPrompt(query, 500)}"
 
 Tržište: Bosna i Hercegovina / Hrvatska / Srbija region
 Jezik upita može biti: bosanski, hrvatski, srpski, sa tipfelima ili slengom

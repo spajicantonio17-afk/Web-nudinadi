@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { textWithGemini, parseJsonResponse } from '@/lib/gemini';
+import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 
 /** Validate that the URL is a proper https URL */
 function isValidUrl(url: string): boolean {
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
 URL: ${url}
 
 OG META TAGOVI (pouzdani):
-${Object.entries(meta).map(([k, v]) => `${k}: ${v}`).join('\n') || '(nema)'}
+${Object.entries(meta).map(([k, v]) => `${k}: ${sanitizeForPrompt(v, 500)}`).join('\n') || '(nema)'}
 
 JSON-LD STRUKTURIRANI PODACI (veoma pouzdan):
 ${jsonLd || '(nema)'}
@@ -182,7 +182,7 @@ ${images.length > 0 ? images.join('\n') : '(nema)'}
 
 TEKST STRANICE:
 """
-${pageText}
+${sanitizeForPrompt(pageText, 8000)}
 """
 
 Zadatak: Izvuci podatke za second-hand oglas. Prioritet izvora: JSON-LD > OG meta > tekst stranice.

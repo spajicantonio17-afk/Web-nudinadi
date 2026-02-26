@@ -48,9 +48,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/emblem.png", type: "image/png" },
     ],
-    apple: "/logo-emblem.png",
+    apple: "/emblem.png",
   },
   manifest: "/manifest.json",
   appleWebApp: {
