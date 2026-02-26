@@ -6,7 +6,7 @@
 
 // ─── Enums ────────────────────────────────────────────
 
-export type ProductStatus = 'active' | 'sold' | 'draft'
+export type ProductStatus = 'active' | 'sold' | 'draft' | 'archived'
 
 export type ProductCondition = 'new' | 'like_new' | 'used'
 

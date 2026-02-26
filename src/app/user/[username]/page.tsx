@@ -50,7 +50,7 @@ function UserProfileContent() {
   const [reviews, setReviews] = useState<ReviewWithUsers[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [activeTab, setActiveTab] = useState<'oglasi' | 'dojmovi'>('oglasi');
+  const [activeTab, setActiveTab] = useState<'oglasi' | 'dojmovi' | 'info'>('oglasi');
   const [contacting, setContacting] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
@@ -300,13 +300,13 @@ function UserProfileContent() {
         {/* ── STATS GRID ── */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: 'Oglasi', value: products.length, icon: 'fa-tags', color: 'blue' },
-            { label: 'Prodano', value: profile.total_sales, icon: 'fa-bag-shopping', color: 'emerald' },
-            { label: 'Ocjena', value: avgRating > 0 ? avgRating.toFixed(1) : '\u2014', icon: 'fa-star', color: 'yellow' },
-            { label: 'Dojmovi', value: reviews.length, icon: 'fa-comments', color: 'purple' },
+            { label: 'Oglasi', value: products.length, icon: 'fa-tags', iconColor: 'text-blue-400' },
+            { label: 'Prodano', value: profile.total_sales, icon: 'fa-bag-shopping', iconColor: 'text-emerald-400' },
+            { label: 'Ocjena', value: avgRating > 0 ? avgRating.toFixed(1) : '\u2014', icon: 'fa-star', iconColor: 'text-yellow-400' },
+            { label: 'Dojmovi', value: reviews.length, icon: 'fa-comments', iconColor: 'text-purple-400' },
           ].map(stat => (
             <div key={stat.label} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 flex flex-col items-center gap-1 text-center">
-              <i className={`fa-solid ${stat.icon} text-${stat.color}-400 text-xs`}></i>
+              <i className={`fa-solid ${stat.icon} ${stat.iconColor} text-xs`}></i>
               <span className="text-base font-black text-[var(--c-text)] leading-none">{stat.value}</span>
               <span className="text-[9px] text-[var(--c-text3)] uppercase tracking-wider font-bold">{stat.label}</span>
             </div>
@@ -315,24 +315,30 @@ function UserProfileContent() {
 
         {/* ── TABS ── */}
         <div className="flex p-0.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px]">
-          {(['oglasi', 'dojmovi'] as const).map(tab => (
+          {([
+            { key: 'oglasi' as const, label: 'Oglasi', count: products.length },
+            { key: 'dojmovi' as const, label: 'Dojmovi', count: reviews.length },
+            { key: 'info' as const, label: 'Info', count: undefined },
+          ]).map(tab => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
               className={`flex-1 py-2 px-3 rounded-[10px] text-[10px] font-bold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
-                activeTab === tab
+                activeTab === tab.key
                   ? 'bg-[var(--c-active)] text-[var(--c-text)] shadow-sm'
                   : 'text-[var(--c-text3)] hover:text-[var(--c-text2)]'
               }`}
             >
-              {tab === 'oglasi' ? 'Oglasi' : 'Dojmovi'}
-              <span className={`min-w-[16px] h-4 px-1 rounded-full text-[8px] font-black flex items-center justify-center ${
-                activeTab === tab
-                  ? 'bg-blue-500/15 text-blue-500'
-                  : 'bg-[var(--c-overlay)] text-[var(--c-text3)]'
-              }`}>
-                {tab === 'oglasi' ? products.length : reviews.length}
-              </span>
+              {tab.label}
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className={`min-w-[16px] h-4 px-1 rounded-full text-[8px] font-black flex items-center justify-center ${
+                  activeTab === tab.key
+                    ? 'bg-blue-500/15 text-blue-500'
+                    : 'bg-[var(--c-overlay)] text-[var(--c-text3)]'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -369,8 +375,8 @@ function UserProfileContent() {
                     </div>
                     <div className="p-2.5">
                       <p className="text-[11px] font-bold text-[var(--c-text)] line-clamp-1">{p.title}</p>
-                      <p className="text-[12px] font-black text-blue-500 mt-0.5">&euro;{Number(p.price).toLocaleString()}</p>
-                      <p className="text-[9px] text-[var(--c-text3)] mt-0.5">{Math.round(Number(p.price) * BAM_RATE)} KM &middot; {formatTimeLabel(p.created_at)}</p>
+                      <p className="text-[12px] font-black text-blue-500 mt-0.5">{Number(p.price).toLocaleString()} &euro;</p>
+                      <p className="text-[9px] text-[var(--c-text3)] mt-0.5">{Math.round(Number(p.price) * BAM_RATE).toLocaleString()} KM &middot; {formatTimeLabel(p.created_at)}</p>
                     </div>
                   </div>
                 ))}
@@ -443,6 +449,117 @@ function UserProfileContent() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── INFO TAB ── */}
+        {activeTab === 'info' && (
+          <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-blue-500/30 transition-colors">
+                <div className="w-8 h-8 rounded-[10px] bg-blue-500/10 flex items-center justify-center">
+                  <i className="fa-regular fa-calendar text-blue-500"></i>
+                </div>
+                <div>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Član od</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{formatMemberSince(profile.created_at)}</p>
+                </div>
+              </div>
+              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-blue-500/30 transition-colors">
+                <div className="w-8 h-8 rounded-[10px] bg-blue-500/10 flex items-center justify-center">
+                  <i className="fa-solid fa-location-dot text-blue-500"></i>
+                </div>
+                <div>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Lokacija</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{profile.location || 'Nepoznato'}</p>
+                </div>
+              </div>
+              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-emerald-500/30 transition-colors">
+                <div className="w-8 h-8 rounded-[10px] bg-emerald-500/10 flex items-center justify-center">
+                  <i className="fa-solid fa-bag-shopping text-emerald-500"></i>
+                </div>
+                <div>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Prodaja</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{profile.total_sales || 0} prodano</p>
+                </div>
+              </div>
+              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-blue-500/30 transition-colors">
+                <div className="w-8 h-8 rounded-[10px] bg-blue-500/10 flex items-center justify-center">
+                  <i className="fa-solid fa-tags text-blue-500"></i>
+                </div>
+                <div>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Aktivni oglasi</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{products.length} aktivnih</p>
+                </div>
+              </div>
+              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-yellow-500/30 transition-colors">
+                <div className="w-8 h-8 rounded-[10px] bg-yellow-500/10 flex items-center justify-center">
+                  <i className="fa-solid fa-star text-yellow-500"></i>
+                </div>
+                <div>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Ocjena</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{avgRating > 0 ? `${avgRating} / 5` : 'Nema ocjena'}</p>
+                </div>
+              </div>
+              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-emerald-500/30 transition-colors">
+                <div className="w-8 h-8 rounded-[10px] bg-emerald-500/10 flex items-center justify-center">
+                  <i className="fa-solid fa-shield-halved text-emerald-500"></i>
+                </div>
+                <div>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Verifikacija</h5>
+                  <p className={`text-xs font-bold ${profile.email_verified ? 'text-emerald-400' : 'text-orange-400'}`}>
+                    {profile.email_verified ? 'Email potvrđen' : 'Nije verificiran'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Links — always show both, with fallback text */}
+            <h4 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest px-1">Social</h4>
+            <div className="space-y-2">
+              {profile.instagram_url ? (
+                <a
+                  href={`https://instagram.com/${profile.instagram_url.replace('@', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 hover:bg-[var(--c-hover)] transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <i className="fa-brands fa-instagram text-pink-500"></i>
+                    <span className="text-[10px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] transition-colors">@{profile.instagram_url.replace('@', '')}</span>
+                  </div>
+                  <i className="fa-solid fa-arrow-up-right-from-square text-[var(--c-text-muted)] text-xs group-hover:text-pink-400 transition-colors"></i>
+                </a>
+              ) : (
+                <div className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 opacity-50">
+                  <div className="flex items-center gap-3">
+                    <i className="fa-brands fa-instagram text-[var(--c-text-muted)]"></i>
+                    <span className="text-[10px] font-bold text-[var(--c-text3)]">Korisnik nije dodao Instagram</span>
+                  </div>
+                </div>
+              )}
+              {profile.facebook_url ? (
+                <a
+                  href={profile.facebook_url.startsWith('http') ? profile.facebook_url : `https://facebook.com/${profile.facebook_url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 hover:bg-[var(--c-hover)] transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <i className="fa-brands fa-facebook text-blue-500"></i>
+                    <span className="text-[10px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] transition-colors">Facebook</span>
+                  </div>
+                  <i className="fa-solid fa-arrow-up-right-from-square text-[var(--c-text-muted)] text-xs group-hover:text-blue-400 transition-colors"></i>
+                </a>
+              ) : (
+                <div className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 opacity-50">
+                  <div className="flex items-center gap-3">
+                    <i className="fa-brands fa-facebook text-[var(--c-text-muted)]"></i>
+                    <span className="text-[10px] font-bold text-[var(--c-text3)]">Korisnik nije dodao Facebook</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

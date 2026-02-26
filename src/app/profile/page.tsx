@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
-import { getUserProducts, deleteProduct } from '@/services/productService';
+import { getUserProducts, deleteProduct, archiveProduct, unarchiveProduct } from '@/services/productService';
 import { isUsernameAvailable } from '@/services/profileService';
 import { uploadAvatar } from '@/services/uploadService';
 import { getSupabase } from '@/lib/supabase';
@@ -77,6 +77,7 @@ function ProfileContent() {
   const [hasMoreReviews, setHasMoreReviews] = useState(true);
   const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
   const [shareToast, setShareToast] = useState(false);
 
   // ── Edit Profile ──────────────────────────────────────
@@ -281,6 +282,33 @@ function ProfileContent() {
     }
   };
 
+  // Archive / Unarchive product
+  const handleArchive = async (productId: string) => {
+    if (archivingId) return;
+    setArchivingId(productId);
+    try {
+      await archiveProduct(productId);
+      setUserProducts(prev => prev.map(p => p.id === productId ? { ...p, status: 'archived' as const } : p));
+    } catch (err) {
+      console.error('Archive failed:', err);
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
+  const handleUnarchive = async (productId: string) => {
+    if (archivingId) return;
+    setArchivingId(productId);
+    try {
+      await unarchiveProduct(productId);
+      setUserProducts(prev => prev.map(p => p.id === productId ? { ...p, status: 'active' as const } : p));
+    } catch (err) {
+      console.error('Unarchive failed:', err);
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
   // Share profile
   const handleShareProfile = async () => {
     const profileUrl = `${window.location.origin}/user/${user?.username}`;
@@ -323,6 +351,7 @@ function ProfileContent() {
   const activeProducts = userProducts.filter(p => p.status === 'active');
   const soldProducts = userProducts.filter(p => p.status === 'sold');
   const draftProducts = userProducts.filter(p => p.status === 'draft');
+  const archivedProducts = userProducts.filter(p => p.status === 'archived');
   const totalReviews = reviews.length;
   const averageRating = totalReviews > 0
     ? Math.round(reviews.reduce((s, r) => s + r.rating, 0) / totalReviews * 10) / 10
@@ -345,7 +374,7 @@ function ProfileContent() {
     Aktivni: activeProducts.length,
     'Završeni': soldProducts.length,
     Dojmovi: totalReviews,
-    Arhiv: draftProducts.length,
+    Arhiv: archivedProducts.length + draftProducts.length,
   };
 
   return (
@@ -822,71 +851,122 @@ function ProfileContent() {
 
         {/* ARHIV TAB */}
         {activeTab === 'Arhiv' && (
-            <div className="space-y-2 animate-[fadeIn_0.2s_ease-out]">
-                <div className="px-1 mb-1 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-orange-400">Nedovršeni Oglasi</h3>
-                        <p className="text-[9px] text-[var(--c-text3)]">Drafts</p>
-                    </div>
-                    <button
-                        onClick={() => router.push('/upload')}
-                        className="w-6 h-6 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text2)] hover:text-[var(--c-text)] border border-[var(--c-border)] hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-500 transition-colors"
-                    >
-                        <i className="fa-solid fa-plus text-[10px]"></i>
-                    </button>
-                </div>
+            <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
 
-                {draftProducts.length === 0 ? (
-                    <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-6 text-center">
-                        <i className="fa-solid fa-box-archive text-xl text-[var(--c-text-muted)] mb-2"></i>
-                        <p className="text-[11px] text-[var(--c-text3)]">Nema nedovršenih oglasa.</p>
+                {/* ── ARCHIVED PRODUCTS ── */}
+                <div className="space-y-2">
+                    <div className="px-1 mb-1">
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-orange-400">Arhivirani Oglasi</h3>
+                        <p className="text-[9px] text-[var(--c-text3)]">Privremeno sklonjeni sa tržišta</p>
                     </div>
-                ) : draftProducts.map((draft) => {
-                    const completion = calcDraftCompletion(draft);
-                    return (
-                    <div key={draft.id} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)]">
-                        <div className="relative w-16 h-16 rounded-[12px] overflow-hidden shrink-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={draft.images?.[0] || `https://picsum.photos/seed/${draft.id}/200/200`} alt="Draft" className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition-all" />
-                            <div className="absolute inset-0 bg-[var(--c-overlay)] flex items-center justify-center">
-                                <i className="fa-solid fa-pen text-white/80 text-xs"></i>
-                            </div>
-                            <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[7px] font-black px-1 py-0.5 rounded-[4px] leading-none backdrop-blur-sm z-10">#{productNumberMap.get(draft.id)}</span>
+
+                    {archivedProducts.length === 0 ? (
+                        <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-5 text-center">
+                            <i className="fa-solid fa-box-archive text-lg text-[var(--c-text-muted)] mb-1.5"></i>
+                            <p className="text-[11px] text-[var(--c-text3)]">Nema arhiviranih oglasa.</p>
+                            <p className="text-[9px] text-[var(--c-text-muted)] mt-0.5">Koristi <i className="fa-solid fa-box-archive text-[8px]"></i> dugme na aktivnim oglasima za arhiviranje.</p>
                         </div>
-                        <div className="flex-1 flex flex-col justify-between py-0.5">
-                            <div>
-                                <div className="flex justify-between items-start">
-                                    <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{draft.title || 'Bez naslova'}</h4>
+                    ) : archivedProducts.map(p => (
+                        <div key={p.id} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)] opacity-80">
+                            <div className="relative w-16 h-16 rounded-[12px] overflow-hidden shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={p.images?.[0] || `https://picsum.photos/seed/${p.id}/200/200`} alt={p.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <span className="text-[7px] font-black text-white bg-orange-500 px-1.5 py-0.5 rounded-full uppercase">Arhiv</span>
+                                </div>
+                                <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[7px] font-black px-1 py-0.5 rounded-[4px] leading-none backdrop-blur-sm z-10">#{productNumberMap.get(p.id)}</span>
+                            </div>
+                            <div className="flex-1 flex flex-col justify-between py-0.5">
+                                <div>
+                                    <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
+                                    <span className="text-[11px] font-black text-orange-400 mt-0.5 block">{Number(p.price).toLocaleString()} &euro;</span>
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteDraft(draft.id); }}
-                                        disabled={deletingDraftId === draft.id}
-                                        className="text-[var(--c-text-muted)] hover:text-red-400 p-1 -mr-2 -mt-2 transition-colors disabled:opacity-50"
+                                        onClick={() => handleUnarchive(p.id)}
+                                        disabled={archivingId === p.id}
+                                        className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/20 px-2.5 py-1 rounded-[6px] text-[8px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
                                     >
-                                        <i className={`text-[10px] ${deletingDraftId === draft.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-xmark'}`}></i>
+                                        {archivingId === p.id ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-rotate-left text-[7px] mr-1"></i>Vrati na tržište</>}
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteDraft(p.id); }}
+                                        disabled={deletingDraftId === p.id}
+                                        className="text-[var(--c-text-muted)] hover:text-red-400 p-1 transition-colors disabled:opacity-50"
+                                        title="Obriši"
+                                    >
+                                        <i className={`text-[10px] ${deletingDraftId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-trash'}`}></i>
                                     </button>
                                 </div>
-                                <span className="text-[10px] text-orange-400 font-bold mt-0.5 block">
-                                    {draft.price ? `€${draft.price}` : 'Cijena nije def.'}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-3 mt-1.5">
-                                <div className="flex-1">
-                                    <div className="flex justify-between text-[8px] font-bold text-[var(--c-text3)] mb-0.5">
-                                        <span>Popunjeno</span>
-                                        <span>{completion}%</span>
-                                    </div>
-                                    <div className="h-1 bg-[var(--c-overlay)] rounded-full overflow-hidden">
-                                        <div style={{ width: `${completion}%` }} className={`h-full rounded-full ${completion >= 80 ? 'bg-emerald-500' : completion >= 50 ? 'bg-orange-500' : 'bg-red-400'}`}></div>
-                                    </div>
-                                </div>
-                                <button onClick={() => router.push(`/upload?draft=${draft.id}`)} className="bg-[var(--c-active)] hover:bg-blue-600 text-white px-2 py-1 rounded-[6px] text-[8px] font-bold uppercase tracking-wider transition-colors">
-                                    Nastavi
-                                </button>
                             </div>
                         </div>
+                    ))}
+                </div>
+
+                {/* ── DRAFTS ── */}
+                {draftProducts.length > 0 && (
+                    <div className="space-y-2">
+                        <div className="px-1 mb-1 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--c-text3)]">Nedovršeni Oglasi</h3>
+                                <p className="text-[9px] text-[var(--c-text-muted)]">Drafts</p>
+                            </div>
+                            <button
+                                onClick={() => router.push('/upload')}
+                                className="w-6 h-6 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text2)] hover:text-[var(--c-text)] border border-[var(--c-border)] hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-500 transition-colors"
+                            >
+                                <i className="fa-solid fa-plus text-[10px]"></i>
+                            </button>
+                        </div>
+
+                        {draftProducts.map((draft) => {
+                            const completion = calcDraftCompletion(draft);
+                            return (
+                            <div key={draft.id} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)]">
+                                <div className="relative w-16 h-16 rounded-[12px] overflow-hidden shrink-0">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={draft.images?.[0] || `https://picsum.photos/seed/${draft.id}/200/200`} alt="Draft" className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition-all" />
+                                    <div className="absolute inset-0 bg-[var(--c-overlay)] flex items-center justify-center">
+                                        <i className="fa-solid fa-pen text-white/80 text-xs"></i>
+                                    </div>
+                                    <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[7px] font-black px-1 py-0.5 rounded-[4px] leading-none backdrop-blur-sm z-10">#{productNumberMap.get(draft.id)}</span>
+                                </div>
+                                <div className="flex-1 flex flex-col justify-between py-0.5">
+                                    <div>
+                                        <div className="flex justify-between items-start">
+                                            <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{draft.title || 'Bez naslova'}</h4>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteDraft(draft.id); }}
+                                                disabled={deletingDraftId === draft.id}
+                                                className="text-[var(--c-text-muted)] hover:text-red-400 p-1 -mr-2 -mt-2 transition-colors disabled:opacity-50"
+                                            >
+                                                <i className={`text-[10px] ${deletingDraftId === draft.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-xmark'}`}></i>
+                                            </button>
+                                        </div>
+                                        <span className="text-[10px] text-orange-400 font-bold mt-0.5 block">
+                                            {draft.price ? `${Number(draft.price).toLocaleString()} €` : 'Cijena nije def.'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1.5">
+                                        <div className="flex-1">
+                                            <div className="flex justify-between text-[8px] font-bold text-[var(--c-text3)] mb-0.5">
+                                                <span>Popunjeno</span>
+                                                <span>{completion}%</span>
+                                            </div>
+                                            <div className="h-1 bg-[var(--c-overlay)] rounded-full overflow-hidden">
+                                                <div style={{ width: `${completion}%` }} className={`h-full rounded-full ${completion >= 80 ? 'bg-emerald-500' : completion >= 50 ? 'bg-orange-500' : 'bg-red-400'}`}></div>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => router.push(`/upload?draft=${draft.id}`)} className="bg-[var(--c-active)] hover:bg-blue-600 text-white px-2 py-1 rounded-[6px] text-[8px] font-bold uppercase tracking-wider transition-colors">
+                                            Nastavi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            );
+                        })}
                     </div>
-                    );
-                })}
+                )}
             </div>
         )}
 
@@ -1084,16 +1164,26 @@ function ProfileContent() {
                         </div>
                     </div>
                 ) : activeProducts.map(p => (
-                    <div key={p.id} onClick={() => router.push(`/product/${p.id}`)} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)] cursor-pointer">
-                        <div className="relative w-16 h-16 rounded-[12px] overflow-hidden shrink-0">
+                    <div key={p.id} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)]">
+                        <div onClick={() => router.push(`/product/${p.id}`)} className="relative w-16 h-16 rounded-[12px] overflow-hidden shrink-0 cursor-pointer">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={p.images?.[0] || `https://picsum.photos/seed/${p.id}/200/200`} alt={p.title} className="w-full h-full object-cover" />
                             <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[7px] font-black px-1 py-0.5 rounded-[4px] leading-none backdrop-blur-sm">#{productNumberMap.get(p.id)}</span>
                         </div>
-                        <div className="flex-1 flex flex-col justify-between py-0.5">
+                        <div onClick={() => router.push(`/product/${p.id}`)} className="flex-1 flex flex-col justify-between py-0.5 cursor-pointer">
                             <div>
-                                <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
-                                <span className="text-[11px] font-black text-blue-500 mt-0.5 block">€{Number(p.price).toFixed(0)}</span>
+                                <div className="flex justify-between items-start">
+                                    <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleArchive(p.id); }}
+                                        disabled={archivingId === p.id}
+                                        title="Arhiviraj oglas"
+                                        className="text-[var(--c-text-muted)] hover:text-orange-400 p-1 -mr-2 -mt-1 transition-colors disabled:opacity-50 shrink-0"
+                                    >
+                                        <i className={`text-[10px] ${archivingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-box-archive'}`}></i>
+                                    </button>
+                                </div>
+                                <span className="text-[11px] font-black text-blue-500 mt-0.5 block">{Number(p.price).toLocaleString()} &euro;</span>
                             </div>
                             <div className="flex items-center gap-2 text-[9px] text-[var(--c-text3)]">
                                 <i className="fa-solid fa-eye text-[8px]"></i>
@@ -1132,7 +1222,7 @@ function ProfileContent() {
                         <div className="flex-1 flex flex-col justify-between py-0.5">
                             <div>
                                 <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
-                                <span className="text-[11px] font-black text-emerald-500 mt-0.5 block">€{Number(p.price).toFixed(0)}</span>
+                                <span className="text-[11px] font-black text-emerald-500 mt-0.5 block">{Number(p.price).toLocaleString()} &euro;</span>
                             </div>
                             <span className="text-[9px] text-[var(--c-text3)]">{formatTimeLabel(p.created_at)}</span>
                         </div>

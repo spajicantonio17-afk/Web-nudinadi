@@ -121,6 +121,16 @@ export async function markProductAsSold(id: string): Promise<Product> {
   return updateProduct(id, { status: 'sold' })
 }
 
+// ─── Archive / Unarchive ──────────────────────────────
+
+export async function archiveProduct(id: string): Promise<Product> {
+  return updateProduct(id, { status: 'archived' })
+}
+
+export async function unarchiveProduct(id: string): Promise<Product> {
+  return updateProduct(id, { status: 'active' })
+}
+
 // ─── Increment View Count ─────────────────────────────
 
 export async function incrementViews(id: string): Promise<void> {
