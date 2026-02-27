@@ -90,8 +90,8 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
               onClick={() => setShowHowItWorks(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[12px] font-semibold text-[var(--c-text3)] hover:text-purple-600 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/20 transition-all duration-150"
             >
-              <i className="fa-solid fa-question text-[11px]"></i>
-              Kako funkcioniše?
+              <i className="fa-solid fa-circle-play text-[11px]"></i>
+              Kako funkcioniše
             </button>
           </div>
         </div>
@@ -279,7 +279,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
                 />
                 <div>
                   <p className="text-sm md:text-base font-black text-[var(--c-text)] tracking-tight leading-none">nudinađi</p>
-                  <p className="text-[7px] md:text-[8px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-0.5">AI Powered Marketplace</p>
+                  <p className="text-[7px] md:text-[8px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-0.5">AI Marketplace Platforma</p>
                 </div>
               </div>
               <button
@@ -309,13 +309,13 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
                 <div className="hidden md:flex gap-3 shrink-0">
                   <div className="w-36 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-4">
                     <i className="fa-solid fa-bolt text-[var(--c-text3)] text-xl mb-3 block"></i>
-                    <p className="text-3xl font-black text-[var(--c-text)] leading-none mb-1">0.2s</p>
-                    <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Brzina Pretrage</p>
+                    <p className="text-3xl font-black text-[var(--c-text)] leading-none mb-1">AI</p>
+                    <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Pametna Pretraga</p>
                   </div>
                   <div className="w-36 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-4">
                     <i className="fa-solid fa-brain text-[var(--c-text3)] text-xl mb-3 block"></i>
-                    <p className="text-3xl font-black text-[var(--c-text)] leading-none mb-1">99%</p>
-                    <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest">AI Preciznost</p>
+                    <p className="text-3xl font-black text-[var(--c-text)] leading-none mb-1">24/7</p>
+                    <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Dostupnost</p>
                   </div>
                 </div>
               </div>
@@ -323,7 +323,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
               {/* SECTION LABEL */}
               <div className="flex items-center gap-3 shrink-0">
                 <div className="w-8 h-[2px] bg-blue-500"></div>
-                <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Kako to zapravo radi?</p>
+                <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Kako to radi</p>
               </div>
 
               {/* FEATURE CARDS — responsive grid */}
@@ -345,8 +345,11 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
                     <i className="fa-solid fa-camera text-purple-400 text-sm"></i>
                   </div>
                   <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">2. Vizualna<br />Prodaja</h3>
-                  <p className="text-[10px] text-[var(--c-text3)] leading-relaxed">
-                    Prodaja nikad nije bila brža. Uslikaj predmet, a naš <span className="text-[var(--c-text)] font-bold">Computer Vision</span> model će ga prepoznati, kategorirati i predložiti opis. Tvoj oglas je online za manje od 30 sekundi.
+                  <p className="text-[10px] text-[var(--c-text3)] leading-relaxed mb-3">
+                    Prodaja nikad nije bila brža. Uslikaj predmet, a naš AI ga prepoznaje, kategorizira i predlaže opis. Tvoj oglas je online za manje od 30 sekundi.
+                  </p>
+                  <p className="text-[8px] font-bold text-purple-400 uppercase tracking-wider mt-auto">
+                    <i className="fa-solid fa-mobile-screen text-[7px] mr-1"></i>Dostupno u aplikaciji · Business plan
                   </p>
                 </div>
 
@@ -355,9 +358,9 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
                   <div className="w-10 h-10 rounded-[4px] bg-orange-500/20 border border-orange-500/30 flex items-center justify-center mb-4 shrink-0">
                     <i className="fa-solid fa-spell-check text-orange-400 text-sm"></i>
                   </div>
-                  <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">3. AI Search &<br />AI Category</h3>
+                  <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">3. AI Pretraga &<br />Kategorija</h3>
                   <p className="text-[10px] text-[var(--c-text3)] leading-relaxed">
-                    Napiši <span className="text-[var(--c-text)] font-bold">&ldquo;bmv 3&rdquo;</span> ili <span className="text-[var(--c-text)] font-bold">&ldquo;iphone&rdquo;</span> — AI ispravlja greške i pronalazi pravo. <span className="text-[var(--c-text)] font-bold">AI Category</span> automatski prepoznaje kategoriju iz opisa, bez ručnog biranja.
+                    Napiši <span className="text-[var(--c-text)] font-bold">&ldquo;bmv 3&rdquo;</span> ili <span className="text-[var(--c-text)] font-bold">&ldquo;iphone&rdquo;</span> — AI ispravlja greške i pronalazi pravo. Kategorija se automatski prepoznaje iz opisa, bez ručnog biranja.
                   </p>
                 </div>
               </div>
@@ -367,7 +370,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
                 <p className="text-sm md:text-lg font-black text-[var(--c-text)] uppercase tracking-tight mb-1">
                   &ldquo;Tehnologija koja radi za tebe.&rdquo;
                 </p>
-                <p className="text-[7px] md:text-[8px] font-bold text-[var(--c-text-muted)] uppercase tracking-[0.3em]">Powered by NudiNađi AI Core</p>
+                <p className="text-[7px] md:text-[8px] font-bold text-[var(--c-text-muted)] uppercase tracking-[0.3em]">NudiNađi platforma</p>
               </div>
 
             </div>
@@ -467,7 +470,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
 
           <Link href={isAuthenticated ? '/profile' : '/login'} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} aria-current={pathname === '/profile' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/profile' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className={`fa-solid ${isAuthenticated ? 'fa-user' : 'fa-right-to-bracket'} text-[17px]`} aria-hidden="true"></i>
-            <span className="text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Login'}</span>
+            <span className="text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Prijava'}</span>
           </Link>
 
           {isAuthenticated && (

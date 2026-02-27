@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
@@ -710,10 +711,10 @@ export default function MenuPage() {
             </div>
             <h3 className="text-lg font-black text-[var(--c-text)] mb-1">Trebate pomoć?</h3>
             <p className="text-[11px] text-[var(--c-text3)] mb-4">Naš tim za podršku je dostupan 24/7</p>
-            <a href="mailto:support@nudinadi.com" className="inline-flex items-center gap-2 bg-blue-500 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-blue-600 transition-colors">
-              <i className="fa-solid fa-envelope text-xs"></i>
-              support@nudinadi.com
-            </a>
+            <Link href="/kontakt" className="inline-flex items-center gap-2 bg-blue-500 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-blue-600 transition-colors">
+              <i className="fa-solid fa-paper-plane text-xs"></i>
+              Kontaktiraj nas
+            </Link>
           </div>
 
           {/* FAQ Section */}

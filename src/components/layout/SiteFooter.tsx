@@ -24,15 +24,6 @@ export default function SiteFooter() {
               <span className="w-8 h-8 rounded-[4px] bg-[var(--c-card)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 cursor-pointer">
                 <i className="fa-brands fa-instagram text-xs"></i>
               </span>
-              <span className="w-8 h-8 rounded-[4px] bg-[var(--c-card)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 cursor-pointer">
-                <i className="fa-brands fa-facebook-f text-xs"></i>
-              </span>
-              <span className="w-8 h-8 rounded-[4px] bg-[var(--c-card)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 cursor-pointer">
-                <i className="fa-brands fa-tiktok text-xs"></i>
-              </span>
-              <span className="w-8 h-8 rounded-[4px] bg-[var(--c-card)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 cursor-pointer">
-                <i className="fa-brands fa-twitter text-xs"></i>
-              </span>
             </div>
           </div>
 
@@ -53,10 +44,9 @@ export default function SiteFooter() {
             <h4 className="text-[12px] font-extrabold text-[var(--c-text)] uppercase tracking-wider mb-4">Kompanija</h4>
             <ul className="space-y-2.5">
               <li><Link href="/o-nama" className={linkClass}>O Nama</Link></li>
-              <li><Link href="/kako-funkcionira" className={linkClass}>Kako funkcionira?</Link></li>
-              <li><Link href="/press" className={linkClass}>Press</Link></li>
-              <li><Link href="/blog" className={linkClass}>Blog</Link></li>
               <li><Link href="/partneri" className={linkClass}>Partneri</Link></li>
+              <li><Link href="/planovi" className={linkClass}>Planovi</Link></li>
+              <li><Link href="/kako-funkcionira" className={linkClass}>Kako funkcionira</Link></li>
             </ul>
           </div>
 
@@ -108,7 +98,7 @@ export default function SiteFooter() {
             <Link href="/kontakt" className="hover:text-[var(--c-text)] transition-colors duration-150">Kontakt</Link>
           </div>
           <div className="text-[11px] text-[var(--c-text3)] flex items-center gap-1.5">
-            <span>&copy; {new Date().getFullYear()} NudiNađi d.o.o.</span>
+            <span>&copy; {new Date().getFullYear()} NudiNađi</span>
             <span>·</span>
             <span>Sva prava zadržana</span>
           </div>

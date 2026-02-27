@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
@@ -87,6 +88,14 @@ export default function ContactPage() {
           <div className="w-10 h-[3px] bg-blue-500 mb-4"></div>
           <p className="text-[13px] text-[var(--c-text2)] leading-relaxed max-w-[560px]">
             Imate pitanje, prijedlog ili trebate pomoć? Popunite formu ispod i odgovorićemo vam u roku od 24 sata.
+          </p>
+        </div>
+
+        {/* FAQ HINT */}
+        <div className="bg-blue-50 border border-blue-200 rounded-[12px] px-4 py-3 mb-6 flex items-center gap-2.5">
+          <i className="fa-solid fa-circle-question text-blue-400 text-sm shrink-0"></i>
+          <p className="text-[11px] text-[var(--c-text2)] leading-relaxed">
+            Prije nego nas kontaktirate, pogledajte naš <Link href="/pomoc" className="text-blue-500 font-bold hover:underline">FAQ</Link> — možda je odgovor već tamo.
           </p>
         </div>
 
@@ -224,61 +233,6 @@ export default function ContactPage() {
           </div>
         )}
 
-        {/* ── DIREKTNI KONTAKT CARDS ── */}
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-[2px] bg-blue-500"></div>
-            <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Direktni kontakt</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6 relative overflow-hidden hover:border-blue-500/40 transition-colors text-center">
-              <div className="absolute top-0 right-0 w-14 h-14 bg-blue-500/20 rounded-bl-[35px]"></div>
-              <div className="w-12 h-12 rounded-[4px] bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mb-4 mx-auto">
-                <i className="fa-solid fa-envelope text-blue-400 text-lg"></i>
-              </div>
-              <h3 className="text-[12px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1">E-Mail</h3>
-              <p className="text-[11px] text-blue-500 font-bold">info@nudinadi.ba</p>
-              <p className="text-[9px] text-[var(--c-text3)] mt-1">Odgovor u roku 24h</p>
-            </div>
-            <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6 relative overflow-hidden hover:border-emerald-500/40 transition-colors text-center">
-              <div className="absolute top-0 right-0 w-14 h-14 bg-emerald-500/20 rounded-bl-[35px]"></div>
-              <div className="w-12 h-12 rounded-[4px] bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-4 mx-auto">
-                <i className="fa-solid fa-phone text-emerald-400 text-lg"></i>
-              </div>
-              <h3 className="text-[12px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1">Telefon</h3>
-              <p className="text-[11px] text-emerald-500 font-bold">+387 33 123 456</p>
-              <p className="text-[9px] text-[var(--c-text3)] mt-1">Pon – Pet, 09:00 – 17:00</p>
-            </div>
-            <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6 relative overflow-hidden hover:border-purple-500/40 transition-colors text-center">
-              <div className="absolute top-0 right-0 w-14 h-14 bg-purple-500/20 rounded-bl-[35px]"></div>
-              <div className="w-12 h-12 rounded-[4px] bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mb-4 mx-auto">
-                <i className="fa-solid fa-location-dot text-purple-400 text-lg"></i>
-              </div>
-              <h3 className="text-[12px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1">Adresa</h3>
-              <p className="text-[11px] text-purple-500 font-bold">Sarajevo, BiH</p>
-              <p className="text-[9px] text-[var(--c-text3)] mt-1">NudiNađi d.o.o.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* SOCIAL */}
-        <div className="text-center py-8 border-t border-[var(--c-border)]">
-          <p className="text-lg font-black text-[var(--c-text)] uppercase tracking-tight mb-3">
-            Prati Nas
-          </p>
-          <div className="flex gap-3 justify-center">
-            {[
-              { icon: 'fa-brands fa-instagram', label: 'Instagram' },
-              { icon: 'fa-brands fa-facebook-f', label: 'Facebook' },
-              { icon: 'fa-brands fa-tiktok', label: 'TikTok' },
-              { icon: 'fa-brands fa-twitter', label: 'Twitter' },
-            ].map((s) => (
-              <span key={s.label} className="w-10 h-10 rounded-[4px] bg-[var(--c-hover)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-blue-500 hover:border-blue-500/40 transition-all cursor-pointer">
-                <i className={`${s.icon} text-sm`}></i>
-              </span>
-            ))}
-          </div>
-        </div>
       </div>
     </MainLayout>
   );

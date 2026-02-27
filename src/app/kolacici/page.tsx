@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 
 export default function CookiesPage() {
@@ -22,7 +23,7 @@ export default function CookiesPage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">KOLAČIĆA.</span>
           </h1>
           <div className="w-10 h-[3px] bg-orange-500 mb-4"></div>
-          <p className="text-[11px] text-[var(--c-text3)]">Posljednje ažuriranje: 01. januar 2025.</p>
+          <p className="text-[11px] text-[var(--c-text3)]">Posljednje ažuriranje: 01. februar 2026.</p>
         </div>
 
         {/* WHAT ARE COOKIES */}
@@ -137,8 +138,8 @@ export default function CookiesPage() {
 
         {/* BOTTOM */}
         <div className="text-center py-8 border-t border-[var(--c-border)]">
-          <p className="text-[10px] text-[var(--c-text3)]">Za pitanja o kolačićima: privatnost@nudinadi.com</p>
-          <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-[0.3em] mt-2">NudiNađi d.o.o. — Sarajevo, BiH</p>
+          <p className="text-[10px] text-[var(--c-text3)]">Za pitanja o kolačićima: <Link href="/kontakt" className="text-orange-400 font-bold hover:underline">Kontaktiraj nas</Link></p>
+          <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-[0.3em] mt-2">NudiNađi platforma</p>
         </div>
       </div>
     </MainLayout>

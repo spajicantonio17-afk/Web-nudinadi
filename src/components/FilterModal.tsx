@@ -293,7 +293,7 @@ export default function FilterModal({
               <PillGroup
                 options={[
                   { value: 'all', label: 'Sve', icon: 'fa-layer-group' },
-                  { value: 'new', label: 'Novo', icon: 'fa-sparkles' },
+                  { value: 'new', label: 'Novo', icon: 'fa-certificate' },
                   { value: 'like_new', label: 'Kao novo', icon: 'fa-star' },
                   { value: 'used', label: 'Korišteno', icon: 'fa-recycle' },
                 ]}
@@ -338,7 +338,7 @@ export default function FilterModal({
                 options={[
                   { value: 'all', label: 'Svi', icon: 'fa-users' },
                   { value: 'verified', label: 'Verificiran', icon: 'fa-circle-check' },
-                  { value: 'premium', label: 'Premium', icon: 'fa-crown' },
+                  { value: 'premium', label: 'Business', icon: 'fa-crown' },
                 ]}
                 value={filters.sellerType}
                 onChange={(v) => setFilters({ ...filters, sellerType: v })}

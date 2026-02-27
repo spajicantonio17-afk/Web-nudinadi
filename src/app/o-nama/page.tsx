@@ -23,7 +23,7 @@ export default function AboutPage() {
           </h1>
           <div className="w-10 h-[3px] bg-blue-500 mb-4"></div>
           <p className="text-[13px] text-[var(--c-text2)] leading-relaxed max-w-[560px]">
-            NudiNađi je moderna marketplace platforma iz Bosne i Hercegovine. Koristimo AI tehnologiju da kupovinu i prodaju učinimo bržom, sigurnijom i pametnijom nego ikad.
+            NudiNađi je moderna marketplace platforma. Koristimo AI tehnologiju da kupovinu i prodaju učinimo bržom, sigurnijom i pametnijom nego ikad.
           </p>
         </div>
 
@@ -31,9 +31,9 @@ export default function AboutPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
           {[
             { value: '2024', label: 'Godina Osnivanja', icon: 'fa-calendar' },
-            { value: 'BiH', label: 'Sjedište', icon: 'fa-location-dot' },
+            { value: 'Regija', label: 'Dostupnost', icon: 'fa-globe' },
             { value: 'AI', label: 'Powered', icon: 'fa-brain' },
-            { value: '24/7', label: 'Dostupnost', icon: 'fa-clock' },
+            { value: '24/7', label: 'Podrška', icon: 'fa-clock' },
           ].map((stat) => (
             <div key={stat.label} className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-5">
               <i className={`fa-solid ${stat.icon} text-[var(--c-text3)] text-lg mb-3 block`}></i>
@@ -118,7 +118,7 @@ export default function AboutPage() {
           <p className="text-lg font-black text-[var(--c-text)] uppercase tracking-tight mb-1">
             &ldquo;Budućnost trgovine počinje ovdje.&rdquo;
           </p>
-          <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-[0.3em]">NudiNađi d.o.o. — Bosna i Hercegovina</p>
+          <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-[0.3em]">NudiNađi platforma</p>
         </div>
       </div>
     </MainLayout>

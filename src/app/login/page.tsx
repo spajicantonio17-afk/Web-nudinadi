@@ -79,9 +79,8 @@ function LoginContent() {
 
         <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-5 z-10 animate-[fadeIn_0.3s_ease-out]">
             <div className="text-center mb-8">
-                <div onClick={() => router.push('/')} className="w-16 h-16 bg-blue-600 rounded-[20px] flex items-center justify-center text-white text-2xl font-black italic shadow-lg shadow-blue-500/20 mx-auto mb-6 cursor-pointer">
-                    N
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img onClick={() => router.push('/')} src="/emblem.png" alt="NudiNađi" className="w-16 h-16 rounded-[20px] shadow-lg shadow-blue-500/20 mx-auto mb-6 cursor-pointer object-contain" />
                 <h2 className="text-2xl font-black text-[var(--c-text)] mb-2">Dobrodošli nazad</h2>
                 <p className="text-xs text-[var(--c-text3)]">Unesite podatke za pristup računu.</p>
             </div>

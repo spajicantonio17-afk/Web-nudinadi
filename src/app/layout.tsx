@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     default: "NudiNađi – Kupuj i Prodaj Brzo i Sigurno",
     template: "%s | NudiNađi",
   },
-  description: "NudiNađi je vodeći marketplace za kupoprodaju rabljenih i novih artikala u BiH. AI-potpomognuto oglašavanje, sigurna komunikacija i brza prodaja.",
+  description: "NudiNađi je vodeći marketplace za kupoprodaju rabljenih i novih artikala u regiji. AI-potpomognuto oglašavanje, sigurna komunikacija i brza prodaja.",
   metadataBase: new URL("https://nudinadi.ba"),
   openGraph: {
     type: "website",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     url: "https://nudinadi.ba",
     siteName: "NudiNađi",
     title: "NudiNađi – Kupuj i Prodaj Brzo i Sigurno",
-    description: "Vodeći marketplace za kupoprodaju rabljenih i novih artikala u BiH.",
+    description: "Vodeći marketplace za kupoprodaju rabljenih i novih artikala u regiji.",
     images: [
       {
         url: "/og-default.jpg",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "NudiNađi – Kupuj i Prodaj Brzo i Sigurno",
-    description: "Vodeći marketplace za kupoprodaju rabljenih i novih artikala u BiH.",
+    description: "Vodeći marketplace za kupoprodaju rabljenih i novih artikala u regiji.",
     images: ["/og-default.jpg"],
   },
   robots: {

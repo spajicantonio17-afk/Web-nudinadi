@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 
 const PRESS_RELEASES = [
@@ -30,7 +31,7 @@ export default function PressPage() {
           </h1>
           <div className="w-10 h-[3px] bg-blue-500 mb-4"></div>
           <p className="text-[13px] text-[var(--c-text2)] leading-relaxed max-w-[560px]">
-            Sve najnovije vijesti o NudiNađi platformi. Za medijske upite kontaktirajte nas na press@nudinadi.com.
+            Sve najnovije vijesti o NudiNađi platformi. Za medijske upite kontaktirajte nas putem kontakt forme.
           </p>
         </div>
 
@@ -101,7 +102,10 @@ export default function PressPage() {
           <p className="text-lg font-black text-[var(--c-text)] uppercase tracking-tight mb-2">
             Medijski Upiti
           </p>
-          <p className="text-[10px] text-[var(--c-text3)] mb-1">press@nudinadi.com</p>
+          <Link href="/kontakt" className="inline-flex items-center gap-2 text-[11px] text-blue-500 font-bold hover:underline mb-1">
+            <i className="fa-solid fa-paper-plane text-xs"></i>
+            Kontaktiraj nas
+          </Link>
           <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-[0.3em]">Odgovaramo u roku od 24 sata</p>
         </div>
       </div>

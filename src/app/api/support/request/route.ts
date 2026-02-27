@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const VALID_CATEGORIES = ['bug', 'account', 'listing', 'payment', 'suggestion', 'other'] as const;
 
@@ -57,6 +60,40 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error('[support/request] DB insert error:', error);
       return NextResponse.json({ error: 'Greška pri slanju. Pokušajte ponovo.' }, { status: 500 });
+    }
+
+    // Send email notification to team
+    const categoryLabels: Record<string, string> = {
+      bug: 'Prijava greške',
+      account: 'Problem s računom',
+      listing: 'Problem s oglasom',
+      payment: 'Plaćanje / Transakcije',
+      suggestion: 'Prijedlog / Feedback',
+      other: 'Ostalo',
+    };
+
+    try {
+      await resend.emails.send({
+        from: 'NudiNađi Kontakt <onboarding@resend.dev>',
+        to: process.env.SUPPORT_EMAIL || 'info@nudinadi.com',
+        replyTo: email.trim().toLowerCase(),
+        subject: `[${categoryLabels[category] || category}] ${subject.trim()}`,
+        html: `
+          <h2 style="margin:0 0 16px">Nova poruka sa kontakt forme</h2>
+          <table style="border-collapse:collapse;width:100%;max-width:600px;font-family:sans-serif;font-size:14px">
+            <tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold;width:140px">Kategorija</td><td style="padding:8px 12px;border:1px solid #e5e7eb">${categoryLabels[category] || category}</td></tr>
+            <tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">Ime</td><td style="padding:8px 12px;border:1px solid #e5e7eb">${name.trim()}</td></tr>
+            <tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">Email</td><td style="padding:8px 12px;border:1px solid #e5e7eb"><a href="mailto:${email.trim()}">${email.trim()}</a></td></tr>
+            <tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">Predmet</td><td style="padding:8px 12px;border:1px solid #e5e7eb">${subject.trim()}</td></tr>
+            <tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold;vertical-align:top">Poruka</td><td style="padding:8px 12px;border:1px solid #e5e7eb;white-space:pre-wrap">${message.trim()}</td></tr>
+            ${userId ? `<tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">User ID</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-family:monospace;font-size:12px">${userId}</td></tr>` : '<tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">User</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#999">Gast (nicht eingeloggt)</td></tr>'}
+          </table>
+          <p style="margin-top:16px;font-size:12px;color:#888">Gesendet über NudiNađi Kontaktformular</p>
+        `,
+      });
+    } catch (emailErr) {
+      // Email failed but DB insert succeeded — log but don't fail the request
+      console.error('[support/request] Email send error:', emailErr);
     }
 
     return NextResponse.json({ success: true });

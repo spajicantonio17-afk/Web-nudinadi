@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 
 const OPEN_POSITIONS = [
@@ -110,11 +111,11 @@ export default function CareersPage() {
           <p className="text-lg font-black text-[var(--c-text)] uppercase tracking-tight mb-2">
             &ldquo;Budi dio revolucije.&rdquo;
           </p>
-          <p className="text-[10px] text-[var(--c-text3)] mb-4">Pošalji CV na karijere@nudinadi.com</p>
-          <a href="mailto:karijere@nudinadi.com" className="inline-flex items-center gap-2 px-6 py-3 blue-gradient text-white rounded-[6px] text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105 transition-all">
+          <p className="text-[10px] text-[var(--c-text3)] mb-4">Pošalji svoju prijavu putem kontakt forme</p>
+          <Link href="/kontakt" className="inline-flex items-center gap-2 px-6 py-3 blue-gradient text-white rounded-[6px] text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105 transition-all">
             <i className="fa-solid fa-paper-plane text-xs"></i>
             Apliciraj Sada
-          </a>
+          </Link>
         </div>
       </div>
     </MainLayout>

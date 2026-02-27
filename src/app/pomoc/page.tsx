@@ -1,17 +1,36 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 
 const FAQ_ITEMS = [
-  { q: 'Kako postaviti oglas?', a: 'Klikni na "+" dugme, uslikaj predmet ili odaberi slike, ispuni detalje i klikni "Objavi". AI automatski prepoznaje kategoriju i predlaže opis — oglas je online za manje od 30 sekundi.', cat: 'Prodaja' },
-  { q: 'Kako funkcioniše AI pretraga?', a: 'Napiši prirodno šta tražiš — npr. "BMW 320 do 15.000" ili "stan Sarajevo 3 sobe". AI razumije kategoriju, cijenu, lokaciju i stanje automatski, bez ručnog filtriranja.', cat: 'Pretraga' },
-  { q: 'Je li NudiNađi besplatan?', a: 'Da! Osnovno korištenje je potpuno besplatno — postavljanje oglasa, pretraga i kontaktiranje prodavaca. Premium opcije (isticanje oglasa, verificirani profil) dolaze uskoro.', cat: 'Općenito' },
-  { q: 'Kako se zaštititi od prevara?', a: 'Naš AI sistem skenira oglase 24/7 i detektuje sumnjive aktivnosti. Dodatno, provjeri Trust Score prodavca, nikad ne šalji novac unaprijed i koristi naš chat za komunikaciju.', cat: 'Sigurnost' },
-  { q: 'Mogu li uređivati objavljen oglas?', a: 'Da. Idi na svoj profil → Moji oglasi, klikni na oglas i odaberi "Uredi". Možeš promijeniti cijenu, opis, slike i sve ostale detalje.', cat: 'Prodaja' },
+  // Kupovina (4)
   { q: 'Kako kontaktirati prodavca?', a: 'Na stranici oglasa klikni "Pošalji poruku" da otvorite chat. Sva komunikacija ostaje na platformi radi sigurnosti.', cat: 'Kupovina' },
+  { q: 'Kako kupiti proizvod?', a: 'Pronađi oglas, kontaktiraj prodavca putem chata, dogovorite detalje i način preuzimanja. NudiNađi ne vrši direktnu kupovinu — platforma povezuje kupce i prodavce.', cat: 'Kupovina' },
+  { q: 'Mogu li rezervirati proizvod?', a: 'Trenutno ne postoji opcija rezervacije. Preporučujemo brzu komunikaciju s prodavcem da dogovorite preuzimanje.', cat: 'Kupovina' },
+  { q: 'Postoji li zaštita za kupce?', a: 'NudiNađi pruža Trust Score sistem, verifikaciju profila i AI moderaciju oglasa. Uvijek komuniciraj putem platforme i nikad ne šalji novac unaprijed.', cat: 'Kupovina' },
+  // Prodaja (4)
+  { q: 'Kako postaviti oglas?', a: 'Klikni na "+" dugme, uslikaj predmet ili odaberi slike, ispuni detalje i klikni "Objavi". AI automatski prepoznaje kategoriju i predlaže opis — oglas je online za manje od 30 sekundi.', cat: 'Prodaja' },
+  { q: 'Mogu li uređivati objavljen oglas?', a: 'Da. Idi na svoj profil → Moji oglasi, klikni na oglas i odaberi "Uredi". Možeš promijeniti cijenu, opis, slike i sve ostale detalje.', cat: 'Prodaja' },
+  { q: 'Kako izbrisati oglas?', a: 'Idi na Profil → Moji oglasi, klikni na oglas i odaberi "Obriši". Oglas se trajno uklanja sa platforme.', cat: 'Prodaja' },
+  { q: 'Koliko oglasa mogu imati?', a: 'Osnovno korištenje je besplatno i nema ograničenja na broj aktivnih oglasa. Premium opcije za isticanje oglasa dolaze uskoro.', cat: 'Prodaja' },
+  // Pretraga (2)
+  { q: 'Kako funkcioniše AI pretraga?', a: 'Napiši prirodno šta tražiš — npr. "BMW 320 do 15.000" ili "stan Sarajevo 3 sobe". AI razumije kategoriju, cijenu, lokaciju i stanje automatski, bez ručnog filtriranja.', cat: 'Pretraga' },
+  { q: 'Mogu li sačuvati pretragu?', a: 'Da! Koristi opciju "Sačuvaj pretragu" i dobijaj obavještenja kad se pojavi novi oglas koji odgovara tvojim kriterijima.', cat: 'Pretraga' },
+  // Sigurnost (4)
+  { q: 'Kako se zaštititi od prevara?', a: 'Naš AI sistem skenira oglase 24/7 i detektuje sumnjive aktivnosti. Dodatno, provjeri Trust Score prodavca, nikad ne šalji novac unaprijed i koristi naš chat za komunikaciju.', cat: 'Sigurnost' },
   { q: 'Šta je Trust Score?', a: 'Trust Score je AI-generirani rezultat pouzdanosti korisnika. Bazira se na verifikaciji profila, historiji transakcija i ocjenama drugih korisnika.', cat: 'Sigurnost' },
+  { q: 'Kako prijaviti sumnjiv oglas?', a: 'Na stranici oglasa klikni ikonu zastave i odaberi razlog prijave. Naš tim pregledava sve prijave u roku od 24 sata.', cat: 'Sigurnost' },
+  { q: 'Kako verificirati svoj profil?', a: 'Idi na Postavke → Verifikacija. Možeš verificirati email adresu i broj telefona za veći Trust Score i povjerenje kupaca.', cat: 'Sigurnost' },
+  // Općenito (4)
+  { q: 'Je li NudiNađi besplatan?', a: 'Da! Osnovno korištenje je potpuno besplatno — postavljanje oglasa, pretraga i kontaktiranje prodavaca. Premium opcije (isticanje oglasa, verificirani profil) dolaze uskoro.', cat: 'Općenito' },
   { q: 'Kako obrisati korisnički račun?', a: 'Idi na Postavke → Profil → "Obriši račun". Svi tvoji podaci i oglasi bit će trajno uklonjeni u roku od 30 dana.', cat: 'Općenito' },
+  { q: 'Na kojim lokacijama radi NudiNađi?', a: 'NudiNađi je dostupan u cijeloj Bosni i Hercegovini i Hrvatskoj. Planirano je širenje na cijeli region.', cat: 'Općenito' },
+  { q: 'Kako promijeniti jezik aplikacije?', a: 'Idi na Postavke → Jezik. Dostupni jezici: Hrvatski/Bosanski i Engleski.', cat: 'Općenito' },
+  // Dostava (2)
+  { q: 'Kako funkcioniše dostava?', a: 'NudiNađi ne organizira dostavu — kupac i prodavac sami dogovaraju način preuzimanja (lično preuzimanje, pošta, kurirska služba).', cat: 'Dostava' },
+  { q: 'Ko plaća dostavu?', a: 'To dogovaraju kupac i prodavac međusobno. Preporučujemo da se detalji dostave dogovore prije finalizacije kupovine.', cat: 'Dostava' },
 ];
 
 export default function HelpPage() {
@@ -53,12 +72,19 @@ export default function HelpPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { icon: 'fa-plus-circle', label: 'Postavi oglas', desc: 'Kako objaviti' },
-              { icon: 'fa-magnifying-glass', label: 'Pretraga', desc: 'AI pretraga' },
-              { icon: 'fa-shield-halved', label: 'Sigurnost', desc: 'Zaštiti se' },
-              { icon: 'fa-user', label: 'Profil', desc: 'Postavke računa' },
+              { icon: 'fa-plus-circle', label: 'Postavi oglas', desc: 'Kako objaviti', filterCat: 'Prodaja' },
+              { icon: 'fa-magnifying-glass', label: 'Pretraga', desc: 'AI pretraga', filterCat: 'Pretraga' },
+              { icon: 'fa-shield-halved', label: 'Sigurnost', desc: 'Zaštiti se', filterCat: 'Sigurnost' },
+              { icon: 'fa-user', label: 'Profil', desc: 'Postavke računa', filterCat: 'Općenito' },
             ].map((h) => (
-              <div key={h.label} className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-4 text-center hover:border-blue-500/40 transition-colors cursor-pointer group">
+              <div
+                key={h.label}
+                onClick={() => {
+                  setActiveFilter(h.filterCat);
+                  document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-4 text-center hover:border-blue-500/40 transition-colors cursor-pointer group"
+              >
                 <i className={`fa-solid ${h.icon} text-blue-400 text-lg mb-2 block group-hover:scale-110 transition-transform`}></i>
                 <p className="text-[10px] font-black text-[var(--c-text)] uppercase">{h.label}</p>
                 <p className="text-[9px] text-[var(--c-text3)] mt-0.5">{h.desc}</p>
@@ -68,7 +94,7 @@ export default function HelpPage() {
         </div>
 
         {/* FAQ */}
-        <div className="mb-10">
+        <div id="faq-section" className="mb-10">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-[2px] bg-blue-500"></div>
             <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Česta pitanja</p>
@@ -121,10 +147,10 @@ export default function HelpPage() {
             Nisi našao odgovor?
           </p>
           <p className="text-[10px] text-[var(--c-text3)] mb-4">Kontaktiraj nas direktno — odgovaramo brzo.</p>
-          <a href="mailto:podrska@nudinadi.com" className="inline-flex items-center gap-2 px-6 py-3 blue-gradient text-white rounded-[6px] text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105 transition-all">
-            <i className="fa-solid fa-envelope text-xs"></i>
-            podrska@nudinadi.com
-          </a>
+          <Link href="/kontakt" className="inline-flex items-center gap-2 px-6 py-3 blue-gradient text-white rounded-[6px] text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-105 transition-all">
+            <i className="fa-solid fa-paper-plane text-xs"></i>
+            Klikni ovdje
+          </Link>
         </div>
       </div>
     </MainLayout>
