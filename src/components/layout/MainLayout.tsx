@@ -86,8 +86,8 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
               alt="NudiNađi emblem"
               className="h-8 md:h-10 w-auto object-contain rounded-[4px]"
             />
-            <span className="text-base md:text-xl font-black tracking-tight text-[var(--c-text)] group-hover:text-[var(--c-accent)] transition-colors duration-150">
-              nudi<span className="text-[var(--c-text)]">nađi</span>
+            <span className="text-base md:text-xl font-black tracking-tight">
+              <span className="text-[var(--c-text)]">nudi</span><span className="text-[var(--c-text)] group-hover:text-[var(--c-accent)] transition-colors duration-150">nađi</span>
             </span>
           </button>
 
