@@ -1701,6 +1701,32 @@ function UploadPageInner() {
         condition: d.condition === 'Novo' ? 'Novo' : d.condition === 'Kao novo' ? 'Kao novo' : prev.condition,
       }));
       setStep('form');
+
+      // Download imported images and add to form
+      const imageUrls = Array.isArray(d.images) ? (d.images as string[]).filter(u => typeof u === 'string' && u.startsWith('http')) : [];
+      if (imageUrls.length > 0) {
+        const downloadImages = async () => {
+          const files: File[] = [];
+          for (const url of imageUrls.slice(0, 10)) {
+            try {
+              const res = await fetch(url);
+              if (!res.ok) continue;
+              const blob = await res.blob();
+              const ext = blob.type.split('/')[1] || 'jpg';
+              const fileName = `import-${files.length + 1}.${ext}`;
+              files.push(new File([blob], fileName, { type: blob.type }));
+            } catch {
+              // Skip failed downloads silently
+            }
+          }
+          if (files.length > 0) {
+            setImages(prev => [...prev, ...files]);
+            showToast(`${files.length} slika importirano`);
+          }
+        };
+        downloadImages();
+      }
+
       showToast('Oglas importiran — provjeri podatke i objavi!');
     } catch {
       sessionStorage.removeItem('nudinadi_import');

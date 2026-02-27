@@ -585,6 +585,28 @@ export function lookupChassis(input: string): ChassisLookupResult[] {
     }));
   }
 
+  // 1b. Brand name as first token — skip it and retry with remaining tokens
+  //     Handles: "BMW F20 120d", "Mercedes W204 C220d", "VW Golf MK7 TDI"
+  const BRAND_ALIASES: Record<string, string> = {
+    bmw: 'BMW', mercedes: 'Mercedes-Benz', 'mercedes-benz': 'Mercedes-Benz', merc: 'Mercedes-Benz',
+    vw: 'Volkswagen', volkswagen: 'Volkswagen', audi: 'Audi', opel: 'Opel', ford: 'Ford',
+    toyota: 'Toyota', honda: 'Honda', nissan: 'Nissan', mazda: 'Mazda', hyundai: 'Hyundai',
+    kia: 'Kia', fiat: 'Fiat', renault: 'Renault', peugeot: 'Peugeot', citroen: 'Citroën',
+    skoda: 'Škoda', škoda: 'Škoda', volvo: 'Volvo', seat: 'SEAT', dacia: 'Dacia',
+    porsche: 'Porsche', jaguar: 'Jaguar', 'land rover': 'Land Rover', suzuki: 'Suzuki',
+    yamaha: 'Yamaha', kawasaki: 'Kawasaki', ducati: 'Ducati', harley: 'Harley-Davidson',
+    alfa: 'Alfa Romeo', mini: 'MINI', smart: 'Smart', tesla: 'Tesla', subaru: 'Subaru',
+    mitsubishi: 'Mitsubishi', lexus: 'Lexus', infiniti: 'Infiniti', chevrolet: 'Chevrolet',
+  };
+  const brandFromFirst = BRAND_ALIASES[first];
+  if (brandFromFirst && tokens.length >= 2) {
+    const subResult = lookupChassis(tokens.slice(1).join(' '));
+    if (subResult.length > 0) {
+      // If the chassis result brand matches or is compatible, use it
+      return subResult.map(r => ({ ...r, brand: r.brand || brandFromFirst }));
+    }
+  }
+
   // 2. Model shortcut on first token (e.g., "a4", "golf", "corsa")
   const shortcutEntries = resolveEntries(MODEL_SHORTCUTS[first]);
   if (shortcutEntries.length > 0) {
