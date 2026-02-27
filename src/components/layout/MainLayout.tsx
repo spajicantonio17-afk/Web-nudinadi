@@ -16,9 +16,11 @@ interface MainLayoutProps {
   headerRight?: React.ReactNode;
   showSigurnost?: boolean;
   hideSearchOnMobile?: boolean;
+  /** Back button handler. undefined = auto router.back(), null = hide back button, function = custom handler */
+  onBack?: (() => void) | null;
 }
 
-export default function MainLayout({ children, headerRight, hideSearchOnMobile }: MainLayoutProps) {
+export default function MainLayout({ children, headerRight, hideSearchOnMobile, onBack }: MainLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [showSecurityInfo, setShowSecurityInfo] = useState(false);
@@ -56,8 +58,21 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
       {/* DESKTOP HEADER */}
       <header className="fixed top-0 left-0 right-0 z-50 h-14 md:h-16 px-4 md:px-6 lg:px-8 flex items-center justify-between glass-nav border-b border-[var(--c-border)] shadow-[0_1px_0_rgba(0,0,0,0.04)]">
 
-        {/* LEFT: Logo & Brand + Info Buttons */}
-        <div className="flex items-center gap-4">
+        {/* LEFT: Back Button + Logo & Brand + Info Buttons */}
+        <div className="flex items-center gap-2 md:gap-4">
+
+          {/* Back Button — visible on all sub-pages, LEFT side */}
+          {!isHome && onBack !== null && (
+            <button
+              onClick={onBack || (() => router.back())}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
+              aria-label="Nazad"
+            >
+              <i className="fa-solid fa-arrow-left text-sm"></i>
+              <span className="text-xs font-bold uppercase tracking-wider">Nazad</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => router.push('/')}
@@ -114,17 +129,6 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
 
         {/* RIGHT: User Actions */}
         <div className="flex items-center gap-1.5 md:gap-4">
-
-          {/* Search/Home Button (visible everywhere except Home) */}
-          {!isHome && (
-            <button
-              onClick={() => router.push('/')}
-              className={`w-8 h-8 md:w-10 md:h-10 rounded-[6px] flex items-center justify-center bg-[var(--c-card-alt)] border border-[var(--c-border)] text-[var(--c-text3)] hover:text-[var(--c-text2)] hover:bg-[var(--c-active)] transition-all duration-150 mr-0.5 md:mr-1${hideSearchOnMobile ? ' hidden md:flex' : ''}`}
-              aria-label="Nazad na pretragu"
-            >
-              <i className="fa-solid fa-magnifying-glass text-xs md:text-sm" aria-hidden="true"></i>
-            </button>
-          )}
 
           {/* Header Right Custom Actions */}
           {headerRight && <div className="mr-2">{headerRight}</div>}

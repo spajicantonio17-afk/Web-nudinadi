@@ -123,15 +123,7 @@ export default function LinkImportPage() {
   };
 
   return (
-    <MainLayout title="Link Import" headerRight={
-      <button
-        onClick={() => router.push('/upload')}
-        aria-label="Zatvori i idi na novi oglas"
-        className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors"
-      >
-        <i className="fa-solid fa-xmark" aria-hidden="true"></i>
-      </button>
-    }>
+    <MainLayout title="Link Import">
       <div className="max-w-2xl mx-auto pb-24 pt-2 space-y-6 animate-[fadeIn_0.3s_ease-out]">
 
         {/* ── HERO HEADER ── */}

@@ -53,14 +53,6 @@ export default function LevelSystemPage() {
     <MainLayout
       title="Level Sistem"
       showSigurnost={false}
-      headerRight={
-        <button
-          onClick={() => router.push('/profile')}
-          className="w-8 h-8 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text2)] hover:text-[var(--c-text)] transition-colors"
-        >
-          <i className="fa-solid fa-xmark"></i>
-        </button>
-      }
     >
       <div className="pt-4 pb-24 px-0 md:px-0 max-w-2xl mx-auto">
 

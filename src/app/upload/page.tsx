@@ -1712,7 +1712,7 @@ function UploadPageInner() {
 
   if (isLoading) {
     return (
-      <MainLayout>
+      <MainLayout onBack={null}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
         </div>
@@ -2879,9 +2879,7 @@ function UploadPageInner() {
     const filteredCats = filteredCategories;
 
     return (
-      <MainLayout title="Sve Kategorije" showSigurnost={false} hideSearchOnMobile headerRight={
-        <button onClick={() => { setStep('selection'); setCatSearch(''); setExpandedCat(null); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-      }>
+      <MainLayout title="Sve Kategorije" showSigurnost={false} hideSearchOnMobile onBack={() => { setStep('selection'); setCatSearch(''); setExpandedCat(null); }}>
         <div className="max-w-4xl mx-auto space-y-3 pt-2 pb-24">
           {/* Search */}
           <div className="relative">
@@ -3025,11 +3023,7 @@ function UploadPageInner() {
     questions: QuickTapQuestion[],
     backStep: UploadStep,
   ) => (
-    <MainLayout title={title} showSigurnost={false} hideSearchOnMobile headerRight={
-      <button onClick={() => setStep(backStep)} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]">
-        <i className="fa-solid fa-arrow-left"></i>
-      </button>
-    }>
+    <MainLayout title={title} showSigurnost={false} hideSearchOnMobile onBack={() => setStep(backStep)}>
       <div className="max-w-4xl mx-auto pt-2 pb-32">
         {/* Überschrift */}
         <div className="px-1 mb-5">
@@ -3250,9 +3244,7 @@ function UploadPageInner() {
     aiLabel: string,
     backStep: UploadStep = 'selection'
   ) => (
-    <MainLayout title={title} showSigurnost={false} hideSearchOnMobile headerRight={
-      <button onClick={() => setStep(backStep)} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-    }>
+    <MainLayout title={title} showSigurnost={false} hideSearchOnMobile onBack={() => setStep(backStep)}>
       <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
         <div className="px-1 mb-2">
            <h2 className={`text-[11px] font-black text-${color}-500 uppercase tracking-[3px] mb-1`}>{subtitle}</h2>
@@ -3328,9 +3320,7 @@ function UploadPageInner() {
   // ── Vehicle Type Sub-Selection ───────────────────────────
   if (step === 'vehicle-sub') {
     return (
-      <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
-        <button onClick={() => setStep('selection')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-      }>
+      <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile onBack={() => setStep('selection')}>
         <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
           <div className="px-1 mb-2">
             <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-1">Vrsta vozila</h2>
@@ -3473,9 +3463,7 @@ function UploadPageInner() {
   // ── Truck Sub-Type Selection ───────────────────────────
   if (step === 'truck-sub') {
     return (
-      <MainLayout title="Teretna vozila" showSigurnost={false} hideSearchOnMobile headerRight={
-        <button onClick={() => { setStep('vehicle-sub'); setBreadcrumb([]); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-      }>
+      <MainLayout title="Teretna vozila" showSigurnost={false} hideSearchOnMobile onBack={() => { setStep('vehicle-sub'); setBreadcrumb([]); }}>
         <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
           {renderBreadcrumb()}
           <div className="px-1 mb-2">
@@ -3514,9 +3502,7 @@ function UploadPageInner() {
   // ── Prikolice Sub-Type Selection ───────────────────────────
   if (step === 'prikolice-sub') {
     return (
-      <MainLayout title="Prikolice" showSigurnost={false} hideSearchOnMobile headerRight={
-        <button onClick={() => { setStep('vehicle-sub'); setBreadcrumb([]); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-      }>
+      <MainLayout title="Prikolice" showSigurnost={false} hideSearchOnMobile onBack={() => { setStep('vehicle-sub'); setBreadcrumb([]); }}>
         <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
           {renderBreadcrumb()}
           <div className="px-1 mb-2">
@@ -3556,9 +3542,7 @@ function UploadPageInner() {
     // Screen 1: Fahrzeugtyp wählen
     if (partsSubStep === 'vehicle-type') {
       return (
-        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={() => { setStep('vehicle-sub'); setBreadcrumb([]); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile onBack={() => { setStep('vehicle-sub'); setBreadcrumb([]); }}>
           <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
             {renderBreadcrumb()}
             <div className="px-1 mb-2">
@@ -3592,9 +3576,7 @@ function UploadPageInner() {
         : partsBrands;
 
       return (
-        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={() => { setPartsSubStep('vehicle-type'); setCarBrandSearch(''); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile onBack={() => { setPartsSubStep('vehicle-type'); setCarBrandSearch(''); }}>
           <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
             {renderBreadcrumb()}
             <div className="px-1 mb-2">
@@ -3647,9 +3629,7 @@ function UploadPageInner() {
         : models;
 
       return (
-        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={() => { setPartsSubStep('brand'); setModelSearch(''); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile onBack={() => { setPartsSubStep('brand'); setModelSearch(''); }}>
           <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
             {renderBreadcrumb()}
             {/* Gewählte Marke anzeigen */}
@@ -3703,9 +3683,7 @@ function UploadPageInner() {
     // Screen 3.5: Model-Detail (z.B. BMW Serija 3 → 320/325/330/335/340/M3)
     if (partsSubStep === 'model-detail') {
       return (
-        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={() => setPartsSubStep('model')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile onBack={() => setPartsSubStep('model')}>
           {renderBreadcrumb()}
           <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
             {/* Gewählte Marke + Modell anzeigen */}
@@ -3753,9 +3731,7 @@ function UploadPageInner() {
       });
 
       return (
-        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={() => setPartsSubStep(partsModelDetail ? 'model-detail' : 'model')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile onBack={() => setPartsSubStep(partsModelDetail ? 'model-detail' : 'model')}>
           <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
             {renderBreadcrumb()}
             {partsVehicleBrand && (
@@ -3829,9 +3805,7 @@ function UploadPageInner() {
         : details;
 
       return (
-        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={() => { setPartsSubStep('category'); setPartsDetailSearch(''); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Dijelovi" showSigurnost={false} hideSearchOnMobile onBack={() => { setPartsSubStep('category'); setPartsDetailSearch(''); }}>
           <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
             {renderBreadcrumb()}
             <div className="px-1 mb-2">
@@ -3919,9 +3893,7 @@ function UploadPageInner() {
   // Poslovi Sub-Selection (unique layout with sticky search)
   if (step === 'poslovi-sub') {
     return (
-      <MainLayout title="Poslovi" showSigurnost={false} hideSearchOnMobile headerRight={
-        <button onClick={() => setStep('selection')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-      }>
+      <MainLayout title="Poslovi" showSigurnost={false} hideSearchOnMobile onBack={() => setStep('selection')}>
         <div className="max-w-4xl mx-auto pb-24 relative min-h-screen">
 
           {/* STICKY HEADER AREA with SEARCH BAR */}
@@ -4062,9 +4034,7 @@ function UploadPageInner() {
       const showVinSection = vehicleType === 'car' || vehicleType === 'parts';
 
       return (
-        <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={() => { setStep('vehicle-sub'); setBreadcrumb([]); }} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile onBack={() => { setStep('vehicle-sub'); setBreadcrumb([]); }}>
           <div className="max-w-4xl mx-auto pb-24 pt-2 space-y-6 px-1">
             {renderBreadcrumb()}
 
@@ -4232,9 +4202,7 @@ function UploadPageInner() {
         : localModels;
 
       return (
-        <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={handleBackFromCarFlow} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile onBack={handleBackFromCarFlow}>
           <div className="max-w-4xl mx-auto space-y-6 pt-2 pb-24">
             {renderBreadcrumb()}
 
@@ -4414,9 +4382,7 @@ function UploadPageInner() {
       const variants = modelData?.variants || [];
 
       return (
-        <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile headerRight={
-          <button onClick={handleBackFromCarFlow} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-arrow-left"></i></button>
-        }>
+        <MainLayout title="Vozila" showSigurnost={false} hideSearchOnMobile onBack={handleBackFromCarFlow}>
           <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
             {renderBreadcrumb()}
 
@@ -4517,14 +4483,7 @@ function UploadPageInner() {
       title={isEditMode ? 'Uredi Oglas' : 'Novi Oglas'}
       showSigurnost={false}
       hideSearchOnMobile
-      headerRight={
-        <button
-          onClick={() => { if (formPage === 3) { setFormPage(2); window.scrollTo({ top: 0, behavior: 'smooth' }); } else if (formPage === 2) { setFormPage(1); window.scrollTo({ top: 0, behavior: 'smooth' }); } else { setStep('selection'); } }}
-          className="text-[var(--c-text3)] text-xs font-bold uppercase hover:text-[var(--c-text)] transition-colors"
-        >
-          Nazad
-        </button>
-      }
+      onBack={() => { if (formPage === 3) { setFormPage(2); window.scrollTo({ top: 0, behavior: 'smooth' }); } else if (formPage === 2) { setFormPage(1); window.scrollTo({ top: 0, behavior: 'smooth' }); } else { setStep('selection'); } }}
     >
       <div className="max-w-2xl lg:max-w-5xl mx-auto w-full flex flex-col lg:flex-row gap-8 pb-32 pt-2 px-2 sm:px-4 lg:px-0">
 

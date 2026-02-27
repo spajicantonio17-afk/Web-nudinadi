@@ -69,11 +69,7 @@ export default function CartPage() {
   };
 
   return (
-    <MainLayout title={t('cart.title')} showSigurnost={false} headerRight={
-      <button onClick={() => router.push('/')} className="w-10 h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors">
-        <i className="fa-solid fa-xmark"></i>
-      </button>
-    }>
+    <MainLayout title={t('cart.title')} showSigurnost={false}>
       <div className="pt-2 pb-24 px-2 sm:px-0">
 
         {/* Header */}
