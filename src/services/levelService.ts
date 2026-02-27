@@ -6,8 +6,12 @@ const supabase = getSupabase()
 
 // ─── Log Activity & Earn XP ──────────────────────────
 
-export async function logActivity(userId: string, activityType: ActivityType): Promise<UserActivity> {
-  const xpAmount = getXpForActivity(activityType)
+export async function logActivity(
+  userId: string,
+  activityType: ActivityType,
+  metadata?: { rating?: number }
+): Promise<UserActivity> {
+  const xpAmount = getXpForActivity(activityType, metadata)
 
   const { data, error } = await supabase
     .from('user_activities')
@@ -25,15 +29,35 @@ export async function logActivity(userId: string, activityType: ActivityType): P
 
 // ─── Get XP Amount for Activity Type ──────────────────
 
-function getXpForActivity(type: ActivityType): number {
+function getXpForActivity(type: ActivityType, metadata?: { rating?: number }): number {
   switch (type) {
     case 'upload': return XP_REWARDS.upload
     case 'sale': return XP_REWARDS.sale
-    case 'purchase': return XP_REWARDS.purchase
-    case 'review': return XP_REWARDS.review_5_stars
+    case 'review': {
+      const stars = metadata?.rating || 5
+      return XP_REWARDS.review_by_stars[stars] ?? 15
+    }
     case 'login': return XP_REWARDS.daily_login
+    case 'verification': return XP_REWARDS.verification
     default: return 0
   }
+}
+
+// ─── Log Verification XP (one-time) ──────────────────
+
+export async function logVerificationXp(userId: string): Promise<boolean> {
+  // Check if already awarded
+  const { data } = await supabase
+    .from('user_activities')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('activity_type', 'verification')
+    .maybeSingle()
+
+  if (data) return false // Already awarded
+
+  await logActivity(userId, 'verification')
+  return true
 }
 
 // ─── Get User Level Info ──────────────────────────────

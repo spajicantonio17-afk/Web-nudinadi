@@ -30,7 +30,7 @@ const VEHICLE_FIELDS: CategoryField[] = [
   { key: 'karoserija', label: 'Karoserija',   type: 'select', formPage: 1, options: ['Sedan', 'Karavan', 'Hatchback', 'Coupe', 'Kabriolet', 'SUV', 'Crossover', 'Pickup', 'Van', 'Minivan', 'Limuzina'] },
   { key: 'boja',       label: 'Boja',         type: 'select', formPage: 1, options: ['Crna', 'Bijela', 'Siva', 'Srebrna', 'Crvena', 'Plava', 'Zelena', 'Narančasta', 'Zlatna', 'Smeđa', 'Bež', 'Ostalo'] },
   // Page 2 — technical
-  { key: 'pogon',          label: 'Pogon',             type: 'select', formPage: 2, options: ['Prednji', 'Stražnji', '4x4 (stalni)', '4x4 (povremeni)'] },
+  { key: 'pogon',          label: 'Pogon',             type: 'select', formPage: 2, options: ['Prednji', 'Zadnji', '4x4 (stalni)', '4x4 (povremeni)'] },
   { key: 'brVrata',        label: 'Broj vrata',        type: 'select', formPage: 2, options: ['2', '3', '4', '5'] },
   { key: 'konjskeSile',    label: 'Konjske snage',     type: 'number', formPage: 2, placeholder: 'npr. 150', unit: 'ks' },
   { key: 'registracija',   label: 'Registracija do',   type: 'text',   formPage: 2, placeholder: 'MM/GGGG' },

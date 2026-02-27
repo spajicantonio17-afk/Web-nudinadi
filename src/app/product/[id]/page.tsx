@@ -6,7 +6,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useFavorites } from '@/lib/favorites';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/Toast';
-import { getProductById, incrementViews, markProductAsSold, deleteProduct } from '@/services/productService';
+import { getProductById, incrementViews, deleteProduct } from '@/services/productService';
 import { getOrCreateConversation } from '@/services/messageService';
 import { getProductQuestions, askQuestion, answerQuestion, type QuestionWithUser } from '@/services/questionService';
 import { createReview, hasUserReviewed } from '@/services/reviewService';
@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/auth';
 import type { ProductFull } from '@/lib/database.types';
 import { BAM_RATE } from '@/lib/constants';
 import SimilarProducts from '@/components/SimilarProducts';
+import BuyerPickerModal from '@/components/BuyerPickerModal';
 
 function formatTimeLabel(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
@@ -50,6 +51,9 @@ export default function ProductDetailPage() {
   const [questions, setQuestions] = useState<QuestionWithUser[]>([]);
   const [answeringId, setAnsweringId] = useState<string | null>(null);
   const [answerText, setAnswerText] = useState('');
+
+  // Buyer picker state
+  const [showBuyerPicker, setShowBuyerPicker] = useState(false);
 
   // Report state
   const [showReportModal, setShowReportModal] = useState(false);
@@ -139,14 +143,19 @@ export default function ProductDetailPage() {
     } catch { showToast('Greška pri otvaranju poruke', 'error'); }
   };
 
-  const handleMarkAsSold = async () => {
+  const handleMarkAsSold = () => {
     if (!product || !user) return;
-    try {
-      await markProductAsSold(product.id);
-      setProduct({ ...product, status: 'sold' });
-      showToast('Oglas označen kao prodan!');
-    } catch {
-      showToast('Greška pri označavanju', 'error');
+    setShowBuyerPicker(true);
+  };
+
+  const handleBuyerPickerSuccess = (status: 'pending_sale' | 'sold') => {
+    if (!product) return;
+    setShowBuyerPicker(false);
+    setProduct({ ...product, status });
+    if (status === 'pending_sale') {
+      showToast('Transakcija kreirana! Čekamo potvrdu kupca.');
+    } else {
+      showToast('Oglas označen kao prodan.');
     }
   };
 
@@ -370,6 +379,16 @@ export default function ProductDetailPage() {
         </div>
       )}
 
+      {/* BUYER PICKER MODAL */}
+      {showBuyerPicker && product && user && (
+        <BuyerPickerModal
+          productId={product.id}
+          sellerId={user.id}
+          onClose={() => setShowBuyerPicker(false)}
+          onSuccess={handleBuyerPickerSuccess}
+        />
+      )}
+
       <div className="max-w-7xl mx-auto pt-4 md:pt-8 pb-24">
         <div className="flex items-center justify-between mb-6 px-4 md:px-0">
             <button onClick={() => router.back()} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors">
@@ -511,11 +530,11 @@ export default function ProductDetailPage() {
                       </button>
                       <button
                         onClick={handleMarkAsSold}
-                        disabled={product.status === 'sold'}
+                        disabled={product.status === 'sold' || product.status === 'pending_sale'}
                         className="flex-1 min-w-[100px] h-10 bg-emerald-600 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-emerald-500 transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50"
                       >
-                        <i className="fa-solid fa-check"></i>
-                        {product.status === 'sold' ? 'Prodano' : 'Prodano'}
+                        <i className={`fa-solid ${product.status === 'pending_sale' ? 'fa-hourglass-half' : 'fa-check'}`}></i>
+                        {product.status === 'sold' ? 'Prodano' : product.status === 'pending_sale' ? 'Čeka potvrdu' : 'Označi prodano'}
                       </button>
                       <button
                         onClick={handleDeleteProduct}

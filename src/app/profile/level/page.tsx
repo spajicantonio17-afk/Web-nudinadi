@@ -8,11 +8,10 @@ import { xpForNextLevel, LEVEL_THRESHOLDS } from '@/lib/database.types';
 
 const XP_ACTIONS = [
   { icon: 'fa-plus', label: 'Novi Oglas', desc: 'Za svaki objavljen artikal', xp: 10, color: 'blue' },
-  { icon: 'fa-star', label: 'Dojam / Review', desc: 'Kada ostaviš dojam korisniku', xp: 20, color: 'yellow' },
-  { icon: 'fa-handshake', label: 'Uspješna Prodaja', desc: 'Označeno kao "Prodano"', xp: 50, color: 'emerald' },
-  { icon: 'fa-cart-shopping', label: 'Kupovina', desc: 'Kada kupiš artikal', xp: 20, color: 'purple' },
+  { icon: 'fa-star', label: 'Dojam / Review', desc: 'Od 5 do 25 XP zavisno od ocjene', xp: '5-25', color: 'yellow' },
+  { icon: 'fa-handshake', label: 'Uspješna Prodaja', desc: 'Kupac potvrdi transakciju', xp: 50, color: 'emerald' },
   { icon: 'fa-clock', label: 'Dnevna Prijava', desc: 'Svakodnevni bonus', xp: 5, color: 'cyan', iconStyle: 'fa-regular' },
-  { icon: 'fa-shield-halved', label: 'Verifikacija', desc: 'Potvrda identiteta (jednokratno)', xp: 500, color: 'red' },
+  { icon: 'fa-shield-halved', label: 'Verifikacija', desc: 'Email + telefon potvrđeni (jednokratno)', xp: 500, color: 'red' },
 ];
 
 const COLOR_MAP: Record<string, string> = {

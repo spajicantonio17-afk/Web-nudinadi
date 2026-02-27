@@ -6,11 +6,13 @@
 
 // ─── Enums ────────────────────────────────────────────
 
-export type ProductStatus = 'active' | 'sold' | 'draft' | 'archived'
+export type ProductStatus = 'active' | 'sold' | 'draft' | 'archived' | 'pending_sale'
 
 export type ProductCondition = 'new' | 'like_new' | 'used'
 
-export type ActivityType = 'upload' | 'sale' | 'purchase' | 'review' | 'login'
+export type ActivityType = 'upload' | 'sale' | 'review' | 'login' | 'verification'
+
+export type TransactionStatus = 'pending' | 'confirmed' | 'denied' | 'expired'
 
 export type ModerationStatus = 'pending' | 'reviewing' | 'approved' | 'rejected' | 'escalated'
 
@@ -115,6 +117,17 @@ export interface Favorite {
   created_at: string
 }
 
+export interface Transaction {
+  id: string
+  product_id: string
+  seller_id: string
+  buyer_id: string
+  status: TransactionStatus
+  created_at: string
+  updated_at: string
+  expires_at: string
+}
+
 // ─── Insert Types (for creating new rows) ─────────────
 
 export interface ProfileInsert {
@@ -195,6 +208,14 @@ export interface FavoriteInsert {
   product_id: string
 }
 
+export interface TransactionInsert {
+  id?: string
+  product_id: string
+  seller_id: string
+  buyer_id: string
+  status?: TransactionStatus
+}
+
 // ─── Update Types (partial for updates) ───────────────
 
 export interface ProfileUpdate {
@@ -259,6 +280,12 @@ export interface MessageWithSender extends Message {
 
 export interface FavoriteWithProduct extends Favorite {
   product: Product
+}
+
+export interface TransactionWithDetails extends Transaction {
+  product: Product
+  seller: Profile
+  buyer: Profile
 }
 
 // ─── Moderation Table Types ─────────────────────────
@@ -456,6 +483,12 @@ export interface Database {
         Update: Partial<FavoriteInsert>
         Relationships: []
       }
+      transactions: {
+        Row: Transaction
+        Insert: TransactionInsert
+        Update: Partial<TransactionInsert>
+        Relationships: []
+      }
       moderation_reports: {
         Row: ModerationReport
         Insert: ModerationReportInsert
@@ -506,11 +539,9 @@ export interface Database {
 export const XP_REWARDS = {
   upload: 10,
   sale: 50,
-  purchase: 20,
-  review_5_stars: 20,
-  review_4_stars: 15,
-  review_3_stars: 10,
+  review_by_stars: { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 } as Record<number, number>,
   daily_login: 5,
+  verification: 500,
 } as const
 
 export const LEVEL_THRESHOLDS = [

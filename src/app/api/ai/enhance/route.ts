@@ -222,7 +222,7 @@ Vrati SAMO JSON:
   "year": godina_proizvodnje_broj,
   "engine": "Tip motora ako se može odrediti (npr. 2.0 TDI, 1.6 benzin...)",
   "bodyType": "Tip karoserije (Limuzina, Hatchback, SUV, Karavan, Coupe...)",
-  "drivetrain": "Pogon (Prednji, Stražnji, 4x4, Quattro...)",
+  "drivetrain": "Pogon (Prednji, Zadnji, 4x4, Quattro...)",
   "title": "Predloženi naslov oglasa na bosanskom/hrvatskom (npr. Volkswagen Golf 8 2.0 TDI 2022)",
   "description": "Kratki opis vozila na bosanskom/hrvatskom (2-3 rečenice o vozilu, opremi, karakteristikama)",
   "confidence": broj_0_100

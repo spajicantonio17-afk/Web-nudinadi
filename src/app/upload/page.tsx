@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/auth';
 import { uploadProductImages } from '@/services/uploadService';
 import { createProduct, updateProduct, getProductById } from '@/services/productService';
 import { resolveCategoryId } from '@/services/categoryService';
-import { getSupabase } from '@/lib/supabase';
+
 import type { ProductCondition } from '@/lib/database.types';
 import type { AttributeValues } from '@/lib/category-attributes';
 import { getCategoryFields } from '@/lib/category-attributes';
@@ -2343,11 +2343,8 @@ function UploadPageInner() {
 
         // Award XP for upload
         try {
-          await getSupabase().from('user_activities').insert({
-            user_id: user.id,
-            activity_type: 'upload' as const,
-            xp_earned: 10,
-          });
+          const { logActivity } = await import('@/services/levelService');
+          await logActivity(user.id, 'upload');
         } catch {
           // XP insert failed silently — non-critical
         }

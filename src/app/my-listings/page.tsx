@@ -7,15 +7,16 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
 import { getUserProducts, updateProduct, deleteProduct } from '@/services/productService';
 import type { ProductWithSeller } from '@/lib/database.types';
+import BuyerPickerModal from '@/components/BuyerPickerModal';
 
 const STATUS_LABELS: Record<string, string> = {
-  active: 'Aktivan', sold: 'Prodano', draft: 'Skica',
+  active: 'Aktivan', sold: 'Prodano', draft: 'Skica', pending_sale: 'Čeka potvrdu',
 };
 const STATUS_COLORS: Record<string, string> = {
-  active: 'text-emerald-500', sold: 'text-gray-400', draft: 'text-amber-500',
+  active: 'text-emerald-500', sold: 'text-gray-400', draft: 'text-amber-500', pending_sale: 'text-blue-400',
 };
 const STATUS_DOT: Record<string, string> = {
-  active: 'bg-emerald-500', sold: 'bg-gray-400', draft: 'bg-amber-500',
+  active: 'bg-emerald-500', sold: 'bg-gray-400', draft: 'bg-amber-500', pending_sale: 'bg-blue-400',
 };
 
 export default function MyListingsPage() {
@@ -27,6 +28,7 @@ export default function MyListingsPage() {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [buyerPickerProduct, setBuyerPickerProduct] = useState<ProductWithSeller | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace('/login?redirect=/my-listings');
@@ -63,14 +65,19 @@ export default function MyListingsPage() {
     }
   };
 
-  const handleMarkSold = async (p: ProductWithSeller) => {
+  const handleMarkSold = (p: ProductWithSeller) => {
     setMenuOpenId(null);
-    try {
-      await updateProduct(p.id, { status: 'sold' });
-      setProducts(prev => prev.map(x => x.id === p.id ? { ...x, status: 'sold' } : x));
-      showToast('Označeno kao prodano!');
-    } catch {
-      showToast('Greška.', 'error');
+    setBuyerPickerProduct(p);
+  };
+
+  const handleBuyerPickerSuccess = (status: 'pending_sale' | 'sold') => {
+    if (!buyerPickerProduct) return;
+    setProducts(prev => prev.map(x => x.id === buyerPickerProduct.id ? { ...x, status } : x));
+    setBuyerPickerProduct(null);
+    if (status === 'pending_sale') {
+      showToast('Transakcija kreirana! Čekamo potvrdu kupca.');
+    } else {
+      showToast('Označeno kao prodano.');
     }
   };
 
@@ -212,7 +219,7 @@ export default function MyListingsPage() {
                           <i className="fa-solid fa-eye text-[var(--c-text3)] text-xs w-3"></i>
                           Pogledaj oglas
                         </button>
-                        {p.status !== 'sold' && (
+                        {p.status !== 'sold' && p.status !== 'pending_sale' && (
                           <button
                             onClick={() => handleMarkSold(p)}
                             className="w-full text-left px-4 py-3 text-[12px] font-bold text-[var(--c-text)] hover:bg-[var(--c-hover)] flex items-center gap-2.5 border-b border-[var(--c-border)]"
@@ -246,6 +253,16 @@ export default function MyListingsPage() {
           </div>
         )}
       </div>
+
+      {/* BUYER PICKER MODAL */}
+      {buyerPickerProduct && user && (
+        <BuyerPickerModal
+          productId={buyerPickerProduct.id}
+          sellerId={user.id}
+          onClose={() => setBuyerPickerProduct(null)}
+          onSuccess={handleBuyerPickerSuccess}
+        />
+      )}
     </MainLayout>
   );
 }

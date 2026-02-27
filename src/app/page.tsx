@@ -18,6 +18,7 @@ import { useFavorites } from '@/lib/favorites';
 import { useToast } from '@/components/Toast';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import ActiveFilterChips from '@/components/ActiveFilterChips';
+import PendingSaleBanner from '@/components/PendingSaleBanner';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
 
@@ -1189,6 +1190,9 @@ function HomeContent() {
               )}
             </button>
           </div>
+
+          {/* Pending sale confirmations for buyer */}
+          <PendingSaleBanner />
 
           {isLoadingProducts ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 md:gap-4">

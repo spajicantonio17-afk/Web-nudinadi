@@ -10,13 +10,14 @@ import { useAuth } from '@/lib/auth';
 
 export interface AppNotification {
   id: string;
-  type: 'message' | 'price_drop' | 'promotion' | 'system';
+  type: 'message' | 'price_drop' | 'promotion' | 'system' | 'sale_confirmation';
   title: string;
   body: string;
   icon: string;
   timestamp: number;
   read: boolean;
   link?: string;
+  transactionId?: string;
 }
 
 const STORAGE_KEY = 'nudinadi_notifications';
@@ -145,6 +146,67 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
           setNotifications(prev => {
             // Deduplicate
+            if (prev.some(n => n.id === notif.id)) return prev;
+            const next = [notif, ...prev].slice(0, MAX_NOTIFICATIONS);
+            storeNotifications(user.id, next);
+            return next;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Supabase Realtime: listen for new transactions where user is buyer
+  useEffect(() => {
+    if (!user) return;
+
+    const supabase = getSupabase();
+
+    const channel = supabase
+      .channel(`notif_transactions_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'transactions', filter: `buyer_id=eq.${user.id}` },
+        async (payload) => {
+          const tx = payload.new as {
+            id: string;
+            product_id: string;
+            seller_id: string;
+          };
+
+          // Fetch product title & seller name
+          const { data: product } = await supabase
+            .from('products')
+            .select('title')
+            .eq('id', tx.product_id)
+            .single();
+
+          const { data: seller } = await supabase
+            .from('profiles')
+            .select('username, full_name')
+            .eq('id', tx.seller_id)
+            .single();
+
+          const sellerName = seller?.full_name || seller?.username || 'Korisnik';
+          const productTitle = product?.title || 'Artikal';
+
+          const notif: AppNotification = {
+            id: `tx_${tx.id}`,
+            type: 'sale_confirmation',
+            title: 'Potvrda kupovine',
+            body: `${sellerName} želi označiti "${productTitle}" kao prodano tebi. Potvrdi!`,
+            icon: 'fa-handshake',
+            timestamp: Date.now(),
+            read: false,
+            link: '/',
+            transactionId: tx.id,
+          };
+
+          setNotifications(prev => {
             if (prev.some(n => n.id === notif.id)) return prev;
             const next = [notif, ...prev].slice(0, MAX_NOTIFICATIONS);
             storeNotifications(user.id, next);

@@ -8,7 +8,7 @@ import React from 'react';
 import { getSupabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 import type { Profile } from '@/lib/database.types';
-import { logDailyLogin } from '@/services/levelService';
+import { logDailyLogin, logVerificationXp } from '@/services/levelService';
 
 // Translate Supabase auth error messages to Bosnian
 function translateAuthError(message: string): string {
@@ -127,6 +127,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         new Promise<null>(resolve => setTimeout(() => resolve(null), 8000)),
       ]);
       setUser(toAuthUser(session.user, profile));
+
+      // Check verification XP (email + phone both confirmed → 500 XP one-time)
+      if (profile?.email_verified && profile?.phone) {
+        logVerificationXp(session.user.id).catch(() => {/* non-critical */});
+      }
     } catch {
       // Profile fetch failed — still set user with basic session data
       setUser(toAuthUser(session.user, null));

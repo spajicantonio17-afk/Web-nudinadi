@@ -1,5 +1,6 @@
 import { getSupabase } from '@/lib/supabase'
 import type { Review, ReviewInsert, ReviewUpdate, ReviewWithUsers } from '@/lib/database.types'
+import { logActivity } from '@/services/levelService'
 
 const supabase = getSupabase()
 
@@ -39,6 +40,14 @@ export async function createReview(review: ReviewInsert): Promise<Review> {
     .single()
 
   if (error) throw error
+
+  // Award XP based on rating (non-critical — don't fail the review)
+  try {
+    await logActivity(review.reviewer_id, 'review', { rating: review.rating })
+  } catch {
+    // XP award failed silently
+  }
+
   return data
 }
 
