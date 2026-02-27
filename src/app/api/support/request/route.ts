@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || '');
 
 const VALID_CATEGORIES = ['bug', 'account', 'listing', 'payment', 'suggestion', 'other'] as const;
 
