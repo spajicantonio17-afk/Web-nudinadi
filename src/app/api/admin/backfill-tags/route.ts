@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini'
+import { sanitizeTags } from '@/lib/ai-utils'
 
 const BATCH_SIZE = 10
 const DELAY_MS = 500 // Delay between AI calls to respect rate limits
@@ -67,14 +68,7 @@ Vrati SAMO JSON: {"tags": ["tag1", "tag2", "tag3", ...]}`
       const raw = await textWithGemini(prompt)
       const data = parseJsonResponse(raw) as { tags?: string[] }
 
-      let tags: string[] = []
-      if (Array.isArray(data.tags)) {
-        tags = [...new Set(
-          data.tags
-            .map((t: string) => String(t).toLowerCase().trim())
-            .filter((t: string) => t.length > 0 && t.length <= 50)
-        )].slice(0, 20)
-      }
+      const tags = sanitizeTags(data.tags)
 
       // Update product with tags (trigger will auto-rebuild search_vector)
       const { error: updateError } = await supabase

@@ -18,6 +18,7 @@ import { useFavorites } from '@/lib/favorites';
 import { useToast } from '@/components/Toast';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import ActiveFilterChips from '@/components/ActiveFilterChips';
+import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import PendingSaleBanner from '@/components/PendingSaleBanner';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
@@ -309,6 +310,30 @@ function HomeContent() {
     setIsAiSearching(true);
     const originalQuery = query.trim();
     try {
+      // ── Fast path: chassis code / model shortcut → expand search, skip AI ──
+      const chassisHits = lookupChassis(originalQuery);
+      if (chassisHits.length > 0) {
+        const hit = chassisHits[0];
+        // Build expanded search: "f30" → "BMW Serija 3 f30", "e90 330d" → "BMW Serija 3 330d e90"
+        const parts = new Set<string>();
+        parts.add(hit.brand.toLowerCase());
+        parts.add(hit.model.toLowerCase());
+        for (const token of originalQuery.toLowerCase().split(/\s+/)) parts.add(token);
+        if (hit.generation) parts.add(hit.generation.toLowerCase());
+        if (hit.variant) parts.add(hit.variant.toLowerCase());
+        const expandedQuery = [...parts].join(' ');
+        setSearchQuery(expandedQuery);
+        // Set category to Vozila
+        handleCategoryChange('Vozila');
+        setAiCategory('Vozila');
+        // Set fuel filter if detected
+        if (hit.fuel) {
+          setAiCondition(null);
+        }
+        setIsAiSearching(false);
+        return;
+      }
+
       const res = await fetch('/api/ai/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

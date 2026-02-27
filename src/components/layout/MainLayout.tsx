@@ -91,7 +91,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile }
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[12px] font-semibold text-[var(--c-text3)] hover:text-purple-600 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/20 transition-all duration-150"
             >
               <i className="fa-solid fa-circle-play text-[11px]"></i>
-              Kako funkcioniše
+              Kako funkcionira
             </button>
           </div>
         </div>

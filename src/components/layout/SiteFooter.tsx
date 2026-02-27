@@ -43,7 +43,7 @@ export default function SiteFooter() {
           <div>
             <h4 className="text-[12px] font-extrabold text-[var(--c-text)] uppercase tracking-wider mb-4">Kompanija</h4>
             <ul className="space-y-2.5">
-              <li><Link href="/o-nama" className={linkClass}>O Nama</Link></li>
+              <li><Link href="/o-nama" className={linkClass}>O nama</Link></li>
               <li><Link href="/partneri" className={linkClass}>Partneri</Link></li>
               <li><Link href="/planovi" className={linkClass}>Planovi</Link></li>
               <li><Link href="/kako-funkcionira" className={linkClass}>Kako funkcionira</Link></li>

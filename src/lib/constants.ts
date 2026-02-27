@@ -8,52 +8,46 @@ export const CATEGORIES: Category[] = [
   {
     id: 'vozila', name: 'Vozila', icon: 'fa-car',
     subCategories: [
-      { name: 'Osobni automobili', items: ['Automobili s jamstvom', 'Električni automobili', 'Hibridni automobili', 'Karambolirani i neispravni automobili', 'Novi automobili (od dilera)', 'Oldtimeri i veteran vozila', 'Rabljeni automobili'] },
+      { name: 'Osobni automobili', items: ['Automobili s garancijom', 'Električni automobili', 'Hibridni automobili', 'Karambolirani i neispravni automobili', 'Novi automobili (od autokuće)', 'Oldtimeri', 'Polovni automobili'] },
       { name: 'Motocikli i skuteri', items: ['Cruiser / chopper', 'Električni motocikli i skuteri', 'Enduro i cross', 'Naked / streetfighter', 'Skuteri i mopedi', 'Sport motocikli', 'Tricikli i quadricikli'] },
-      { name: 'Teretna vozila', items: ['Cistijerne', 'Hladnjače i frigorifici', 'Kamioni (3.5t – 7.5t)', 'Kiperi i kiper prikolice', 'Kombiji i dostavna vozila (do 3.5t)', 'Tegljači i vučna vozila', 'Teški kamioni (7.5t+)'] },
+      { name: 'Teretna vozila', items: ['Cisterne', 'Hladnjače', 'Kamioni (3.5t – 7.5t)', 'Kiperi i kiper prikolice', 'Kombiji i dostavna vozila (do 3.5t)', 'Tegljači i vučna vozila', 'Teški kamioni (7.5t+)'] },
       { name: 'Autobusi i minibusi', items: ['Gradski autobusi', 'Minibusi (do 20 mjesta)', 'Školski autobusi', 'Turistički autobusi'] },
       { name: 'Bicikli', items: ['BMX', 'Cestovni (road) bicikli', 'Dječji bicikli', 'Električni bicikli (e-bike)', 'Gravel bicikli', 'MTB / Mountain bike', 'Sklopivi bicikli', 'Trekking i city bicikli'] },
-      { name: 'Kamperi i kamp prikolice', items: ['Alkoven kamperi', 'Kamp prikolice / karavani', 'Kamperi (integrirani)', 'Krovni šatori i oprema', 'Polu-integrirani kamperi'] },
+      { name: 'Kamper i kamp prikolice', items: ['Alkoven kamperi', 'Kamp prikolice / karavani', 'Kamperi (integrirani)', 'Krovni šatori i oprema', 'Polu-integrirani kamperi'] },
       { name: 'Prikolice', items: ['Hladnjačke i frigorifik prikolice', 'Kiper prikolice', 'Ostale prikolice', 'Prikolice za automobile (osobne)', 'Prikolice za bicikle', 'Prikolice za čamce / nautiku', 'Prikolice za drva i biomasu', 'Prikolice za građevinu i šutu', 'Prikolice za konje i stoku', 'Prikolice za motocikle'] },
       { name: 'Nautika i plovila', items: ['Brodovi', 'Čamci na motor', 'Gumenjaci i RIB čamci', 'Jahte', 'Jedrilice', 'Jet ski i vodeni skuteri', 'Kajaci i kanui', 'Ribarski čamci', 'SUP daske'] },
       { name: 'ATV / Quad / UTV' },
-      { name: 'Ostala vozila', items: ['Golf kolica', 'Segway i električni romobili za odrasle', 'Traktori (cestovni)'] },
+      { name: 'Ostala vozila', items: ['Kolica za golf', 'Segway i električni romobili za odrasle', 'Traktori (cestovni)'] },
     ]
   },
 
   // ─── 2. DIJELOVI ZA VOZILA ───────────────────────────────
   {
-    id: 'dijelovi', name: 'Dijelovi za vozila', icon: 'fa-gears',
+    id: 'dijelovi', name: 'Dijelovi za automobile', icon: 'fa-gears',
     subCategories: [
       { name: 'Za automobile – Motor i mjenjač', items: ['Automatski mjenjač (kompletan)', 'Blok motora', 'Bregaste i koljenaste osovine', 'Brizgači i common rail', 'Diferencijal i mostovi', 'DSG / CVT mjenjač', 'EGR ventili i moduli', 'Glava motora i brtve', 'Hladnjaci vode i ulja', 'Intercooleri i hladnjaci punjenja', 'Ispušni kolektori i lonci', 'Karburatori i usisne grane', 'Kardansko vratilo', 'Katalizatori i DPF filteri', 'Klipovi i prstenovi', 'Kompresori (mehanički)', 'Kvačilo, lamela i zamašnjak', 'Motor (kompletan agregat)', 'Ostali dijelovi motora', 'Pogonske osovine i homokineti', 'Pumpe goriva i injektori', 'Pumpe rashladne vode i termostati', 'Pumpe ulja i filteri ulja', 'Ručni mjenjač (kompletan)', 'Turbine i turbopunjači', 'Usisni sustav i filteri zraka', 'Zupčasti i klinasti remeni, lanci'] },
-      { name: 'Za automobile – Elektrika i elektronika', items: ['ABS pumpa i upravljačka jedinica', 'Airbag modul upravljačke jedinice', 'Airbag pojasevi i punjači', 'Akumulator i baterija', 'Alternatori / dinamo', 'Centralina mjenjača', 'Centralna brava i aktuatori', 'Dnevna svjetla (DRL)', 'ECU / Centralina motora', 'Električni prozori motori i regulator', 'ESP / ASR modul', 'Farovi (prednji – halogeni, LED, xenon)', 'Grijanje sjedala i upravljača', 'Instrumentna ploča i sat', 'Kablovski snopovi i instalacije', 'Klima kompresor i dijelovi', 'Maglenke prednje i zadnje', 'Multimedija i ekrani (OEM)', 'Ostala elektrika i elektronika', 'Relei i osigurači i kutija osigurača', 'Senzori (lambda, MAP, MAF, NOx...)', 'Senzori ABS kotača', 'Senzori paljenja i položaja radilice', 'Senzori parkiranja i kamere', 'Senzori temperature i pritiska', 'Starter / pokretač', 'Stop svjetla i žmigavci'] },
+      { name: 'Za automobile – Elektrika i elektronika', items: ['ABS pumpa i upravljačka jedinica', 'Airbag modul upravljačke jedinice', 'Airbag pojasevi i punjači', 'Akumulator', 'Alternatori', 'Centralina mjenjača', 'Centralna brava i aktuatori', 'Dnevna svjetla (DRL)', 'ECU / Motorna jedinica', 'Električni prozori motori i regulator', 'ESP / ASR modul', 'Farovi (prednji – halogeni, LED, xenon)', 'Grijanje sjedala i upravljača', 'Instrument tabla', 'Kablovski snopovi i instalacije', 'Klima kompresor i dijelovi', 'Maglenke prednje i zadnje', 'Multimedija i ekrani (OEM)', 'Ostala elektrika i elektronika', 'Releji i kutija osigurača', 'Senzori (lambda, MAP, MAF, NOx...)', 'Senzori ABS kotača', 'Senzori paljenja i položaja radilice', 'Parking senzori i kamera', 'Senzori temperature i pritiska', 'Starter / Alnaser', 'Stop svjetla i žmigavci'] },
       { name: 'Za automobile – Karoserija i stakla', items: ['Bočna stakla', 'Brave i ručice vrata', 'Brisači i motori brisača', 'Gepek vrata / hauba prtljažnika', 'Karoserija u dijelovima (škart)', 'Krov i panoramski krov', 'Ostali karoserijski dijelovi', 'Poklopac motora / hauba', 'Pragovi i lajsne', 'Prednja vrata (lijeva/desna)', 'Prednji blatobrani (lijevi/desni)', 'Prednji branik / odbojnik', 'Retrovizori vanjski (lijevi/desni)', 'Zadnja vrata (lijeva/desna)', 'Zadnje staklo', 'Zadnji blatobrani', 'Zadnji branik / odbojnik', 'Šine i klizni mehanizmi vrata', 'Vjetrobransko staklo'] },
-      { name: 'Za automobile – Unutrašnjost i sjedala', items: ['Armaturna ploča (instrument ploča)', 'Nasloni za glavu', 'Obloge vrata (unutrašnje)', 'Ostala unutrašnjost', 'Pedale i nastavci pedala', 'Prednja sjedala (vozač/suvozač)', 'Prekidači i dugmad (stakla, svjetla...)', 'Retrovizor unutrašnji', 'Ručica mjenjača i manžeta', 'Ručna kočnica i obloga', 'Sigurnosni pojasevi i kopče', 'Središnja konzola', 'Zadnja sjedala / klupa', 'Sunčane zaslone', 'Tapeciranje stropa', 'Tepisi i gumene podne obloge', 'Volan i upravljački stup'] },
-      { name: 'Za automobile – Ovjes i kočnice', items: ['Amortizeri prednji', 'Amortizeri zadnji', 'Disk kočnice prednje', 'Disk kočnice zadnje', 'Federbajni (kompletni McPherson)', 'Kočiona tekućina i rezervoar', 'Kočione čeljusti', 'Kočione pločice prednje', 'Kočione pločice zadnje', 'Kočioni bubnjevi', 'Kočioni cilindri i crijevca', 'Krajevi upravljača', 'Kuglični zglobovi', 'Ležajevi kotača i glavčine', 'Opruge (spiralne, listne)', 'Ostali ovjes i kočnice', 'Ramena ovjesa i poluge', 'Ručna kočnica dijelovi', 'Servo pumpa upravljača', 'Stabilizatori i gumice stabilizatora', 'Upravljačka letva / servo pumpa'] },
-      { name: 'Za automobile – Felge i gume', items: ['Aluminijske / alu felge', 'Cjelogodišnje gume', 'Čelične felge', 'Distanceri felgi', 'Lanci za snijeg', 'Ljetne gume', 'Matice i vijci kotača', 'Pokrovi / hubcaps', 'Rezervni kotač (stepnica)', 'Zimske gume'] },
-      { name: 'Za automobile – Tuning i oprema', items: ['Bodykit i pragovi', 'Chip tuning i upravljačke jedinice (aftermarket)', 'Difuzori zadnji', 'Karbonski dijelovi', 'Krovni nosači i šine', 'Kuka za vuču / towbar', 'LED trake i dekorativna rasvjeta', 'Nosači za bicikle i skijaška oprema', 'Ostali tuning', 'Spojleri i lip spojleri', 'Sportska sjedala', 'Sportski filteri zraka', 'Sportski ispuh i down pipe', 'Sportski volan', 'Zaštitne folije i wrap'] },
+      { name: 'Za automobile – Unutrašnjost i sjedala', items: ['Nasloni za glavu', 'Obloge vrata (unutrašnje) - Tapacirung', 'Ostala unutrašnjost', 'Prednja sjedala (vozač/suvozač)', 'Prekidači i dugmad (stakla, svjetla...)', 'Lijevi / Desni Retrovizor', 'Ručica mjenjača', 'Ručna kočnica i obloga', 'Sigurnosni pojasevi i kopče', 'Središnja konzola', 'Zadnja sjedala / klupa', 'Sjenilo za sunce / Vizir', 'Tepisi i gumene podne obloge', 'Volan', 'Ostali dijelovi'] },
+      { name: 'Za automobile – Ovjes i kočnice', items: ['Prednji amortizeri', 'Zadnji amortizeri', 'Prednja kočiona kliješta', 'Zadnja kočiona kliješta', 'Federbajn/Opruga', 'Kočiona tekućina i rezervoar', 'Kočione čeljusti', 'Prednje disk pločice', 'Zadnje disk pločice', 'Pakne', 'Kočioni cilindri i crijevca', 'Krajevi upravljača', 'Kuglični zglobovi', 'Ležajevi kotača i glavčine', 'Opruge (spiralne, lisnate)', 'Ostali ovjes i kočnice', 'Ramena ovjesa i poluge', 'Ručna kočnica dijelovi', 'Servo pumpa upravljača', 'Stabilizatori i gumice stabilizatora', 'Upravljačka letva / servo pumpa'] },
+      { name: 'Za automobile – Felge i gume', items: ['Aluminijske / alu felge', 'Cijelogodišnje gume / All-Season', 'Čelične felge', 'Distanceri za felge', 'Lanci za snijeg', 'Ljetne gume', 'Matice i vijci kotača', 'Rezervni kotač (stepnica)', 'Zimske gume', 'Ostali dijelovi'] },
+      { name: 'Za automobile – Tuning i oprema', items: ['Bodykit i pragovi', 'Chip tuning i upravljačke jedinice (aftermarket)', 'Zadnji difuzori', 'Karbonski dijelovi', 'Krovni nosači i šine', 'Kuka za vuču / towbar', 'LED trake i dekorativna svjetla', 'Nosači za bicikle i skijaška oprema', 'Ostali tuning', 'Spojleri i lip spojleri', 'Sportska sjedala', 'Sportski filteri zraka', 'Sportski ispuh i down pipe', 'Sportski volan', 'Zaštitne folije i wrap'] },
       { name: 'Za automobile – Navigacija i auto akustika', items: ['Aftermarket navigacija i ekrani', 'Auto alarm i imobilajzer', 'Dash kamere', 'GPS lokatori', 'Hands-free i Bluetooth moduli', 'Pojačala', 'Radio i OEM multimedija', 'Zadnje i 360° kamere', 'Subwooferi i bass', 'Zvučnici prednji i zadnji'] },
-      { name: 'Za automobile – Kozmetika i ulja', items: ['Čistači interijera i plastike', 'Kočiona tekućina', 'Mjenjačka i diferencijalna ulja', 'Motorna ulja i aditivi', 'Poliri i zaštite laka', 'Rashladna tekućina (antifriz)', 'Servo tekućina', 'Šamponi i voskovi', 'Tekućina za brisače', 'Zaštita podvozja i antikoro'] },
-      { name: 'Za motocikle – Motor i transmisija', items: ['Cilindar i glava cilindra', 'Ispuh i lonac', 'Karburator i injektor', 'Klipovi i segmenti', 'Kvačilo i lamele', 'Lanci pogonski i zvjezdice', 'Mjenjač', 'Motor kompletan', 'Usisna grana i filtar'] },
+      { name: 'Za automobile – Kozmetika i ulja', items: ['Čistači unutrašnjosti', 'Kočiona tekućina', 'Mjenjačka i diferencijalna ulja', 'Motorna ulja i aditivi', 'Rashladna tekućina (antifriz)', 'Servo tekućina', 'Šamponi i voskovi', 'Tekućina za brisače', 'Zaštita podvozja i antikoro'] },
+      { name: 'Za motocikle – Motor i transmisija', items: ['Cilindar i glava cilindra', 'Ispuh i lonac', 'Karburator i injektor', 'Klipovi i segmenti', 'Kvačilo i lamele', 'Lanci i zupčanici', 'Mjenjač', 'Motorni dijelovi', 'Usisna grana i filtar'] },
       { name: 'Za motocikle – Karoserija i oklopi', items: ['Bočni oklopi', 'Nasloni i kutije', 'Prednja maska i oklopi', 'Prednji i zadnji blatobran', 'Rezervoar goriva', 'Zadnji oklop i sjedište'] },
       { name: 'Za motocikle – Elektrika i paljenje', items: ['Alternator i regulator', 'Baterija / akumulator', 'ECU / centralina', 'Farovi i stop svjetla', 'Svjećice i bobine paljenja', 'Žmigavci'] },
-      { name: 'Za motocikle – Ovjes i kočnice', items: ['Disk kočnice', 'Kočione pločice i čeljusti', 'Ležajevi kotača', 'Prednja viljuška i opruge', 'Zadnji amortizer'] },
+      { name: 'Za motocikle – Ovjes i kočnice', items: ['Kočiona kliješta', 'Disk pločice', 'Ležajevi kotača', 'Prednja viljuška i opruge', 'Zadnji amortizer'] },
       { name: 'Za motocikle – Felge i gume', items: ['Enduro i off-road gume', 'Ljetne / sportske gume', 'Prednje felge', 'Zadnje felge'] },
       { name: 'Za motocikle – Zaštitna oprema i odjeća', items: ['Kacige (integralne, open face, off-road)', 'Moto čizme i cipele', 'Moto hlače', 'Moto jakne i kombinezon', 'Moto rukavice', 'Oklopi i protektori', 'Reflektirajuća oprema'] },
-      { name: 'Za motocikle – Kofera, torbice i nosači' },
-      { name: 'Za bicikle – Okviri i vilice', items: ['Okviri cestovni / road', 'Okviri gravel', 'Okviri MTB', 'Vilice (rigidne i s amortizerom)'] },
-      { name: 'Za bicikle – Kotači i gume', items: ['Gume cestovne', 'Gume gravel', 'Gume MTB', 'Naplatci / felge', 'Niple i žbice', 'Prednji kotač kompletan', 'Zadnji kotač kompletan', 'Unutarnje gume i tubeless'] },
-      { name: 'Za bicikle – Kočnice i mjenjači', items: ['Disk kočnice (hidrauličke/mehaničke)', 'Kazete i zvjezdice', 'Kočione pločice i obloge', 'Kočne ručice', 'Lanci', 'Naplatci single speed', 'Prednji mjenjač', 'Ručice mjenjača', 'Zadnji mjenjač / derailleur', 'V-brake kočnice'] },
-      { name: 'Za bicikle – Pogon i pedale', items: ['Kranke i pedalier', 'Pedale (platforme, clipless)', 'Srednja osovina / bottom bracket'] },
-      { name: 'Za bicikle – Upravljač i sjedalo', items: ['Ergonomski ručkovi', 'Lula upravljača', 'Sjedala', 'Sjedaljke / stupe', 'Upravljači / kormila'] },
-      { name: 'Za bicikle – Osvjetljenje i oprema', items: ['Blatobrani', 'Košare i nosači', 'Prednja svjetla', 'Pumpe', 'Računala i brzinomjeri', 'Reflektori', 'Zadnja svjetla', 'Zaključavanja i brave'] },
-      { name: 'Za bicikle – Zaštitna oprema', items: ['Biciklistička odjeća', 'Biciklističke naočale', 'Biciklističke rukavice', 'Kacige', 'Koljena i lakat štitnici'] },
+      { name: 'Za motocikle – Koferi, torbe i nosači' },
+      { name: 'Za bicikle – Dijelovi', items: ['Lanci', 'Ručke', 'Kočiona kliješta (hidraulička/mehanička)', 'Kotači i gume', 'Zaštitna odjeća i obuća', 'Ostali dijelovi'] },
       { name: 'Za teretna vozila', items: ['Auspuhi i AdBlue sustav', 'Elektrika i ECU', 'Felge i gume (teretne)', 'Hladnjaci i ostali dijelovi', 'Kabina i dijelovi kabine', 'Karoserija i nadogradnja', 'Kočnice i ovjes', 'Motor i mjenjač', 'Tachografi'] },
       { name: 'Za autobuse i minibuse', items: ['Karoserija i stakla', 'Motor i mjenjač', 'Ostali dijelovi', 'Sjedala i unutrašnjost', 'Vrata i mehanizmi'] },
-      { name: 'Za nautiku i plovila', items: ['Brodski motori (unutarbrodski)', 'Brodski motori (vanbrodski)', 'Jedra i jarbolna oprema', 'Kormila i upravljanje', 'Navigacijska elektronika', 'Ostali nautički dijelovi', 'Propeleri', 'Pumpe i bilge pumpe', 'Sidrene i vezne opreme'] },
+      { name: 'Za nautiku i plovila', items: ['Brodski motori (unutarbrodski)', 'Brodski motori (vanbrodski)', 'Jedra i jarbolna oprema', 'Kormila i upravljanje', 'Navigacijska elektronika', 'Ostali nautički dijelovi', 'Propeleri', 'Pumpe i bilge pumpe', 'Sidrena i vezna oprema'] },
       { name: 'Za kampere i prikolice', items: ['Kreveti i namještaj za kampere', 'Plinski sustavi', 'Prikolična kuka i spojnice', 'Prozori i vrata', 'Solarna oprema za kampere', 'Vodeni sistemi'] },
       { name: 'Za ATV / Quad', items: ['Gume i felge (off-road)', 'Karoserija i plastika', 'Motor i mjenjač', 'Ovjes i kočnice'] },
-      { name: 'Za građevinske strojeve', items: ['Gusjenice i kotači', 'Kabine i stakla', 'Motor i hidraulika', 'Ostali dijelovi', 'Zahvati i priključci'] },
+      { name: 'Za građevinske strojeve', items: ['Donji postroj', 'Radni alati', 'Hidraulika', 'Motor i filteri', 'Prijenos snage', 'Elektrika i elektronika', 'Elementi kabine i sigurnosti', 'Ostali dijelovi'] },
       { name: 'Za prikolice (dijelovi)', items: ['Kočioni sustav prikolice', 'Osovine i ovjesi', 'Podovi i bočne stranice', 'Prikolična kuka i glava', 'Rasvjeta prikolice'] },
       { name: 'Ostali dijelovi za vozila' },
     ]
@@ -69,7 +63,6 @@ export const CATEGORIES: Category[] = [
       { name: 'Poslovni prostori', items: ['Industrijski objekti', 'Najam poslovnih prostora', 'Prodaja poslovnih prostora', 'Skladišta i hale', 'Ugostiteljski prostori', 'Uredi'] },
       { name: 'Garaže i parkirna mjesta', items: ['Najam garaža', 'Parkirna mjesta', 'Prodaja garaža'] },
       { name: 'Turistički smještaj', items: ['Apartmani na dan', 'Hosteli', 'Kuće za odmor', 'Sobe na dan'] },
-      { name: 'Sobe i cimeri' },
       { name: 'Luksuzne nekretnine' },
       { name: 'Ostale nekretnine' },
     ]
@@ -102,7 +95,7 @@ export const CATEGORIES: Category[] = [
     subCategories: [
       { name: 'Laptopi', items: ['Apple MacBook', 'Asus / Acer / MSI', 'Dell / HP / Lenovo', 'Dijelovi laptopa', 'Gaming laptopi', 'Oštećeni laptopi (za dijelove)', 'Poslovni laptopi'] },
       { name: 'Desktop računala', items: ['Gaming PC-evi', 'Kompletni desktop računala', 'Mini PC i NUC'] },
-      { name: 'Monitori', items: ['4K i 144Hz+', 'Gaming monitori', 'Poslovni monitori', 'Ultrawide monitori'] },
+      { name: 'Monitori', items: ['Uredski (Office/Home)', 'Gaming monitori', 'Grafički/Profesionalni monitori', 'LCD - (IPS/VA/TN)', 'OLED', 'Mini-LED', 'Standardni (16:9)', 'Ultrawide (21:9 ili 32:9)', 'Zakrivljeni (Curved)'] },
       { name: 'Komponente', items: ['CPU hladnjaci i vodeno hlađenje', 'Grafičke kartice (GPU)', 'HDD diskovi', 'Kućišta', 'Matične ploče', 'Napajanja (PSU)', 'Optički uređaji', 'Procesori (CPU)', 'RAM memorija', 'SSD diskovi'] },
       { name: 'Mrežna oprema', items: ['Mrežne kartice', 'NAS serveri', 'Routeri i modemi', 'Switchevi i hubovi', 'WiFi extenderi'] },
       { name: 'Printeri i skeneri', items: ['3D printeri', 'Inkjet printeri', 'Laser printeri', 'Multifunkcijski uređaji', 'Toner i tinta'] },
@@ -132,11 +125,11 @@ export const CATEGORIES: Category[] = [
 
   // ─── 7. DOM I VRTNI ─────────────────────────────────────
   {
-    id: 'dom', name: 'Dom i vrtni', icon: 'fa-house',
+    id: 'dom', name: 'Dom i vrtne garniture', icon: 'fa-house',
     subCategories: [
       { name: 'Namještaj – Dnevna soba', items: ['Fotelje', 'Police i regali', 'Sofe i garniture', 'Stolovi za dnevnu sobu', 'TV komode i police', 'Vitrine'] },
       { name: 'Namještaj – Spavaća soba', items: ['Kreveti i okviri', 'Madraci', 'Noćni ormarići', 'Ormarci za odjeću', 'Toaletni stolovi'] },
-      { name: 'Namještaj – Kuhinja i blagovaonica', items: ['Barovi i barski stolci', 'Blagovaonički garniture (stol+stolice)', 'Kuhinjske garniture', 'Kuhinjske police i ormari'] },
+      { name: 'Namještaj – Kuhinja i blagovaonica', items: ['Barovi i barski stolci', 'Blagovaoničke garniture (stol + stolice)', 'Kuhinjske garniture', 'Kuhinjske police i ormari'] },
       { name: 'Namještaj – Dječja soba', items: ['Dječje police i ormari', 'Dječji kreveti i krevetići', 'Dječji stolovi i stolice', 'Kreveti na kat'] },
       { name: 'Namještaj – Radna soba i ured', items: ['Konferencijski stolovi', 'Radni stolovi', 'Uredske stolice', 'Uredski ormari i police'] },
       { name: 'Namještaj – Kupaonica', items: ['Kupaonski ormarići i police', 'Ogledala', 'Police za tuš'] },
@@ -157,10 +150,10 @@ export const CATEGORIES: Category[] = [
   {
     id: 'odjeca', name: 'Odjeća i obuća', icon: 'fa-shirt',
     subCategories: [
-      { name: 'Ženska odjeća', items: ['Donje rublje i pidžame', 'Džemperi i kardigani', 'Haljine', 'Hlače i traperice', 'Jakne, kaputi i prsluk', 'Majice i bluze', 'Odjeća za plažu', 'Odjeća za trudnice', 'Sportska odjeća', 'Suknje'] },
-      { name: 'Ženska obuća', items: ['Cipele i pumpe', 'Čizme i gležnjače', 'Kućne papuče', 'Sandale i natikače', 'Tenisice i sportska obuća'] },
-      { name: 'Muška odjeća', items: ['Donje rublje i pidžame', 'Džemperi i hoodie', 'Hlače i traperice', 'Jakne, kaputi i prsluk', 'Košulje', 'Majice (T-shirt, polo)', 'Odijela i sako', 'Sportska odjeća'] },
-      { name: 'Muška obuća', items: ['Cipele i loafersi', 'Čizme', 'Sandale i japanke', 'Tenisice i sportska obuća'] },
+      { name: 'Ženska odjeća', items: ['Gornji dijelovi', 'Donji dijelovi', 'Haljine i kombinezoni', 'Džemperi', 'Vanjska odjeća', 'Casual', 'Business', 'Svečano', 'Sport i rekreacija', 'Donje rublje i spavaći program', 'Specijalne linije'] },
+      { name: 'Ženska obuća', items: ['Tenisice', 'Cipele na petu', 'Ravne cipele', 'Čizme', 'Sandale i natikače', 'Casual', 'Formalno/Svečano', 'Outdoor', 'Kućna obuća'] },
+      { name: 'Muška odjeća', items: ['Gornji dijelovi', 'Donji dijelovi', 'Vanjska odjeća', 'Odijela i formalna odjeća', 'Sport i slobodno vrijeme', 'Rublje i spavaći program'] },
+      { name: 'Muška obuća', items: ['Tenisice', 'Elegantne cipele', 'Čizme i gležnjače', 'Ljetna i kućna obuća'] },
       { name: 'Dječja odjeća i obuća', items: ['Dječja obuća', 'Za bebe (0–2 god)', 'Za djecu (3–8 god)', 'Za djecu (9–14 god)', 'Za tinejdžere (15+)'] },
       { name: 'Sportska odjeća i obuća (svi)', items: ['Dres i trening odjeća', 'Kompresijska odjeća', 'Koturaljke i snowboard odjeća', 'Plivačke kupaće', 'Skijaška odjeća'] },
       { name: 'Nakit i satovi', items: ['Modni (bijuteri) nakit', 'Narukvice', 'Naušnice', 'Ogrlice i privjesci', 'Prstenje', 'Ručni satovi – muški', 'Ručni satovi – ženski', 'Zlatni i srebrni nakit'] },
@@ -209,7 +202,7 @@ export const CATEGORIES: Category[] = [
 
   // ─── 11. GLAZBA I INSTRUMENTI ───────────────────────────
   {
-    id: 'glazba', name: 'Glazba i instrumenti', icon: 'fa-music',
+    id: 'glazba', name: 'Glazba i glazbeni instrumenti', icon: 'fa-music',
     subCategories: [
       { name: 'Gitare', items: ['Akustične gitare', 'Bas gitare', 'Električne gitare', 'Gitarski pojačala i efekti', 'Klasične gitare', 'Pribor za gitare'] },
       { name: 'Bubnjevi i udaraljke', items: ['Akustični bubnjevi', 'Cajon i perkusije', 'Činele', 'Elektronički bubnjevi'] },
@@ -241,7 +234,7 @@ export const CATEGORIES: Category[] = [
 
   // ─── 13. VIDEO IGRE ─────────────────────────────────────
   {
-    id: 'videoigre', name: 'Video igre', icon: 'fa-gamepad',
+    id: 'videoigre', name: 'Videoigre', icon: 'fa-gamepad',
     subCategories: [
       { name: 'PlayStation', items: ['PS3 i stariji', 'PS4 – igre i oprema', 'PS5 – igre i oprema'] },
       { name: 'Xbox', items: ['Xbox One', 'Xbox Series X/S'] },
@@ -275,19 +268,14 @@ export const CATEGORIES: Category[] = [
   {
     id: 'hrana', name: 'Hrana i piće', icon: 'fa-utensils',
     subCategories: [
-      { name: 'Svježe meso', items: ['Divljač', 'Janjetina i ovčetina', 'Piletina i perad', 'Svinjetina', 'Teletina i govedina'] },
-      { name: 'Svježa riba i morski plodovi' },
-      { name: 'Voće i povrće', items: ['Gljive', 'Sezonsko povrće', 'Sezonsko voće'] },
-      { name: 'Mliječni proizvodi i jaja', items: ['Domaće mlijeko', 'Domaći sir', 'Jaja', 'Kiselo mlijeko i vrhnje'] },
-      { name: 'Med i pčelinji proizvodi', items: ['Domaći med', 'Propolis i matična mliječ'] },
-      { name: 'Ulja i masti', items: ['Bučino ulje', 'Maslinovo ulje', 'Svinjska mast'] },
-      { name: 'Zimnica i konzerve', items: ['Ajvar i pinđur', 'Pekmezi i džemovi', 'Suho voće i povrće', 'Ukiseljeno povrće'] },
-      { name: 'Delikatese i suhomesnato', items: ['Kobasice i salame', 'Pršut', 'Slanina'] },
-      { name: 'Pića', items: ['Čajevi', 'Domaća rakija i vino', 'Domaći sokovi', 'Kava i kave', 'Ostala pića'] },
-      { name: 'Brašno, žitarice i tjestenina' },
-      { name: 'Kolači i slatkiši' },
-      { name: 'Začini, ocat i dodaci' },
-      { name: 'Ostala hrana' },
+      { name: 'Biljni proizvodi', items: ['Brašna', 'Povrće', 'Voće', 'Ostali biljni proizvodi'] },
+      { name: 'Dezerti i slastice', items: ['Džem i pekmez', 'Grickalice', 'Kolači i torte', 'Ostali slatkiši'] },
+      { name: 'Pića', items: ['Sokovi', 'Kafa', 'Ostala alkoholna pića', 'Piva', 'Rakije', 'Vina', 'Čajevi', 'Ostalo'] },
+      { name: 'Životinjski proizvodi', items: ['Jaja', 'Masti', 'Med i proizvodi od meda', 'Meso i mesni proizvodi', 'Ribe i morska hrana', 'Ostalo'] },
+      { name: 'Mliječni proizvodi' },
+      { name: 'Paketi proizvoda' },
+      { name: 'Prerada hrane' },
+      { name: 'Ulja i začini' },
     ]
   },
 

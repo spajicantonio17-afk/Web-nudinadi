@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
+import { sanitizeTags } from '@/lib/ai-utils';
 
 export async function POST(req: NextRequest) {
   try {
@@ -102,14 +103,7 @@ Vrati SAMO JSON: {"tags": ["tag1", "tag2", "tag3", ...]}`;
 
       const raw = await textWithGemini(prompt);
       const data = parseJsonResponse(raw) as Record<string, unknown>;
-      // Sanitize tags: deduplicate, lowercase, cap at 20
-      if (data && Array.isArray(data.tags)) {
-        data.tags = [...new Set(
-          (data.tags as string[])
-            .map(t => String(t).toLowerCase().trim())
-            .filter(t => t.length > 0 && t.length <= 50)
-        )].slice(0, 20);
-      }
+      if (data) data.tags = sanitizeTags(data.tags);
       return NextResponse.json({ success: true, data });
     }
 
@@ -194,16 +188,7 @@ Vrati SAMO JSON:
 
       const raw = await textWithGemini(prompt);
       const data = parseJsonResponse(raw) as Record<string, unknown>;
-      // Sanitize tags: deduplicate, lowercase, cap at 20
-      if (data && Array.isArray(data.tags)) {
-        data.tags = [...new Set(
-          (data.tags as string[])
-            .map(t => String(t).toLowerCase().trim())
-            .filter(t => t.length > 0 && t.length <= 50)
-        )].slice(0, 20);
-      } else {
-        data.tags = [];
-      }
+      data.tags = sanitizeTags(data.tags);
       return NextResponse.json({ success: true, data });
     }
 
@@ -211,28 +196,195 @@ Vrati SAMO JSON:
       const { vin } = body;
       if (!vin || vin.length !== 17) return NextResponse.json({ error: 'VIN mora imati 17 znakova' }, { status: 400 });
 
-      const prompt = `Dekodiraj ovaj VIN (Vehicle Identification Number): "${sanitizeForPrompt(vin, 17)}"
+      // ── WMI Lookup (first 3 chars → manufacturer) ──
+      const WMI_MAP: Record<string, string> = {
+        // Germany
+        WDB: 'Mercedes-Benz', WDC: 'Mercedes-Benz', WDD: 'Mercedes-Benz', WMX: 'Mercedes-Benz',
+        WBA: 'BMW', WBS: 'BMW', WBY: 'BMW',
+        WAU: 'Audi', WUA: 'Audi',
+        WVW: 'Volkswagen', WV1: 'Volkswagen', WV2: 'Volkswagen', WV3: 'Volkswagen',
+        WF0: 'Ford', W0L: 'Opel', WP0: 'Porsche', WP1: 'Porsche',
+        // Czech
+        TMB: 'Škoda', TMP: 'Škoda',
+        // France
+        VF1: 'Renault', VF3: 'Peugeot', VF7: 'Citroën', VR1: 'Dacia',
+        // Italy
+        ZFA: 'Fiat', ZAR: 'Alfa Romeo', ZLA: 'Lancia', ZFF: 'Ferrari', ZHW: 'Lamborghini',
+        // UK
+        SAJ: 'Jaguar', SAL: 'Land Rover', SCC: 'Lotus', SCF: 'Aston Martin',
+        // Sweden
+        YV1: 'Volvo', YS2: 'Scania',
+        // Japan
+        JTD: 'Toyota', JTE: 'Toyota', JHM: 'Honda', JN1: 'Nissan', JMZ: 'Mazda',
+        JS1: 'Suzuki', JYA: 'Yamaha',
+        // Korea
+        KMH: 'Hyundai', KNA: 'Kia', KNM: 'Renault Samsung',
+        // US (common)
+        '1G1': 'Chevrolet', '1G6': 'Cadillac', '1FA': 'Ford', '1FM': 'Ford',
+        '1FT': 'Ford', '2FA': 'Ford', '3FA': 'Ford', '1HD': 'Harley-Davidson',
+        '1GC': 'Chevrolet', '1GT': 'GMC', '2T1': 'Toyota', '5YJ': 'Tesla',
+        '5TD': 'Hyundai', '5NP': 'Hyundai', '5XY': 'Kia',
+        // Spain
+        VSS: 'SEAT',
+        // Romania
+        UU1: 'Dacia',
+      };
 
-Na osnovu VIN broja odredi informacije o vozilu. Koristi standardne WMI (World Manufacturer Identifier) kodove.
+      // Mercedes model codes (positions 4-6 of VIN)
+      const MERCEDES_MODELS: Record<string, string> = {
+        '168': 'A-Klasse (W168)', '169': 'A-Klasse (W169)', '176': 'A-Klasse (W176)', '177': 'A-Klasse (W177)',
+        '245': 'B-Klasse (W245)', '246': 'B-Klasse (W246)', '247': 'B-Klasse/GLB (W247)',
+        '202': 'C-Klasse (W202)', '203': 'C-Klasse (W203)', '204': 'C-Klasse (W204)', '205': 'C-Klasse (W205)', '206': 'C-Klasse (W206)',
+        '210': 'E-Klasse (W210)', '211': 'E-Klasse (W211)', '212': 'E-Klasse (W212)', '213': 'E-Klasse (W213)', '214': 'E-Klasse (W214)',
+        '220': 'S-Klasse (W220)', '221': 'S-Klasse (W221)', '222': 'S-Klasse (W222)', '223': 'S-Klasse (W223)',
+        '163': 'ML (W163)', '164': 'ML/GL (W164)', '166': 'GLE (W166)', '167': 'GLE/GLS (W167)',
+        '253': 'GLC (X253)', '254': 'GLC (X254)',
+        '156': 'GLA (X156)',
+        '171': 'SLK (R171)', '172': 'SLK/SLC (R172)',
+        '209': 'CLK (W209)', '207': 'E-Klasse Coupé (C207)',
+        '117': 'CLA (C117)', '118': 'CLA (C118)',
+        '292': 'GLE Coupé (C292)',
+        '447': 'V-Klasse', '639': 'Vito/Viano',
+        '906': 'Sprinter', '907': 'Sprinter',
+        '461': 'G-Klasse', '463': 'G-Klasse', '464': 'G-Klasse',
+      };
+
+      const wmi = vin.substring(0, 3).toUpperCase();
+      const wmiMake = WMI_MAP[wmi] || null;
+      const vds = vin.substring(3, 6); // Vehicle Descriptor Section — model code for Mercedes, BMW, etc.
+
+      // For Mercedes, decode model from positions 4-6
+      let wmiModel: string | null = null;
+      if (wmiMake === 'Mercedes-Benz' && MERCEDES_MODELS[vds]) {
+        wmiModel = MERCEDES_MODELS[vds];
+      }
+
+      // ── Step 1: NHTSA vPIC API for real vehicle data ──
+      let nhtsaData: Record<string, string> = {};
+      try {
+        const nhtsaRes = await fetch(
+          `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${encodeURIComponent(vin)}?format=json`,
+          { signal: AbortSignal.timeout(8000) }
+        );
+        if (nhtsaRes.ok) {
+          const nhtsaJson = await nhtsaRes.json();
+          const results = nhtsaJson?.Results as { Variable: string; Value: string | null }[] | undefined;
+          if (results) {
+            for (const r of results) {
+              if (r.Value && r.Value.trim() && r.Value !== 'Not Applicable') {
+                nhtsaData[r.Variable] = r.Value.trim();
+              }
+            }
+          }
+        }
+      } catch {
+        // NHTSA unavailable — continue with WMI + Gemini
+      }
+
+      // Is this a North American VIN? (1-5 = US/Canada/Mexico)
+      const firstChar = vin.charAt(0);
+      const isNorthAmerican = '12345'.includes(firstChar);
+
+      // Merge all sources for best data
+      const brand = nhtsaData['Make'] || wmiMake || nhtsaData['Manufacturer Name']?.replace(/ CARS$/i, '').replace(/ AUTOMOBIL.*$/i, '') || '';
+      const model = nhtsaData['Model'] || wmiModel || '';
+      // NHTSA year is only reliable for North American VINs — EU VINs don't encode year at position 10
+      const nhtsaYear = parseInt(nhtsaData['Model Year'] || '0') || null;
+      const year = isNorthAmerican ? nhtsaYear : null;
+      const engineParts = [
+        nhtsaData['Displacement (L)'] ? nhtsaData['Displacement (L)'] + 'L' : '',
+        nhtsaData['Fuel Type - Primary'] || '',
+        nhtsaData['Engine Number of Cylinders'] ? nhtsaData['Engine Number of Cylinders'] + ' cyl' : '',
+      ].filter(Boolean);
+      const engine = engineParts.length > 0 ? engineParts.join(' ') : null;
+      const bodyType = nhtsaData['Body Class'] || null;
+      const drivetrain = nhtsaData['Drive Type'] || null;
+      const vehicleType = nhtsaData['Vehicle Type'] || null;
+      const plantCountry = nhtsaData['Plant Country'] || null;
+      const plantCity = nhtsaData['Plant City'] || null;
+      const transmission = nhtsaData['Transmission Style'] || null;
+      const trim = nhtsaData['Trim'] || nhtsaData['Series'] || null;
+      const doors = nhtsaData['Doors'] || null;
+
+      const hasUsefulData = !!(brand || model);
+
+      // ── Step 2: Gemini — with ALL available context ──
+      const contextLines: string[] = [];
+      if (brand) contextLines.push(`- Proizvođač: ${brand}`);
+      if (model) contextLines.push(`- Model: ${model}`);
+      if (year) contextLines.push(`- Godina: ${year}`);
+      if (!isNorthAmerican && nhtsaYear) contextLines.push(`- NHTSA predlaže godinu ${nhtsaYear} (NEPOUZDANO — europski VIN ne kodira godinu na poziciji 10)`);
+      if (engine) contextLines.push(`- Motor: ${engine}`);
+      if (bodyType) contextLines.push(`- Karoserija (eng): ${bodyType}`);
+      if (drivetrain) contextLines.push(`- Pogon (eng): ${drivetrain}`);
+      if (transmission) contextLines.push(`- Mjenjač: ${transmission}`);
+      if (trim) contextLines.push(`- Trim/Serija: ${trim}`);
+      if (doors) contextLines.push(`- Vrata: ${doors}`);
+      if (vehicleType) contextLines.push(`- Tip vozila: ${vehicleType}`);
+      if (plantCountry) contextLines.push(`- Zemlja proizvodnje: ${plantCountry}`);
+      if (plantCity) contextLines.push(`- Grad proizvodnje: ${plantCity}`);
+
+      const prompt = `Dekodiraj VIN: "${sanitizeForPrompt(vin, 17)}"
+
+${contextLines.length > 0 ? `Poznati podaci iz baze:\n${contextLines.join('\n')}\n` : 'Nema podataka iz baze — dekodiraj potpuno iz VIN strukture.\n'}
+WMI (prve 3 cifre): ${wmi}
+VDS (pozicije 4-6): ${vds}
+
+Na osnovu VIN broja i gore navedenih podataka, odredi SVE informacije o vozilu.
+
+VAŽNO ZA GODINU PROIZVODNJE:
+- Sjevernoamerički VIN-ovi (počinju sa 1-5): pozicija 10 = godina (pouzdano).
+- Europski VIN-ovi (počinju sa S-Z): pozicija 10 NE KODIRA godinu! Ne koristi poziciju 10 za godinu kod europskih vozila.
+- Za europska vozila, godinu odredi na osnovu model koda i proizvodnog raspona:
+  Mercedes W203 (C-Klasse): 2000-2007, W204: 2007-2014, W211 (E): 2002-2009, itd.
+  Ako ne možeš pouzdano odrediti tačnu godinu, vrati null (NE pogađaj!).
+
+Za europske VIN-ove, koristi WMI tablicu i specifičnu strukturu proizvođača.
+Mercedes-Benz: pozicije 4-6 = model kod (npr. 203=C-Klasse, 211=E-Klasse, 164=ML).
+BMW: pozicije 4-5 = model serija.
+
+Prevedi na bosanski:
+- "Sedan" → "Limuzina", "Hatchback" → "Hatchback", "SUV"/"Sport Utility" → "SUV"
+- "Wagon"/"Estate" → "Karavan", "Coupe" → "Coupe", "Convertible" → "Kabriolet"
+- "All-Wheel Drive" → "4x4", "Front-Wheel Drive" → "Prednji pogon", "Rear-Wheel Drive" → "Zadnji pogon"
 
 Vrati SAMO JSON:
 {
-  "brand": "Proizvođač (npr. Volkswagen, BMW, Audi...)",
-  "model": "Model vozila (npr. Golf, Passat, 3 Series...)",
-  "year": godina_proizvodnje_broj,
-  "engine": "Tip motora ako se može odrediti (npr. 2.0 TDI, 1.6 benzin...)",
-  "bodyType": "Tip karoserije (Limuzina, Hatchback, SUV, Karavan, Coupe...)",
-  "drivetrain": "Pogon (Prednji, Zadnji, 4x4, Quattro...)",
-  "title": "Predloženi naslov oglasa na bosanskom/hrvatskom (npr. Volkswagen Golf 8 2.0 TDI 2022)",
-  "description": "Kratki opis vozila na bosanskom/hrvatskom (2-3 rečenice o vozilu, opremi, karakteristikama)",
+  "brand": "Proizvođač (npr. Mercedes-Benz, BMW, Volkswagen)",
+  "model": "Model (npr. C-Klasse, Golf, 3 Series)",
+  "year": godina_broj_ili_null,
+  "engine": "Motor (npr. 2.0 TDI, 1.8 Benzin, 220 CDI) ili null",
+  "bodyType": "Karoserija na bosanskom",
+  "drivetrain": "Pogon na bosanskom ili null",
+  "title": "Naslov oglasa na bosanskom (npr. Mercedes-Benz C-Klasse (W203) 2001)",
+  "description": "Opis vozila na bosanskom (2-3 rečenice o vozilu)",
   "confidence": broj_0_100
 }
 
-Ako VIN izgleda nevalidan ili ne možeš dekodirati, vrati confidence: 0 i popuni polja sa "Nepoznato".`;
+VAŽNO: Koristi podatke iz baze kao istinu. Ako baza kaže proizvođač=Mercedes-Benz i model=C-Klasse, NE MIJENJAJ to.
+Dopuni samo nedostajuće podatke (motor, karoserija, pogon) koristeći VIN strukturu i svoje znanje.
+Ako nešto ne možeš pouzdano odrediti, stavi null.`;
 
       const raw = await textWithGemini(prompt);
-      const data = parseJsonResponse(raw);
-      return NextResponse.json({ success: true, data });
+      const gemini = parseJsonResponse(raw) as Record<string, unknown> | null;
+      const g = gemini || {};
+
+      // ── Step 3: Merge — known data overrides Gemini guesses ──
+      const geminiYear = typeof g.year === 'number' ? g.year : null;
+      const result = {
+        brand: brand || (g.brand as string) || 'Nepoznato',
+        model: model || (g.model as string) || 'Nepoznato',
+        year: isNorthAmerican ? (year || geminiYear) : (geminiYear || null),
+        engine: (g.engine as string) || engine || null,
+        bodyType: (g.bodyType as string) || bodyType || null,
+        drivetrain: (g.drivetrain as string) || drivetrain || null,
+        title: (g.title as string) || `${brand || 'Vozilo'} ${model || ''}${year ? ' ' + year : ''}`.trim(),
+        description: (g.description as string) || '',
+        confidence: hasUsefulData ? Math.max(Number(g.confidence) || 70, 70) : (Number(g.confidence) || 30),
+        source: hasUsefulData ? 'nhtsa+wmi+gemini' : (wmiMake ? 'wmi+gemini' : 'gemini'),
+      };
+
+      return NextResponse.json({ success: true, data: result });
     }
 
     return NextResponse.json({ error: 'Nepoznata akcija' }, { status: 400 });

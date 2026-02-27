@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSearchSuggestions, type SearchSuggestion } from '@/services/productService'
 import { getAllCategories } from '@/services/categoryService'
+import { lookupChassis, chassisLabel } from '@/lib/vehicle-chassis-codes'
 
 interface SearchSuggestionsProps {
   query: string
@@ -26,6 +27,12 @@ export default function SearchSuggestions({
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router = useRouter()
+
+  // Chassis code lookup (instant, no debounce needed)
+  const chassisMatches = useMemo(
+    () => (visible && query.trim().length >= 2 ? lookupChassis(query) : []),
+    [query, visible]
+  )
 
   const doSearch = useCallback(async (q: string) => {
     // Cancel any previous in-flight request
@@ -88,11 +95,11 @@ export default function SearchSuggestions({
 
   if (!visible || query.trim().length < 2) return null
 
-  const hasResults = products.length > 0 || matchingCategories.length > 0
+  const hasResults = products.length > 0 || matchingCategories.length > 0 || chassisMatches.length > 0
 
   return (
     <div className="absolute top-full left-0 right-0 mt-2 z-[200] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] shadow-strong overflow-hidden animate-fadeIn">
-      {isLoading && (
+      {isLoading && chassisMatches.length === 0 && (
         <div className="px-4 py-3 flex items-center gap-2">
           <i className="fa-solid fa-spinner animate-spin text-[var(--c-accent)] text-[12px]"></i>
           <span className="text-[12px] text-[var(--c-text3)]">Tražim...</span>
@@ -105,9 +112,36 @@ export default function SearchSuggestions({
         </div>
       )}
 
+      {/* Vehicle chassis code matches (instant, shown first) */}
+      {chassisMatches.length > 0 && (
+        <div>
+          <div className="px-4 pt-3 pb-1.5">
+            <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Vozila</p>
+          </div>
+          <div className="px-3 pb-2 flex flex-col gap-0.5">
+            {chassisMatches.slice(0, 3).map((match, idx) => (
+              <button
+                key={idx}
+                onMouseDown={() => {
+                  // Search for this vehicle in the Vozila category
+                  const searchText = `${match.brand} ${match.model}${match.variant ? ' ' + match.variant : ''}`
+                  onSelectCategory('Vozila')
+                  onSelectSuggestion(searchText)
+                }}
+                className="text-left px-3 py-2 rounded-[8px] text-[13px] font-medium text-[var(--c-text2)] hover:bg-blue-500/10 hover:text-blue-500 transition-all duration-150 flex items-center gap-2.5"
+              >
+                <i className="fa-solid fa-car text-[12px] text-blue-400" aria-hidden="true"></i>
+                <span className="truncate">{chassisLabel(match)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Category matches */}
       {matchingCategories.length > 0 && (
         <div>
+          {chassisMatches.length > 0 && <div className="border-t border-[var(--c-border)]"></div>}
           <div className="px-4 pt-3 pb-1.5">
             <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Kategorije</p>
           </div>
@@ -129,7 +163,7 @@ export default function SearchSuggestions({
       {/* Product matches */}
       {products.length > 0 && (
         <div>
-          {matchingCategories.length > 0 && <div className="border-t border-[var(--c-border)]"></div>}
+          {(matchingCategories.length > 0 || chassisMatches.length > 0) && <div className="border-t border-[var(--c-border)]"></div>}
           <div className="px-4 pt-3 pb-1.5">
             <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Proizvodi</p>
           </div>

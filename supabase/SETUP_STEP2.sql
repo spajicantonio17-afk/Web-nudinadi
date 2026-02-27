@@ -17,18 +17,18 @@ TRUNCATE TABLE categories CASCADE;
 -- ─── LEVEL 1: Glavne kategorije ───────────────────────────
 INSERT INTO categories (slug, name, icon, parent_category_id) VALUES
   ('vozila',      'Vozila',                      'fa-car',       NULL),
-  ('dijelovi',    'Dijelovi za vozila',           'fa-gears',     NULL),
+  ('dijelovi',    'Dijelovi za automobile',        'fa-gears',     NULL),
   ('nekretnine',  'Nekretnine',                  'fa-building',  NULL),
   ('mobiteli',    'Mobiteli i oprema',            'fa-mobile-screen', NULL),
   ('racunala',    'Računala i IT',               'fa-laptop',    NULL),
   ('tehnika',     'Tehnika i elektronika',        'fa-tv',        NULL),
-  ('dom',         'Dom i vrtni',                 'fa-house',     NULL),
+  ('dom',         'Dom i vrtne garniture',        'fa-house',     NULL),
   ('odjeca',      'Odjeća i obuća',              'fa-shirt',     NULL),
   ('sport',       'Sport i rekreacija',           'fa-dumbbell',  NULL),
   ('djeca',       'Djeca i bebe',                'fa-baby',      NULL),
-  ('glazba',      'Glazba i instrumenti',         'fa-music',     NULL),
+  ('glazba',      'Glazba i glazbeni instrumenti','fa-music',     NULL),
   ('literatura',  'Literatura i mediji',          'fa-book',      NULL),
-  ('videoigre',   'Video igre',                  'fa-gamepad',   NULL),
+  ('videoigre',   'Videoigre',                   'fa-gamepad',   NULL),
   ('zivotinje',   'Životinje',                   'fa-paw',       NULL),
   ('hrana',       'Hrana i piće',                'fa-utensils',  NULL),
   ('strojevi',    'Strojevi i alati',            'fa-wrench',    NULL),
@@ -64,10 +64,10 @@ BEGIN
   -- Osobni automobili items
   SELECT id INTO pid FROM categories WHERE slug = 'vozila-osobni-automobili';
   INSERT INTO categories (slug, name, parent_category_id) VALUES
-    ('vozila-osobni-novi',            'Novi automobili (od dilera)',             pid),
-    ('vozila-osobni-rabljeni',        'Rabljeni automobili',                    pid),
-    ('vozila-osobni-s-jamstvom',      'Automobili s jamstvom',                  pid),
-    ('vozila-osobni-oldtimeri',       'Oldtimeri i veteran vozila',             pid),
+    ('vozila-osobni-novi',            'Novi automobili (od autokuće)',           pid),
+    ('vozila-osobni-rabljeni',        'Polovni automobili',                     pid),
+    ('vozila-osobni-s-jamstvom',      'Automobili s garancijom',                pid),
+    ('vozila-osobni-oldtimeri',       'Oldtimeri',                              pid),
     ('vozila-osobni-karambolirani',   'Karambolirani i neispravni automobili',  pid),
     ('vozila-osobni-elektricni',      'Električni automobili',                  pid),
     ('vozila-osobni-hibridni',        'Hibridni automobili',                    pid);
@@ -89,9 +89,9 @@ BEGIN
     ('vozila-teretna-kombiji',        'Kombiji i dostavna vozila (do 3.5t)',     pid),
     ('vozila-teretna-kamioni',        'Kamioni (3.5t – 7.5t)',                   pid),
     ('vozila-teretna-teski',          'Teški kamioni (7.5t+)',                   pid),
-    ('vozila-teretna-hladnjace',      'Hladnjače i frigorifici',                pid),
+    ('vozila-teretna-hladnjace',      'Hladnjače',                              pid),
     ('vozila-teretna-kiperi',         'Kiperi i kiper prikolice',                pid),
-    ('vozila-teretna-cistijerne',     'Cistijerne',                              pid),
+    ('vozila-teretna-cistijerne',     'Cisterne',                                pid),
     ('vozila-teretna-tegljaci',       'Tegljači i vučna vozila',                pid);
 
   -- Autobusi items
@@ -131,7 +131,7 @@ BEGIN
   SELECT id INTO pid FROM categories WHERE slug = 'vozila-ostala-vozila';
   INSERT INTO categories (slug, name, parent_category_id) VALUES
     ('vozila-ostala-traktori',        'Traktori (cestovni)',                     pid),
-    ('vozila-ostala-golf',            'Golf kolica',                             pid),
+    ('vozila-ostala-golf',            'Kolica za golf',                          pid),
     ('vozila-ostala-segway',          'Segway i električni romobili za odrasle', pid);
 END $$;
 
@@ -160,14 +160,8 @@ BEGIN
     ('dij-moto-ovjes',       'Za motocikle – Ovjes i kočnice',         pid),
     ('dij-moto-felge',       'Za motocikle – Felge i gume',             pid),
     ('dij-moto-oprema',      'Za motocikle – Zaštitna oprema i odjeća', pid),
-    ('dij-moto-kofera',      'Za motocikle – Kofera, torbice i nosači', pid),
-    ('dij-bic-okviri',       'Za bicikle – Okviri i vilice',            pid),
-    ('dij-bic-kotaci',       'Za bicikle – Kotači i gume',              pid),
-    ('dij-bic-kocnice',      'Za bicikle – Kočnice i mjenjači',        pid),
-    ('dij-bic-pogon',        'Za bicikle – Pogon i pedale',             pid),
-    ('dij-bic-upravljac',    'Za bicikle – Upravljač i sjedalo',        pid),
-    ('dij-bic-osvjetljenje', 'Za bicikle – Osvjetljenje i oprema',      pid),
-    ('dij-bic-zastita',      'Za bicikle – Zaštitna oprema',           pid),
+    ('dij-moto-kofera',      'Za motocikle – Koferi, torbe i nosači',   pid),
+    ('dij-bic-dijelovi',     'Za bicikle – Dijelovi',                   pid),
     ('dij-teretna',          'Za teretna vozila',                       pid),
     ('dij-autobusi',         'Za autobuse i minibuse',                  pid),
     ('dij-nautika',          'Za nautiku i plovila',                    pid),
@@ -194,7 +188,6 @@ BEGIN
     ('nekr-poslovni',         'Poslovni prostori',          pid),
     ('nekr-garaze',           'Garaže i parkirna mjesta',  pid),
     ('nekr-turisticki',       'Turistički smještaj',       pid),
-    ('nekr-sobe',             'Sobe i cimeri',              pid),
     ('nekr-luksuzne',         'Luksuzne nekretnine',        pid),
     ('nekr-ostale',           'Ostale nekretnine',          pid);
 
@@ -756,35 +749,48 @@ BEGIN
   SELECT id INTO pid FROM categories WHERE slug = 'hrana';
 
   INSERT INTO categories (slug, name, parent_category_id) VALUES
-    ('hran-meso',             'Svježe meso',                           pid),
-    ('hran-riba',             'Svježa riba i morski plodovi',         pid),
-    ('hran-voce-povrce',      'Voće i povrće',                        pid),
-    ('hran-mlijecni',         'Mliječni proizvodi i jaja',            pid),
-    ('hran-med',              'Med i pčelinji proizvodi',             pid),
-    ('hran-ulja',             'Ulja i masti',                         pid),
-    ('hran-zimnica',          'Zimnica i konzerve',                   pid),
-    ('hran-delikatese',       'Delikatese i suhomesnato',             pid),
+    ('hran-biljni',           'Biljni proizvodi',                      pid),
+    ('hran-dezerti',          'Dezerti i slastice',                    pid),
     ('hran-pica',             'Pića',                                  pid),
-    ('hran-brasno',           'Brašno, žitarice i tjestenina',       pid),
-    ('hran-kolaci',           'Kolači i slatkiši',                    pid),
-    ('hran-zacini',           'Začini, ocat i dodaci',               pid),
-    ('hran-ostalo',           'Ostala hrana',                         pid);
+    ('hran-zivotinjski',      'Životinjski proizvodi',                 pid),
+    ('hran-mlijecni',         'Mliječni proizvodi',                    pid),
+    ('hran-paketi',           'Paketi proizvoda',                      pid),
+    ('hran-prerada',          'Prerada hrane',                         pid),
+    ('hran-ulja-zacini',      'Ulja i začini',                        pid);
 
-  SELECT id INTO pid FROM categories WHERE slug = 'hran-meso';
+  SELECT id INTO pid FROM categories WHERE slug = 'hran-biljni';
   INSERT INTO categories (slug, name, parent_category_id) VALUES
-    ('hran-mes-svinjetina',   'Svinjetina',                           pid),
-    ('hran-mes-teletina',     'Teletina i govedina',                  pid),
-    ('hran-mes-piletina',     'Piletina i perad',                     pid),
-    ('hran-mes-janjetina',    'Janjetina i ovčetina',                 pid),
-    ('hran-mes-divljac',      'Divljač',                              pid);
+    ('hran-bil-brasna',       'Brašna',                                pid),
+    ('hran-bil-povrce',       'Povrće',                                pid),
+    ('hran-bil-voce',         'Voće',                                  pid),
+    ('hran-bil-ostalo',       'Ostali biljni proizvodi',               pid);
+
+  SELECT id INTO pid FROM categories WHERE slug = 'hran-dezerti';
+  INSERT INTO categories (slug, name, parent_category_id) VALUES
+    ('hran-dez-dzem',         'Džem i pekmez',                         pid),
+    ('hran-dez-grickalice',   'Grickalice',                            pid),
+    ('hran-dez-kolaci',       'Kolači i torte',                        pid),
+    ('hran-dez-ostalo',       'Ostali slatkiši',                       pid);
 
   SELECT id INTO pid FROM categories WHERE slug = 'hran-pica';
   INSERT INTO categories (slug, name, parent_category_id) VALUES
-    ('hran-pic-sokovi',       'Domaći sokovi',                        pid),
-    ('hran-pic-cajevi',       'Čajevi',                               pid),
-    ('hran-pic-rakija',       'Domaća rakija i vino',                 pid),
-    ('hran-pic-kava',         'Kava i kave',                          pid),
-    ('hran-pic-ostala',       'Ostala pića',                          pid);
+    ('hran-pic-sokovi',       'Sokovi',                                pid),
+    ('hran-pic-kafa',         'Kafa',                                  pid),
+    ('hran-pic-alkohol',      'Ostala alkoholna pića',                 pid),
+    ('hran-pic-piva',         'Piva',                                  pid),
+    ('hran-pic-rakije',       'Rakije',                                pid),
+    ('hran-pic-vina',         'Vina',                                  pid),
+    ('hran-pic-cajevi',       'Čajevi',                                pid),
+    ('hran-pic-ostalo',       'Ostalo',                                pid);
+
+  SELECT id INTO pid FROM categories WHERE slug = 'hran-zivotinjski';
+  INSERT INTO categories (slug, name, parent_category_id) VALUES
+    ('hran-ziv-jaja',         'Jaja',                                  pid),
+    ('hran-ziv-masti',        'Masti',                                 pid),
+    ('hran-ziv-med',          'Med i proizvodi od meda',               pid),
+    ('hran-ziv-meso',         'Meso i mesni proizvodi',                pid),
+    ('hran-ziv-ribe',         'Ribe i morska hrana',                   pid),
+    ('hran-ziv-ostalo',       'Ostalo',                                pid);
 END $$;
 
 

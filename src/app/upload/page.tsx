@@ -15,6 +15,7 @@ import type { ProductCondition } from '@/lib/database.types';
 import type { AttributeValues } from '@/lib/category-attributes';
 import { getCategoryFields } from '@/lib/category-attributes';
 import { findBrandModels, getBrandsForVehicleType, findBrandModelsForType, resolveVehicleType, getBrandsForTruckSubType, type VehicleType } from '@/lib/vehicle-models';
+import { lookupChassis, chassisLabel, generateVehicleTags, type ChassisLookupResult } from '@/lib/vehicle-chassis-codes';
 const VehicleModelPicker = lazy(() => import('@/components/upload/VehicleModelPicker'));
 const AiModelVerifier = lazy(() => import('@/components/upload/AiModelVerifier'));
 import { type City } from '@/lib/location';
@@ -1605,6 +1606,8 @@ function UploadPageInner() {
   const [vehicleVariant, setVehicleVariant] = useState<string>('');
   const [vehicleYear, setVehicleYear] = useState<number>(new Date().getFullYear());
   const [vehicleFuel, setVehicleFuel] = useState<string>('');
+  const [chassisMatchResult, setChassisMatchResult] = useState<ChassisLookupResult | null>(null);
+  const [chassisUserInput, setChassisUserInput] = useState<string>('');
   const [modelSearchLocal, setModelSearchLocal] = useState('');
   const [manualModelInput, setManualModelInput] = useState('');
   const [showManualModel, setShowManualModel] = useState(false);
@@ -1978,6 +1981,43 @@ function UploadPageInner() {
 
   const handleMagicSearch = async () => {
       if (!magicSearchInput.trim()) return;
+
+      // ── Fast path: chassis code / model shortcut lookup (no AI call) ──
+      const chassisHits = lookupChassis(magicSearchInput.trim());
+      if (chassisHits.length > 0) {
+        const hit = chassisHits[0]; // take first (highest confidence) match
+        const userInput = magicSearchInput.trim(); // keep original input as title base
+        // Set brand — title keeps user's original input (e.g., "e90 330d")
+        setFormData(prev => ({
+          ...prev,
+          brand: hit.brand,
+          title: userInput,
+          category: 'Vozila',
+        }));
+        setAttributes(prev => ({ ...prev, marka: hit.brand }));
+        // Set fuel if detected
+        if (hit.fuel) setVehicleFuel(hit.fuel);
+        // Pre-fill model + variant so they auto-select on the model step
+        setVehicleModel(hit.model);
+        if (hit.variant) setVehicleVariant(hit.variant);
+        // Save chassis match for tag generation during publish
+        setChassisMatchResult(hit);
+        setChassisUserInput(userInput);
+        setModelSearchLocal(hit.model);
+        setMagicSearchInput('');
+        // Set vehicle type to car (magic search is in vehicle context)
+        setVehicleType('car');
+        // Navigate to model step (user picks year, then clicks pre-filtered model)
+        setStep('car-method');
+        setBreadcrumb([
+          { label: 'Vozila', step: 'vehicle-sub' as UploadStep },
+          { label: hit.brand, step: 'car-method' as UploadStep },
+        ]);
+        setCarFlowStep('model');
+        showToast(`${hit.generation || hit.model} → ${hit.brand} ${hit.model}${hit.fuel ? ' (' + hit.fuel + ')' : ''}`);
+        return;
+      }
+
       setIsAiLoading(true);
       try {
         const result = await analyzeRawInput(magicSearchInput.trim());
@@ -2308,6 +2348,13 @@ function UploadPageInner() {
             tags = tagJson.data.tags;
           }
         } catch { /* Tags-Generierung fehlgeschlagen — nicht blockierend */ }
+      }
+
+      // Merge vehicle chassis tags if a chassis code was recognized during upload
+      if (chassisMatchResult && chassisUserInput) {
+        const vehicleTags = generateVehicleTags(chassisUserInput, chassisMatchResult);
+        const merged = new Set([...tags, ...vehicleTags]);
+        tags = [...merged];
       }
 
       if (isEditMode && editProductId) {
@@ -4065,6 +4112,48 @@ function UploadPageInner() {
                   {carBrandSearch && <button onClick={() => setCarBrandSearch('')} className="text-[var(--c-text3)] hover:text-[var(--c-text)]"><i className="fa-solid fa-xmark text-xs"></i></button>}
                 </div>
               </div>
+              {/* Chassis code / model shortcut suggestions */}
+              {(() => {
+                const chassisMatches = carBrandSearch.trim().length >= 2 ? lookupChassis(carBrandSearch) : [];
+                if (chassisMatches.length === 0) return null;
+                return (
+                  <div className="mb-3 space-y-1.5">
+                    {chassisMatches.slice(0, 3).map((match: ChassisLookupResult, idx: number) => (
+                      <button key={idx} onClick={() => {
+                        // Set brand
+                        setFormData(prev => ({ ...prev, brand: match.brand, title: `${match.brand} ` }));
+                        setAttributes(prev => ({ ...prev, marka: match.brand }));
+                        setCarBrandSearch('');
+                        // Pre-fill fuel if detected
+                        if (match.fuel) setVehicleFuel(match.fuel);
+                        // Pre-fill model + variant
+                        if (match.variant) setVehicleVariant(match.variant);
+                        setVehicleModel(match.model);
+                        // Save chassis match for tag generation during publish
+                        setChassisMatchResult(match);
+                        setChassisUserInput(carBrandSearch.trim());
+                        // Pre-fill model search to filter to the matched model
+                        setModelSearchLocal(match.model);
+                        // Update breadcrumb and go to model step
+                        setBreadcrumb(prev => {
+                          const base = prev.length > 0 ? prev : [{ label: 'Vozila', step: 'vehicle-sub' as UploadStep }];
+                          return [...base, { label: match.brand, step: 'car-method' as UploadStep }];
+                        });
+                        setCarFlowStep('model');
+                      }} className="w-full flex items-center gap-3 px-4 py-3 bg-blue-500/5 border border-blue-500/20 rounded-[14px] text-left hover:bg-blue-500/10 hover:border-blue-500/40 transition-all active:scale-[0.98]">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                          <i className="fa-solid fa-bolt text-blue-400 text-xs"></i>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-bold text-[var(--c-text)] truncate">{chassisLabel(match)}</p>
+                          <p className="text-[10px] text-blue-400 font-medium">Brzi odabir</p>
+                        </div>
+                        <i className="fa-solid fa-chevron-right text-blue-400/60 text-[10px]"></i>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
               <div className="grid grid-cols-3 gap-2">
                 {filteredBrands.map((brand) => (
                   <button key={brand.name} onClick={() => {
@@ -4197,12 +4286,23 @@ function UploadPageInner() {
                     <button key={model.name} onClick={() => {
                       setVehicleModel(model.name);
                       setAttributes(prev => ({ ...prev, marka: formData.brand, model: model.name, godiste: vehicleYear.toString(), gorivo: vehicleFuel }));
-                      setFormData(prev => ({ ...prev, title: `${formData.brand} ${model.name} ${vehicleYear}` }));
                       setBreadcrumb(prev => [...prev, { label: `${vehicleYear} • ${model.name}`, step: 'car-method' as UploadStep }]);
-                      // If model has variants → go to variant step, else → form
-                      if (model.variants && model.variants.length > 0) {
+                      // Check if variant was pre-set (e.g. from chassis code "e90 330d")
+                      const presetVariant = vehicleVariant;
+                      const hasMatchingVariant = presetVariant && model.variants?.includes(presetVariant);
+                      if (hasMatchingVariant) {
+                        // Variant already known — set it and skip to form, keep existing title
+                        setAttributes(prev => ({ ...prev, varijanta: presetVariant }));
+                        if (!formData.title || formData.title === `${formData.brand} ${model.name} ${vehicleYear}`) {
+                          setFormData(prev => ({ ...prev, title: `${formData.brand} ${model.name} ${vehicleYear}` }));
+                        }
+                        setStep('form');
+                      } else if (model.variants && model.variants.length > 0) {
+                        // No pre-set variant — go to variant picker as usual
+                        setFormData(prev => ({ ...prev, title: `${formData.brand} ${model.name} ${vehicleYear}` }));
                         setCarFlowStep('variant');
                       } else {
+                        setFormData(prev => ({ ...prev, title: `${formData.brand} ${model.name} ${vehicleYear}` }));
                         setStep('form');
                       }
                     }} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 text-left group active:scale-95 transition-all hover:bg-[var(--c-hover)] hover:border-blue-500/30">
@@ -4245,6 +4345,64 @@ function UploadPageInner() {
                 Preskoči → ručni unos
               </button>
             </div>
+
+            {/* Chassis code pre-fill summary + Dalje button */}
+            {vehicleModel && (
+              <div className="bg-[var(--c-card)] border border-blue-500/20 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <i className="fa-solid fa-car-side text-blue-500 text-sm"></i>
+                  <span className="text-[11px] font-black text-blue-500 uppercase tracking-[2px]">Prepoznato vozilo</span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-[12px] font-bold text-blue-500">
+                    <i className="fa-solid fa-industry text-[10px]"></i> {formData.brand}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-[12px] font-bold text-blue-500">
+                    <i className="fa-solid fa-car text-[10px]"></i> {vehicleModel}
+                  </span>
+                  {vehicleVariant && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-[12px] font-bold text-blue-500">
+                      <i className="fa-solid fa-gauge text-[10px]"></i> {vehicleVariant}
+                    </span>
+                  )}
+                  {vehicleFuel && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-[12px] font-bold text-blue-500">
+                      <i className="fa-solid fa-gas-pump text-[10px]"></i> {vehicleFuel}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--c-hover)] text-[12px] font-bold text-[var(--c-text3)]">
+                    <i className="fa-solid fa-calendar text-[10px]"></i> {vehicleYear}
+                  </span>
+                </div>
+
+                {/* Warning if something is missing */}
+                {(!vehicleFuel || !vehicleVariant) && (
+                  <p className="text-[11px] text-amber-500 flex items-center gap-1.5">
+                    <i className="fa-solid fa-triangle-exclamation text-[10px]"></i>
+                    {!vehicleFuel && !vehicleVariant ? 'Gorivo i varijanta nisu odabrani — možeš ih dodati u formularu.' : !vehicleFuel ? 'Gorivo nije odabrano — možeš ga dodati u formularu.' : 'Varijanta nije odabrana — možeš je dodati u formularu.'}
+                  </p>
+                )}
+
+                <button onClick={() => {
+                  setAttributes(prev => ({
+                    ...prev,
+                    marka: formData.brand,
+                    model: vehicleModel,
+                    godiste: vehicleYear.toString(),
+                    gorivo: vehicleFuel,
+                    ...(vehicleVariant ? { varijanta: vehicleVariant } : {}),
+                  }));
+                  if (!formData.title) {
+                    setFormData(prev => ({ ...prev, title: `${formData.brand} ${vehicleModel} ${vehicleYear}` }));
+                  }
+                  setBreadcrumb(prev => [...prev, { label: `${vehicleYear} • ${vehicleModel}${vehicleVariant ? ' ' + vehicleVariant : ''}`, step: 'car-method' as UploadStep }]);
+                  setStep('form');
+                }} className="w-full py-3.5 rounded-xl text-[13px] font-black text-white blue-gradient shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                  Dalje <i className="fa-solid fa-arrow-right text-[11px]"></i>
+                </button>
+              </div>
+            )}
           </div>
         </MainLayout>
       );
