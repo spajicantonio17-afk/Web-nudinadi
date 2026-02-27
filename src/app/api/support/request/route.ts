@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server';
 
-const resend = new Resend(process.env.RESEND_API_KEY || '');
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY || '');
+}
 
 const VALID_CATEGORIES = ['bug', 'account', 'listing', 'payment', 'suggestion', 'other'] as const;
 
@@ -73,7 +75,7 @@ export async function POST(req: NextRequest) {
     };
 
     try {
-      await resend.emails.send({
+      await getResend().emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'NudiNađi Kontakt <onboarding@resend.dev>',
         to: process.env.SUPPORT_EMAIL || 'info@nudinadi.com',
         replyTo: email.trim().toLowerCase(),

@@ -1058,7 +1058,7 @@ function HomeContent() {
                         <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${selectedCatId === cat.id ? 'bg-[var(--c-accent-light)]' : 'bg-transparent'}`}>
                           <i className={`fa-solid ${cat.icon} text-sm`}></i>
                         </div>
-                        <span className="text-[9px] md:text-[12px] font-bold uppercase md:capitalize text-center md:text-left mt-1 md:mt-0 leading-tight">
+                        <span className="text-[9px] md:text-[12px] font-bold uppercase md:normal-case text-center md:text-left mt-1 md:mt-0 leading-tight">
                           {cat.name}
                         </span>
                         <i className={`hidden md:block fa-solid fa-chevron-right ml-auto text-[10px] ${selectedCatId === cat.id ? 'text-[var(--c-accent)]' : 'text-[var(--c-text-muted)] opacity-0 group-hover:opacity-100'}`}></i>
