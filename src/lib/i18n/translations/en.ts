@@ -201,6 +201,9 @@ const en: Record<string, string> = {
   'menu.email': 'Email Address',
   'menu.bio': 'Bio / Description',
   'menu.save': 'Save',
+  'menu.privacy': 'Privacy & Data',
+  'menu.fullName': 'Full Name',
+  'menu.socialMedia': 'Social Media',
 
   // Notifications
   'notif.title': 'Notifications',

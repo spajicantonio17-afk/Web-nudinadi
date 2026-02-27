@@ -21,9 +21,9 @@ export default function SiteFooter() {
               Moderna platforma za kupovinu i prodaju. AI podrška, sigurne transakcije, brza pretraga.
             </p>
             <div className="flex gap-2">
-              <span className="w-8 h-8 rounded-[4px] bg-[var(--c-card)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 cursor-pointer">
+              <a href="https://www.instagram.com/nudinadji" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-[4px] bg-[var(--c-card)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 cursor-pointer">
                 <i className="fa-brands fa-instagram text-xs"></i>
-              </span>
+              </a>
             </div>
           </div>
 

@@ -11,8 +11,8 @@ const FEATURES = [
   { name: 'Chat s kupcima i prodavačima', free: true, pro: true, business: true },
   { name: 'Favoriti', free: true, pro: true, business: true },
   { name: 'AI Link-Import', free: true, pro: true, business: true },
+  { name: 'AI VIN Dekoder', free: true, pro: true, business: true },
   { name: 'AI Opis (generisanje teksta)', free: false, pro: true, business: true },
-  { name: 'AI VIN Dekoder', free: false, pro: true, business: true },
   { name: 'Statistike (pregledi, klikovi)', free: false, pro: true, business: true },
   { name: 'Pro značka na profilu', free: false, pro: true, business: true },
   { name: 'Prioritet u rezultatima pretrage', free: false, pro: true, business: true },
@@ -92,6 +92,7 @@ export default function PlansPage() {
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Chat</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Favoriti</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Link-Import</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI VIN Dekoder</li>
               </ul>
               <div className="block text-center py-2.5 border border-[var(--c-border)] rounded-[4px] text-[10px] font-black text-[var(--c-text3)] uppercase tracking-wider">
                 Aktivan plan

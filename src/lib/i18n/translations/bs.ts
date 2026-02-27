@@ -148,7 +148,7 @@ const bs: Record<string, string> = {
   'menu.myListings': 'Moji Oglasi',
   'menu.activeListings': 'Aktivni Oglasi',
   'menu.finishedListings': 'Završeni Oglasi',
-  'menu.archivedListings': 'Arhiv Oglasi',
+  'menu.archivedListings': 'Arhivirani Oglasi',
   'menu.account': 'Račun',
   'menu.personalInfo': 'Osobni podaci',
   'menu.security': 'Sigurnost i lozinka',
@@ -201,6 +201,9 @@ const bs: Record<string, string> = {
   'menu.email': 'Email Adresa',
   'menu.bio': 'Bio / Opis',
   'menu.save': 'Spremi',
+  'menu.privacy': 'Privatnost i Podaci',
+  'menu.fullName': 'Ime i Prezime',
+  'menu.socialMedia': 'Društvene Mreže',
 
   // Notifications
   'notif.title': 'Obavijesti',

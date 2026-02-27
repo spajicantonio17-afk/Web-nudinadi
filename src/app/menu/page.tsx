@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,6 +9,7 @@ import { useToast } from '@/components/Toast';
 import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme';
 import { getSupabase } from '@/lib/supabase';
+import { uploadAvatar } from '@/services/uploadService';
 
 type MenuStep = 'main' | 'account' | 'main-settings' | 'security' | 'devices' | 'notifications' | 'appearance' | 'language' | 'support' | 'privacy';
 
@@ -79,12 +80,6 @@ const MenuOption: React.FC<{ label: string; badge?: string; icon: string; onClic
         <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)] group-hover:text-[var(--c-text2)] transition-colors"></i>
     </div>
   </div>
-);
-
-// ── Back Button Component ────────────────────────────────────
-
-const BackButton: React.FC<{ onClick: () => void; label?: string }> = ({ onClick, label = 'Nazad' }) => (
-  <button onClick={onClick} className="text-[var(--c-text2)] hover:text-[var(--c-text)] font-bold text-xs uppercase">{label}</button>
 );
 
 // ══════════════════════════════════════════════════════════════
@@ -160,10 +155,21 @@ export default function MenuPage() {
     email: '',
     bio: '',
     fullName: '',
+    phone: '',
     instagram: '',
     facebook: '',
   });
   const [accountSaving, setAccountSaving] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
 
   // Sync account form with user data
   useEffect(() => {
@@ -173,6 +179,7 @@ export default function MenuPage() {
         email: user.email || '',
         bio: user.bio || '',
         fullName: user.fullName || '',
+        phone: user.phone || '',
         instagram: user.instagramUrl || '',
         facebook: user.facebookUrl || '',
       });
@@ -183,18 +190,29 @@ export default function MenuPage() {
     if (!user) return;
     setAccountSaving(true);
     try {
+      let avatarUrl: string | undefined;
+      if (avatarFile) {
+        avatarUrl = await uploadAvatar(user.id, avatarFile);
+      }
+
+      const updatePayload: Record<string, string | null | undefined> = {
+        username: accountForm.username,
+        full_name: accountForm.fullName,
+        bio: accountForm.bio,
+        phone: accountForm.phone || null,
+        instagram_url: accountForm.instagram || null,
+        facebook_url: accountForm.facebook || null,
+      };
+      if (avatarUrl) updatePayload.avatar_url = avatarUrl;
+
       const { error } = await getSupabase()
         .from('profiles')
-        .update({
-          username: accountForm.username,
-          full_name: accountForm.fullName,
-          bio: accountForm.bio,
-          instagram_url: accountForm.instagram || null,
-          facebook_url: accountForm.facebook || null,
-        })
+        .update(updatePayload)
         .eq('id', user.id);
 
       if (error) throw error;
+      setAvatarFile(null);
+      setAvatarPreview(null);
       await refreshProfile();
       showToast('Profil uspješno ažuriran!');
       setStep('main');
@@ -308,7 +326,7 @@ export default function MenuPage() {
 
   if (step === 'main-settings') {
     return (
-      <MainLayout title={t('menu.mainSettings')} showSigurnost={false} headerRight={<BackButton onClick={() => setStep('main')} />}>
+      <MainLayout title={t('menu.mainSettings')} showSigurnost={false} onBack={() => setStep('main')}>
           <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-6">
 
               {/* Header Card — Light theme friendly */}
@@ -393,18 +411,8 @@ export default function MenuPage() {
 
   if (step === 'appearance') {
       return (
-        <MainLayout title={t('menu.appearance')} showSigurnost={false} headerRight={<BackButton onClick={() => setStep('main')} label={t('common.done')} />}>
+        <MainLayout title={t('menu.appearance')} showSigurnost={false} onBack={() => setStep('main')}>
             <div className="max-w-2xl mx-auto space-y-6 pt-2 pb-24">
-                <section>
-                    <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-4 px-2">{t('menu.appIcon')}</h2>
-                    <div className="flex gap-4 justify-center bg-[var(--c-card)] border border-[var(--c-border)] p-6 rounded-[24px]">
-                        <AppIconOption name="Classic" colors="bg-gradient-to-br from-blue-600 to-indigo-600" isSelected={appIcon === 'classic'} onClick={() => updateAppIcon('classic')} />
-                        <AppIconOption name="Stealth" colors="bg-gradient-to-br from-gray-800 to-black border border-[var(--c-border2)]" isSelected={appIcon === 'stealth'} onClick={() => updateAppIcon('stealth')} />
-                        <AppIconOption name="Gold" colors="bg-gradient-to-br from-yellow-400 to-amber-600" isSelected={appIcon === 'gold'} onClick={() => updateAppIcon('gold')} />
-                        <AppIconOption name="Neon" colors="bg-gradient-to-br from-fuchsia-500 to-purple-600" isSelected={appIcon === 'neon'} onClick={() => updateAppIcon('neon')} />
-                    </div>
-                </section>
-
                 <section>
                     <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">{t('menu.theme')}</h2>
                     <div className="space-y-2">
@@ -422,7 +430,7 @@ export default function MenuPage() {
 
   if (step === 'notifications') {
       return (
-        <MainLayout title={t('menu.notifications')} showSigurnost={false} headerRight={<BackButton onClick={() => setStep('main')} />}>
+        <MainLayout title={t('menu.notifications')} showSigurnost={false} onBack={() => setStep('main')}>
             <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-6">
                 <section>
                     <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">{t('menu.directMessages')}</h2>
@@ -468,7 +476,7 @@ export default function MenuPage() {
 
   if (step === 'language') {
       return (
-        <MainLayout title={t('menu.language')} showSigurnost={false} headerRight={<BackButton onClick={() => setStep('main')} label={t('common.done')} />}>
+        <MainLayout title={t('menu.language')} showSigurnost={false} onBack={() => setStep('main')}>
              <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-2">
                  <SelectionRow label="Bosanski / Hrvatski / Srpski" icon="fa-flag" isSelected={locale === 'bs'} onClick={() => setLocale('bs')} />
                  <SelectionRow label="English (US)" icon="fa-flag" isSelected={locale === 'en'} onClick={() => setLocale('en')} />
@@ -481,7 +489,7 @@ export default function MenuPage() {
 
   if (step === 'account') {
       return (
-        <MainLayout title={t('menu.personalInfo')} showSigurnost={false} headerRight={
+        <MainLayout title={t('menu.personalInfo')} showSigurnost={false} onBack={() => setStep('main')} headerRight={
           <button
             onClick={handleAccountSave}
             disabled={accountSaving}
@@ -496,9 +504,10 @@ export default function MenuPage() {
                     <div className="relative">
                         <div className="w-24 h-24 rounded-full bg-[var(--c-card-alt)] overflow-hidden border-2 border-[var(--c-border2)]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={user?.avatarUrl || 'https://picsum.photos/seed/guest/200/200'} alt="Profile" className="w-full h-full object-cover" />
+                            <img src={avatarPreview || user?.avatarUrl || 'https://picsum.photos/seed/guest/200/200'} alt="Profile" className="w-full h-full object-cover" />
                         </div>
-                        <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white border-2 border-[var(--c-bg)]">
+                        <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarPick} className="hidden" />
+                        <button onClick={() => avatarInputRef.current?.click()} className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white border-2 border-[var(--c-bg)]">
                             <i className="fa-solid fa-camera text-xs"></i>
                         </button>
                     </div>
@@ -516,7 +525,7 @@ export default function MenuPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-[10px] uppercase font-bold text-[var(--c-text3)] block mb-1">Ime i Prezime</label>
+                        <label className="text-[10px] uppercase font-bold text-[var(--c-text3)] block mb-1">{t('menu.fullName')}</label>
                         <input
                           type="text"
                           value={accountForm.fullName}
@@ -536,6 +545,18 @@ export default function MenuPage() {
                         <p className="text-[9px] text-[var(--c-text-muted)] mt-1 px-1">Email se ne može mijenjati direktno.</p>
                     </div>
                     <div>
+                        <label className="text-[10px] uppercase font-bold text-[var(--c-text3)] block mb-1">
+                          <i className="fa-solid fa-phone mr-1"></i> Telefon
+                        </label>
+                        <input
+                          type="tel"
+                          value={accountForm.phone}
+                          onChange={(e) => setAccountForm(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="+387 6x xxx xxx"
+                          className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-lg p-3 text-sm text-[var(--c-text)] focus:border-blue-500 outline-none"
+                        />
+                    </div>
+                    <div>
                         <label className="text-[10px] uppercase font-bold text-[var(--c-text3)] block mb-1">{t('menu.bio')}</label>
                         <textarea
                           rows={3}
@@ -548,7 +569,7 @@ export default function MenuPage() {
 
                     {/* Social Media Links */}
                     <div className="pt-2 border-t border-[var(--c-border)]">
-                      <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-3">Društvene Mreže</p>
+                      <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-3">{t('menu.socialMedia')}</p>
                       <div className="space-y-3">
                         <div>
                           <label className="text-[10px] uppercase font-bold text-[var(--c-text3)] block mb-1">
@@ -581,10 +602,6 @@ export default function MenuPage() {
                     </div>
                 </div>
 
-                {/* Back to main */}
-                <button onClick={() => setStep('main')} className="w-full text-center text-[var(--c-text3)] text-xs font-bold uppercase py-3">
-                  {t('common.back')}
-                </button>
             </div>
         </MainLayout>
       );
@@ -594,7 +611,7 @@ export default function MenuPage() {
 
   if (step === 'security') {
     return (
-        <MainLayout title={t('menu.security')} showSigurnost={false} headerRight={<BackButton onClick={() => setStep('main')} />}>
+        <MainLayout title={t('menu.security')} showSigurnost={false} onBack={() => setStep('main')}>
             <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-6">
                 {/* Change Password */}
                 <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] overflow-hidden">
@@ -701,7 +718,7 @@ export default function MenuPage() {
 
   if (step === 'support') {
     return (
-      <MainLayout title={t('menu.support')} showSigurnost={false} headerRight={<BackButton onClick={() => setStep('main')} />}>
+      <MainLayout title={t('menu.support')} showSigurnost={false} onBack={() => setStep('main')}>
         <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-6">
 
           {/* Contact Card */}
@@ -724,7 +741,7 @@ export default function MenuPage() {
               {[
                 { q: 'Kako objaviti oglas?', a: 'Kliknite na "+" dugme, odaberite kategoriju i popunite podatke. AI će pomoći s opisom.', icon: 'fa-plus-circle' },
                 { q: 'Kako kontaktirati prodavca?', a: 'Otvorite oglas i kliknite "Pošalji Poruku" ili "Telefon".', icon: 'fa-comment' },
-                { q: 'Kako promijeniti lozinku?', a: 'Idite na Meni → Sigurnost → Promijeni Lozinku. Link se šalje na vaš email.', icon: 'fa-lock' },
+                { q: 'Kako promijeniti lozinku?', a: 'Idite na Meni → Sigurnost → Promijeni Lozinku. Unesite trenutnu i novu lozinku.', icon: 'fa-lock' },
                 { q: 'Kako izbrisati oglas?', a: 'Otvorite svoj oglas i kliknite na tri tačke → Obriši.', icon: 'fa-trash' },
                 { q: 'Kako funkcioniše AI pretraga?', a: 'Upišite šta tražite prirodnim jezikom. AI razumije sinonime i ispravlja greške.', icon: 'fa-wand-magic-sparkles' },
               ].map((faq, i) => (
@@ -748,27 +765,27 @@ export default function MenuPage() {
           <section>
             <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">Pravne Informacije</h2>
             <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-1">
-              <button className="w-full text-left p-4 flex justify-between items-center border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] transition-colors rounded-t-[16px]">
+              <Link href="/uvjeti" className="w-full text-left p-4 flex justify-between items-center border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] transition-colors rounded-t-[16px]">
                 <div className="flex items-center gap-3">
                   <i className="fa-solid fa-file-lines text-[var(--c-text3)]"></i>
                   <span className="text-sm font-bold text-[var(--c-text)]">{t('menu.terms')}</span>
                 </div>
-                <i className="fa-solid fa-arrow-up-right-from-square text-[var(--c-text-muted)] text-xs"></i>
-              </button>
-              <button className="w-full text-left p-4 flex justify-between items-center border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] transition-colors">
+                <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-xs"></i>
+              </Link>
+              <Link href="/privatnost" className="w-full text-left p-4 flex justify-between items-center border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] transition-colors">
                 <div className="flex items-center gap-3">
                   <i className="fa-solid fa-shield-halved text-[var(--c-text3)]"></i>
                   <span className="text-sm font-bold text-[var(--c-text)]">Politika Privatnosti</span>
                 </div>
-                <i className="fa-solid fa-arrow-up-right-from-square text-[var(--c-text-muted)] text-xs"></i>
-              </button>
-              <button className="w-full text-left p-4 flex justify-between items-center hover:bg-[var(--c-hover)] transition-colors rounded-b-[16px]">
+                <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-xs"></i>
+              </Link>
+              <Link href="/kolacici" className="w-full text-left p-4 flex justify-between items-center hover:bg-[var(--c-hover)] transition-colors rounded-b-[16px]">
                 <div className="flex items-center gap-3">
                   <i className="fa-solid fa-cookie text-[var(--c-text3)]"></i>
                   <span className="text-sm font-bold text-[var(--c-text)]">Cookie Politika</span>
                 </div>
-                <i className="fa-solid fa-arrow-up-right-from-square text-[var(--c-text-muted)] text-xs"></i>
-              </button>
+                <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-xs"></i>
+              </Link>
             </div>
           </section>
 
@@ -786,7 +803,7 @@ export default function MenuPage() {
 
   if (step === 'privacy') {
     return (
-      <MainLayout title="Privatnost i Podaci" showSigurnost={false} headerRight={<BackButton onClick={() => setStep('main')} />}>
+      <MainLayout title={t('menu.privacy')} showSigurnost={false} onBack={() => setStep('main')}>
         <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-6">
 
           {/* Data Management */}
@@ -899,15 +916,16 @@ export default function MenuPage() {
     <MainLayout title={t('menu.title')} showSigurnost={false}>
       <div className="max-w-2xl mx-auto mt-2 space-y-4 pb-24">
         {/* User Quick Info */}
-        <div className="bg-blue-500/5 border border-blue-500/10 rounded-[22px] p-5 mb-6 flex items-center gap-4">
+        <Link href="/planovi" className="bg-blue-500/5 border border-blue-500/10 rounded-[22px] p-5 mb-6 flex items-center gap-4 group">
             <div className="w-12 h-12 rounded-full blue-gradient flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                 <i className="fa-solid fa-star"></i>
             </div>
-            <div>
+            <div className="flex-1">
                 <h3 className="text-[15px] font-bold text-[var(--c-text)]">{t('menu.plusMembership')}</h3>
                 <p className="text-[11px] text-[var(--c-text3)] leading-tight">{t('menu.plusDesc')}</p>
             </div>
-        </div>
+            <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)] group-hover:text-[var(--c-text2)] transition-colors"></i>
+        </Link>
 
         {/* MOJI OGLASI */}
         <div>
@@ -922,7 +940,7 @@ export default function MenuPage() {
             <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-[var(--c-text-muted)] mb-3 mt-4 px-2">{t('menu.account')}</h2>
             <MenuOption label={t('menu.personalInfo')} icon="fa-user-gear" onClick={() => setStep('account')} />
             <MenuOption label={t('menu.security')} icon="fa-lock" onClick={() => setStep('security')} />
-            <MenuOption label="Privatnost i Podaci" icon="fa-shield-halved" onClick={() => setStep('privacy')} />
+            <MenuOption label={t('menu.privacy')} icon="fa-shield-halved" onClick={() => setStep('privacy')} />
         </div>
 
         {/* POSTAVKE */}
