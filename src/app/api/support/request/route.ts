@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     try {
       await resend.emails.send({
-        from: 'NudiNađi Kontakt <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM_EMAIL || 'NudiNađi Kontakt <onboarding@resend.dev>',
         to: process.env.SUPPORT_EMAIL || 'info@nudinadi.com',
         replyTo: email.trim().toLowerCase(),
         subject: `[${categoryLabels[category] || category}] ${subject.trim()}`,

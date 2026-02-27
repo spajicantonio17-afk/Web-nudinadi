@@ -46,7 +46,10 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   if (filters.minPrice !== undefined) query = query.gte('price', filters.minPrice)
   if (filters.maxPrice !== undefined) query = query.lte('price', filters.maxPrice)
   if (filters.location) query = query.ilike('location', `%${filters.location}%`)
-  if (filters.search) query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+  if (filters.search) {
+    // Full-text search via tsvector (search_vector column, powered by title+tags+description)
+    query = query.textSearch('search_vector', filters.search, { config: 'simple', type: 'plain' })
+  }
 
   // Sorting
   const sortBy = filters.sortBy || 'created_at'
@@ -158,4 +161,71 @@ export async function searchProducts(query: string, filters: Omit<ProductFilters
 export async function getUserProducts(userId: string): Promise<ProductFull[]> {
   const { data } = await getProducts({ seller_id: userId })
   return data
+}
+
+// ─── Autocomplete Suggestions (fast, no AI) ──────────
+
+export interface SearchSuggestion {
+  id: string
+  title: string
+  price: number
+  images: string[]
+  condition: string
+  location: string | null
+  category_id: string | null
+  rank: number
+}
+
+export async function getSearchSuggestions(query: string, limit = 5): Promise<SearchSuggestion[]> {
+  if (!query || query.trim().length < 2) return []
+
+  const { data, error } = await supabase.rpc('search_suggestions', {
+    p_query: query.trim(),
+    p_limit: limit,
+  })
+
+  if (error) {
+    console.warn('search_suggestions RPC failed:', error.message)
+    return []
+  }
+
+  return (data ?? []) as SearchSuggestion[]
+}
+
+// ─── Similar Products (tag overlap + category) ───────
+
+export interface SimilarProduct {
+  id: string
+  title: string
+  price: number
+  images: string[]
+  condition: string
+  location: string | null
+  created_at: string
+  seller_id: string
+  category_id: string | null
+  tag_overlap: number
+}
+
+export async function getSimilarProducts(
+  productId: string,
+  categoryId: string | null,
+  tags: string[],
+  price: number,
+  limit = 6
+): Promise<SimilarProduct[]> {
+  const { data, error } = await supabase.rpc('get_similar_products', {
+    p_product_id: productId,
+    p_category_id: categoryId,
+    p_tags: tags ?? [],
+    p_price: price,
+    p_limit: limit,
+  })
+
+  if (error) {
+    console.warn('get_similar_products RPC failed:', error.message)
+    return []
+  }
+
+  return (data ?? []) as SimilarProduct[]
 }

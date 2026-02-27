@@ -1577,6 +1577,7 @@ function UploadPageInner() {
   const [partsVehicleModel, setPartsVehicleModel] = useState('');
   const [partsSubStep, setPartsSubStep] = useState<'vehicle-type' | 'brand' | 'model' | 'model-detail' | 'category' | 'detail'>('vehicle-type');
   const [partsVehicleType, setPartsVehicleType] = useState<VehicleType>('car');
+  const [generatedTags, setGeneratedTags] = useState<string[]>([]);
   const [partsCategory, setPartsCategory] = useState('');
   const [partsModelDetail, setPartsModelDetail] = useState('');
   const [partsModelVariants, setPartsModelVariants] = useState<string[]>([]);
@@ -2293,6 +2294,22 @@ function UploadPageInner() {
       const priceTypeLabel = formData.priceType === 'mk' ? 'MK' : formData.priceType === 'negotiable' ? 'Po dogovoru' : 'Fiksno';
       const mergedAttributes = { ...attributes, price_type: priceTypeLabel };
 
+      // Generate AI tags if not already present (non-blocking)
+      let tags = generatedTags;
+      if (tags.length === 0 && formData.title.trim()) {
+        try {
+          const tagRes = await fetch('/api/ai/enhance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'tags', title: formData.title, description: formData.description, category: formData.category }),
+          });
+          const tagJson = await tagRes.json();
+          if (tagJson.success && Array.isArray(tagJson.data?.tags)) {
+            tags = tagJson.data.tags;
+          }
+        } catch { /* Tags-Generierung fehlgeschlagen — nicht blockierend */ }
+      }
+
       if (isEditMode && editProductId) {
         // ── EDIT MODE: update existing product ────────────────
         await updateProduct(editProductId, {
@@ -2304,6 +2321,7 @@ function UploadPageInner() {
           images: finalImages.length > 0 ? finalImages : undefined,
           location: formData.location.trim() || null,
           attributes: mergedAttributes,
+          tags: tags.length > 0 ? tags : undefined,
         });
         showToast('Oglas uspješno ažuriran!');
         router.push(`/product/${editProductId}`);
@@ -2320,6 +2338,7 @@ function UploadPageInner() {
           status: 'active',
           location: formData.location.trim() || null,
           attributes: mergedAttributes,
+          tags,
         });
 
         // Award XP for upload
@@ -2454,6 +2473,9 @@ function UploadPageInner() {
       const json = await res.json();
       if (json.success && json.data?.category) {
         setFormData(prev => ({ ...prev, category: json.data.category }));
+        if (Array.isArray(json.data.tags) && json.data.tags.length > 0) {
+          setGeneratedTags(json.data.tags);
+        }
         showToast(`Kategorija: ${json.data.category}`);
       }
     } catch { showToast('Greška pri kategorizaciji', 'error'); }

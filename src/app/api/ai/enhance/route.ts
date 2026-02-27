@@ -101,7 +101,15 @@ Pravila:
 Vrati SAMO JSON: {"tags": ["tag1", "tag2", "tag3", ...]}`;
 
       const raw = await textWithGemini(prompt);
-      const data = parseJsonResponse(raw);
+      const data = parseJsonResponse(raw) as Record<string, unknown>;
+      // Sanitize tags: deduplicate, lowercase, cap at 20
+      if (data && Array.isArray(data.tags)) {
+        data.tags = [...new Set(
+          (data.tags as string[])
+            .map(t => String(t).toLowerCase().trim())
+            .filter(t => t.length > 0 && t.length <= 50)
+        )].slice(0, 20);
+      }
       return NextResponse.json({ success: true, data });
     }
 
@@ -164,17 +172,38 @@ Primjeri:
 - "Polaris Sportsman 570" → category: "Vozila", subcategory: "Polaris", vehicleType: "atv"
 - "Turbina za Golf 5" → category: "Dijelovi za vozila", subcategory: "Volkswagen", vehicleType: "parts"
 
+Dodatno: Generiši 10-15 skrivenih tagova za pretragu.
+Tag pravila:
+- Sinonimi na bs/hr/sr (mobitel = telefon = handy, auto = automobil = kola)
+- Marka, model, tip proizvoda
+- Boja, veličina, stanje (ako se može zaključiti)
+- Razgovorni i regionalni izrazi (laptop = leptop = prijenosnik = računar)
+- Uključi česte pravopisne greške korisnika (iphon, samsng, volksvaen)
+- Max 3 riječi po tagu, sve lowercase
+- Uključi i engleski naziv ako je poznat brend (npr. "shoes" za cipele)
+
 Vrati SAMO JSON:
 {
   "category": "Tačan naziv kategorije iz liste iznad",
   "subcategory": "Što preciznija potkategorija (za Vozila/Dijelove = marka vozila, za Mobilne = brend, za ostale = tip)",
   "correctedTitle": "Ispravljeni naslov bez pravopisnih grešaka",
   "confidence": broj_0_100,
-  "vehicleType": "car|motorcycle|bicycle|truck|camper|boat|atv|parts"
+  "vehicleType": "car|motorcycle|bicycle|truck|camper|boat|atv|parts",
+  "tags": ["tag1", "tag2", "tag3", "...do 15 tagova"]
 }`;
 
       const raw = await textWithGemini(prompt);
-      const data = parseJsonResponse(raw);
+      const data = parseJsonResponse(raw) as Record<string, unknown>;
+      // Sanitize tags: deduplicate, lowercase, cap at 20
+      if (data && Array.isArray(data.tags)) {
+        data.tags = [...new Set(
+          (data.tags as string[])
+            .map(t => String(t).toLowerCase().trim())
+            .filter(t => t.length > 0 && t.length <= 50)
+        )].slice(0, 20);
+      } else {
+        data.tags = [];
+      }
       return NextResponse.json({ success: true, data });
     }
 

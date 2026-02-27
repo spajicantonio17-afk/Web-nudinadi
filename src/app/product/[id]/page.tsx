@@ -13,6 +13,7 @@ import { createReview, hasUserReviewed } from '@/services/reviewService';
 import { useAuth } from '@/lib/auth';
 import type { ProductFull } from '@/lib/database.types';
 import { BAM_RATE } from '@/lib/constants';
+import SimilarProducts from '@/components/SimilarProducts';
 
 function formatTimeLabel(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
@@ -717,6 +718,18 @@ export default function ProductDetailPage() {
             </div>
         </div>
       </div>
+
+      {/* Similar Products */}
+      {product && (
+        <div className="max-w-5xl mx-auto px-4 pb-8">
+          <SimilarProducts
+            productId={product.id}
+            categoryId={product.category_id}
+            tags={product.tags ?? []}
+            price={product.price}
+          />
+        </div>
+      )}
     </MainLayout>
   );
 }

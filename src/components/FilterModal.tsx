@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import type { SearchCurrency } from '@/lib/utils';
+
+const BAM_RATE = 1.95583;
 
 // ── Filter State Types ───────────────────────────────────────────
 
@@ -109,6 +112,10 @@ interface FilterModalProps {
   onLocationClick: () => void;
   onDetectGPS: () => void;
   isDetectingGPS: boolean;
+  aiPriceMin?: number;
+  aiPriceMax?: number;
+  currency?: SearchCurrency;
+  onCurrencyChange?: (currency: SearchCurrency) => void;
 }
 
 // ── Component ────────────────────────────────────────────────────
@@ -122,15 +129,67 @@ export default function FilterModal({
   onLocationClick,
   onDetectGPS,
   isDetectingGPS,
+  aiPriceMin,
+  aiPriceMax,
+  currency = 'EUR',
+  onCurrencyChange,
 }: FilterModalProps) {
   const [filters, setFilters] = useState<FilterState>(currentFilters);
+  const [displayCurrency, setDisplayCurrency] = useState<SearchCurrency>(currency);
 
   useEffect(() => {
-    if (isOpen) setFilters(currentFilters);
-  }, [isOpen, currentFilters]);
+    if (isOpen) {
+      setDisplayCurrency(currency);
+      // Pre-fill AI-parsed prices into filter if no manual price is set
+      // AI prices are in the AI's detected currency — convert to display currency
+      let fillMin = aiPriceMin;
+      let fillMax = aiPriceMax;
+      if (currency === 'KM') {
+        // AI prices are already in KM, filter stores EUR → convert AI values for display
+        // Actually, AI prices are in the user's searched currency (could be KM)
+        // For display in the filter, show in the current displayCurrency
+      }
+      setFilters({
+        ...currentFilters,
+        priceMin: currentFilters.priceMin || (fillMin ? String(fillMin) : ''),
+        priceMax: currentFilters.priceMax || (fillMax ? String(fillMax) : ''),
+      });
+    }
+  }, [isOpen, currentFilters, aiPriceMin, aiPriceMax, currency]);
+
+  // Toggle currency and convert current price values
+  const handleCurrencyToggle = () => {
+    const newCurrency: SearchCurrency = displayCurrency === 'EUR' ? 'KM' : 'EUR';
+    const minVal = filters.priceMin ? Number(filters.priceMin) : 0;
+    const maxVal = filters.priceMax ? Number(filters.priceMax) : 0;
+
+    let newMin = '';
+    let newMax = '';
+    if (displayCurrency === 'EUR' && newCurrency === 'KM') {
+      // EUR → KM
+      if (minVal > 0) newMin = String(Math.round(minVal * BAM_RATE));
+      if (maxVal > 0) newMax = String(Math.round(maxVal * BAM_RATE));
+    } else {
+      // KM → EUR
+      if (minVal > 0) newMin = String(Math.round(minVal / BAM_RATE));
+      if (maxVal > 0) newMax = String(Math.round(maxVal / BAM_RATE));
+    }
+
+    setFilters({ ...filters, priceMin: newMin, priceMax: newMax });
+    setDisplayCurrency(newCurrency);
+    onCurrencyChange?.(newCurrency);
+  };
 
   const handleApply = () => {
-    onApply(filters);
+    // Convert prices back to EUR if currently displaying in KM (DB stores EUR)
+    if (displayCurrency === 'KM') {
+      const eurFilters = { ...filters };
+      if (filters.priceMin) eurFilters.priceMin = String(Math.round(Number(filters.priceMin) / BAM_RATE));
+      if (filters.priceMax) eurFilters.priceMax = String(Math.round(Number(filters.priceMax) / BAM_RATE));
+      onApply(eurFilters);
+    } else {
+      onApply(filters);
+    }
     onClose();
   };
 
@@ -240,10 +299,22 @@ export default function FilterModal({
           </div>
 
           {/* ROW 2: Price Range (full width) */}
-          <Section icon="fa-euro-sign" label="Raspon Cijena" accent="bg-green-500">
+          <Section icon={displayCurrency === 'KM' ? 'fa-coins' : 'fa-euro-sign'} label="Raspon Cijena" accent="bg-green-500">
+            {/* Currency toggle */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider">Valuta</span>
+              <button
+                onClick={handleCurrencyToggle}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] bg-green-500/10 border border-green-500/30 text-green-600 text-[12px] font-bold hover:bg-green-500/20 transition-all duration-150 active:scale-95"
+              >
+                <i className={`fa-solid ${displayCurrency === 'KM' ? 'fa-coins' : 'fa-euro-sign'} text-[10px]`}></i>
+                {displayCurrency === 'KM' ? 'KM (Marka)' : 'EUR (€)'}
+                <i className="fa-solid fa-arrows-rotate text-[9px] ml-0.5 opacity-60"></i>
+              </button>
+            </div>
             <div className="flex gap-3 items-center mb-3">
               <div className="flex-1 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[6px] px-3 py-2 focus-within:border-green-400 transition-all duration-150">
-                <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-0.5">Min €</p>
+                <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-0.5">Min {displayCurrency === 'KM' ? 'KM' : '€'}</p>
                 <input
                   type="number"
                   value={filters.priceMin}
@@ -254,7 +325,7 @@ export default function FilterModal({
               </div>
               <div className="text-[var(--c-text-muted)] font-bold text-lg shrink-0">—</div>
               <div className="flex-1 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[6px] px-3 py-2 focus-within:border-green-400 transition-all duration-150">
-                <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-0.5">Max €</p>
+                <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-0.5">Max {displayCurrency === 'KM' ? 'KM' : '€'}</p>
                 <input
                   type="number"
                   value={filters.priceMax}
@@ -265,13 +336,19 @@ export default function FilterModal({
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {[
+              {(displayCurrency === 'KM' ? [
+                { label: 'do 100 KM', max: '100' },
+                { label: 'do 200 KM', max: '200' },
+                { label: 'do 1.000 KM', max: '1000' },
+                { label: 'do 2.000 KM', max: '2000' },
+                { label: 'do 10.000 KM', max: '10000' },
+              ] : [
                 { label: 'do 50€', max: '50' },
                 { label: 'do 100€', max: '100' },
                 { label: 'do 500€', max: '500' },
                 { label: 'do 1.000€', max: '1000' },
                 { label: 'do 5.000€', max: '5000' },
-              ].map((v) => (
+              ]).map((v) => (
                 <button
                   key={v.max}
                   onClick={() => setFilters({ ...filters, priceMax: v.max })}

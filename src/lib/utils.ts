@@ -143,6 +143,8 @@ export function formatCondition(condition: string): string {
 
 // ── AI Query Parser ───────────────────────────────────────────────
 
+export type SearchCurrency = 'EUR' | 'KM';
+
 export interface AiQueryResult {
   /** The cleaned text query (price/modifier tokens removed) */
   cleanQuery: string;
@@ -150,6 +152,8 @@ export interface AiQueryResult {
   priceMax?: number;
   /** Detected category name (e.g. "Vozila") or null */
   detectedCategory: string | null;
+  /** Detected currency from the query: "km"/"maraka" → KM, "e"/"€"/"eur" → EUR */
+  detectedCurrency: SearchCurrency | null;
 }
 
 /** Parse a number token that may contain dots/commas as thousands separators */
@@ -192,35 +196,47 @@ export function parseAiQuery(input: string): AiQueryResult {
   let priceMin: number | undefined;
   let priceMax: number | undefined;
 
+  // Detect currency BEFORE stripping labels
+  // "5000e" / "€" / "eura" / "eur" → EUR
+  // "5000km" / "KM" / "maraka" / "konvertibilnih" → KM
+  let detectedCurrency: SearchCurrency | null = null;
+  if (/\d\s*e\b|\beura?\b|€|\beur\b/i.test(text)) {
+    detectedCurrency = 'EUR';
+  } else if (/\d\s*km\b|\bkm\b|\bkonvertibilnih\b|\bmaraka\b/i.test(text)) {
+    detectedCurrency = 'KM';
+  }
+
   // Normalize: remove currency labels and standardize separators
   const normalized = text
-    .replace(/eura?|€|eur|km\b|konvertibilnih/gi, '')
+    .replace(/\d+\s*e\b/gi, (m) => m.replace(/e$/i, ''))  // "5000e" → "5000"
+    .replace(/eura?|€|eur|km\b|konvertibilnih|maraka/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
 
-  const numPat = '(\\d{1,3}(?:[.,]?\\d{3})*(?:[.,]\\d+)?)';
+  // Matches any number: "20000", "20.000", "1.500,50", "5"
+  const numPat = '(\\d[\\d.,]*\\d|\\d)';
 
-  // "od X do Y" / "X do Y" / "između X i Y"
+  // "od X do Y" / "von X bis Y" / "X do Y" / "između X i Y"
   const rangeMatch = normalized.match(
-    new RegExp(`(?:od\\s+)?${numPat}\\s*(?:do|-)\\s*${numPat}`, 'i')
+    new RegExp(`(?:od|von)?\\s*${numPat}\\s*(?:do|bis|-)\\s*${numPat}`, 'i')
   );
   if (rangeMatch) {
     priceMin = parseNum(rangeMatch[1]);
     priceMax = parseNum(rangeMatch[2]);
     text = text.replace(rangeMatch[0], '').trim();
   } else {
-    // "ispod X" / "do X" / "manje od X"
+    // "ispod X" / "do X" / "bis X" / "manje od X"
     const maxMatch = normalized.match(
-      new RegExp(`(?:ispod|do|manje od|max\\.?)\\s+${numPat}`, 'i')
+      new RegExp(`(?:ispod|do|bis|manje od|max\\.?|unter)\\s+${numPat}`, 'i')
     );
     if (maxMatch) {
       priceMax = parseNum(maxMatch[1]);
       text = text.replace(maxMatch[0], '').trim();
     }
 
-    // "od X" / "preko X" / "više od X" / "minimum X"
+    // "od X" / "von X" / "preko X" / "više od X" / "minimum X"
     const minMatch = normalized.match(
-      new RegExp(`(?:od|preko|više od|min\\.?|minimum)\\s+${numPat}`, 'i')
+      new RegExp(`(?:od|von|ab|preko|više od|min\\.?|minimum)\\s+${numPat}`, 'i')
     );
     if (minMatch) {
       priceMin = parseNum(minMatch[1]);
@@ -247,8 +263,11 @@ export function parseAiQuery(input: string): AiQueryResult {
     }
   }
 
-  // Clean up stray punctuation and double spaces
-  const cleanQuery = text.replace(/\s{2,}/g, ' ').trim();
+  // Clean up leftover currency labels and double spaces
+  const cleanQuery = text
+    .replace(/\b(?:eura?|eur|km|konvertibilnih|maraka)\b|€/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 
-  return { cleanQuery, priceMin, priceMax, detectedCategory };
+  return { cleanQuery, priceMin, priceMax, detectedCategory, detectedCurrency };
 }

@@ -8,7 +8,7 @@ import CategoryButton from '@/components/CategoryButton';
 import LocationPicker from '@/components/LocationPicker';
 import FilterModal, { DEFAULT_FILTERS, type FilterState } from '@/components/FilterModal';
 import { CATEGORIES, CATEGORY_IMAGES, BAM_RATE } from '@/lib/constants';
-import { parseAiQuery } from '@/lib/utils';
+import { parseAiQuery, type SearchCurrency } from '@/lib/utils';
 import { getProducts, type ProductFilters } from '@/services/productService';
 import { getAllCategories } from '@/services/categoryService';
 import type { ProductFull } from '@/lib/database.types';
@@ -16,6 +16,8 @@ import type { Product } from '@/lib/types';
 import { getSelectedLocation, detectGPSLocation, findNearestCity, setSelectedLocation as saveLocation, distanceToCity, searchCities, type City } from '@/lib/location';
 import { useFavorites } from '@/lib/favorites';
 import { useToast } from '@/components/Toast';
+import SearchSuggestions from '@/components/SearchSuggestions';
+import ActiveFilterChips from '@/components/ActiveFilterChips';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
 
@@ -89,6 +91,7 @@ function HomeContent() {
   const [aiSearchSuggestions, setAiSearchSuggestions] = useState<string[]>([]);
   const [aiCorrectedQuery, setAiCorrectedQuery] = useState<string | null>(null);
   const [aiCondition, setAiCondition] = useState<string | null>(null); // Bosnian label: "Korišteno" etc.
+  const [aiCurrency, setAiCurrency] = useState<SearchCurrency>('EUR');
   const [selectedLocation, setSelectedLocation] = useState<City | null>(null);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -101,14 +104,22 @@ function HomeContent() {
   const [totalCount, setTotalCount] = useState(0);
   const PRODUCTS_PER_PAGE = 24;
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const effectiveSearchRef = useRef<string | undefined>(undefined);
 
   useFavorites(); // keeps Supabase session in sync (used by ProductCard internally)
   const { showToast } = useToast();
 
-  // Load saved location on mount
+  // Load saved location + currency preference on mount
   useEffect(() => {
     setSelectedLocation(getSelectedLocation());
+    const savedCurrency = typeof window !== 'undefined' ? localStorage.getItem('nudinadi_currency') as SearchCurrency : null;
+    if (savedCurrency === 'KM' || savedCurrency === 'EUR') setAiCurrency(savedCurrency);
   }, []);
+
+  // Persist currency preference
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('nudinadi_currency', aiCurrency);
+  }, [aiCurrency]);
 
   // Build server-side filter params from current state
   const buildServerFilters = useCallback(async (offset = 0): Promise<ProductFilters> => {
@@ -135,8 +146,16 @@ function HomeContent() {
     }
 
     // Price filters (from filter modal or AI-parsed)
-    const effectiveMin = aiPriceMin ?? (filters.priceMin ? Number(filters.priceMin) : undefined);
-    const effectiveMax = aiPriceMax ?? (filters.priceMax ? Number(filters.priceMax) : undefined);
+    // AI prices are in the user's searched currency; filter prices are always in EUR
+    let effectiveMin = aiPriceMin ?? (filters.priceMin ? Number(filters.priceMin) : undefined);
+    let effectiveMax = aiPriceMax ?? (filters.priceMax ? Number(filters.priceMax) : undefined);
+    // Convert KM → EUR for DB query (DB stores EUR)
+    if (aiPriceMin !== undefined || aiPriceMax !== undefined) {
+      if (aiCurrency === 'KM') {
+        if (effectiveMin) effectiveMin = Math.round(effectiveMin / BAM_RATE);
+        if (effectiveMax) effectiveMax = Math.round(effectiveMax / BAM_RATE);
+      }
+    }
     if (effectiveMin && !isNaN(effectiveMin)) serverFilters.minPrice = effectiveMin;
     if (effectiveMax && !isNaN(effectiveMax)) serverFilters.maxPrice = effectiveMax;
 
@@ -162,7 +181,7 @@ function HomeContent() {
     else { serverFilters.sortBy = 'created_at'; serverFilters.sortOrder = 'desc'; }
 
     return serverFilters;
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency]);
 
   // Load products from Supabase (re-fetches when filters change)
   const filterVersion = useRef(0);
@@ -171,7 +190,21 @@ function HomeContent() {
     setIsLoadingProducts(true);
     setHasMore(true);
     buildServerFilters(0)
-      .then(sf => getProducts(sf))
+      .then(async (sf) => {
+        let result = await getProducts(sf);
+        effectiveSearchRef.current = sf.search;
+
+        // If text search returned 0 results but we have category/price filters,
+        // retry without text search (generic terms like "auto" may not be in search_vector yet)
+        if (result.data.length === 0 && sf.search && (sf.category_id || sf.category_ids?.length || sf.minPrice !== undefined || sf.maxPrice !== undefined)) {
+          const sfRetry = { ...sf };
+          delete sfRetry.search;
+          result = await getProducts(sfRetry);
+          effectiveSearchRef.current = undefined;
+        }
+
+        return result;
+      })
       .then(({ data, count }) => {
         if (version !== filterVersion.current) return; // stale request
         setDbProducts(data.map(dbToDisplayProduct));
@@ -185,7 +218,7 @@ function HomeContent() {
         if (version === filterVersion.current) setIsLoadingProducts(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency]);
 
   // Load more products (infinite scroll — uses same server-side filters)
   const loadMoreProducts = useCallback(async () => {
@@ -193,6 +226,10 @@ function HomeContent() {
     setIsLoadingMore(true);
     try {
       const sf = await buildServerFilters(dbProducts.length);
+      // Sync with initial load: if text search was dropped (0 results), skip here too
+      if (effectiveSearchRef.current === undefined && sf.search) {
+        delete sf.search;
+      }
       const { data, count } = await getProducts(sf);
       const newProducts = data.map(dbToDisplayProduct);
       setDbProducts(prev => [...prev, ...newProducts]);
@@ -256,6 +293,7 @@ function HomeContent() {
     const result = parseAiQuery(value);
     setAiPriceMin(result.priceMin);
     setAiPriceMax(result.priceMax);
+    if (result.detectedCurrency) setAiCurrency(result.detectedCurrency);
     if (result.detectedCategory) {
       setAiCategory(result.detectedCategory);
       handleCategoryChange(result.detectedCategory);
@@ -278,6 +316,10 @@ function HomeContent() {
       const json = await res.json();
       if (json.success && json.data) {
         const d = json.data;
+
+        // Save locally-parsed prices as fallback (in case Gemini doesn't return them)
+        const localParsed = parseAiQuery(originalQuery);
+
         // Corrected query — show "Prikazujemo rezultate za" banner if AI fixed a typo
         if (d.cleanQuery) {
           setSearchQuery(d.cleanQuery);
@@ -285,11 +327,23 @@ function HomeContent() {
             setAiCorrectedQuery(originalQuery);
           }
         }
-        if (d.filters?.priceMin) setAiPriceMin(d.filters.priceMin);
-        if (d.filters?.priceMax) setAiPriceMax(d.filters.priceMax);
+
+        // Currency: prefer local detection (based on original user input)
+        if (localParsed.detectedCurrency) setAiCurrency(localParsed.detectedCurrency);
+
+        // Price: prefer AI, fallback to local regex parsing
+        const resolvedMin = (typeof d.filters?.priceMin === 'number' && d.filters.priceMin > 0) ? d.filters.priceMin : localParsed.priceMin;
+        const resolvedMax = (typeof d.filters?.priceMax === 'number' && d.filters.priceMax > 0) ? d.filters.priceMax : localParsed.priceMax;
+        if (resolvedMin) setAiPriceMin(resolvedMin);
+        if (resolvedMax) setAiPriceMax(resolvedMax);
+
+        // Category: prefer AI
         if (d.filters?.category) {
           setAiCategory(d.filters.category);
           handleCategoryChange(d.filters.category);
+        } else if (localParsed.detectedCategory) {
+          setAiCategory(localParsed.detectedCategory);
+          handleCategoryChange(localParsed.detectedCategory);
         }
         // Apply AI condition filter
         if (d.filters?.condition && AI_CONDITION_MAP[d.filters.condition]) {
@@ -304,6 +358,10 @@ function HomeContent() {
             setSelectedLocation(cityResults[0]);
           }
         }
+        // Apply AI radius filter (only 5-200km, must have location too)
+        if (d.filters?.radius && typeof d.filters.radius === 'number' && d.filters.radius >= 5 && d.filters.radius <= 200 && d.filters?.location) {
+          setFilters(prev => ({ ...prev, radiusKm: d.filters.radius }));
+        }
         if (d.suggestions?.length) setAiSearchSuggestions(d.suggestions);
       }
     } catch { /* fallback: keep existing local parse */ }
@@ -311,9 +369,20 @@ function HomeContent() {
     setShowSearchHints(false);
   };
 
-  // Filter apply handler
+  // Filter apply handler — sync manual price edits back to AI chips
   const handleApplyFilters = (newFilters: FilterState) => {
     setFilters(newFilters);
+    // Sync filter prices back to AI chips (filter always sends EUR)
+    // Convert to display currency for chip display
+    if (newFilters.priceMin || newFilters.priceMax) {
+      if (aiCurrency === 'KM') {
+        setAiPriceMin(newFilters.priceMin ? Math.round(Number(newFilters.priceMin) * BAM_RATE) : undefined);
+        setAiPriceMax(newFilters.priceMax ? Math.round(Number(newFilters.priceMax) * BAM_RATE) : undefined);
+      } else {
+        setAiPriceMin(newFilters.priceMin ? Number(newFilters.priceMin) : undefined);
+        setAiPriceMax(newFilters.priceMax ? Number(newFilters.priceMax) : undefined);
+      }
+    }
     const count = Object.entries(newFilters).filter(([key, val]) => {
       if (key === 'radiusKm') return val > 0;
       if (typeof val === 'string') return val !== '' && val !== 'all' && val !== 'newest';
@@ -665,25 +734,15 @@ function HomeContent() {
                   className="relative z-10 w-full bg-[var(--c-input)] border border-[var(--c-border)] rounded-[14px] py-3 pl-11 pr-4 text-[14px] focus:ring-2 focus:ring-[var(--c-accent)] focus:border-[var(--c-accent)] outline-none text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] transition-all duration-150 shadow-subtle caret-[var(--c-text)]"
                 />
 
-                {/* AI SUGGESTIONS DROPDOWN — shown after Enter */}
-                {showSearchHints && searchQuery && aiSearchSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 z-[200] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] shadow-strong overflow-hidden animate-fadeIn">
-                    <div className="px-4 pt-3 pb-2 flex items-center gap-2 border-b border-[var(--c-border)]">
-                      <i className="fa-solid fa-wand-magic-sparkles text-purple-500 text-[11px]"></i>
-                      <p className="text-[12px] font-bold text-[var(--c-text2)] uppercase tracking-wider">AI prijedlozi</p>
-                    </div>
-                    <div className="p-3 flex flex-col gap-1">
-                      {aiSearchSuggestions.map((s) => (
-                        <button
-                          key={s}
-                          onMouseDown={() => { handleSearchChange(s); handleSmartSearch(s); }}
-                          className="text-left px-3 py-2 rounded-[6px] text-[13px] font-medium text-[var(--c-text2)] hover:bg-[var(--c-accent-light)] hover:text-[var(--c-accent)] transition-all duration-150"
-                        >
-                          <i className="fa-solid fa-arrow-trend-up text-[10px] mr-2 text-[var(--c-text-muted)]"></i>{s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                {/* LIVE AUTOCOMPLETE — shows product/category suggestions while typing */}
+                {showSearchHints && searchQuery && !isAiSearching && (
+                  <SearchSuggestions
+                    query={searchQuery}
+                    visible={showSearchHints && !!searchQuery}
+                    onSelectProduct={() => setShowSearchHints(false)}
+                    onSelectCategory={(catName) => { handleCategoryChange(catName); setShowSearchHints(false); }}
+                    onSelectSuggestion={(text) => { handleSearchChange(text); handleSmartSearch(text); }}
+                  />
                 )}
 
                 {/* AI SEARCH HINTS DROPDOWN */}
@@ -774,26 +833,32 @@ function HomeContent() {
               {/* Filter chips */}
               <div className="flex flex-wrap gap-1.5 px-1 max-w-[480px] w-full">
                 {aiCategory && (
-                  <div className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-[10px]">
-                    <i className="fa-solid fa-tags text-blue-500 text-[10px]"></i>
-                    <span className="text-[11px] font-bold text-blue-600">{aiCategory}</span>
-                  </div>
+                  <button onClick={() => { setAiCategory(null); handleCategoryChange('Sve'); }} className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-[10px] hover:bg-red-50 hover:border-red-200 transition-all duration-150 group">
+                    <i className="fa-solid fa-tags text-blue-500 text-[10px] group-hover:text-red-500"></i>
+                    <span className="text-[11px] font-bold text-blue-600 group-hover:text-red-600">{aiCategory}</span>
+                    <i className="fa-solid fa-xmark text-blue-400 text-[9px] ml-0.5 group-hover:text-red-500"></i>
+                  </button>
                 )}
                 {(aiPriceMin || aiPriceMax) && (
-                  <div className="flex items-center gap-1 px-2.5 py-1 bg-green-50 border border-green-200 rounded-[10px]">
-                    <i className="fa-solid fa-euro-sign text-green-500 text-[10px]"></i>
-                    <span className="text-[11px] font-bold text-green-600">
-                      {aiPriceMin && aiPriceMax ? `${aiPriceMin.toLocaleString()} – ${aiPriceMax.toLocaleString()}` :
-                       aiPriceMax ? `do ${aiPriceMax.toLocaleString()}` :
-                       `od ${aiPriceMin?.toLocaleString()}`}
+                  <button onClick={() => { setAiPriceMin(undefined); setAiPriceMax(undefined); }} className="flex items-center gap-1 px-2.5 py-1 bg-green-50 border border-green-200 rounded-[10px] hover:bg-red-50 hover:border-red-200 transition-all duration-150 group">
+                    <i className={`fa-solid ${aiCurrency === 'KM' ? 'fa-coins' : 'fa-euro-sign'} text-green-500 text-[10px] group-hover:text-red-500`}></i>
+                    <span className="text-[11px] font-bold text-green-600 group-hover:text-red-600">
+                      {(() => {
+                        const sym = aiCurrency === 'KM' ? 'KM' : '€';
+                        if (aiPriceMin && aiPriceMax) return `${sym} ${aiPriceMin.toLocaleString('de-DE')} – ${aiPriceMax.toLocaleString('de-DE')}`;
+                        if (aiPriceMax) return `${sym} do ${aiPriceMax.toLocaleString('de-DE')}`;
+                        return `${sym} od ${aiPriceMin?.toLocaleString('de-DE')}`;
+                      })()}
                     </span>
-                  </div>
+                    <i className="fa-solid fa-xmark text-green-400 text-[9px] ml-0.5 group-hover:text-red-500"></i>
+                  </button>
                 )}
                 {aiCondition && (
-                  <div className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 border border-orange-200 rounded-[10px]">
-                    <i className="fa-solid fa-circle-check text-orange-500 text-[10px]"></i>
-                    <span className="text-[11px] font-bold text-orange-600">{aiCondition}</span>
-                  </div>
+                  <button onClick={() => { setAiCondition(null); setFilters(prev => ({ ...prev, condition: 'all' })); }} className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 border border-orange-200 rounded-[10px] hover:bg-red-50 hover:border-red-200 transition-all duration-150 group">
+                    <i className="fa-solid fa-circle-check text-orange-500 text-[10px] group-hover:text-red-500"></i>
+                    <span className="text-[11px] font-bold text-orange-600 group-hover:text-red-600">{aiCondition}</span>
+                    <i className="fa-solid fa-xmark text-orange-400 text-[9px] ml-0.5 group-hover:text-red-500"></i>
+                  </button>
                 )}
                 <button
                   onClick={() => {
@@ -1196,6 +1261,10 @@ function HomeContent() {
           onLocationClick={() => { setShowFilterModal(false); setTimeout(() => setShowLocationPicker(true), 200); }}
           onDetectGPS={handleDetectGPS}
           isDetectingGPS={isDetectingGPS}
+          aiPriceMin={aiPriceMin}
+          aiPriceMax={aiPriceMax}
+          currency={aiCurrency}
+          onCurrencyChange={setAiCurrency}
         />
       </div>
     </MainLayout>

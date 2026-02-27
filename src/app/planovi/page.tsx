@@ -5,6 +5,7 @@ import MainLayout from '@/components/layout/MainLayout';
 
 const FEATURES = [
   { name: 'Objavljivanje oglasa', free: '10 aktivnih', pro: '30 aktivnih', business: 'Neograničeno' },
+  { name: 'Slike po oglasu', free: 'Do 7', pro: 'Do 20', business: 'Neograničeno' },
   { name: 'Pretraga i filteri', free: true, pro: true, business: true },
   { name: 'AI Pretraga / Kategorija', free: true, pro: true, business: true },
   { name: 'Chat s kupcima i prodavačima', free: true, pro: true, business: true },
@@ -86,6 +87,7 @@ export default function PlansPage() {
               </div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 10 aktivnih oglasa</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 7 slika po oglasu</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Pretraga</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Chat</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Favoriti</li>
@@ -114,6 +116,7 @@ export default function PlansPage() {
               </div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 30 aktivnih oglasa</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 20 slika po oglasu</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Opis (generisanje teksta)</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI VIN Dekoder</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Statistike i analitika</li>

@@ -57,6 +57,7 @@ export interface Product {
   created_at: string
   updated_at: string
   attributes?: Record<string, string | number | boolean | string[]> | null
+  tags: string[]
 }
 
 export interface Category {
@@ -144,6 +145,7 @@ export interface ProductInsert {
   status?: ProductStatus
   location?: string | null
   attributes?: Record<string, string | number | boolean | string[]> | null
+  tags?: string[]
 }
 
 export interface CategoryInsert {
@@ -217,6 +219,7 @@ export interface ProductUpdate {
   status?: ProductStatus
   location?: string | null
   attributes?: Record<string, unknown> | null
+  tags?: string[]
 }
 
 export interface ReviewUpdate {
