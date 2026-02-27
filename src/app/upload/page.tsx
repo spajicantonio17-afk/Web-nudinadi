@@ -1691,15 +1691,32 @@ function UploadPageInner() {
     try {
       const d = JSON.parse(raw) as Record<string, unknown>;
       sessionStorage.removeItem('nudinadi_import');
+      // Parse price — handle string/number and strip non-numeric chars
+      let importPrice = '';
+      if (d.price != null) {
+        const raw = typeof d.price === 'string' ? d.price.replace(/[^0-9.,]/g, '').replace(',', '.') : String(d.price);
+        const num = parseFloat(raw);
+        if (!isNaN(num) && num > 0) importPrice = String(Math.round(num));
+      }
+
       setFormData(prev => ({
         ...prev,
         title: (d.title as string) || prev.title,
         description: (d.description as string) || prev.description,
-        price: d.price != null ? String(d.price) : prev.price,
+        price: importPrice || prev.price,
         category: (d.category as string) || prev.category,
         location: (d.location as string) || prev.location,
         condition: d.condition === 'Novo' ? 'Novo' : d.condition === 'Kao novo' ? 'Kao novo' : prev.condition,
       }));
+
+      // Set currency from import (KM, EUR, HRK → map to EUR/KM)
+      const importCurrency = (d.currency as string || '').toUpperCase();
+      if (importCurrency === 'KM' || importCurrency === 'BAM') {
+        setCurrency('KM');
+      } else if (importCurrency === 'EUR' || importCurrency === 'HRK' || importCurrency === 'USD') {
+        setCurrency('EUR');
+      }
+
       setStep('form');
 
       // Download imported images and add to form
