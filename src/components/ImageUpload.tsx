@@ -7,9 +7,11 @@ interface ImageUploadProps {
   images: File[];
   onImagesChange: (images: File[]) => void;
   maxImages?: number;
+  onImageClick?: (index: number) => void;
+  selectedIndex?: number | null;
 }
 
-export default function ImageUpload({ images, onImagesChange, maxImages = 8 }: ImageUploadProps) {
+export default function ImageUpload({ images, onImagesChange, maxImages = 8, onImageClick, selectedIndex }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -87,11 +89,11 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 8 }: I
         /* Thumbnails Grid */
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {previewUrls.map((url, idx) => (
-            <div key={idx} className="aspect-square bg-[var(--c-card)] rounded-[16px] relative overflow-hidden border border-[var(--c-border)] group">
+            <div key={idx} className={`aspect-square bg-[var(--c-card)] rounded-[16px] relative overflow-hidden border-2 group cursor-pointer transition-all ${selectedIndex === idx ? 'border-blue-500 scale-[1.03]' : 'border-[var(--c-border)]'}`} onClick={() => onImageClick?.(idx)}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="w-full h-full object-cover" />
               <button
-                onClick={() => removeImage(idx)}
+                onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
                 className="absolute top-1 right-1 w-8 h-8 sm:w-6 sm:h-6 bg-black/50 rounded-full flex items-center justify-center text-red-400 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               >
                 <i className="fa-solid fa-xmark text-xs sm:text-[10px]"></i>

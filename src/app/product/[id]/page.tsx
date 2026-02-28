@@ -282,16 +282,17 @@ export default function ProductDetailPage() {
       {/* FULL SCREEN GALLERY */}
       {isGalleryOpen && (
         <div role="dialog" aria-modal="true" aria-label={`Galerija slika: ${product.title}`} className="fixed inset-0 z-[200] bg-[var(--c-bg)] flex flex-col items-center justify-center animate-[fadeIn_0.1s_ease-out]">
-            <button onClick={() => setIsGalleryOpen(false)} aria-label="Zatvori galeriju" className="absolute top-0 right-0 z-20 w-16 h-16 flex items-center justify-center text-[var(--c-text)] hover:bg-[var(--c-active)] transition-colors border-l border-b border-[var(--c-border2)]">
-                <i className="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+            <button onClick={() => setIsGalleryOpen(false)} aria-label="Zatvori galeriju" className="absolute top-[4.5rem] md:top-20 left-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95">
+                <i className="fa-solid fa-xmark text-sm" aria-hidden="true"></i>
+                <span className="text-xs font-bold uppercase tracking-wider">Zatvori</span>
             </button>
             <div className="relative w-full h-full flex items-center justify-center p-0 md:p-10">
-                <button onClick={(e) => handlePrevImage(e)} aria-label="Prethodna slika" className="absolute left-0 top-0 bottom-0 w-20 flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-colors">
+                <button onClick={(e) => handlePrevImage(e)} aria-label="Prethodna slika" className="absolute left-0 top-16 bottom-16 w-20 flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-colors">
                     <i className="fa-solid fa-chevron-left text-3xl" aria-hidden="true"></i>
                 </button>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={galleryImages[currentImageIndex]} alt={`${product.title} — slika ${currentImageIndex + 1} od ${galleryImages.length}`} className="max-h-full max-w-full object-contain" />
-                <button onClick={(e) => handleNextImage(e)} aria-label="Sljedeća slika" className="absolute right-0 top-0 bottom-0 w-20 flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-colors">
+                <button onClick={(e) => handleNextImage(e)} aria-label="Sljedeća slika" className="absolute right-0 top-16 bottom-16 w-20 flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-colors">
                     <i className="fa-solid fa-chevron-right text-3xl" aria-hidden="true"></i>
                 </button>
             </div>

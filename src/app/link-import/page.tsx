@@ -24,15 +24,41 @@ interface ImportedData {
   title?: string;
   description?: string;
   price?: number;
+  priceType?: string;
   currency?: string;
   category?: string;
+  subcategory?: string;
+  categoryItem?: string;
   condition?: string;
   location?: string;
   images?: string[];
   seller?: string;
+  phone?: string;
   attributes?: Record<string, string>;
+  vehicleData?: {
+    brand?: string;
+    model?: string;
+    variant?: string;
+    fuel?: string;
+    generation?: string;
+    years?: string;
+  };
   originalUrl?: string;
+  _fallback?: boolean;
 }
+
+// Human-readable labels for attribute keys
+const ATTR_LABELS: Record<string, string> = {
+  marka: 'Marka', model: 'Model', godiste: 'Godište', km: 'Kilometraža',
+  gorivo: 'Gorivo', mjenjac: 'Mjenjač', karoserija: 'Karoserija', boja: 'Boja',
+  konjskeSile: 'KS', motor: 'Motor', pogon: 'Pogon', registracija: 'Reg. do',
+  kubikaza: 'Kubikaža', brVrata: 'Vrata',
+  kvadraturaM2: 'm²', godinaIzgradnje: 'Izgradnja', grijanje: 'Grijanje',
+  brojKupatila: 'Kupatila', memorija: 'Memorija', ram: 'RAM',
+  stanjeEkrana: 'Ekran', procesor: 'Procesor', disk: 'Disk',
+  godinaProizvodnje: 'Godina', garancija: 'Garancija',
+  brand: 'Brand', velicina: 'Veličina', materijal: 'Materijal',
+};
 
 export default function LinkImportPage() {
   const router = useRouter();
@@ -289,11 +315,13 @@ export default function LinkImportPage() {
 
               {/* Price + Condition Row */}
               <div className="grid grid-cols-2 divide-x divide-[var(--c-border)]">
-                {importedData.price != null && (
+                {(importedData.price != null || importedData.priceType === 'negotiable') && (
                   <div className="px-5 py-4">
                     <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1">Cijena</p>
                     <p className="text-[15px] font-black text-[var(--c-text)]">
-                      {importedData.price.toLocaleString()} {importedData.currency || 'KM'}
+                      {importedData.priceType === 'negotiable' && !importedData.price
+                        ? 'Po dogovoru'
+                        : `${importedData.price?.toLocaleString()} ${importedData.currency || 'KM'}`}
                     </p>
                   </div>
                 )}
@@ -311,6 +339,18 @@ export default function LinkImportPage() {
                   <div className="px-5 py-4">
                     <p className="text-[9px] font-black text-orange-500 uppercase tracking-widest mb-1">Kategorija</p>
                     <p className="text-[12px] font-semibold text-[var(--c-text2)]">{importedData.category}</p>
+                    {importedData.subcategory && (
+                      <p className="text-[10px] text-[var(--c-text3)] mt-0.5">
+                        <i className="fa-solid fa-chevron-right text-[7px] mr-1 opacity-40"></i>
+                        {importedData.subcategory}
+                      </p>
+                    )}
+                    {importedData.categoryItem && (
+                      <p className="text-[10px] text-[var(--c-text3)] mt-0.5 pl-2">
+                        <i className="fa-solid fa-chevron-right text-[7px] mr-1 opacity-30"></i>
+                        {importedData.categoryItem}
+                      </p>
+                    )}
                   </div>
                 )}
                 {importedData.location && (
@@ -324,23 +364,66 @@ export default function LinkImportPage() {
                 )}
               </div>
 
-              {/* Description */}
-              {importedData.description && (
-                <div className="px-5 py-4">
-                  <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest mb-2">Opis</p>
-                  <p className="text-[12px] text-[var(--c-text2)] leading-relaxed line-clamp-4">{importedData.description}</p>
+              {/* Vehicle Data (from lookupChassis) */}
+              {importedData.vehicleData && (
+                <div className="px-5 py-4 bg-blue-50/50">
+                  <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-2">
+                    <i className="fa-solid fa-car mr-1.5"></i>Prepoznato vozilo
+                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[13px] font-black text-[var(--c-text)]">
+                      {importedData.vehicleData.brand} {importedData.vehicleData.model}
+                    </span>
+                    {importedData.vehicleData.variant && (
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold">
+                        {importedData.vehicleData.variant}
+                      </span>
+                    )}
+                    {importedData.vehicleData.generation && (
+                      <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-bold">
+                        {importedData.vehicleData.generation}
+                      </span>
+                    )}
+                    {importedData.vehicleData.fuel && (
+                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold">
+                        {importedData.vehicleData.fuel}
+                      </span>
+                    )}
+                    {importedData.vehicleData.years && (
+                      <span className="text-[10px] text-[var(--c-text3)] font-medium">
+                        ({importedData.vehicleData.years})
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Attributes */}
+              {/* Description */}
+              {importedData.description && (
+                <div className="px-5 py-4">
+                  <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest mb-2">
+                    <i className="fa-solid fa-align-left mr-1.5"></i>Opis (originalni)
+                  </p>
+                  <p className="text-[12px] text-[var(--c-text2)] leading-relaxed line-clamp-6 whitespace-pre-line">{importedData.description}</p>
+                </div>
+              )}
+
+              {/* Structured Attributes */}
               {importedData.attributes && Object.keys(importedData.attributes).length > 0 && (
                 <div className="px-5 py-4">
-                  <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest mb-2.5">Detalji</p>
+                  <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest mb-2.5">
+                    <i className="fa-solid fa-list-check mr-1.5"></i>Detalji ({Object.keys(importedData.attributes).length})
+                  </p>
                   <div className="flex flex-wrap gap-2">
-                    {Object.entries(importedData.attributes).slice(0, 8).map(([key, val]) => (
+                    {Object.entries(importedData.attributes)
+                      .filter(([, val]) => val !== null && val !== undefined && val !== '' && val !== 'null')
+                      .slice(0, 12)
+                      .map(([key, val]) => (
                       <div key={key} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-full">
-                        <span className="text-[9px] font-bold text-[var(--c-text3)] uppercase">{key}:</span>
-                        <span className="text-[9px] font-semibold text-[var(--c-text2)]">{val}</span>
+                        <span className="text-[9px] font-bold text-[var(--c-text3)] uppercase">{ATTR_LABELS[key] || key}:</span>
+                        <span className="text-[9px] font-semibold text-[var(--c-text2)]">
+                          {typeof val === 'boolean' ? (val ? 'Da' : 'Ne') : String(val)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -384,10 +467,10 @@ export default function LinkImportPage() {
               {[
                 { icon: 'fa-heading', color: 'bg-blue-500/10 text-blue-500', label: 'Naslov oglasa' },
                 { icon: 'fa-tag', color: 'bg-emerald-500/10 text-emerald-500', label: 'Cijena' },
-                { icon: 'fa-align-left', color: 'bg-purple-500/10 text-purple-500', label: 'Opis' },
+                { icon: 'fa-align-left', color: 'bg-purple-500/10 text-purple-500', label: 'Opis (originalni)' },
                 { icon: 'fa-images', color: 'bg-orange-500/10 text-orange-500', label: 'Slike' },
-                { icon: 'fa-location-dot', color: 'bg-cyan-500/10 text-cyan-500', label: 'Lokacija' },
-                { icon: 'fa-list-check', color: 'bg-pink-500/10 text-pink-500', label: 'Kategorija i detalji' },
+                { icon: 'fa-car', color: 'bg-indigo-500/10 text-indigo-500', label: 'Marka / Model' },
+                { icon: 'fa-list-check', color: 'bg-pink-500/10 text-pink-500', label: 'Svi detalji' },
               ].map((f) => (
                 <div
                   key={f.label}

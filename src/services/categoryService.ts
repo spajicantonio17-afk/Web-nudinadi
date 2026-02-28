@@ -37,36 +37,58 @@ export async function getCategories(): Promise<Category[]> {
   return data
 }
 
+// ─── Alias map: upload page names → DB names ───────────
+const CATEGORY_ALIASES: Record<string, string> = {
+  'dijelovi za vozila': 'Dijelovi za automobile',
+  'mobilni uređaji': 'Mobiteli i oprema',
+  'elektronika': 'Tehnika i elektronika',
+  'moda': 'Odjeća i obuća',
+}
+
 // ─── Resolve Display Name → Category UUID ─────────────
 
 /**
- * Löst einen Anzeige-Kategorienamen in eine Supabase-Kategorie-UUID auf.
- * Verarbeitet zusammengesetzte Namen wie "Nekretnine - Stanovi i Apartmani"
- * indem zuerst nach der Unterkategorie gesucht wird, dann Fallback auf Elternkategorie.
+ * Resolves a display category name to a Supabase category UUID.
+ * Handles composite names like "Nekretnine - Stanovi", alias names
+ * (e.g. "Dijelovi za vozila" → "Dijelovi za automobile"), and fuzzy matching.
  */
 export async function resolveCategoryId(displayName: string): Promise<string | null> {
   if (!displayName) return null
 
   const categories = await getAllCategories()
 
-  // 1. Exakte Übereinstimmung mit Name
+  // 1. Exact match
   const exact = categories.find(c => c.name === displayName)
   if (exact) return exact.id
 
-  // 2. Zusammengesetzte Namen wie "Nekretnine - Stanovi i Apartmani"
+  // 2. Alias resolution (upload page uses different names than DB)
+  const aliasTarget = CATEGORY_ALIASES[displayName.toLowerCase()]
+  if (aliasTarget) {
+    const aliased = categories.find(c => c.name === aliasTarget)
+    if (aliased) return aliased.id
+  }
+
+  // 3. Composite names like "Nekretnine - Stanovi" or "Elektronika - Laptopi"
   if (displayName.includes(' - ')) {
     const parts = displayName.split(' - ')
     const subName = parts.slice(1).join(' - ').trim()
     const sub = categories.find(c => c.name === subName)
     if (sub) return sub.id
 
-    // Fallback: Elternkategorie
+    // Try alias for parent part
     const parentName = parts[0].trim()
+    const parentAlias = CATEGORY_ALIASES[parentName.toLowerCase()]
+    if (parentAlias) {
+      const aliasedParent = categories.find(c => c.name === parentAlias)
+      if (aliasedParent) return aliasedParent.id
+    }
+
+    // Fallback: parent category direct match
     const parent = categories.find(c => c.name === parentName)
     if (parent) return parent.id
   }
 
-  // 3. Fuzzy: Groß-/Kleinschreibung ignorierend
+  // 4. Fuzzy: case-insensitive includes matching
   const lower = displayName.toLowerCase()
   const fuzzy = categories.find(c =>
     c.name.toLowerCase().includes(lower) || lower.includes(c.name.toLowerCase())

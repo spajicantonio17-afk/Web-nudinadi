@@ -603,10 +603,10 @@ export function getCategoryFields(category: string, vehicleType?: VehicleType): 
 
   // Existing logic unchanged
   if (c.includes('nekretnin')) return NEKRETNINE_FIELDS;
-  if (c.includes('mobilni')) return MOBILNI_FIELDS;
-  if (c.includes('elektronika') || c.includes('tehnika') || c.includes('računala')) return ELEKTRONIKA_FIELDS;
+  if (c.includes('mobilni') || c.includes('mobiteli')) return MOBILNI_FIELDS;
+  if (c.includes('elektronika') || c.includes('tehnika') || c.includes('računala') || c.includes('racunala')) return ELEKTRONIKA_FIELDS;
   if (c.includes('cipele') || c.includes('obuća')) return CIPELE_FIELDS;
   if (c.includes('moda') || c.includes('odjeća') || c.includes('odijelo') || c.includes('ženska') || c.includes('muška')) return MODA_FIELDS;
-  if (c.includes('sport') || c.includes('fitnes')) return SPORT_FIELDS;
+  if (c.includes('sport') || c.includes('fitnes') || c.includes('rekreacij')) return SPORT_FIELDS;
   return [];
 }

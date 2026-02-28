@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth';
 import { uploadProductImages } from '@/services/uploadService';
 import { createProduct, updateProduct, getProductById } from '@/services/productService';
 import { resolveCategoryId } from '@/services/categoryService';
+import { resolveDeepCategory } from '@/lib/category-resolver';
 
 import type { ProductCondition } from '@/lib/database.types';
 import type { AttributeValues } from '@/lib/category-attributes';
@@ -1437,62 +1438,71 @@ for (const t of VIDEOIGRE_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[
 for (const t of OSTALO_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'slate', parentStep: 'ostalo-sub', parentCategory: 'Ostalo' };
 
 // ── Category breadcrumb info ──────────────────────────────────────────────
-function getCategoryBreadcrumb(category: string, brand?: string): { main: string; sub?: string; icon: string; color: string } {
+function getCategoryBreadcrumb(category: string, brand?: string): { main: string; sub?: string; item?: string; icon: string; color: string } {
+  // Split "ParentCat - SubCat - ItemName" into parts
+  const parts = category.split(' - ').map(p => p.trim()).filter(Boolean);
   const c = category.toLowerCase();
-  if (c.includes('vozila') || c === 'automobili') {
-    return { main: 'Vozila', sub: brand || undefined, icon: 'fa-car', color: 'blue' };
+
+  // Icon + color lookup by main category keyword
+  const ICON_MAP: Record<string, { icon: string; color: string; label: string }> = {
+    'vozila':       { icon: 'fa-car',                label: 'Vozila',                   color: 'blue' },
+    'nekretnine':   { icon: 'fa-building',           label: 'Nekretnine',               color: 'emerald' },
+    'mobilni':      { icon: 'fa-mobile-screen',      label: 'Mobilni uređaji',          color: 'rose' },
+    'elektronika':  { icon: 'fa-laptop',             label: 'Elektronika',              color: 'purple' },
+    'moda':         { icon: 'fa-shirt',              label: 'Moda',                     color: 'amber' },
+    'usluge':       { icon: 'fa-wrench',             label: 'Usluge',                   color: 'cyan' },
+    'poslovi':      { icon: 'fa-briefcase',          label: 'Poslovi',                  color: 'indigo' },
+    'dom':          { icon: 'fa-house',              label: 'Dom i Vrt',                color: 'green' },
+    'vrt':          { icon: 'fa-house',              label: 'Dom i Vrt',                color: 'green' },
+    'sport':        { icon: 'fa-futbol',             label: 'Sport i rekreacija',       color: 'green' },
+    'životinj':     { icon: 'fa-paw',               label: 'Životinje',                color: 'amber' },
+    'ljubimci':     { icon: 'fa-paw',               label: 'Životinje',                color: 'amber' },
+    'igračk':       { icon: 'fa-baby-carriage',      label: 'Bebe i Igračke',           color: 'pink' },
+    'bebe':         { icon: 'fa-baby-carriage',      label: 'Bebe i Igračke',           color: 'pink' },
+    'djeca':        { icon: 'fa-baby-carriage',      label: 'Odjeća za djecu',          color: 'pink' },
+    'glazba':       { icon: 'fa-guitar',             label: 'Glazba i instrumenti',     color: 'indigo' },
+    'instrument':   { icon: 'fa-guitar',             label: 'Glazba i instrumenti',     color: 'indigo' },
+    'muzik':        { icon: 'fa-guitar',             label: 'Glazba i instrumenti',     color: 'indigo' },
+    'knjig':        { icon: 'fa-book',               label: 'Literatura i mediji',      color: 'orange' },
+    'literatur':    { icon: 'fa-book',               label: 'Literatura i mediji',      color: 'orange' },
+    'kolekcionar':  { icon: 'fa-gem',                label: 'Umjetnost i kolekcionarstvo', color: 'rose' },
+    'umjetnost':    { icon: 'fa-gem',                label: 'Umjetnost i kolekcionarstvo', color: 'rose' },
+    'alat':         { icon: 'fa-screwdriver-wrench',  label: 'Strojevi i alati',         color: 'gray' },
+    'strojevi':     { icon: 'fa-screwdriver-wrench',  label: 'Strojevi i alati',         color: 'gray' },
+    'hrana':        { icon: 'fa-utensils',           label: 'Hrana i piće',             color: 'red' },
+    'video igre':   { icon: 'fa-gamepad',            label: 'Video igre',               color: 'purple' },
+    'videoigre':    { icon: 'fa-gamepad',            label: 'Video igre',               color: 'purple' },
+    'bicikl':       { icon: 'fa-bicycle',            label: 'Bicikli',                  color: 'green' },
+    'ostalo':       { icon: 'fa-tag',                label: 'Ostalo',                   color: 'gray' },
+  };
+
+  // Find matching icon/color
+  let icon = 'fa-tag', color = 'blue', mainLabel = parts[0] || category;
+  for (const [key, val] of Object.entries(ICON_MAP)) {
+    if (c.includes(key)) {
+      icon = val.icon;
+      color = val.color;
+      mainLabel = val.label;
+      break;
+    }
   }
-  if (c.startsWith('nekretnine')) {
-    const sub = category.includes(' - ') ? category.split(' - ')[1] : undefined;
-    return { main: 'Nekretnine', sub, icon: 'fa-building', color: 'emerald' };
+
+  // Vozila: use brand as sub if no " - " parts
+  if ((c.includes('vozila') || c === 'automobili') && parts.length === 1 && brand) {
+    return { main: mainLabel, sub: brand, icon, color };
   }
-  if (c.includes('mobilni')) {
-    return { main: 'Mobilni uređaji', sub: brand || undefined, icon: 'fa-mobile-screen', color: 'rose' };
+  // Mobilni: use brand as sub if no " - " parts
+  if (c.includes('mobilni') && parts.length === 1 && brand) {
+    return { main: mainLabel, sub: brand, icon, color };
   }
-  if (c.startsWith('elektronika')) {
-    const sub = category.includes(' - ') ? category.split(' - ')[1] : undefined;
-    return { main: 'Elektronika', sub, icon: 'fa-laptop', color: 'purple' };
-  }
-  if (c.startsWith('moda')) {
-    const sub = category.includes(' - ') ? category.split(' - ')[1] : undefined;
-    return { main: 'Moda', sub, icon: 'fa-shirt', color: 'amber' };
-  }
-  if (c.startsWith('usluge')) {
-    const sub = category.includes(' - ') ? category.split(' - ')[1] : undefined;
-    return { main: 'Usluge', sub, icon: 'fa-wrench', color: 'cyan' };
-  }
-  if (c.startsWith('poslovi')) {
-    const sub = category.includes(' - ') ? category.split(' - ')[1] : undefined;
-    return { main: 'Poslovi', sub, icon: 'fa-briefcase', color: 'indigo' };
-  }
-  if (c.includes('dom') || c.includes('vrt') || c.includes('namještaj')) {
-    return { main: 'Dom i Vrt', sub: undefined, icon: 'fa-house', color: 'green' };
-  }
-  if (c.includes('sport')) {
-    return { main: 'Sport', sub: undefined, icon: 'fa-futbol', color: 'orange' };
-  }
-  if (c.includes('životinj') || c.includes('ljubimci')) {
-    return { main: 'Životinje', sub: undefined, icon: 'fa-paw', color: 'amber' };
-  }
-  if (c.includes('igračk') || c.includes('bebe')) {
-    return { main: 'Bebe i Igračke', sub: undefined, icon: 'fa-baby-carriage', color: 'pink' };
-  }
-  if (c.includes('muzik') || c.includes('instrument')) {
-    return { main: 'Muzika', sub: undefined, icon: 'fa-guitar', color: 'purple' };
-  }
-  if (c.includes('knjig') || c.includes('edukacij')) {
-    return { main: 'Knjige', sub: undefined, icon: 'fa-book', color: 'amber' };
-  }
-  if (c.includes('kolekcionar')) {
-    return { main: 'Kolekcionarstvo', sub: undefined, icon: 'fa-gem', color: 'rose' };
-  }
-  if (c.includes('alat') || c.includes('gradnja')) {
-    return { main: 'Alati i Gradnja', sub: undefined, icon: 'fa-screwdriver-wrench', color: 'orange' };
-  }
-  if (c.includes('bicikl')) {
-    return { main: 'Bicikli', sub: undefined, icon: 'fa-bicycle', color: 'green' };
-  }
-  return { main: category, sub: undefined, icon: 'fa-tag', color: 'blue' };
+
+  return {
+    main: mainLabel,
+    sub: parts[1] || undefined,
+    item: parts[2] || undefined,
+    icon,
+    color,
+  };
 }
 
 const BREADCRUMB_COLORS: Record<string, { bg: string; text: string; iconBg: string; border: string }> = {
@@ -1537,6 +1547,8 @@ function UploadPageInner() {
   const editProductId = searchParams.get('edit');
   const isEditMode = !!editProductId;
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [selectedPreviewSource, setSelectedPreviewSource] = useState<{ type: 'new' | 'existing'; index: number } | null>(null);
+  const [mobilePreviewUrl, setMobilePreviewUrl] = useState<string | null>(null);
 
   // ── All state declarations (must be before any conditional returns) ──
   const [formErrors, setFormErrors] = useState<{ title?: string; price?: string; images?: string; category?: string }>({});
@@ -1666,16 +1678,32 @@ function UploadPageInner() {
     setFormPage(1);
   }, [formData.category]);
 
-  // Preview URL cleanup (PhonePreview memory leak fix)
+  // Preview URL — shows selected image or defaults to first new image
   useEffect(() => {
+    if (selectedPreviewSource) {
+      if (selectedPreviewSource.type === 'existing') {
+        const url = existingImages[selectedPreviewSource.index];
+        if (url) { setPreviewUrl(url); return; }
+      } else {
+        const file = images[selectedPreviewSource.index];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          setPreviewUrl(url);
+          return () => URL.revokeObjectURL(url);
+        }
+      }
+    }
+    // Default: first new image, or first existing image
     if (images.length > 0) {
       const url = URL.createObjectURL(images[0]);
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
+    } else if (existingImages.length > 0) {
+      setPreviewUrl(existingImages[0]);
     } else {
       setPreviewUrl(null);
     }
-  }, [images]);
+  }, [images, existingImages, selectedPreviewSource]);
 
   // Reset custom input states when subcategory changes
   useEffect(() => {
@@ -1688,26 +1716,81 @@ function UploadPageInner() {
     if (typeof window === 'undefined') return;
     const raw = sessionStorage.getItem('nudinadi_import');
     if (!raw) return;
+    const loadImport = async () => {
     try {
       const d = JSON.parse(raw) as Record<string, unknown>;
       sessionStorage.removeItem('nudinadi_import');
+
       // Parse price — handle string/number and strip non-numeric chars
       let importPrice = '';
       if (d.price != null) {
-        const raw = typeof d.price === 'string' ? d.price.replace(/[^0-9.,]/g, '').replace(',', '.') : String(d.price);
-        const num = parseFloat(raw);
+        const rawPrice = typeof d.price === 'string' ? d.price.replace(/[^0-9.,]/g, '').replace(',', '.') : String(d.price);
+        const num = parseFloat(rawPrice);
         if (!isNaN(num) && num > 0) importPrice = String(Math.round(num));
       }
+
+      // Extract brand/model from structured attributes or vehicleData
+      const importAttrs = (d.attributes as Record<string, string | number | boolean>) || {};
+      const vehicleData = d.vehicleData as Record<string, string> | undefined;
+      const importBrand = String(importAttrs.marka || vehicleData?.brand || '');
+      const importModel = String(importAttrs.model || vehicleData?.model || '');
+
+      // Map condition values (handle more variants)
+      let importCondition = '';
+      const cond = (d.condition as string || '').toLowerCase();
+      if (cond.includes('novo') && !cond.includes('kao')) importCondition = 'Novo';
+      else if (cond.includes('kao novo') || cond.includes('like new')) importCondition = 'Kao novo';
+      else if (cond.includes('korišten') || cond.includes('used') || cond.includes('polovno') || cond.includes('rabljeno')) importCondition = 'Korišteno';
+      else if (cond.includes('dijelov') || cond.includes('parts') || cond.includes('neispravn')) importCondition = 'Za dijelove';
+
+      // Build full category path: "Main - Sub - Item"
+      let fullCategory = (d.category as string) || '';
+      const importSub = (d.subcategory as string) || '';
+      const importItem = (d.categoryItem as string) || '';
+      // Only append subcategory if not already in the category string
+      if (importSub && !fullCategory.includes(importSub)) {
+        fullCategory = fullCategory ? `${fullCategory} - ${importSub}` : importSub;
+      }
+      // Only append item if not already in the category string
+      if (importItem && !fullCategory.includes(importItem)) {
+        fullCategory = fullCategory ? `${fullCategory} - ${importItem}` : importItem;
+      }
+      // If still only 1-2 levels, try auto-resolve from title (AI fallback if needed)
+      if (fullCategory && fullCategory.split(' - ').length < 3) {
+        fullCategory = await resolveDeepCategory(fullCategory, (d.title as string) || '', (d.description as string) || '');
+      }
+
+      // Map imported priceType to form format
+      const importPriceType = (d.priceType as string) || '';
+      const mappedPriceType = importPriceType === 'negotiable' || importPriceType === 'on_request'
+        ? 'negotiable' as const
+        : 'fixed' as const;
 
       setFormData(prev => ({
         ...prev,
         title: (d.title as string) || prev.title,
         description: (d.description as string) || prev.description,
-        price: importPrice || prev.price,
-        category: (d.category as string) || prev.category,
+        price: mappedPriceType === 'negotiable' ? '0' : (importPrice || prev.price),
+        priceType: importPriceType ? mappedPriceType : prev.priceType,
+        category: fullCategory || prev.category,
+        brand: importBrand || prev.brand,
+        model: importModel || prev.model,
         location: (d.location as string) || prev.location,
-        condition: d.condition === 'Novo' ? 'Novo' : d.condition === 'Kao novo' ? 'Kao novo' : prev.condition,
+        condition: importCondition || prev.condition,
       }));
+
+      // Pre-fill structured attributes (matching our form field keys)
+      if (Object.keys(importAttrs).length > 0) {
+        const cleanAttrs: Record<string, string | number | boolean> = {};
+        for (const [key, val] of Object.entries(importAttrs)) {
+          if (val !== null && val !== undefined && val !== '' && val !== 'null') {
+            cleanAttrs[key] = val;
+          }
+        }
+        if (Object.keys(cleanAttrs).length > 0) {
+          setAttributes(prev => ({ ...prev, ...cleanAttrs }));
+        }
+      }
 
       // Set currency from import (KM, EUR, HRK → map to EUR/KM)
       const importCurrency = (d.currency as string || '').toUpperCase();
@@ -1719,17 +1802,28 @@ function UploadPageInner() {
 
       setStep('form');
 
-      // Download imported images and add to form
+      // Download imported images via proxy for reliable cross-origin support
       const imageUrls = Array.isArray(d.images) ? (d.images as string[]).filter(u => typeof u === 'string' && u.startsWith('http')) : [];
       if (imageUrls.length > 0) {
         const downloadImages = async () => {
           const files: File[] = [];
-          for (const url of imageUrls.slice(0, 10)) {
+          for (const imgUrl of imageUrls.slice(0, 10)) {
             try {
-              const res = await fetch(url);
-              if (!res.ok) continue;
+              // Use server-side proxy to bypass CORS restrictions
+              const proxyUrl = `/api/import/proxy-image?url=${encodeURIComponent(imgUrl)}`;
+              const res = await fetch(proxyUrl);
+              if (!res.ok) {
+                // Fallback: try direct download if proxy fails
+                const directRes = await fetch(imgUrl).catch(() => null);
+                if (directRes?.ok) {
+                  const blob = await directRes.blob();
+                  const ext = blob.type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
+                  files.push(new File([blob], `import-${files.length + 1}.${ext}`, { type: blob.type }));
+                }
+                continue;
+              }
               const blob = await res.blob();
-              const ext = blob.type.split('/')[1] || 'jpg';
+              const ext = blob.type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
               const fileName = `import-${files.length + 1}.${ext}`;
               files.push(new File([blob], fileName, { type: blob.type }));
             } catch {
@@ -1748,6 +1842,8 @@ function UploadPageInner() {
     } catch {
       sessionStorage.removeItem('nudinadi_import');
     }
+    };
+    loadImport();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -2223,6 +2319,19 @@ function UploadPageInner() {
     setIsAiLoading(false);
   };
 
+  // Handle image thumbnail click — phone preview on desktop, fullscreen on mobile
+  const handleImagePreview = (type: 'new' | 'existing', index: number) => {
+    setSelectedPreviewSource({ type, index });
+    // On mobile (<1024px) also open fullscreen
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      if (type === 'existing') {
+        setMobilePreviewUrl(existingImages[index] || null);
+      } else if (images[index]) {
+        setMobilePreviewUrl(URL.createObjectURL(images[index]));
+      }
+    }
+  };
+
   const getPriceLabel = () => {
     const sym = currency === 'KM' ? 'KM' : '€';
     const price = formData.price || '0';
@@ -2365,8 +2474,14 @@ function UploadPageInner() {
       }
       const finalImages = [...existingImages, ...newImageUrls];
 
-      // 1.5 Resolve category name → UUID
-      const categoryId = await resolveCategoryId(formData.category);
+      // 1.5 Auto-resolve to deepest category level based on title + description
+      const deepCategory = await resolveDeepCategory(formData.category, formData.title, formData.description);
+      if (deepCategory !== formData.category) {
+        setFormData(prev => ({ ...prev, category: deepCategory }));
+      }
+
+      // 1.6 Resolve category name → UUID
+      const categoryId = await resolveCategoryId(deepCategory);
 
       // Convert KM → EUR if needed
       const priceEUR = currency === 'KM'
@@ -4550,12 +4665,51 @@ function UploadPageInner() {
                   {crumb.sub && (
                     <>
                       <i className="fa-solid fa-chevron-right text-[7px] text-[var(--c-text-muted)]"></i>
-                      <span className="text-[11px] font-bold text-[var(--c-text)] truncate">{crumb.sub}</span>
+                      <span className="text-[11px] font-bold text-[var(--c-text)]">{crumb.sub}</span>
+                    </>
+                  )}
+                  {crumb.item && (
+                    <>
+                      <i className="fa-solid fa-chevron-right text-[7px] text-[var(--c-text-muted)]"></i>
+                      <span className="text-[10px] font-semibold text-[var(--c-text2)]">{crumb.item}</span>
                     </>
                   )}
                 </div>
                 <button
-                  onClick={() => setStep('selection')}
+                  onClick={() => {
+                    // Go back to subcategory selection for the current main category
+                    const c = formData.category.toLowerCase();
+                    const SUB_STEPS: [string, UploadStep][] = [
+                      ['vozila',       'vehicle-sub'],
+                      ['nekretnine',   'nekretnine-sub'],
+                      ['mobilni',      'mobile-sub'],
+                      ['elektronika',  'elektronika-quicktap'],
+                      ['moda',         'moda-sub'],
+                      ['usluge',       'services-sub'],
+                      ['poslovi',      'poslovi-sub'],
+                      ['dom',          'dom-sub'],
+                      ['vrt',          'dom-sub'],
+                      ['sport',        'sport-sub'],
+                      ['djeca',        'djeca-sub'],
+                      ['bebe',         'djeca-sub'],
+                      ['glazba',       'glazba-sub'],
+                      ['instrument',   'glazba-sub'],
+                      ['literatur',    'literatura-sub'],
+                      ['životinj',     'zivotinje-sub'],
+                      ['hrana',        'hrana-sub'],
+                      ['strojevi',     'strojevi-sub'],
+                      ['alat',         'strojevi-sub'],
+                      ['umjetnost',    'umjetnost-sub'],
+                      ['kolekcionar',  'umjetnost-sub'],
+                      ['video igre',   'videoigre-sub'],
+                      ['ostalo',       'ostalo-sub'],
+                    ];
+                    let target: UploadStep = 'selection';
+                    for (const [key, step] of SUB_STEPS) {
+                      if (c.includes(key)) { target = step; break; }
+                    }
+                    setStep(target);
+                  }}
                   className="text-[9px] font-bold text-[var(--c-text3)] hover:text-[var(--c-text)] uppercase tracking-wider transition-colors shrink-0"
                 >
                   Promijeni
@@ -4585,25 +4739,25 @@ function UploadPageInner() {
                   </p>
                   <div className="flex gap-2 flex-wrap">
                     {existingImages.map((url, idx) => (
-                      <div key={idx} className="relative group w-16 h-16 rounded-lg overflow-hidden">
+                      <div key={idx} className={`relative group w-16 h-16 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${selectedPreviewSource?.type === 'existing' && selectedPreviewSource.index === idx ? 'border-blue-500 scale-105' : 'border-transparent'}`} onClick={() => handleImagePreview('existing', idx)}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={url} alt="" className="w-full h-full object-cover" />
                         <button
                           type="button"
-                          onClick={() => setExistingImages(prev => prev.filter((_, i) => i !== idx))}
-                          className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                          onClick={(e) => { e.stopPropagation(); setExistingImages(prev => prev.filter((_, i) => i !== idx)); setSelectedPreviewSource(null); }}
+                          className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-red-400 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                         >
-                          <i className="fa-solid fa-xmark text-white text-sm"></i>
+                          <i className="fa-solid fa-xmark text-[9px]"></i>
                         </button>
                       </div>
                     ))}
                   </div>
-                  <p className="text-[9px] text-[var(--c-text3)] mt-2">Hover na sliku → klikni X za uklanjanje</p>
+                  <p className="text-[9px] text-[var(--c-text3)] mt-2">Klikni na sliku → prikazuje se u pregledu</p>
                 </div>
               )}
 
               {/* Image Upload */}
-              <ImageUpload images={images} onImagesChange={(imgs) => { setImages(imgs); if (formErrors.images && imgs.length > 0) setFormErrors(prev => ({ ...prev, images: undefined })); }} />
+              <ImageUpload images={images} onImagesChange={(imgs) => { setImages(imgs); if (formErrors.images && imgs.length > 0) setFormErrors(prev => ({ ...prev, images: undefined })); }} onImageClick={(idx) => handleImagePreview('new', idx)} selectedIndex={selectedPreviewSource?.type === 'new' ? selectedPreviewSource.index : null} />
               {formErrors.images && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.images}</p>}
 
               {/* OCR Button - only for vehicle parts */}
@@ -5193,6 +5347,22 @@ function UploadPageInner() {
             onClose={() => setShowModelPicker(false)}
           />
         </Suspense>
+      )}
+
+      {/* Mobile fullscreen image preview (< lg only) */}
+      {mobilePreviewUrl && (
+        <div className="fixed inset-0 z-[200] bg-[var(--c-bg)] flex flex-col lg:hidden animate-[fadeIn_0.1s_ease-out]">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--c-border)]">
+            <button onClick={() => { setMobilePreviewUrl(null); }} className="flex items-center gap-2 text-[var(--c-text)] active:scale-95 transition-transform">
+              <i className="fa-solid fa-arrow-left text-sm"></i>
+              <span className="text-xs font-bold uppercase tracking-widest">Nazad</span>
+            </button>
+          </div>
+          <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={mobilePreviewUrl} alt="" className="max-h-full max-w-full object-contain rounded-lg" />
+          </div>
+        </div>
       )}
 
     </MainLayout>
