@@ -196,6 +196,7 @@ function MessagesContent() {
   }, [savedIds]);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
   const currentConvIdRef = useRef<string | null>(null);
 
   // ── Load Conversations ───────────────────────────────
@@ -266,7 +267,8 @@ function MessagesContent() {
 
   // ── Scroll to bottom on new messages ────────────────
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = chatScrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [chatMessages]);
 
   // ── Handle Send ──────────────────────────────────────
@@ -465,7 +467,7 @@ function MessagesContent() {
               </div>
 
               {/* Messages Scroll Area */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 no-scrollbar">
+              <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 no-scrollbar">
                 {loadingMessages ? (
                   <div className="flex items-center justify-center h-full opacity-50">
                     <i className="fa-solid fa-circle-notch fa-spin text-blue-400 text-xl"></i>

@@ -11,6 +11,7 @@ import { getProductById } from '@/services/productService';
 import { getOrCreateConversation } from '@/services/messageService';
 import type { ProductFull } from '@/lib/database.types';
 import { BAM_RATE } from '@/lib/constants';
+import { getCurrencyMode, eurToKm } from '@/lib/currency';
 
 export default function CartPage() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function CartPage() {
 
   const totalPrice = products.reduce((sum, p) => sum + Number(p.price), 0);
   const totalKM = Math.round(totalPrice * BAM_RATE);
+  const currencyMode = getCurrencyMode();
 
   const handleRemove = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -116,8 +118,16 @@ export default function CartPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-[14px] font-black text-[var(--c-text)]">€{Number(product.price).toLocaleString()}</span>
-                        <span className="text-[9px] text-blue-400 font-bold">{Math.round(Number(product.price) * BAM_RATE)} KM</span>
+                        {currencyMode === 'km-only' ? (
+                          <span className="text-[14px] font-black text-[var(--c-text)]">{eurToKm(Number(product.price)).toLocaleString()} KM</span>
+                        ) : currencyMode === 'eur-only' ? (
+                          <span className="text-[14px] font-black text-[var(--c-text)]">€{Number(product.price).toLocaleString()}</span>
+                        ) : (
+                          <>
+                            <span className="text-[14px] font-black text-[var(--c-text)]">€{Number(product.price).toLocaleString()}</span>
+                            <span className="text-[9px] text-blue-400 font-bold">{Math.round(Number(product.price) * BAM_RATE)} KM</span>
+                          </>
+                        )}
                       </div>
                       {/* Contact seller button */}
                       {user && product.seller_id !== user.id && (
@@ -150,11 +160,17 @@ export default function CartPage() {
             <div className="bg-[var(--c-card)] rounded-[24px] border border-[var(--c-border)] p-5 mb-4">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-[10px] font-black text-[var(--c-text3)] uppercase tracking-widest">{t('cart.total')}</span>
-                <span className="text-xl font-black text-[var(--c-text)]">€{totalPrice.toLocaleString()}</span>
+                {currencyMode === 'km-only' ? (
+                  <span className="text-xl font-black text-[var(--c-text)]">{totalKM.toLocaleString()} KM</span>
+                ) : (
+                  <span className="text-xl font-black text-[var(--c-text)]">€{totalPrice.toLocaleString()}</span>
+                )}
               </div>
-              <div className="flex justify-end">
-                <span className="text-[10px] text-blue-400 font-bold">KM {totalKM.toLocaleString()}</span>
-              </div>
+              {currencyMode === 'dual' && (
+                <div className="flex justify-end">
+                  <span className="text-[10px] text-blue-400 font-bold">KM {totalKM.toLocaleString()}</span>
+                </div>
+              )}
             </div>
 
             {/* Checkout info */}

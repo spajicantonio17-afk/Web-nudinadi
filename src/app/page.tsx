@@ -8,6 +8,7 @@ import CategoryButton from '@/components/CategoryButton';
 import LocationPicker from '@/components/LocationPicker';
 import FilterModal, { DEFAULT_FILTERS, type FilterState } from '@/components/FilterModal';
 import { CATEGORIES, CATEGORY_IMAGES, BAM_RATE } from '@/lib/constants';
+import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/components/icons/CategoryIcons';
 import { parseAiQuery, type SearchCurrency } from '@/lib/utils';
 import { getProducts, type ProductFilters } from '@/services/productService';
 import { getAllCategories } from '@/services/categoryService';
@@ -20,6 +21,7 @@ import SearchSuggestions from '@/components/SearchSuggestions';
 import ActiveFilterChips from '@/components/ActiveFilterChips';
 import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import PendingSaleBanner from '@/components/PendingSaleBanner';
+import { getCountryPreference } from '@/lib/country';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
 
@@ -175,6 +177,10 @@ function HomeContent() {
     // Location filter — only apply when user explicitly set a radius > 0
     // radiusKm === 0 means "no location filter" (don't restrict by saved location)
     // radiusKm > 0 is handled client-side via distance calculation
+
+    // Country filter (from settings)
+    const countryPref = getCountryPreference();
+    if (countryPref !== 'all') serverFilters.country = countryPref;
 
     // Sort
     if (filters.sortBy === 'price_asc') { serverFilters.sortBy = 'price'; serverFilters.sortOrder = 'asc'; }
@@ -466,9 +472,9 @@ function HomeContent() {
 
         {/* AI INFO MODAL */}
         {showAiInfo && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-6 lg:p-10" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 lg:p-10" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
             <div className="absolute inset-0 bg-[var(--c-overlay)] backdrop-blur-sm" onClick={() => setShowAiInfo(false)} onKeyDown={(e) => e.key === 'Escape' && setShowAiInfo(false)} role="presentation"></div>
-            <div className="relative w-full max-w-4xl bg-[var(--c-card)] border border-[var(--c-border)] rounded-[6px] shadow-2xl animate-fadeIn flex flex-col" style={{ height: 'min(90vh, 700px)' }}>
+            <div className="relative w-full max-w-4xl bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] md:rounded-[6px] shadow-2xl animate-fadeIn flex flex-col max-h-[55vh] md:h-[90vh] md:max-h-[700px]">
 
               {/* HEADER */}
               <div className="shrink-0 flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-[var(--c-border)]">
@@ -608,9 +614,9 @@ function HomeContent() {
 
         {/* SECURITY MODAL */}
         {showLocalSecurity && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-6 lg:p-10" role="dialog" aria-modal="true" aria-labelledby="security-modal-title">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 lg:p-10" role="dialog" aria-modal="true" aria-labelledby="security-modal-title">
             <div className="absolute inset-0 bg-[var(--c-overlay)] backdrop-blur-sm" onClick={() => setShowLocalSecurity(false)} onKeyDown={(e) => e.key === 'Escape' && setShowLocalSecurity(false)} role="presentation"></div>
-            <div className="relative w-full max-w-4xl bg-[var(--c-card)] border border-[var(--c-border)] rounded-[6px] shadow-2xl animate-fadeIn flex flex-col overflow-hidden" style={{ height: 'min(90vh, 700px)' }}>
+            <div className="relative w-full max-w-4xl bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] md:rounded-[6px] shadow-2xl animate-fadeIn flex flex-col max-h-[55vh] md:h-[90vh] md:max-h-[700px]">
 
               {/* HEADER */}
               <div className="shrink-0 flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-[var(--c-border)]">
@@ -664,7 +670,7 @@ function HomeContent() {
                 </div>
 
                 {/* FEATURE CARDS — responsive grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 flex-1 min-h-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 shrink-0">
                   <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-4 md:p-5 relative overflow-hidden hover:border-blue-500/40 transition-colors flex flex-col">
                     <div className="absolute top-0 right-0 w-14 h-14 bg-blue-500/20 rounded-bl-[35px]"></div>
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-[4px] bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mb-3 md:mb-4 shrink-0">
@@ -936,26 +942,52 @@ function HomeContent() {
               <div className="flex gap-2.5 px-1 md:justify-center min-w-max">
 
                 {/* "Sve Kategorije" Reset */}
-                <button
-                  onClick={() => handleCategoryChange('Sve')}
-                  className={`min-w-[80px] h-[80px] rounded-[6px] border relative overflow-hidden group transition-all duration-150 shrink-0 shadow-subtle ${
-                    activeCategory === 'Sve'
-                      ? 'border-[var(--c-text)] ring-1 ring-[var(--c-text)]/20 z-10 shadow-medium'
-                      : 'border-[var(--c-border)] hover:border-[var(--c-active)] hover:shadow-medium'
-                  }`}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={CATEGORY_IMAGES['kategorije']} alt="Categories" className="absolute inset-0 w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60"></div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-                    <div className="w-7 h-7 rounded-[4px] bg-black/30 flex items-center justify-center">
-                      <i className="fa-solid fa-layer-group text-white text-sm"></i>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-0 inset-x-0 p-2 text-center">
-                    <span className="text-[11px] font-bold text-white uppercase tracking-wider">Sve</span>
-                  </div>
-                </button>
+                {(() => {
+                  const sveColors = CATEGORY_COLORS['sve'];
+                  const SveIcon = CATEGORY_ICONS['sve'];
+                  const sveActive = activeCategory === 'Sve';
+                  return (
+                    <button
+                      onClick={() => handleCategoryChange('Sve')}
+                      className={`min-w-[80px] h-[80px] rounded-[12px] border relative overflow-hidden group
+                        transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] shrink-0
+                        flex flex-col items-center justify-center gap-1.5
+                        bg-[var(--c-card)]
+                        ${sveActive
+                          ? 'border-[var(--c-accent)] ring-1 ring-[var(--c-accent)]/20 z-10'
+                          : 'border-[var(--c-border)] hover:border-[var(--c-active)]'
+                        }
+                      `}
+                      style={{
+                        boxShadow: sveActive
+                          ? `0 6px 20px ${sveColors.glow}`
+                          : '0 1px 4px rgba(0,0,0,0.04)',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!sveActive) {
+                          e.currentTarget.style.boxShadow = `0 8px 32px ${sveColors.glow}`;
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!sveActive) {
+                          e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }
+                      }}
+                    >
+                      <div className="w-7 h-7 transition-transform duration-300 group-hover:scale-[1.08]" style={{ color: sveColors.light }}>
+                        {SveIcon && <SveIcon />}
+                      </div>
+                      <span className={`text-[11px] font-semibold uppercase leading-[1.1] tracking-[0.3px] ${sveActive ? 'text-[var(--c-accent)]' : 'text-[var(--c-text2)]'}`}>
+                        Sve
+                      </span>
+                      {sveActive && (
+                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-[var(--c-accent)] rounded-full"></div>
+                      )}
+                    </button>
+                  );
+                })()}
 
                 {primaryCategories.map((cat) => (
                   <CategoryButton key={cat.id} cat={cat} isActive={activeCategory === cat.name} onClick={() => handleCategoryChange(cat.name)} />
@@ -998,12 +1030,12 @@ function HomeContent() {
           const showThirdLevel = !!(selectedSubGroup && selectedSubGroupData?.items?.length);
 
           return (
-            <div role="dialog" aria-modal="true" aria-label="Sve kategorije" className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6">
+            <div role="dialog" aria-modal="true" aria-label="Sve kategorije" className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-6">
               {/* Backdrop */}
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowAllCatsPopup(false); setSelectedSubGroup(null); }} onKeyDown={(e) => { if (e.key === 'Escape') { setShowAllCatsPopup(false); setSelectedSubGroup(null); }}} role="presentation"></div>
 
               {/* Modal Container */}
-              <div className="relative w-full h-full md:h-[85vh] md:max-w-5xl bg-[var(--c-card)] md:rounded-[10px] md:border md:border-[var(--c-border)] overflow-hidden flex flex-col animate-scaleIn shadow-strong">
+              <div className="relative w-full h-[70vh] md:h-[85vh] md:max-w-5xl bg-[var(--c-card)] rounded-[16px] md:rounded-[10px] border border-[var(--c-border)] overflow-hidden flex flex-col animate-scaleIn shadow-strong">
 
                 {/* Header */}
                 <div className="shrink-0 px-5 py-4 border-b border-[var(--c-border)] flex items-center justify-between bg-[var(--c-card)]">
@@ -1041,7 +1073,7 @@ function HomeContent() {
                 <div className="flex flex-1 min-h-0 overflow-hidden border-t border-[var(--c-border)]">
 
                   {/* LEFT SIDEBAR — hidden on mobile when 3rd level is shown */}
-                  <div className={`${showThirdLevel ? 'hidden md:flex' : 'flex'} flex-col w-[85px] md:w-[260px] bg-[var(--c-card-alt)] border-r border-[var(--c-border)] overflow-y-auto no-scrollbar pb-24`}>
+                  <div className={`${showThirdLevel ? 'hidden md:flex' : 'flex'} flex-col w-[85px] md:w-[260px] bg-[var(--c-card-alt)] border-r border-[var(--c-border)] overflow-y-auto overscroll-none no-scrollbar pb-24`}>
                     {CATEGORIES.map((cat) => (
                       <button
                         key={cat.id}
@@ -1068,7 +1100,7 @@ function HomeContent() {
 
                   {/* MIDDLE CONTENT — Sub-category groups */}
                   {!showThirdLevel && (
-                    <div className="flex-1 bg-[var(--c-card)] overflow-y-auto overscroll-contain touch-pan-y p-4 md:p-6 pb-24 relative">
+                    <div className="flex-1 h-full bg-[var(--c-card)] overflow-y-scroll overscroll-none p-4 md:p-6 pb-24 relative">
 
                       {/* Selected Category Header */}
                       <div className="mb-6 flex items-center gap-3 relative z-10">
@@ -1123,7 +1155,7 @@ function HomeContent() {
 
                   {/* THIRD LEVEL — Detailed items within sub-group */}
                   {showThirdLevel && selectedSubGroupData && (
-                    <div className="flex-1 bg-[var(--c-card)] overflow-y-auto overscroll-contain touch-pan-y p-4 md:p-6 pb-24 relative animate-fadeIn">
+                    <div className="flex-1 h-full bg-[var(--c-card)] overflow-y-scroll overscroll-none p-4 md:p-6 pb-24 relative animate-fadeIn">
 
                       {/* Sub-group header */}
                       <div className="mb-5 relative z-10">

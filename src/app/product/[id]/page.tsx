@@ -13,6 +13,7 @@ import { createReview, hasUserReviewed } from '@/services/reviewService';
 import { useAuth } from '@/lib/auth';
 import type { ProductFull } from '@/lib/database.types';
 import { BAM_RATE } from '@/lib/constants';
+import { getCurrencyMode, eurToKm } from '@/lib/currency';
 import SimilarProducts from '@/components/SimilarProducts';
 import ProductAttributes from '@/components/ProductAttributes';
 import BuyerPickerModal from '@/components/BuyerPickerModal';
@@ -274,6 +275,7 @@ export default function ProductDetailPage() {
   }
 
   const bamPrice = (Number(product.price) * BAM_RATE).toFixed(0);
+  const currencyMode = getCurrencyMode();
   const sellerName = product.seller?.username || product.seller_id;
   const sellerAvatar = product.seller?.avatar_url || `https://picsum.photos/seed/${product.seller_id}/100/100`;
 
@@ -477,14 +479,28 @@ export default function ProductDetailPage() {
                   </div>
                 ) : (
                   <div className="border border-[var(--c-border2)] rounded-sm overflow-hidden mb-8">
-                    <div className="bg-[var(--c-card)] p-5 flex items-center justify-between border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] transition-colors">
-                        <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">EUR</span>
-                        <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">{Number(product.price).toLocaleString()} €</span>
-                    </div>
-                    <div className="bg-[var(--c-card)] p-5 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors">
+                    {currencyMode === 'km-only' ? (
+                      <div className="bg-[var(--c-card)] p-5 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors">
                         <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">BAM</span>
                         <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">{bamPrice} KM</span>
-                    </div>
+                      </div>
+                    ) : currencyMode === 'eur-only' ? (
+                      <div className="bg-[var(--c-card)] p-5 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors">
+                        <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">EUR</span>
+                        <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">{Number(product.price).toLocaleString()} €</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="bg-[var(--c-card)] p-5 flex items-center justify-between border-b border-[var(--c-border)] hover:bg-[var(--c-hover)] transition-colors">
+                          <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">EUR</span>
+                          <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">{Number(product.price).toLocaleString()} €</span>
+                        </div>
+                        <div className="bg-[var(--c-card)] p-5 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors">
+                          <span className="text-xs font-bold text-[var(--c-text3)] uppercase tracking-widest">BAM</span>
+                          <span className="text-3xl font-black text-[var(--c-text)] tracking-tight">{bamPrice} KM</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 

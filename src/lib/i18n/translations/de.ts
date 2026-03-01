@@ -155,7 +155,7 @@ const de: Record<string, string> = {
   'menu.settings': 'Einstellungen',
   'menu.mainSettings': 'Haupteinstellungen',
   'menu.notifications': 'Benachrichtigungen',
-  'menu.appearance': 'Aussehen & Design',
+  'menu.appearance': 'Aussehen & Markt',
   'menu.language': 'Sprache',
   'menu.support': 'Support',
   'menu.help': 'Hilfe / Support',

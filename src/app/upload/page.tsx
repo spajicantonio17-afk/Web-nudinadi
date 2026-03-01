@@ -1634,6 +1634,12 @@ function UploadPageInner() {
   const { showToast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [step, setStep] = useState<UploadStep>('selection');
+
+  // Scroll to top when switching upload steps
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   const [mobileSubBrand, setMobileSubBrand] = useState('');
   const [modaSubCategory, setModaSubCategory] = useState('');
   const [parentSubCategory, setParentSubCategory] = useState('');
@@ -2935,7 +2941,7 @@ function UploadPageInner() {
             </div>
             <span className="hidden sm:inline">AI Foto</span>
           </button>
-          <button onClick={() => router.push('/')} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors"><i className="fa-solid fa-xmark text-xs md:text-sm"></i></button>
+          <button onClick={() => router.push('/')} className="hidden md:flex w-10 h-10 rounded-full bg-[var(--c-hover)] items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors"><i className="fa-solid fa-xmark text-sm"></i></button>
         </div>
       }>
         {/* AI Image Recognition Info Popup */}
@@ -3091,7 +3097,7 @@ function UploadPageInner() {
 
             <button
                 onClick={() => selectCategory('Odjeća i obuća')}
-                className="relative bg-[var(--c-card)] rounded-[20px] border border-[var(--c-border)] overflow-hidden group active:scale-[0.98] transition-all p-4 flex flex-col items-center text-center gap-2.5 hover:border-amber-500/20"
+                className="relative col-span-2 sm:col-span-1 bg-[var(--c-card)] rounded-[20px] border border-[var(--c-border)] overflow-hidden group active:scale-[0.98] transition-all p-4 flex flex-col items-center text-center gap-2.5 hover:border-amber-500/20"
             >
                 <div className="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
                     <i className="fa-solid fa-shirt text-lg"></i>

@@ -11,6 +11,7 @@ import { getUserReviews } from '@/services/reviewService';
 import { getOrCreateConversation } from '@/services/messageService';
 import type { Profile, ProductWithSeller, ReviewWithUsers } from '@/lib/database.types';
 import { BAM_RATE } from '@/lib/constants';
+import { getCurrencyMode, eurToKm } from '@/lib/currency';
 
 function formatTimeLabel(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
@@ -51,6 +52,12 @@ function UserProfileContent() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [activeTab, setActiveTab] = useState<'oglasi' | 'dojmovi' | 'info'>('oglasi');
+
+  // Scroll to top when switching tabs
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
   const [contacting, setContacting] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
@@ -132,6 +139,8 @@ function UserProfileContent() {
       </MainLayout>
     );
   }
+
+  const currencyMode = getCurrencyMode();
 
   const avgRating = reviews.length > 0
     ? Math.round(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length * 10) / 10
@@ -375,8 +384,15 @@ function UserProfileContent() {
                     </div>
                     <div className="p-2.5">
                       <p className="text-[11px] font-bold text-[var(--c-text)] line-clamp-1">{p.title}</p>
-                      <p className="text-[12px] font-black text-blue-500 mt-0.5">{Number(p.price).toLocaleString()} &euro;</p>
-                      <p className="text-[9px] text-[var(--c-text3)] mt-0.5">{Math.round(Number(p.price) * BAM_RATE).toLocaleString()} KM &middot; {formatTimeLabel(p.created_at)}</p>
+                      {currencyMode === 'km-only' ? (
+                        <p className="text-[12px] font-black text-blue-500 mt-0.5">{eurToKm(Number(p.price)).toLocaleString()} KM</p>
+                      ) : (
+                        <p className="text-[12px] font-black text-blue-500 mt-0.5">{Number(p.price).toLocaleString()} &euro;</p>
+                      )}
+                      <p className="text-[9px] text-[var(--c-text3)] mt-0.5">
+                        {currencyMode === 'dual' && <>{Math.round(Number(p.price) * BAM_RATE).toLocaleString()} KM &middot; </>}
+                        {formatTimeLabel(p.created_at)}
+                      </p>
                     </div>
                   </div>
                 ))}

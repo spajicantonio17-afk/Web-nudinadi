@@ -71,6 +71,12 @@ function ProfileContent() {
   const { user, isAuthenticated, isLoading, logout, refreshProfile, resendVerificationEmail } = useAuth();
   const initialTab = searchParams.get('tab') || 'Aktivni';
   const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Scroll to top when switching tabs
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
   const [userProducts, setUserProducts] = useState<ProductWithSeller[]>([]);
   const [reviews, setReviews] = useState<ReviewWithReviewer[]>([]);
   const [reviewsPage, setReviewsPage] = useState(1);

@@ -155,7 +155,7 @@ const en: Record<string, string> = {
   'menu.settings': 'Settings',
   'menu.mainSettings': 'Main Settings',
   'menu.notifications': 'Notifications',
-  'menu.appearance': 'Appearance & Theme',
+  'menu.appearance': 'Appearance & Market',
   'menu.language': 'Language',
   'menu.support': 'Support',
   'menu.help': 'Help / Support',

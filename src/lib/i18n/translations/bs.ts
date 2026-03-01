@@ -155,7 +155,7 @@ const bs: Record<string, string> = {
   'menu.settings': 'Postavke',
   'menu.mainSettings': 'Glavne Postavke',
   'menu.notifications': 'Notifikacije',
-  'menu.appearance': 'Izgled i Tema',
+  'menu.appearance': 'Izgled i tržište',
   'menu.language': 'Jezik / Language',
   'menu.support': 'Podrška',
   'menu.help': 'Pomoć / Support',

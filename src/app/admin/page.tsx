@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAdmin } from '@/hooks/useAdmin';
 import StatsOverview from '@/components/admin/StatsOverview';
@@ -20,6 +20,11 @@ type TabKey = (typeof TABS)[number]['key'];
 function AdminDashboardContent() {
   const { user, isAdmin, isLoading } = useAdmin();
   const [activeTab, setActiveTab] = useState<TabKey>('stats');
+
+  // Scroll to top when switching tabs
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
 
   if (isLoading) {
     return (

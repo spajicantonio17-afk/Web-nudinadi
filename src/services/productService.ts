@@ -3,8 +3,14 @@ import type {
   Product, ProductInsert, ProductUpdate,
   ProductWithSeller, ProductFull, ProductStatus,
 } from '@/lib/database.types'
+import { CITIES } from '@/lib/location'
+import type { CountryPreference } from '@/lib/country'
 
 const supabase = getSupabase()
+
+// ─── City→Country lookup for filtering ───────────────
+const BIH_CITIES = CITIES.filter(c => c.country === 'BiH').map(c => c.name)
+const HR_CITIES = CITIES.filter(c => c.country === 'HR').map(c => c.name)
 
 // ─── Filter Options ───────────────────────────────────
 
@@ -17,6 +23,7 @@ export interface ProductFilters {
   minPrice?: number
   maxPrice?: number
   location?: string
+  country?: CountryPreference  // Country filter: 'ba' | 'hr' | 'all'
   search?: string
   sortBy?: 'created_at' | 'price' | 'views_count' | 'favorites_count'
   sortOrder?: 'asc' | 'desc'
@@ -46,6 +53,8 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   if (filters.minPrice !== undefined) query = query.gte('price', filters.minPrice)
   if (filters.maxPrice !== undefined) query = query.lte('price', filters.maxPrice)
   if (filters.location) query = query.ilike('location', `%${filters.location}%`)
+  if (filters.country === 'ba') query = query.in('location', BIH_CITIES)
+  if (filters.country === 'hr') query = query.in('location', HR_CITIES)
   if (filters.search) {
     // Full-text search via tsvector (search_vector column, powered by title+tags+description)
     query = query.textSearch('search_vector', filters.search, { config: 'simple', type: 'plain' })

@@ -10,6 +10,8 @@ import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme';
 import { getSupabase } from '@/lib/supabase';
 import { uploadAvatar } from '@/services/uploadService';
+import AppSettings from '@/components/settings/AppSettings';
+import LanguageSettings from '@/components/settings/LanguageSettings';
 
 type MenuStep = 'main' | 'account' | 'main-settings' | 'security' | 'devices' | 'notifications' | 'appearance' | 'language' | 'support' | 'privacy';
 
@@ -93,6 +95,11 @@ export default function MenuPage() {
   const { locale, setLocale, t } = useI18n();
   const { theme, setTheme } = useTheme();
   const [step, setStep] = useState<MenuStep>('main');
+
+  // Scroll to top when switching menu sections
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -412,15 +419,8 @@ export default function MenuPage() {
   if (step === 'appearance') {
       return (
         <MainLayout title={t('menu.appearance')} showSigurnost={false} onBack={() => setStep('main')}>
-            <div className="max-w-2xl mx-auto space-y-6 pt-2 pb-24">
-                <section>
-                    <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">{t('menu.theme')}</h2>
-                    <div className="space-y-2">
-                        <SelectionRow label={t('menu.darkTheme')} icon="fa-moon" isSelected={theme === 'dark'} onClick={() => setTheme('dark')} />
-                        <SelectionRow label={t('menu.lightTheme')} icon="fa-sun" isSelected={theme === 'light'} onClick={() => setTheme('light')} />
-                        <SelectionRow label={t('menu.systemTheme')} icon="fa-mobile-screen" isSelected={theme === 'system'} onClick={() => setTheme('system')} />
-                    </div>
-                </section>
+            <div className="max-w-2xl mx-auto pt-2 pb-24">
+                <AppSettings />
             </div>
         </MainLayout>
       );
@@ -477,10 +477,7 @@ export default function MenuPage() {
   if (step === 'language') {
       return (
         <MainLayout title={t('menu.language')} showSigurnost={false} onBack={() => setStep('main')}>
-             <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-2">
-                 <SelectionRow label="Bosanski / Hrvatski / Srpski" icon="fa-flag" isSelected={locale === 'bs'} onClick={() => setLocale('bs')} />
-                 <SelectionRow label="English (US)" icon="fa-flag" isSelected={locale === 'en'} onClick={() => setLocale('en')} />
-             </div>
+             <div className="max-w-2xl mx-auto pt-2 pb-24">                 <LanguageSettings />             </div>
         </MainLayout>
       );
   }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { getSearchSuggestions, type SearchSuggestion } from '@/services/productService'
 import { getAllCategories } from '@/services/categoryService'
 import { lookupChassis, chassisLabel } from '@/lib/vehicle-chassis-codes'
+import { getCurrencyMode, eurToKm } from '@/lib/currency'
 
 interface SearchSuggestionsProps {
   query: string
@@ -191,7 +192,11 @@ export default function SearchSuggestions({
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-medium text-[var(--c-text)] truncate">{p.title}</p>
-                  <p className="text-[12px] font-bold text-[var(--c-accent)]">{p.price.toLocaleString('de-DE')} €</p>
+                  <p className="text-[12px] font-bold text-[var(--c-accent)]">
+                    {getCurrencyMode() === 'km-only'
+                      ? `${eurToKm(p.price).toLocaleString('de-DE')} KM`
+                      : `${p.price.toLocaleString('de-DE')} €`}
+                  </p>
                 </div>
               </button>
             ))}
