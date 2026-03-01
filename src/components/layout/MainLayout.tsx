@@ -56,20 +56,20 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
     <div className="flex min-h-screen bg-[var(--c-bg)] text-[var(--c-text)] font-sans relative overflow-x-hidden selection:bg-blue-500/20">
 
       {/* DESKTOP HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 md:h-16 px-4 md:px-6 lg:px-8 flex items-center justify-between glass-nav border-b border-[var(--c-border)] shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+      <header className="fixed top-0 left-0 right-0 z-50 h-12 sm:h-14 md:h-16 px-2 sm:px-4 md:px-6 lg:px-8 flex items-center justify-between glass-nav border-b border-[var(--c-border)] shadow-[0_1px_0_rgba(0,0,0,0.04)]">
 
         {/* LEFT: Back Button + Logo & Brand + Info Buttons */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4">
 
           {/* Back Button — visible on all sub-pages, LEFT side */}
           {!isHome && onBack !== null && (
             <button
               onClick={onBack || (() => router.back())}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
               aria-label="Nazad"
             >
               <i className="fa-solid fa-arrow-left text-sm"></i>
-              <span className="text-xs font-bold uppercase tracking-wider">Nazad</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider hidden sm:inline">Nazad</span>
             </button>
           )}
 
@@ -84,15 +84,15 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             <img
               src="/emblem.png"
               alt="NudiNađi emblem"
-              className="h-8 md:h-10 w-auto object-contain rounded-[4px]"
+              className="h-7 sm:h-8 md:h-10 w-auto object-contain rounded-[4px]"
             />
-            <span className="text-base md:text-xl font-black tracking-tight">
+            <span className="text-sm sm:text-base md:text-xl font-black tracking-tight">
               <span className="text-[var(--c-text)]">nudi</span><span className="text-[var(--c-text)] group-hover:text-[var(--c-accent)] transition-colors duration-150">nađi</span>
             </span>
           </button>
 
           {/* Info Buttons — desktop only */}
-          <div className="hidden lg:flex items-center gap-1.5 ml-1">
+          <div className="hidden xl:flex items-center gap-1.5 ml-1">
             <div className="w-[1px] h-6 bg-[var(--c-border)] mr-1"></div>
             <button
               onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
@@ -111,8 +111,8 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           </div>
         </div>
 
-        {/* Desktop Centered "Novi Oglas" Button */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
+        {/* CENTER: Novi Oglas — absolute centered, only on large screens */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden xl:block">
           <Link
             href="/upload"
             aria-label="Novi oglas — dodaj oglas"
@@ -128,7 +128,21 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
         </div>
 
         {/* RIGHT: User Actions */}
-        <div className="flex items-center gap-1.5 md:gap-4">
+        <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-4">
+
+          {/* Novi Oglas — compact, in flex flow, only on sm-to-lg screens */}
+          <Link
+            href="/upload"
+            aria-label="Novi oglas — dodaj oglas"
+            className={`flex xl:hidden items-center gap-1 md:gap-1.5 px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-[6px] transition-all duration-150 shrink-0 ${
+              pathname === '/upload'
+                ? 'bg-[var(--c-accent)] text-white shadow-accent'
+                : 'blue-gradient text-white shadow-accent hover:brightness-110'
+            }`}
+          >
+            <i className="fa-solid fa-plus text-[9px] sm:text-[10px] md:text-xs" aria-hidden="true"></i>
+            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-bold uppercase tracking-wider hidden sm:inline">Novi Oglas</span>
+          </Link>
 
           {/* Header Right Custom Actions */}
           {headerRight && <div className="mr-2">{headerRight}</div>}
@@ -137,7 +151,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {isAuthenticated && (
           <Link
             href="/messages"
-            className={`hidden md:flex w-10 h-10 rounded-[6px] items-center justify-center transition-all duration-150 border ${
+            className={`flex w-6 sm:w-7 md:w-8 lg:w-10 h-6 sm:h-7 md:h-8 lg:h-10 rounded-[6px] items-center justify-center transition-all duration-150 border ${
               pathname === '/messages'
                 ? 'bg-[var(--c-accent)] text-white border-[var(--c-accent)] shadow-accent'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -158,7 +172,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {/* Cart Icon — responsive size */}
           <Link
             href="/cart"
-            className={`w-8 h-8 md:w-10 md:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
+            className={`w-6 sm:w-7 md:w-8 lg:w-10 h-6 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
               pathname === '/cart'
                 ? 'bg-emerald-600 text-white border-emerald-600'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -178,7 +192,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {/* Notification Bell — responsive size */}
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className={`w-8 h-8 md:w-10 md:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
+            className={`w-6 sm:w-7 md:w-8 lg:w-10 h-6 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
               showNotifications
                 ? 'bg-amber-600 text-white border-amber-600'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -200,7 +214,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {isAuthenticated && (
           <Link
             href="/menu"
-            className={`hidden md:flex w-10 h-10 rounded-[6px] items-center justify-center transition-all duration-150 border ${
+            className={`flex w-6 sm:w-7 md:w-8 lg:w-10 h-6 sm:h-7 md:h-8 lg:h-10 rounded-[6px] items-center justify-center transition-all duration-150 border ${
               pathname === '/menu'
                 ? 'bg-[var(--c-text)] text-[var(--c-bg)] border-[var(--c-text)]'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -212,7 +226,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           )}
 
           {/* Divider */}
-          <div className="w-[1px] h-8 bg-[var(--c-border)] mx-1 hidden md:block"></div>
+          <div className="w-[1px] h-8 bg-[var(--c-border)] mx-1 hidden sm:block"></div>
 
           {/* Profile Avatar / Guest Button — responsive */}
           {isAuthenticated && user ? (
@@ -384,7 +398,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
 
       {/* GUEST LOGIN BANNER */}
       {!authLoading && !isAuthenticated && (
-        <div className="fixed top-14 md:top-16 left-0 right-0 z-40 bg-[var(--c-accent)] text-white px-4 py-2 md:py-2.5 flex items-center justify-center gap-2 md:gap-3">
+        <div className="fixed top-12 sm:top-14 md:top-16 left-0 right-0 z-40 bg-[var(--c-accent)] text-white px-3 sm:px-4 py-1.5 sm:py-2 md:py-2.5 flex items-center justify-center gap-1.5 sm:gap-2 md:gap-3">
           <i className="fa-solid fa-user-plus text-xs opacity-80"></i>
           <span className="text-[11px] font-bold">Gost si — prijavi se ili napravi profil!</span>
           <Link href="/login" className="ml-2 px-3 py-1 bg-[var(--c-card)] text-[var(--c-accent)] rounded-[4px] text-[12px] font-bold uppercase tracking-wider hover:bg-[var(--c-accent-light)] transition-all duration-150">
@@ -394,7 +408,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
       )}
 
       {/* MAIN CONTENT AREA */}
-      <div className={`flex-1 flex flex-col ${!authLoading && !isAuthenticated ? 'pt-24 md:pt-28' : 'pt-16 md:pt-20'} min-w-0 relative z-10`}>
+      <div className={`flex-1 flex flex-col ${!authLoading && !isAuthenticated ? 'pt-20 sm:pt-24 md:pt-28' : 'pt-14 sm:pt-16 md:pt-20'} min-w-0 relative z-10`}>
 
         {/* SECURITY INFO MODAL */}
         {showSecurityInfo && (
@@ -436,7 +450,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
         )}
 
         {/* Page Content */}
-        <main className="flex-1 px-4 md:px-8 w-full max-w-full mx-auto pb-24 md:pb-6">
+        <main className="flex-1 px-3 sm:px-4 md:px-8 w-full max-w-full mx-auto pb-24 sm:pb-6">
           {children}
         </main>
 
@@ -445,11 +459,11 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
       </div>
 
       {/* MOBILE BOTTOM NAV — Floating Pill */}
-      <nav aria-label="Mobilna navigacija" className="md:hidden fixed bottom-0 left-0 right-0 z-[90] px-4 pb-4">
-        <div className="flex justify-around items-center px-4 py-2 rounded-[28px] bg-[var(--c-bg)]/80 backdrop-blur-xl border border-[var(--c-glass-border)] shadow-2xl">
+      <nav aria-label="Mobilna navigacija" className="sm:hidden fixed bottom-0 left-0 right-0 z-[90] px-2 pb-3">
+        <div className="flex justify-around items-center px-2 sm:px-4 py-2 rounded-[28px] bg-[var(--c-bg)]/80 backdrop-blur-xl border border-[var(--c-glass-border)] shadow-2xl">
           <Link href="/" aria-label="Početna" aria-current={pathname === '/' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className="fa-solid fa-house text-[17px]" aria-hidden="true"></i>
-            <span className="text-[10px] font-semibold">Početna</span>
+            <span className="text-[9px] sm:text-[10px] font-semibold">Početna</span>
           </Link>
 
           {isAuthenticated && (
@@ -462,7 +476,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
                 </div>
               )}
             </div>
-            <span className="text-[10px] font-semibold">Poruke</span>
+            <span className="text-[9px] sm:text-[10px] font-semibold">Poruke</span>
           </Link>
           )}
 
@@ -474,13 +488,13 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
 
           <Link href={isAuthenticated ? '/profile' : '/login'} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} aria-current={pathname === '/profile' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/profile' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className={`fa-solid ${isAuthenticated ? 'fa-user' : 'fa-right-to-bracket'} text-[17px]`} aria-hidden="true"></i>
-            <span className="text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Prijava'}</span>
+            <span className="text-[9px] sm:text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Prijava'}</span>
           </Link>
 
           {isAuthenticated && (
           <Link href="/menu" aria-label="Meni" aria-current={pathname === '/menu' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/menu' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className="fa-solid fa-bars text-[17px]" aria-hidden="true"></i>
-            <span className="text-[10px] font-semibold">Meni</span>
+            <span className="text-[9px] sm:text-[10px] font-semibold">Meni</span>
           </Link>
           )}
         </div>

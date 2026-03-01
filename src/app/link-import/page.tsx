@@ -319,9 +319,9 @@ export default function LinkImportPage() {
               )}
 
               {/* Price + Condition Row */}
-              <div className="grid grid-cols-2 divide-x divide-[var(--c-border)]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x divide-[var(--c-border)]">
                 {(importedData.price != null || importedData.priceType === 'negotiable') && (
-                  <div className="px-5 py-4">
+                  <div className="px-5 py-3 sm:py-4">
                     <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1">Cijena</p>
                     <p className="text-[15px] font-black text-[var(--c-text)]">
                       {importedData.priceType === 'negotiable' && !importedData.price
@@ -339,7 +339,7 @@ export default function LinkImportPage() {
               </div>
 
               {/* Category + Location Row */}
-              <div className="grid grid-cols-2 divide-x divide-[var(--c-border)]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x divide-[var(--c-border)]">
                 {importedData.category && (
                   <div className="px-5 py-4">
                     <p className="text-[9px] font-black text-orange-500 uppercase tracking-widest mb-1">Kategorija</p>
@@ -468,7 +468,7 @@ export default function LinkImportPage() {
             <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest px-1">
               Šta AI prepoznaje
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 { icon: 'fa-heading', color: 'bg-blue-500/10 text-blue-500', label: 'Naslov oglasa' },
                 { icon: 'fa-tag', color: 'bg-emerald-500/10 text-emerald-500', label: 'Cijena' },
@@ -500,7 +500,7 @@ export default function LinkImportPage() {
             <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest px-1">
               Kako radi?
             </p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { step: '1', icon: 'fa-copy', color: 'bg-blue-500/10 text-blue-500', label: 'Kopiraj link', desc: 'Kopiraj URL oglasa koji želiš importovati' },
                 { step: '2', icon: 'fa-wand-magic-sparkles', color: 'bg-purple-500/10 text-purple-500', label: 'AI analizira', desc: 'Naš AI preuzima sve podatke automatski' },

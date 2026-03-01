@@ -3068,7 +3068,7 @@ function UploadPageInner() {
           </div>
 
           {/* Middle row - 3 equal cards */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             <button
                 onClick={() => selectCategory('Mobilni uređaji')}
                 className="relative bg-[var(--c-card)] rounded-[20px] border border-[var(--c-border)] overflow-hidden group active:scale-[0.98] transition-all p-4 flex flex-col items-center text-center gap-2.5 hover:border-rose-500/20"
