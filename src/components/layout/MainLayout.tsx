@@ -56,7 +56,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
     <div className="flex min-h-screen bg-[var(--c-bg)] text-[var(--c-text)] font-sans relative overflow-x-hidden selection:bg-blue-500/20">
 
       {/* DESKTOP HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-12 sm:h-14 md:h-16 px-2 sm:px-4 md:px-6 lg:px-8 flex items-center justify-between glass-nav border-b border-[var(--c-border)] shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+      <header className="fixed top-0 left-0 right-0 z-50 h-14 md:h-16 px-4 md:px-6 lg:px-8 flex items-center justify-between glass-nav border-b border-[var(--c-border)] shadow-[0_1px_0_rgba(0,0,0,0.04)]">
 
         {/* LEFT: Back Button + Logo & Brand + Info Buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4">
@@ -65,11 +65,11 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {!isHome && onBack !== null && (
             <button
               onClick={onBack || (() => router.back())}
-              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
               aria-label="Nazad"
             >
               <i className="fa-solid fa-arrow-left text-sm"></i>
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider hidden sm:inline">Nazad</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Nazad</span>
             </button>
           )}
 
@@ -84,9 +84,9 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             <img
               src="/emblem.png"
               alt="NudiNađi emblem"
-              className="h-7 sm:h-8 md:h-10 w-auto object-contain rounded-[4px]"
+              className="h-8 md:h-10 w-auto object-contain rounded-[4px]"
             />
-            <span className="text-sm sm:text-base md:text-xl font-black tracking-tight">
+            <span className="text-base md:text-xl font-black tracking-tight">
               <span className="text-[var(--c-text)]">nudi</span><span className="text-[var(--c-text)] group-hover:text-[var(--c-accent)] transition-colors duration-150">nađi</span>
             </span>
           </button>
@@ -134,14 +134,14 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           <Link
             href="/upload"
             aria-label="Novi oglas — dodaj oglas"
-            className={`flex xl:hidden items-center gap-1 md:gap-1.5 px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-[6px] transition-all duration-150 shrink-0 ${
+            className={`hidden sm:flex xl:hidden items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 md:py-2 rounded-[6px] transition-all duration-150 shrink-0 ${
               pathname === '/upload'
                 ? 'bg-[var(--c-accent)] text-white shadow-accent'
                 : 'blue-gradient text-white shadow-accent hover:brightness-110'
             }`}
           >
-            <i className="fa-solid fa-plus text-[9px] sm:text-[10px] md:text-xs" aria-hidden="true"></i>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-bold uppercase tracking-wider hidden sm:inline">Novi Oglas</span>
+            <i className="fa-solid fa-plus text-[10px] md:text-xs" aria-hidden="true"></i>
+            <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider">Novi Oglas</span>
           </Link>
 
           {/* Header Right Custom Actions */}
@@ -151,7 +151,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {isAuthenticated && (
           <Link
             href="/messages"
-            className={`flex w-6 sm:w-7 md:w-8 lg:w-10 h-6 sm:h-7 md:h-8 lg:h-10 rounded-[6px] items-center justify-center transition-all duration-150 border ${
+            className={`hidden sm:flex sm:w-7 md:w-8 lg:w-10 sm:h-7 md:h-8 lg:h-10 rounded-[6px] items-center justify-center transition-all duration-150 border ${
               pathname === '/messages'
                 ? 'bg-[var(--c-accent)] text-white border-[var(--c-accent)] shadow-accent'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -172,7 +172,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {/* Cart Icon — responsive size */}
           <Link
             href="/cart"
-            className={`w-6 sm:w-7 md:w-8 lg:w-10 h-6 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
+            className={`w-8 sm:w-7 md:w-8 lg:w-10 h-8 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
               pathname === '/cart'
                 ? 'bg-emerald-600 text-white border-emerald-600'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -192,7 +192,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {/* Notification Bell — responsive size */}
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className={`w-6 sm:w-7 md:w-8 lg:w-10 h-6 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
+            className={`w-8 sm:w-7 md:w-8 lg:w-10 h-8 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
               showNotifications
                 ? 'bg-amber-600 text-white border-amber-600'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -214,7 +214,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {isAuthenticated && (
           <Link
             href="/menu"
-            className={`flex w-6 sm:w-7 md:w-8 lg:w-10 h-6 sm:h-7 md:h-8 lg:h-10 rounded-[6px] items-center justify-center transition-all duration-150 border ${
+            className={`hidden sm:flex sm:w-7 md:w-8 lg:w-10 sm:h-7 md:h-8 lg:h-10 rounded-[6px] items-center justify-center transition-all duration-150 border ${
               pathname === '/menu'
                 ? 'bg-[var(--c-text)] text-[var(--c-bg)] border-[var(--c-text)]'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
