@@ -72,7 +72,7 @@ export const CATEGORIES: Category[] = [
   {
     id: 'mobiteli', name: 'Mobiteli i oprema', icon: 'fa-mobile-screen',
     subCategories: [
-      { name: 'Mobiteli – Apple iPhone', items: ['iPhone 12 i stariji', 'iPhone 13 serija', 'iPhone 14 serija', 'iPhone 15 serija', 'iPhone 16 serija'] },
+      { name: 'Mobiteli – Apple iPhone', items: ['iPhone 17 / Pro / Pro Max / Air', 'iPhone 16 / Plus / Pro / Pro Max', 'iPhone 15 / Plus / Pro / Pro Max', 'iPhone 14 / Plus / Pro / Pro Max', 'iPhone 13 / Mini / Pro / Pro Max', 'iPhone 12 / Mini / Pro / Pro Max', 'iPhone 11 / Pro / Pro Max', 'iPhone X / XS / XS Max / XR', 'iPhone 8 / 8 Plus', 'iPhone 7 / 7 Plus', 'iPhone 6 / 6S / Plus', 'iPhone SE', 'iPhone 5 i starije'] },
       { name: 'Mobiteli – Samsung', items: ['Galaxy A serija', 'Galaxy S serija', 'Galaxy Z Fold/Flip', 'Ostali Samsung'] },
       { name: 'Mobiteli – Xiaomi / Redmi / POCO' },
       { name: 'Mobiteli – Huawei / Honor' },
@@ -194,7 +194,7 @@ export const CATEGORIES: Category[] = [
       { name: 'Oprema za bebe', items: ['Auto sjedalice', 'Hodalice i ljuljačke', 'Hranilice, boce i njega', 'Kolica i nosiljke', 'Krevetići, posteljina i madraci', 'Kupaonice i presvlačišta'] },
       { name: 'Dječje igračke', items: ['Figurice, lutke i akcijske figure', 'Kuhinje i roleplay igračke', 'LEGO i konstruktori', 'Na daljinski (RC)', 'Plišane igračke', 'Slagalice i puzzle', 'Trampoline, tobogani i ljuljačke'] },
       { name: 'Dječji bicikli, romobili i automobili', items: ['Balans bicikli', 'Dječji quad', 'Dječji romobili', 'Električni dječji automobili', 'Skuteri za djecu'] },
-      { name: 'Dječja odjeća (0–14 god)' },
+      { name: 'Dječja odjeća (0–14 god)', items: ['Body i kombinezon', 'Majice i topovi', 'Hlače i traperice', 'Haljine i suknje', 'Džemperi i veste', 'Jakne i kaputi', 'Trenirke i sportska odjeća', 'Pidžame i spavaćice', 'Čarape i donje rublje', 'Kupači kostimi', 'Kompletići i setovi', 'Dječja obuća', 'Ostala dječja odjeća'] },
       { name: 'Dječje knjige i edukacija', items: ['Bojice i kreativni setovi', 'Edukativne igre i ploče', 'Slikovnice', 'Školski pribor'] },
       { name: 'Ostalo za djecu' },
     ]

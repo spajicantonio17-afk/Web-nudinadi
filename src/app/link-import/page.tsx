@@ -164,6 +164,11 @@ export default function LinkImportPage() {
           <p className="text-sm text-[var(--c-text2)] max-w-sm mx-auto leading-relaxed">
             Kopiraj link oglasa s bilo kojeg portala — AI automatski preuzima sve podatke.
           </p>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-400/30 rounded-full">
+            <i className="fa-solid fa-flask text-amber-500 text-[9px]"></i>
+            <span className="text-[10px] font-bold text-amber-600">BETA</span>
+            <span className="text-[10px] text-amber-600/80">— moguće su manje greške pri importu</span>
+          </div>
         </div>
 
         {/* ── URL INPUT CARD ── */}

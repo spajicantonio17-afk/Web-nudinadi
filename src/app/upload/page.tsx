@@ -136,7 +136,7 @@ const FUEL_OPTIONS: Record<string, string[]> = {
 // Bicycle drive types (instead of fuel)
 const BICYCLE_DRIVE_TYPES = ['Mehanički', 'E-bike (električni)'];
 
-type UploadStep = 'selection' | 'all-categories' | 'vehicle-sub' | 'parts-sub' | 'car-method' | 'truck-sub' | 'prikolice-sub' | 'nekretnine-sub' | 'nekretnine-quicktap' | 'elektronika-quicktap' | 'mobile-sub' | 'moda-sub' | 'moda-artikl' | 'tehnika-sub' | 'services-sub' | 'poslovi-sub' | 'detail-sub' | 'dom-sub' | 'sport-sub' | 'djeca-sub' | 'glazba-sub' | 'literatura-sub' | 'zivotinje-sub' | 'hrana-sub' | 'strojevi-sub' | 'umjetnost-sub' | 'videoigre-sub' | 'ostalo-sub' | 'form';
+type UploadStep = 'selection' | 'all-categories' | 'vehicle-sub' | 'parts-sub' | 'car-method' | 'truck-sub' | 'prikolice-sub' | 'nekretnine-sub' | 'nekretnine-quicktap' | 'elektronika-quicktap' | 'mobile-sub' | 'mobile-artikl' | 'moda-sub' | 'moda-artikl' | 'tehnika-sub' | 'services-sub' | 'poslovi-sub' | 'detail-sub' | 'dom-sub' | 'sport-sub' | 'djeca-sub' | 'glazba-sub' | 'literatura-sub' | 'zivotinje-sub' | 'hrana-sub' | 'strojevi-sub' | 'umjetnost-sub' | 'videoigre-sub' | 'ostalo-sub' | 'form';
 
 const NEKRETNINE_TYPES = [
   { name: 'Stanovi i apartmani', icon: 'fa-building' },
@@ -289,10 +289,54 @@ const MOBILE_BRANDS = [
   { name: 'Nokia', icon: 'fa-mobile-retro', type: 'solid' },
   { name: 'HTC', icon: 'fa-mobile-screen-button', type: 'solid' },
   { name: 'Siemens', icon: 'fa-phone', type: 'solid' },
+  { name: 'Slušalice', icon: 'fa-headphones', type: 'solid' },
+  { name: 'Digitalni satovi', icon: 'fa-clock', type: 'solid' },
   { name: 'Faks uređaji', icon: 'fa-fax', type: 'solid' },
   { name: 'Fiksni telefoni', icon: 'fa-phone-flip', type: 'solid' },
   { name: 'Ostalo', icon: 'fa-ellipsis', type: 'solid' },
 ];
+
+const MOBILE_BRAND_ITEMS: Record<string, Array<{name: string, icon: string}>> = {
+  'Apple': [
+    { name: 'iPhone 17 / Pro / Pro Max / Air', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 16 / Plus / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 15 / Plus / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 14 / Plus / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 13 / Mini / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 12 / Mini / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 11 / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone X / XS / XS Max / XR', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 8 / 8 Plus', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 7 / 7 Plus', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 6 / 6S / Plus', icon: 'fa-mobile-screen' },
+    { name: 'iPhone SE', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 5 i starije', icon: 'fa-mobile-screen' },
+  ],
+  'Samsung': [
+    { name: 'Galaxy S serija', icon: 'fa-mobile-screen' },
+    { name: 'Galaxy A serija', icon: 'fa-mobile-screen' },
+    { name: 'Galaxy Z Fold/Flip', icon: 'fa-mobile-screen' },
+    { name: 'Ostali Samsung', icon: 'fa-mobile-screen' },
+  ],
+  'Slušalice': [
+    { name: 'Apple AirPods / AirPods Pro / AirPods Max', icon: 'fa-headphones' },
+    { name: 'Samsung Galaxy Buds', icon: 'fa-headphones' },
+    { name: 'Sony (WH / WF serija)', icon: 'fa-headphones' },
+    { name: 'JBL', icon: 'fa-headphones' },
+    { name: 'Beats', icon: 'fa-headphones' },
+    { name: 'Bose', icon: 'fa-headphones' },
+    { name: 'Ostale slušalice', icon: 'fa-headphones' },
+  ],
+  'Digitalni satovi': [
+    { name: 'Apple Watch', icon: 'fa-clock' },
+    { name: 'Samsung Galaxy Watch', icon: 'fa-clock' },
+    { name: 'Huawei Watch / Band', icon: 'fa-clock' },
+    { name: 'Garmin', icon: 'fa-clock' },
+    { name: 'Xiaomi Mi Band / Watch', icon: 'fa-clock' },
+    { name: 'Fitbit', icon: 'fa-clock' },
+    { name: 'Ostali satovi', icon: 'fa-clock' },
+  ],
+};
 
 const CAR_LOGO_BASE = 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb';
 
@@ -915,6 +959,54 @@ const CATEGORY_DETAILS: Record<string, Array<{name: string, icon: string}>> = {
     { name: 'Ostalo', icon: 'fa-ellipsis' },
   ],
 
+  // ── MOBITELI ──
+  'Mobiteli – Apple iPhone': [
+    { name: 'iPhone 17 / Pro / Pro Max / Air', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 16 / Plus / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 15 / Plus / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 14 / Plus / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 13 / Mini / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 12 / Mini / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 11 / Pro / Pro Max', icon: 'fa-mobile-screen' },
+    { name: 'iPhone X / XS / XS Max / XR', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 8 / 8 Plus', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 7 / 7 Plus', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 6 / 6S / Plus', icon: 'fa-mobile-screen' },
+    { name: 'iPhone SE', icon: 'fa-mobile-screen' },
+    { name: 'iPhone 5 i starije', icon: 'fa-mobile-screen' },
+  ],
+  'Mobiteli – Samsung': [
+    { name: 'Galaxy S serija', icon: 'fa-mobile-screen' },
+    { name: 'Galaxy A serija', icon: 'fa-mobile-screen' },
+    { name: 'Galaxy Z Fold/Flip', icon: 'fa-mobile-screen' },
+    { name: 'Ostali Samsung', icon: 'fa-mobile-screen' },
+  ],
+  'Tableti': [
+    { name: 'Apple iPad', icon: 'fa-tablet-screen-button' },
+    { name: 'Samsung Galaxy Tab', icon: 'fa-tablet-screen-button' },
+    { name: 'Huawei MatePad', icon: 'fa-tablet-screen-button' },
+    { name: 'Ostali tableti', icon: 'fa-tablet-screen-button' },
+  ],
+  'Slušalice i Bluetooth zvučnici': [
+    { name: 'Apple AirPods / AirPods Pro / AirPods Max', icon: 'fa-headphones' },
+    { name: 'Samsung Galaxy Buds', icon: 'fa-headphones' },
+    { name: 'Sony (WH / WF serija)', icon: 'fa-headphones' },
+    { name: 'JBL', icon: 'fa-headphones' },
+    { name: 'Beats', icon: 'fa-headphones' },
+    { name: 'Bose', icon: 'fa-headphones' },
+    { name: 'Bluetooth zvučnici', icon: 'fa-volume-high' },
+    { name: 'Ostale slušalice', icon: 'fa-headphones' },
+  ],
+  'Pametni satovi i fitness narukvice': [
+    { name: 'Apple Watch', icon: 'fa-clock' },
+    { name: 'Samsung Galaxy Watch', icon: 'fa-clock' },
+    { name: 'Huawei Watch / Band', icon: 'fa-clock' },
+    { name: 'Garmin', icon: 'fa-clock' },
+    { name: 'Xiaomi Mi Band / Watch', icon: 'fa-clock' },
+    { name: 'Fitbit', icon: 'fa-clock' },
+    { name: 'Ostali satovi', icon: 'fa-clock' },
+  ],
+
   // ── DOM I VRT ──
   'Namještaj': [
     { name: 'Sofe i fotelje', icon: 'fa-couch' },
@@ -1436,6 +1528,10 @@ for (const t of POSLOVI_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.
 for (const t of VIDEOIGRE_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'violet', parentStep: 'videoigre-sub', parentCategory: 'Video igre' };
 // Ostalo
 for (const t of OSTALO_TYPES) if (CATEGORY_DETAILS[t.name]) DETAIL_COLOR_MAP[t.name] = { color: 'slate', parentStep: 'ostalo-sub', parentCategory: 'Ostalo' };
+// Mobiteli subcategories with items
+for (const key of ['Mobiteli – Apple iPhone', 'Mobiteli – Samsung', 'Tableti', 'Slušalice i Bluetooth zvučnici', 'Pametni satovi i fitness narukvice']) {
+  if (CATEGORY_DETAILS[key]) DETAIL_COLOR_MAP[key] = { color: 'rose', parentStep: 'mobile-sub', parentCategory: 'Mobiteli i oprema' };
+}
 
 // ── Category breadcrumb info ──────────────────────────────────────────────
 function getCategoryBreadcrumb(category: string, brand?: string): { main: string; sub?: string; item?: string; icon: string; color: string } {
@@ -1538,6 +1634,7 @@ function UploadPageInner() {
   const { showToast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [step, setStep] = useState<UploadStep>('selection');
+  const [mobileSubBrand, setMobileSubBrand] = useState('');
   const [modaSubCategory, setModaSubCategory] = useState('');
   const [parentSubCategory, setParentSubCategory] = useState('');
   const [parentColor, setParentColor] = useState('blue');
@@ -1611,6 +1708,13 @@ function UploadPageInner() {
 
   // ── Breadcrumb state ──
   const [breadcrumb, setBreadcrumb] = useState<Array<{ label: string; step: UploadStep; subStep?: string }>>([]);
+
+  // ── Category picker popup (in-form) ──
+  const [showCategoryPopup, setShowCategoryPopup] = useState(false);
+  const [popupCatLevel, setPopupCatLevel] = useState<'main' | 'sub' | 'item'>('main');
+  const [popupSelectedCat, setPopupSelectedCat] = useState<typeof CATEGORIES[0] | null>(null);
+  const [popupSelectedSub, setPopupSelectedSub] = useState<{ name: string; items?: string[] } | null>(null);
+  const [popupCatSearch, setPopupCatSearch] = useState('');
 
   // ── Car flow sub-steps state ──
   const [carFlowStep, setCarFlowStep] = useState<'brand' | 'model' | 'variant'>('brand');
@@ -1977,7 +2081,19 @@ function UploadPageInner() {
 
   const selectMobileSub = (brand: string) => {
     setAttributes({});
-    setFormData({ ...formData, category: 'Mobilni uređaji', brand: brand, title: `${brand} ` });
+    const items = MOBILE_BRAND_ITEMS[brand];
+    if (items && items.length > 0) {
+      setMobileSubBrand(brand);
+      setFormData(prev => ({ ...prev, category: `Mobiteli i oprema - ${brand}`, brand }));
+      setStep('mobile-artikl');
+    } else {
+      setFormData({ ...formData, category: 'Mobilni uređaji', brand: brand, title: `${brand} ` });
+      setStep('form');
+    }
+  };
+
+  const selectMobileArtikl = (artikl: string) => {
+    setFormData(prev => ({ ...prev, category: `Mobiteli i oprema - ${mobileSubBrand} - ${artikl}`, title: `${mobileSubBrand} ` }));
     setStep('form');
   };
 
@@ -3391,6 +3507,164 @@ function UploadPageInner() {
     );
   };
 
+  // ── Category picker popup (overlay in form) ──
+  const renderCategoryPopup = () => {
+    if (!showCategoryPopup) return null;
+
+    const openPopup = () => {
+      setPopupCatLevel('main');
+      setPopupSelectedCat(null);
+      setPopupSelectedSub(null);
+      setPopupCatSearch('');
+    };
+
+    const filteredPopupCats = popupCatSearch.trim()
+      ? CATEGORIES.filter(cat => {
+          const q = popupCatSearch.toLowerCase();
+          if (cat.name.toLowerCase().includes(q)) return true;
+          return cat.subCategories.some(sub =>
+            sub.name.toLowerCase().includes(q) ||
+            sub.items?.some(item => item.toLowerCase().includes(q))
+          );
+        })
+      : CATEGORIES;
+
+    // Icon mapping for main categories
+    const CAT_ICONS: Record<string, string> = {};
+    CATEGORIES.forEach(c => { CAT_ICONS[c.id] = c.icon; });
+
+    return (
+      <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center" onClick={() => setShowCategoryPopup(false)}>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div
+          className="relative bg-[var(--c-card)] border border-[var(--c-border)] rounded-t-[20px] sm:rounded-[16px] w-full sm:max-w-md max-h-[80vh] flex flex-col shadow-2xl animate-fadeIn"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center gap-3 px-5 pt-5 pb-3 border-b border-[var(--c-border)]">
+            {popupCatLevel !== 'main' && (
+              <button
+                onClick={() => {
+                  if (popupCatLevel === 'item') setPopupCatLevel('sub');
+                  else { setPopupCatLevel('main'); setPopupSelectedCat(null); }
+                }}
+                className="w-8 h-8 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors shrink-0"
+              >
+                <i className="fa-solid fa-arrow-left text-xs"></i>
+              </button>
+            )}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-[13px] font-black text-[var(--c-text)]">
+                {popupCatLevel === 'main' ? 'Odaberi kategoriju' :
+                 popupCatLevel === 'sub' ? popupSelectedCat?.name :
+                 popupSelectedSub?.name}
+              </h3>
+              {popupCatLevel !== 'main' && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <button onClick={() => { setPopupCatLevel('main'); setPopupSelectedCat(null); }} className="text-[9px] text-blue-500 font-bold hover:underline">Sve</button>
+                  {popupCatLevel === 'item' && popupSelectedCat && (
+                    <>
+                      <i className="fa-solid fa-chevron-right text-[6px] text-[var(--c-text-muted)]"></i>
+                      <button onClick={() => setPopupCatLevel('sub')} className="text-[9px] text-blue-500 font-bold hover:underline">{popupSelectedCat.name}</button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setShowCategoryPopup(false)}
+              className="w-8 h-8 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors shrink-0"
+            >
+              <i className="fa-solid fa-xmark text-sm"></i>
+            </button>
+          </div>
+
+          {/* Search (only on main level) */}
+          {popupCatLevel === 'main' && (
+            <div className="px-4 pt-3 pb-1">
+              <div className="relative">
+                <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-[var(--c-text-muted)]"></i>
+                <input
+                  type="text"
+                  value={popupCatSearch}
+                  onChange={(e) => setPopupCatSearch(e.target.value)}
+                  placeholder="Pretraži kategorije..."
+                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-[var(--c-hover)] border border-[var(--c-border)] text-[11px] text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:outline-none focus:border-blue-500/40"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* List */}
+          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
+            {popupCatLevel === 'main' && filteredPopupCats.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  if (cat.subCategories.length > 0) {
+                    setPopupSelectedCat(cat);
+                    setPopupCatLevel('sub');
+                    setPopupCatSearch('');
+                  } else {
+                    setFormData(prev => ({ ...prev, category: cat.name }));
+                    setShowCategoryPopup(false);
+                  }
+                }}
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-[var(--c-hover)] transition-colors text-left group"
+              >
+                <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <i className={`fa-solid ${cat.icon} text-blue-500 text-sm`}></i>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-bold text-[var(--c-text)] truncate">{cat.name}</p>
+                  <p className="text-[9px] text-[var(--c-text-muted)]">{cat.subCategories.length} podkategorija</p>
+                </div>
+                <i className="fa-solid fa-chevron-right text-[9px] text-[var(--c-text-muted)] group-hover:text-[var(--c-text)] transition-colors"></i>
+              </button>
+            ))}
+
+            {popupCatLevel === 'sub' && popupSelectedCat?.subCategories.map((sub) => (
+              <button
+                key={sub.name}
+                onClick={() => {
+                  if (sub.items && sub.items.length > 0) {
+                    setPopupSelectedSub(sub);
+                    setPopupCatLevel('item');
+                  } else {
+                    setFormData(prev => ({ ...prev, category: `${popupSelectedCat.name} - ${sub.name}` }));
+                    setShowCategoryPopup(false);
+                  }
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--c-hover)] transition-colors text-left group"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-[var(--c-text)] truncate">{sub.name}</p>
+                  {sub.items && <p className="text-[9px] text-[var(--c-text-muted)]">{sub.items.length} opcija</p>}
+                </div>
+                {sub.items && sub.items.length > 0 && (
+                  <i className="fa-solid fa-chevron-right text-[9px] text-[var(--c-text-muted)] group-hover:text-[var(--c-text)] transition-colors"></i>
+                )}
+              </button>
+            ))}
+
+            {popupCatLevel === 'item' && popupSelectedSub?.items?.map((item) => (
+              <button
+                key={item}
+                onClick={() => {
+                  setFormData(prev => ({ ...prev, category: `${popupSelectedCat!.name} - ${popupSelectedSub.name} - ${item}` }));
+                  setShowCategoryPopup(false);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--c-hover)] transition-colors text-left"
+              >
+                <p className="text-[11px] font-medium text-[var(--c-text)] truncate">{item}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Helper: render a sub-selection grid
   const renderSubSelection = (
     title: string,
@@ -4029,6 +4303,10 @@ function UploadPageInner() {
   if (step === 'mobile-sub') {
     return renderSubSelection('Mobilni', 'Odaberite brend', 'rose', MOBILE_BRANDS, selectMobileSub, 'Npr. iPhone 13 Pro Max plavi...', 'NudiNađi AI');
   }
+  if (step === 'mobile-artikl') {
+    const items = MOBILE_BRAND_ITEMS[mobileSubBrand] || [];
+    return renderSubSelection(mobileSubBrand, 'Odaberite model', 'rose', items, selectMobileArtikl, `Npr. ${mobileSubBrand} najnoviji model...`, 'NudiNađi AI', 'mobile-sub');
+  }
   if (step === 'moda-sub') {
     return renderSubSelection('Moda', 'Koju vrstu odjeće prodajete?', 'amber', MODA_TYPES, selectModaSub, 'Npr. Crvena haljina M veličina...', 'NudiNađi AI');
   }
@@ -4651,21 +4929,56 @@ function UploadPageInner() {
           {/* Navigation Breadcrumb */}
           {renderBreadcrumb()}
 
-          {/* Category Breadcrumb */}
+          {/* Category Breadcrumb — click to open category picker popup */}
           {(() => {
             const crumb = getCategoryBreadcrumb(formData.category, formData.brand);
             const clr = BREADCRUMB_COLORS[crumb.color] || BREADCRUMB_COLORS.blue;
+
+            const openAtMain = () => {
+              setPopupCatLevel('main');
+              setPopupSelectedCat(null);
+              setPopupSelectedSub(null);
+              setPopupCatSearch('');
+              setShowCategoryPopup(true);
+            };
+
+            const openAtSub = () => {
+              // Find matching main category
+              const c = formData.category.toLowerCase();
+              const match = CATEGORIES.find(cat => c.includes(cat.id) || c.includes(cat.name.toLowerCase()));
+              if (match) {
+                setPopupSelectedCat(match);
+                setPopupCatLevel('sub');
+              } else {
+                setPopupCatLevel('main');
+                setPopupSelectedCat(null);
+              }
+              setPopupSelectedSub(null);
+              setPopupCatSearch('');
+              setShowCategoryPopup(true);
+            };
+
             return (
-              <div className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border ${clr.bg} ${clr.border}`}>
+              <div className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border ${clr.bg} ${clr.border} cursor-pointer hover:border-blue-500/40 transition-all`} onClick={openAtSub}>
                 <div className={`w-8 h-8 rounded-lg ${clr.iconBg} flex items-center justify-center shrink-0`}>
                   <i className={`fa-solid ${crumb.icon} ${clr.text} text-sm`}></i>
                 </div>
                 <div className="flex items-center gap-1.5 flex-1 min-w-0 flex-wrap">
-                  <span className={`text-[11px] font-black ${clr.text} uppercase tracking-wide`}>{crumb.main}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); openAtMain(); }}
+                    className={`text-[11px] font-black ${clr.text} uppercase tracking-wide hover:underline underline-offset-2 transition-all`}
+                  >
+                    {crumb.main}
+                  </button>
                   {crumb.sub && (
                     <>
                       <i className="fa-solid fa-chevron-right text-[7px] text-[var(--c-text-muted)]"></i>
-                      <span className="text-[11px] font-bold text-[var(--c-text)]">{crumb.sub}</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openAtSub(); }}
+                        className="text-[11px] font-bold text-[var(--c-text)] hover:underline underline-offset-2 transition-all"
+                      >
+                        {crumb.sub}
+                      </button>
                     </>
                   )}
                   {crumb.item && (
@@ -4675,48 +4988,15 @@ function UploadPageInner() {
                     </>
                   )}
                 </div>
-                <button
-                  onClick={() => {
-                    // Go back to subcategory selection for the current main category
-                    const c = formData.category.toLowerCase();
-                    const SUB_STEPS: [string, UploadStep][] = [
-                      ['vozila',       'vehicle-sub'],
-                      ['nekretnine',   'nekretnine-sub'],
-                      ['mobilni',      'mobile-sub'],
-                      ['elektronika',  'elektronika-quicktap'],
-                      ['moda',         'moda-sub'],
-                      ['usluge',       'services-sub'],
-                      ['poslovi',      'poslovi-sub'],
-                      ['dom',          'dom-sub'],
-                      ['vrt',          'dom-sub'],
-                      ['sport',        'sport-sub'],
-                      ['djeca',        'djeca-sub'],
-                      ['bebe',         'djeca-sub'],
-                      ['glazba',       'glazba-sub'],
-                      ['instrument',   'glazba-sub'],
-                      ['literatur',    'literatura-sub'],
-                      ['životinj',     'zivotinje-sub'],
-                      ['hrana',        'hrana-sub'],
-                      ['strojevi',     'strojevi-sub'],
-                      ['alat',         'strojevi-sub'],
-                      ['umjetnost',    'umjetnost-sub'],
-                      ['kolekcionar',  'umjetnost-sub'],
-                      ['video igre',   'videoigre-sub'],
-                      ['ostalo',       'ostalo-sub'],
-                    ];
-                    let target: UploadStep = 'selection';
-                    for (const [key, step] of SUB_STEPS) {
-                      if (c.includes(key)) { target = step; break; }
-                    }
-                    setStep(target);
-                  }}
-                  className="text-[9px] font-bold text-[var(--c-text3)] hover:text-[var(--c-text)] uppercase tracking-wider transition-colors shrink-0"
-                >
-                  Promijeni
-                </button>
+                <div className="text-[var(--c-text3)] shrink-0">
+                  <i className="fa-solid fa-pen text-[9px]"></i>
+                </div>
               </div>
             );
           })()}
+
+          {/* Category Picker Popup */}
+          {renderCategoryPopup()}
 
           {/* Step progress indicator */}
           {totalPages > 1 && (
@@ -5037,6 +5317,9 @@ function UploadPageInner() {
                         </button>
                       ))}
                     </div>
+                    {formData.priceType === 'mk' && (
+                      <p className="text-[9px] text-[var(--c-text-muted)] mt-2 text-right">MK = Moguća Korekcija</p>
+                    )}
                   </div>
                   {/* Price input — hidden when "Po dogovoru" */}
                   {formData.priceType !== 'negotiable' && (
@@ -5072,13 +5355,119 @@ function UploadPageInner() {
                 {formErrors.price && formData.priceType !== 'negotiable' && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.price}</p>}
               </div>
 
+              {/* ── Vehicle: Kilometraža + Motor (only for cars/motorcycles) ── */}
+              {(formData.category.toLowerCase().includes('vozila') || formData.category.toLowerCase() === 'automobili') &&
+               !formData.category.toLowerCase().includes('prikolice') &&
+               !formData.category.toLowerCase().includes('ostala vozila') && (
+                <div className="space-y-3">
+                  {/* Kilometraža */}
+                  <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-1 focus-within:border-blue-500/50 transition-colors">
+                    <div className="px-5 pt-4">
+                      <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Kilometraža</label>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={(attributes.kilometraza as string) || ''}
+                        onChange={(e) => setAttributes(prev => ({ ...prev, kilometraza: e.target.value }))}
+                        placeholder="npr. 185000"
+                        className="w-full bg-transparent px-5 pb-4 pt-1 text-lg font-bold text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[11px] font-bold text-[var(--c-text3)] uppercase">km</span>
+                    </div>
+                  </div>
+
+                  {/* Motor + kW/PS */}
+                  <div className="flex gap-3">
+                    <div className="flex-1 bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-1 focus-within:border-blue-500/50 transition-colors">
+                      <div className="px-4 pt-3">
+                        <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Motor</label>
+                      </div>
+                      <input
+                        type="text"
+                        value={(attributes.motor as string) || ''}
+                        onChange={(e) => setAttributes(prev => ({ ...prev, motor: e.target.value }))}
+                        placeholder="npr. 1.9 TDI"
+                        className="w-full bg-transparent px-4 pb-3 pt-1 text-sm font-bold text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none"
+                      />
+                    </div>
+                    <div className="flex-1 bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-1 focus-within:border-blue-500/50 transition-colors">
+                      <div className="px-4 pt-3">
+                        <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">kW / PS</label>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={(attributes.snaga as string) || ''}
+                          onChange={(e) => setAttributes(prev => ({ ...prev, snaga: e.target.value }))}
+                          placeholder="npr. 77"
+                          className="w-full bg-transparent px-4 pb-3 pt-1 text-sm font-bold text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-bold text-[var(--c-text-muted)] uppercase">kW</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Gorivo + Mjenjač */}
+                  <div className="flex gap-3">
+                    <div className="flex-1 bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-1 focus-within:border-blue-500/50 transition-colors">
+                      <div className="px-5 pt-4">
+                        <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Gorivo</label>
+                      </div>
+                      <select
+                        value={(attributes.gorivo as string) || ''}
+                        onChange={(e) => setAttributes(prev => ({ ...prev, gorivo: e.target.value }))}
+                        className="w-full bg-transparent px-5 pb-4 pt-1 text-lg font-bold text-[var(--c-text)] outline-none cursor-pointer appearance-none"
+                      >
+                        <option value="">Odaberi...</option>
+                        {['Dizel', 'Benzin', 'Benzin + LPG', 'Hibrid', 'Plug-in hibrid', 'Električni', 'CNG'].map(f => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex-1 bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-1 focus-within:border-blue-500/50 transition-colors">
+                      <div className="px-5 pt-4">
+                        <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Mjenjač</label>
+                      </div>
+                      <select
+                        value={(attributes.mjenjac as string) || ''}
+                        onChange={(e) => setAttributes(prev => ({ ...prev, mjenjac: e.target.value }))}
+                        className="w-full bg-transparent px-5 pb-4 pt-1 text-lg font-bold text-[var(--c-text)] outline-none cursor-pointer appearance-none"
+                      >
+                        <option value="">Odaberi...</option>
+                        {['Ručni', 'Automatik', 'Poluautomatik', 'DSG / DCT'].map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Boja */}
+                  <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-1 focus-within:border-blue-500/50 transition-colors">
+                    <div className="px-5 pt-4">
+                      <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Boja</label>
+                    </div>
+                    <select
+                      value={(attributes.boja as string) || ''}
+                      onChange={(e) => setAttributes(prev => ({ ...prev, boja: e.target.value }))}
+                      className="w-full bg-transparent px-5 pb-4 pt-1 text-lg font-bold text-[var(--c-text)] outline-none cursor-pointer appearance-none"
+                    >
+                      <option value="">Odaberi...</option>
+                      {['Crna', 'Bijela', 'Siva', 'Srebrna', 'Crvena', 'Plava', 'Zelena', 'Narančasta', 'Zlatna', 'Smeđa', 'Bež', 'Ostalo'].map(b => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
               {/* Category Attributes – Page 1 */}
               <CategoryAttributesSection
                 category={formData.category}
                 attributes={attributes}
                 onChange={(key, value) => setAttributes(prev => ({ ...prev, [key]: value }))}
                 formPage={totalPages > 1 ? 1 : undefined}
-                excludeKeys={(formData.category.toLowerCase().includes('vozila') || formData.category.toLowerCase() === 'automobili') && !formData.category.toLowerCase().includes('prikolice') && !formData.category.toLowerCase().includes('ostala vozila') ? ['marka', 'model', 'godiste', 'karoserija'] : undefined}
+                excludeKeys={(formData.category.toLowerCase().includes('vozila') || formData.category.toLowerCase() === 'automobili') && !formData.category.toLowerCase().includes('prikolice') && !formData.category.toLowerCase().includes('ostala vozila') ? ['marka', 'model', 'godiste', 'karoserija', 'km', 'motor', 'gorivo', 'mjenjac', 'boja'] : undefined}
               />
 
               {/* Description (shown inline for single-page categories that have no page 2/3) */}

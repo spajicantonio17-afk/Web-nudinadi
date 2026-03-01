@@ -104,6 +104,84 @@ function extractMeta(html: string): Record<string, string> {
   return meta;
 }
 
+/** Extract location directly from HTML (structured data, meta tags, OLX patterns) */
+function extractLocationFromHtml(html: string): string | null {
+  // 1) JSON-LD: Product/Offer with address/location
+  for (const m of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      const obj = JSON.parse(m[1]);
+      // Check availableAtOrFrom.address (OLX pattern)
+      const addr = obj.availableAtOrFrom?.address || obj.address || obj.contentLocation?.address;
+      if (addr) {
+        const city = addr.addressLocality || addr.name;
+        if (city && typeof city === 'string') return city.trim();
+      }
+      // Check offers.availableAtOrFrom
+      const offers = Array.isArray(obj.offers) ? obj.offers[0] : obj.offers;
+      if (offers?.availableAtOrFrom?.address?.addressLocality) {
+        return offers.availableAtOrFrom.address.addressLocality.trim();
+      }
+      // Check location field directly
+      if (obj.location?.name && typeof obj.location.name === 'string') return obj.location.name.trim();
+      if (obj.location?.address?.addressLocality) return obj.location.address.addressLocality.trim();
+    } catch { /* skip */ }
+  }
+
+  // 2) Meta tags: og:locality, geo.placename, og:region, place:location:locality
+  for (const m of html.matchAll(/<meta[^>]+(?:name|property)=["'](og:locality|geo\.placename|place:location:locality|og:region|icbm)["'][^>]+content=["']([^"']+)["'][^>]*>/gi)) {
+    if (m[2] && m[2].length < 50) return m[2].trim();
+  }
+  for (const m of html.matchAll(/<meta[^>]+content=["']([^"']+)["'][^>]+(?:name|property)=["'](og:locality|geo\.placename|place:location:locality)["'][^>]*>/gi)) {
+    if (m[1] && m[1].length < 50) return m[1].trim();
+  }
+
+  // 3) Inline JSON patterns (Nuxt __NUXT__, Next __NEXT_DATA__, generic)
+  const jsonPatterns = [
+    /"location"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]{2,40})"/i,
+    /"city"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]{2,40})"/i,
+    /"cityName"\s*:\s*"([^"]{2,40})"/i,
+    /"locationName"\s*:\s*"([^"]{2,40})"/i,
+    /"city_name"\s*:\s*"([^"]{2,40})"/i,
+    /"place"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]{2,40})"/i,
+    /data-(?:location|city|place)=["']([^"']{2,40})["']/i,
+  ];
+  for (const pattern of jsonPatterns) {
+    const m = html.match(pattern);
+    if (m && m[1]) {
+      const val = m[1].trim();
+      if (val && !/^(http|www|\d+$|null|true|false)/i.test(val)) return val;
+    }
+  }
+
+  // 4) Njuskalo.hr / classified sites: <dt>Lokacija vozila</dt><dd>Zagrebačka, Velika Gorica...</dd>
+  const dtddLoc = html.match(/<dt[^>]*>[\s\S]*?Lokacija[\s\S]*?<\/dt>[\s\S]*?<dd[^>]*>([\s\S]*?)<\/dd>/i);
+  if (dtddLoc) {
+    const loc = dtddLoc[1].replace(/<[^>]+>/g, '').trim();
+    if (loc.length > 2 && loc.length < 100) return loc;
+  }
+
+  // 5) OLX.ba specific: cities:[{id:37,name:"Tuzla",location:{lat:...}}]
+  const olxCities = html.match(/cities:\[\{[^}]*name:"([^"]{2,30})"/);
+  if (olxCities && olxCities[1]) return olxCities[1].trim();
+
+  // 5) OLX.ba inline JS: ,"Sarajevo - Stari Grad","43.859...","18.433..."
+  const olxJsCity = html.match(/,"([A-Z\u0106\u010C\u017D\u0160\u0110\u0104][a-z\u0107\u010D\u017E\u0161\u0111\u0105A-Z\u0106\u010C\u017D\u0160\u0110 \-]{2,40})","[\d.]+","[\d.]+"/);
+  if (olxJsCity && olxJsCity[1]) return olxJsCity[1].trim();
+
+  // 6) OLX.ba: city in a div with whitespace (location display element)
+  //    Pattern: "                    Sarajevo - Stari Grad</div> <!---->"
+  const olxDivCity = html.match(/\s{4,}([A-Z\u0106\u010C\u017D\u0160\u0110][a-z\u0107\u010D\u017E\u0161\u0111A-Za-z \-]{2,40})<\/div>\s*<!---->/);
+  if (olxDivCity && olxDivCity[1]) {
+    const val = olxDivCity[1].trim();
+    // Exclude non-location strings (condition, category names, etc.)
+    if (!/\b(kori[sš]ten|novo|obnovljen|o[sš]te[cć]en|vozila|automobil|elektron)/i.test(val)) {
+      return val;
+    }
+  }
+
+  return null;
+}
+
 /** Extract JSON-LD structured data */
 function extractJsonLd(html: string): string {
   const blocks: string[] = [];
@@ -127,13 +205,19 @@ function htmlToText(html: string): string {
     .replace(/<nav[\s\S]*?<\/nav>/gi, '')
     .replace(/<footer[\s\S]*?<\/footer>/gi, '')
     .replace(/<header[\s\S]*?<\/header>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(?:p|div|h[1-6]|li|tr)>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
+    .replace(/\\u003[Cc]br\\u003[Ee]/g, '\n')
+    .replace(/&lt;br&gt;/gi, '\n')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
-    .replace(/\s+/g, ' ')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/\n[^\S\n]*/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
@@ -164,6 +248,38 @@ function extractBreadcrumbs(html: string): string | null {
     for (const match of html.matchAll(pattern)) {
       const text = htmlToText(match[1]).trim().replace(/\s*[›»/]\s*/g, ' > ');
       if (text.length > 5 && text.length < 300) return text;
+    }
+  }
+
+  // OLX.ba specific: <a class="breadcrumbs">Vozila</a> <a class="breadcrumbs">Automobili</a>
+  const olxBreadcrumbs: string[] = [];
+  for (const m of html.matchAll(/<a[^>]+class="[^"]*breadcrumbs?[^"]*"[^>]*>([^<]+)<\/a>/gi)) {
+    const text = m[1].trim();
+    if (text && !olxBreadcrumbs.includes(text)) olxBreadcrumbs.push(text);
+  }
+  if (olxBreadcrumbs.length > 0) return olxBreadcrumbs.join(' > ');
+
+  // Njuskalo.hr: <nav class="breadcrumbs"> with <li class="breadcrumb-item"><a class="link">
+  const njuskaloNav = html.match(/<nav[^>]+class="[^"]*breadcrumbs[^"]*"[^>]*>([\s\S]*?)<\/nav>/i);
+  if (njuskaloNav) {
+    const items: string[] = [];
+    for (const m of njuskaloNav[1].matchAll(/<a[^>]*>([^<]+)<\/a>/g)) {
+      const text = m[1].trim();
+      if (text && text !== 'Oglasnik' && !items.includes(text)) items.push(text);
+    }
+    if (items.length > 0) return items.join(' > ');
+  }
+
+  // Fallback: extract category from og:description (e.g. "VW PASSAT - Automobili - 13.999 KM")
+  const ogDesc = html.match(/property="og:description"[^>]+content="([^"]+)"/i)
+    || html.match(/content="([^"]+)"[^>]+property="og:description"/i);
+  if (ogDesc) {
+    const parts = ogDesc[1].split(/\s*-\s*/);
+    if (parts.length >= 2) {
+      const catPart = parts[1].trim();
+      if (/^(Vozila|Automobili|Dijelovi|Nekretnine|Mobiteli|Elektronika|Sport)/i.test(catPart)) {
+        return catPart;
+      }
     }
   }
 
@@ -1234,6 +1350,23 @@ function extractDescriptionFromHtml(html: string): string | null {
       if (text.length > 30) return text;
     }
   }
+
+  // OLX.ba: description is in __NUXT__ data as description:"text with \u003Cbr\u003E"
+  const nuxtDesc = html.match(/description\s*:\s*"((?:[^"\\]|\\.){30,})"/);
+  if (nuxtDesc) {
+    const raw = nuxtDesc[1]
+      .replace(/\\u003[Cc]br\\s*\\?\/?\\u003[Ee]/g, '\n')
+      .replace(/\\u003[Cc][^>]*?\\u003[Ee]/g, ' ')
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\')
+      .replace(/[^\S\n]+/g, ' ')
+      .replace(/\n[^\S\n]*/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    if (raw.length > 30) return raw;
+  }
+
   return null;
 }
 
@@ -1373,6 +1506,7 @@ function postProcessData(
   meta: Record<string, string>,
   pageText: string,
   jsonLd: string,
+  htmlLocation?: string | null,
 ): void {
   // ── PRICE TYPE (Na upit / Po dogovoru) ──
   if (!data.priceType) {
@@ -1383,7 +1517,10 @@ function postProcessData(
   }
 
   // ── PRICE ──
-  if (data.price == null || data.price === 0) {
+  // Skip price extraction if "Na upit" / "Po dogovoru" detected
+  if (data.priceType === 'negotiable') {
+    data.price = 0;
+  } else if (data.price == null || data.price === 0) {
     // Try meta tags first
     const metaPrice = meta['product:price:amount'] || meta['price'];
     if (metaPrice) {
@@ -1518,27 +1655,19 @@ function postProcessData(
     }
   }
 
-  // ── LOCATION ──
-  if (!data.location) {
+  // ── LOCATION — HTML structured data is ALWAYS most reliable ──
+  if (htmlLocation) {
+    // Structured data from the page (JSON-LD, meta tags) — trust this 100%
+    data.location = htmlLocation;
+  } else if (data.location) {
+    // AI returned something — clean it up
+    let loc = (data.location as string).trim();
+    if (loc.includes(',')) loc = loc.split(',')[0].trim();
+    data.location = loc || null;
+  } else {
+    // Last resort: regex on page text
     const locMatch = pageText.match(/(?:lokacija|grad|mjesto|location|ort)\s*[:.]?\s*([A-ZĆČŽŠĐa-zćčžšđ\s]{3,25})/i);
     if (locMatch) data.location = locMatch[1].trim();
-  }
-
-  // ── LOCATION VALIDATION — only reject obvious garbage (ad text fragments) ──
-  if (data.location) {
-    const loc = (data.location as string).trim();
-    // Reject if contains ad text fragments (not a real location)
-    if (/\b(na\s+rate|kupovinu|nudimo|dostav[aeu]|plaćanj|besplatn|garancij|kredit|online|www\.|http|rate\s+i)\b/i.test(loc)) {
-      data.location = null;
-    }
-    // Reject if too long (> 60 chars is likely not a city)
-    else if (loc.length > 60) {
-      data.location = null;
-    }
-    // Clean up: extract just the city if format is "City, Region, Country"
-    else if (loc.includes(',')) {
-      data.location = loc.split(',')[0].trim();
-    }
   }
 
   data.attributes = attrs;
@@ -1582,6 +1711,7 @@ Odgovori ISKLJUČIVO na bosanskom/hrvatskom jeziku.
 KRITIČNO — OPIS OGLASA:
 Za polje "description" — pronađi ORIGINALNI opis/tekst oglasa i KOPIRAJ ga TAČNO kako je napisan na stranici.
 NE skraćuj, NE parafraziraj, NE sumariziraj, NE prevodi. Kopiraj KOMPLETAN originalni tekst opisa, riječ za riječ.
+SAČUVAJ ORIGINALNE REDOVE I NOVI RED (\\n) — ne spajaj sve u jedan red!
 Ako je opis duži od 5000 znakova, kopiraj prvih 5000 znakova.
 ${htmlDescription ? 'Opis oglasa je već izvučen gore — koristi taj tekst TAČNO kako je.' : ''}
 
@@ -1682,7 +1812,7 @@ Vrati SAMO validan JSON:
   "category": "TAČNO jedna od 20 kategorija gore (npr. Dijelovi za automobile, Vozila, Nekretnine...)",
   "subcategory": "potkategorija iz breadcrumb-a ili sadržaja (npr. Za automobile – Karoserija i stakla) ili null",
   "condition": "Novo | Kao novo | Korišteno | Za dijelove | null",
-  "location": "grad/lokacija ili null",
+  "location": "KOPIRAJ TAČNO lokaciju/grad sa stranice oglasa (npr. iz polja 'Lokacija', 'Grad', breadcrumb-a). Ako stranica piše 'Sarajevo' → stavi 'Sarajevo'. Ako nema lokacije na stranici, stavi null",
   "images": ${JSON.stringify(images.slice(0, 10))},
   "seller": "ime prodavača ili null",
   "phone": "telefon ili null",
@@ -1755,7 +1885,7 @@ export async function POST(req: NextRequest) {
     // Bot/captcha detection
     const lowerHtml = html.toLowerCase();
     if (
-      (lowerHtml.includes('captcha') || lowerHtml.includes('cloudflare') || lowerHtml.includes('just a moment')) &&
+      (lowerHtml.includes('captcha') || lowerHtml.includes('cloudflare') || lowerHtml.includes('just a moment') || lowerHtml.includes('shieldsquare')) &&
       !lowerHtml.includes('product') && !lowerHtml.includes('oglas') && !lowerHtml.includes('cijena')
     ) {
       return NextResponse.json(
@@ -1771,20 +1901,42 @@ export async function POST(req: NextRequest) {
     const htmlDescription = extractDescriptionFromHtml(html);
     const breadcrumbs = extractBreadcrumbs(html);
 
-    // Meta-tag fallback
+    // Extract location directly from HTML (structured data — always reliable)
+    const htmlLocation = extractLocationFromHtml(html);
+
+    // ── DEBUG: log what we extracted ──
+    console.log('[import] DEBUG breadcrumbs:', breadcrumbs);
+    console.log('[import] DEBUG htmlLocation:', htmlLocation);
+    console.log('[import] DEBUG html length:', html.length);
+    // Check if __NUXT__ or location data exists in HTML
+    const hasNuxt = html.includes('__NUXT__');
+    const hasLocationJson = html.includes('"location"');
+    const hasCityName = html.includes('"cityName"');
+    const locationSnippet = html.match(/"location"\s*:\s*\{[^}]{0,200}/i);
+    console.log('[import] DEBUG hasNuxt:', hasNuxt, 'hasLocationJson:', hasLocationJson, 'hasCityName:', hasCityName);
+    console.log('[import] DEBUG location snippet from HTML:', locationSnippet?.[0]?.slice(0, 200));
+
     const metaFallback = {
       title: meta['og:title'] || meta.title || null,
-      description: htmlDescription || meta['og:description'] || meta.description || null,
+      description: (htmlDescription || meta['og:description'] || meta.description || '')
+        .replace(/&lt;br\s*\/?&gt;/gi, '\n').replace(/&lt;\/?p&gt;/gi, '\n').replace(/\\u003[Cc]br\\u003[Ee]/g, '\n').trim() || null,
       price: null as number | null,
       images: images.slice(0, 10),
-      location: null as string | null,
+      location: htmlLocation,
       originalUrl: finalUrl,
     };
 
-    const priceStr = meta['product:price:amount'] || meta['price'];
-    if (priceStr) {
-      const parsed = parseFloat(priceStr.replace(/[^0-9.,]/g, '').replace(',', '.'));
-      if (!isNaN(parsed)) metaFallback.price = parsed;
+    // Detect "Na upit" / "Po dogovoru" from OLX display_price or page text
+    const isNaUpit = /display_price:"Na upit"/i.test(html) || /Na upit|Po dogovoru|Auf Anfrage|Price on request/i.test(meta['og:title'] || '');
+    if (isNaUpit) {
+      metaFallback.price = 0;
+      (metaFallback as Record<string, unknown>).priceType = 'negotiable';
+    } else {
+      const priceStr = meta['product:price:amount'] || meta['price'];
+      if (priceStr) {
+        const parsed = parseFloat(priceStr.replace(/[^0-9.,]/g, '').replace(',', '.'));
+        if (!isNaN(parsed) && parsed > 0) metaFallback.price = parsed;
+      }
     }
 
     // Clean text for Gemini
@@ -1832,24 +1984,70 @@ export async function POST(req: NextRequest) {
       data.images = images.slice(0, 10);
     }
 
-    // ── Post-process: fill missing price, year, km, condition from text ──
-    postProcessData(data, meta, pageText, jsonLd);
+    // ── DEBUG: AI result ──
+    console.log('[import] DEBUG AI category:', data.category, '| AI location:', data.location, '| AI subcategory:', data.subcategory);
 
-    // ── SANITY CHECK: validate AI category with keyword detection ──
-    // AI can return WRONG categories (e.g. "Literatura" for a tool set).
-    // Run keyword matching on title + description — if keywords disagree, override AI.
+    // ── Post-process: fill missing price, year, km, condition from text ──
+    postProcessData(data, meta, pageText, jsonLd, htmlLocation);
+
+    console.log('[import] DEBUG after postProcess — location:', data.location, '| category:', data.category);
+
+    // ── BREADCRUMB OVERRIDE: source page category is ALWAYS most reliable ──
+    if (breadcrumbs) {
+      const bc = breadcrumbs.toLowerCase();
+      // Direct breadcrumb → category mapping (source page knows best)
+      if (/\b(vozila|automobil[ie]?|osobn[aei]|auto\s*moto|rabljeni\s*automobil)/i.test(bc) && !/\bdijelovi/i.test(bc)) {
+        data.category = 'Vozila';
+        // Map njuskalo/olx subcategory from breadcrumbs
+        if (/osobn[aei]\s*automobil|rabljeni\s*automobil|auti\b/i.test(bc)) data.subcategory = 'Osobni automobili';
+        else if (/motocik|skuter/i.test(bc)) data.subcategory = 'Motocikli i skuteri';
+        else if (/teretn/i.test(bc)) data.subcategory = 'Teretna vozila';
+        else if (/bicikl/i.test(bc)) data.subcategory = 'Bicikli';
+        else if (/kamper/i.test(bc)) data.subcategory = 'Kamper i kamp prikolice';
+        else if (/nautik|plovil/i.test(bc)) data.subcategory = 'Nautika i plovila';
+        else if (!data.subcategory) data.subcategory = null;
+      } else if (/\bdijelovi/i.test(bc)) {
+        data.category = 'Dijelovi za automobile';
+      } else if (/\bnekretni/i.test(bc)) {
+        data.category = 'Nekretnine';
+      } else if (/\bmobitel|telefon/i.test(bc)) {
+        data.category = 'Mobiteli i oprema';
+      } else if (/\bra[čc]unal|informatik|it\b/i.test(bc)) {
+        data.category = 'Računala i IT';
+      } else if (/\belektronik|tehnik/i.test(bc)) {
+        data.category = 'Tehnika i elektronika';
+      } else if (/\bdom\b|vrt|namještaj/i.test(bc)) {
+        data.category = 'Dom i vrtne garniture';
+      } else if (/\bodje[ćc]a\b|obu[ćc]a|od glave do pete/i.test(bc)) {
+        data.category = 'Odjeća i obuća';
+      } else if (/\bdje[čc]ji svijet|bebe|igra[čc]k/i.test(bc)) {
+        data.category = 'Odjeća za djecu';
+      } else if (/\bsport/i.test(bc)) {
+        data.category = 'Sport i rekreacija';
+      } else if (/\bvozila\b.*\b(motor|skuter|bicikl)/i.test(bc)) {
+        data.category = 'Vozila';
+      } else if (/\bstrojev|alat/i.test(bc)) {
+        data.category = 'Strojevi i alati';
+      } else if (/\bposlov/i.test(bc)) {
+        data.category = 'Poslovi';
+      } else if (/\buslug/i.test(bc)) {
+        data.category = 'Usluge';
+      }
+    }
+
+    // ── SANITY CHECK: keyword detection as backup (only when NO breadcrumb match) ──
     if (data.category && data.title) {
+      // Only use title for keyword detection (NOT description — features like "felge" in car descriptions cause false matches)
       const keywordCat = detectCategoryFromKeywords(
-        [data.title, ((data.description as string) || '').slice(0, 1000), breadcrumbs].filter(Boolean).join(' ')
+        [data.title, breadcrumbs].filter(Boolean).join(' ')
       );
       if (keywordCat) {
         const aiCat = (data.category as string).toLowerCase();
         const kwCat = keywordCat.toLowerCase();
-        // Override only when categories are truly different (not minor variations)
         if (aiCat !== kwCat && !aiCat.includes(kwCat) && !kwCat.includes(aiCat)) {
           console.warn(`[import] AI category "${data.category}" overridden by keywords → "${keywordCat}" (title: ${data.title})`);
           data.category = keywordCat;
-          data.subcategory = null; // Reset — wrong sub for new category
+          data.subcategory = null;
         }
       }
     }

@@ -1268,6 +1268,304 @@ export function getDjecaFields(subType: string): CategoryField[] {
   return fields;
 }
 
+// ── Umjetnost i kolekcionarstvo Feature Checkboxes ───────
+const UMJETNOST_FEATURES: Record<string, { key: string; label: string }[]> = {
+  slike: [
+    { key: 'uramljeno', label: 'Uramljeno' },
+    { key: 'potpisano', label: 'Potpisano' },
+    { key: 'certifikat', label: 'Certifikat autentičnosti' },
+    { key: 'limitiranaEdicija', label: 'Limitirana edicija' },
+  ],
+  numizmatika: [
+    { key: 'certifikat', label: 'Certifikat autentičnosti' },
+    { key: 'originalnoPakovanje', label: 'Originalno pakovanje' },
+  ],
+  militarija: [
+    { key: 'certifikat', label: 'Certifikat autentičnosti' },
+    { key: 'originalno', label: 'Originalno (ne replika)' },
+  ],
+  modelarstvo: [
+    { key: 'originalnoPakovanje', label: 'Originalno pakovanje' },
+    { key: 'limitiranaEdicija', label: 'Limitirana edicija' },
+    { key: 'sastavljen', label: 'Sastavljen' },
+  ],
+  ostalo: [
+    { key: 'certifikat', label: 'Certifikat autentičnosti' },
+    { key: 'originalnoPakovanje', label: 'Originalno pakovanje' },
+    { key: 'limitiranaEdicija', label: 'Limitirana edicija' },
+  ],
+};
+
+// ── Umjetnost i kolekcionarstvo per-Type Fields ──────────
+
+export function getUmjetnostFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+  const fields: CategoryField[] = [];
+
+  // === Page 1: Basis-Felder für ALLE Umjetnost-Artikel ===
+  fields.push(
+    { key: 'stanje', label: 'Stanje', type: 'select', formPage: 1, options: ['Novo', 'Kao novo', 'Korišteno', 'Antikno / Originalno'] },
+    { key: 'godinaPerido', label: 'Godina / Period', type: 'text', formPage: 1, placeholder: 'npr. 1920, 19. vijek' },
+  );
+
+  // === Page 2: Extra-Felder je nach Subtyp ===
+
+  // Slike i skulpture
+  if (s.includes('slik') || s.includes('skulptur') || s.includes('akvarel') || s.includes('grafik') || s.includes('ulje') || s.includes('platno') || s.includes('digitaln') || s.includes('print')) {
+    fields.push(
+      { key: 'tehnika', label: 'Tehnika', type: 'select', formPage: 2, options: ['Ulje na platnu', 'Akvarel', 'Akril', 'Grafika', 'Digitalni print', 'Skulptura', 'Mješana tehnika', 'Ostalo'] },
+      { key: 'sirinaCm', label: 'Širina (cm)', type: 'number', formPage: 2, placeholder: 'npr. 60', unit: 'cm' },
+      { key: 'visinaCm', label: 'Visina (cm)', type: 'number', formPage: 2, placeholder: 'npr. 80', unit: 'cm' },
+    );
+  }
+
+  // Fotografije i posteri
+  else if (s.includes('fotograf') || s.includes('poster')) {
+    fields.push(
+      { key: 'sirinaCm', label: 'Širina (cm)', type: 'number', formPage: 2, placeholder: 'npr. 30', unit: 'cm' },
+      { key: 'visinaCm', label: 'Visina (cm)', type: 'number', formPage: 2, placeholder: 'npr. 40', unit: 'cm' },
+    );
+  }
+
+  // Numizmatika
+  else if (s.includes('numizmatik') || s.includes('novčan') || s.includes('novcan') || s.includes('novčić') || s.includes('novcic') || s.includes('kovanica') || s.includes('medalj') || s.includes('bedž') || s.includes('bedz')) {
+    fields.push(
+      { key: 'tipNumizmatike', label: 'Tip', type: 'select', formPage: 2, options: ['Kovanica', 'Novčanica', 'Medalja', 'Bedž / Značka', 'Ostalo'] },
+      { key: 'zemljaPorijekla', label: 'Zemlja porijekla', type: 'text', formPage: 2, placeholder: 'npr. Jugoslavija, Austro-Ugarska' },
+      { key: 'materijal', label: 'Materijal', type: 'select', formPage: 2, options: ['Zlato', 'Srebro', 'Bronza', 'Bakar', 'Nikal', 'Papir', 'Ostalo'] },
+    );
+  }
+
+  // Filatelija
+  else if (s.includes('filatelij') || s.includes('mark') || s.includes('dopisnic')) {
+    fields.push(
+      { key: 'tipFilatelije', label: 'Tip', type: 'select', formPage: 2, options: ['Poštanska marka', 'Dopisnica', 'Koverta prvog dana (FDC)', 'Blok / Tabak', 'Ostalo'] },
+      { key: 'zemljaPorijekla', label: 'Zemlja porijekla', type: 'text', formPage: 2, placeholder: 'npr. Jugoslavija, BiH' },
+    );
+  }
+
+  // Antikviteti i starine
+  else if (s.includes('antikvitet') || s.includes('starin') || s.includes('antikn') || s.includes('porculan') || s.includes('keramik') || s.includes('stari sat')) {
+    fields.push(
+      { key: 'tipAntikviteta', label: 'Tip', type: 'select', formPage: 2, options: ['Namještaj', 'Porculan / Keramika', 'Satovi', 'Nakit', 'Lampe / Rasvjeta', 'Ostalo'] },
+      { key: 'materijal', label: 'Materijal', type: 'select', formPage: 2, options: ['Drvo', 'Metal', 'Porculan', 'Staklo', 'Koža', 'Ostalo'] },
+    );
+  }
+
+  // Militarija
+  else if (s.includes('militarij') || s.includes('odlikovanje') || s.includes('uniform') || s.includes('oružje') || s.includes('oruzje')) {
+    fields.push(
+      { key: 'tipMilitarije', label: 'Tip', type: 'select', formPage: 2, options: ['Odlikovanje / Medalja', 'Uniforma / Odjeća', 'Oružje (muzejsko)', 'Dokumenti / Fotografije', 'Oprema', 'Oznake i činjevi', 'Ostalo'] },
+      { key: 'periodo', label: 'Period', type: 'select', formPage: 2, options: ['I svjetski rat', 'II svjetski rat', 'Hladni rat / SFRJ', 'Rat 1992–1995', 'Starije', 'Ostalo'] },
+    );
+  }
+
+  // Modelarstvo
+  else if (s.includes('modelarstvo') || s.includes('maketarstvo') || s.includes('rc model') || s.includes('statičn') || s.includes('staticn') || s.includes('vlak') || s.includes('željeznic') || s.includes('zeljeznic')) {
+    fields.push(
+      { key: 'tipModela', label: 'Tip', type: 'select', formPage: 2, options: ['RC automobil', 'RC zrakoplov / dron', 'RC brod', 'Statični model', 'Vlak / Željeznica', 'Ostalo'] },
+      { key: 'mjerilo', label: 'Mjerilo', type: 'select', formPage: 2, options: ['1:10', '1:18', '1:24', '1:43', '1:72', '1:87 (H0)', '1:144', '1:200', 'Ostalo'] },
+    );
+  }
+
+  // === Page 2: Checkboxen ===
+  let featureKey = '';
+  if (s.includes('slik') || s.includes('skulptur') || s.includes('akvarel') || s.includes('grafik') || s.includes('ulje') || s.includes('fotograf') || s.includes('poster')) {
+    featureKey = 'slike';
+  } else if (s.includes('numizmatik') || s.includes('novčan') || s.includes('novcan') || s.includes('novčić') || s.includes('novcic') || s.includes('kovanica') || s.includes('filatelij')) {
+    featureKey = 'numizmatika';
+  } else if (s.includes('militarij') || s.includes('odlikovanje') || s.includes('uniform')) {
+    featureKey = 'militarija';
+  } else if (s.includes('modelarstvo') || s.includes('maketarstvo') || s.includes('rc') || s.includes('vlak') || s.includes('željeznic')) {
+    featureKey = 'modelarstvo';
+  } else {
+    featureKey = 'ostalo';
+  }
+
+  const features = UMJETNOST_FEATURES[featureKey] || [];
+  features.forEach(f => {
+    fields.push({ key: f.key, label: f.label, type: 'boolean', formPage: 2 });
+  });
+
+  return fields;
+}
+
+// ── Poslovi Feature Checkboxes ───────────────────────────
+const POSLOVI_FEATURES: { key: string; label: string }[] = [
+  { key: 'radOdKuce', label: 'Rad od kuće moguć' },
+  { key: 'smjestajOsiguran', label: 'Smještaj osiguran' },
+  { key: 'prevozOsiguran', label: 'Prevoz osiguran' },
+  { key: 'hranaOsigurana', label: 'Hrana osigurana' },
+  { key: 'prijavaOsiguranje', label: 'Prijava na osiguranje' },
+];
+
+// ── Poslovi per-Type Fields ──────────────────────────────
+
+export function getPosloviFields(_subType: string): CategoryField[] {
+  const fields: CategoryField[] = [];
+
+  // === Page 1 ===
+  fields.push(
+    { key: 'tipOglasa', label: 'Tip oglasa', type: 'button-select', formPage: 1, options: ['Nudim posao', 'Tražim posao'] },
+    { key: 'vrstaZaposlenja', label: 'Vrsta zaposlenja', type: 'select', formPage: 1, options: ['Stalni radni odnos', 'Na određeno vrijeme', 'Honorarni posao', 'Sezonski posao', 'Pripravnički rad', 'Volontiranje'] },
+    { key: 'radnoVrijeme', label: 'Radno vrijeme', type: 'button-select', formPage: 1, options: ['Puno', 'Pola', 'Fleksibilno'] },
+    { key: 'iskustvo', label: 'Iskustvo', type: 'select', formPage: 1, options: ['Nije potrebno', '1 godina', '2–3 godine', '3–5 godina', '5+ godina'] },
+    { key: 'obrazovanje', label: 'Obrazovanje', type: 'select', formPage: 1, options: ['Osnovna škola', 'Srednja škola', 'Viša škola (VŠS)', 'Visoka stručna sprema (VSS)', 'Magistar', 'Nije bitno'] },
+  );
+
+  // === Page 2 ===
+  fields.push(
+    { key: 'plata', label: 'Plata', type: 'select', formPage: 2, options: ['Do 500 €', '500–800 €', '800–1.200 €', '1.200–1.800 €', '1.800–2.500 €', '2.500 €+', 'Po dogovoru'] },
+    { key: 'zemlja', label: 'Zemlja', type: 'select', formPage: 2, options: ['Bosna i Hercegovina', 'Hrvatska', 'Srbija', 'Crna Gora', 'Njemačka', 'Austrija', 'Švicarska', 'Slovenija', 'Ostalo'] },
+    { key: 'smjena', label: 'Smjena', type: 'select', formPage: 2, options: ['Prva (jutarnja)', 'Druga (popodnevna)', 'Treća (noćna)', 'Rotacijski', 'Ne primjenjuje se'] },
+    { key: 'vozacka', label: 'Vozačka dozvola', type: 'select', formPage: 2, options: ['Nije potrebna', 'B kategorija', 'C kategorija', 'D kategorija', 'CE kategorija'] },
+  );
+
+  // === Page 2: Checkboxen ===
+  POSLOVI_FEATURES.forEach(f => {
+    fields.push({ key: f.key, label: f.label, type: 'boolean', formPage: 2 });
+  });
+
+  return fields;
+}
+
+// ── Hrana i piće Feature Checkboxes per Sub-Type ─────────
+const HRANA_FEATURES: Record<string, { key: string; label: string }[]> = {
+  pica: [
+    { key: 'domacaProizvodnja', label: 'Domaća proizvodnja' },
+    { key: 'bioEko', label: 'Bio / Eko' },
+  ],
+  med: [
+    { key: 'domacaProizvodnja', label: 'Domaća proizvodnja' },
+    { key: 'bioEko', label: 'Bio / Eko' },
+    { key: 'bezKonzervansa', label: 'Bez konzervansa' },
+  ],
+  hrana: [
+    { key: 'domacaProizvodnja', label: 'Domaća proizvodnja' },
+    { key: 'bioEko', label: 'Bio / Eko' },
+    { key: 'bezKonzervansa', label: 'Bez konzervansa' },
+    { key: 'bezGlutena', label: 'Bez glutena' },
+  ],
+};
+
+// ── Hrana i piće per-Type Fields ──────────────────────────
+
+export function getHranaFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+  const fields: CategoryField[] = [];
+
+  // === Page 1: Basis-Felder für ALLE Hrana-Artikel ===
+  fields.push(
+    { key: 'tipProizvoda', label: 'Tip proizvoda', type: 'button-select', formPage: 1, options: ['Domaći', 'Komercijalni'] },
+  );
+
+  // === Page 2: Extra-Felder je nach Subtyp ===
+
+  // Rakije
+  if (s.includes('rakij') || s.includes('šljivovic') || s.includes('sljivovic') || s.includes('lozovač') || s.includes('lozovac') || s.includes('travaric') || s.includes('klekovač') || s.includes('klekovac')) {
+    fields.push(
+      { key: 'vrstaRakije', label: 'Vrsta rakije', type: 'select', formPage: 2, options: ['Šljivovica', 'Jabuka (jabučara)', 'Kruška (kruškovača)', 'Dunja (dunjevača)', 'Loza / Grappa', 'Medovača', 'Travarica', 'Klekovača', 'Orahovac', 'Kajsija', 'Višnja (višnjevača)', 'Smokva', 'Komovica', 'Ostalo'] },
+      { key: 'zapremina', label: 'Zapremina', type: 'select', formPage: 2, options: ['0.2 L', '0.5 L', '0.7 L', '1 L', '2 L', '5 L', '10 L', '20 L+'] },
+      { key: 'postotakAlkohola', label: 'Postotak alkohola (%)', type: 'number', formPage: 2, placeholder: 'npr. 40', unit: '%' },
+    );
+  }
+
+  // Vina
+  else if (s.includes('vin') && !s.includes('ovina')) {
+    fields.push(
+      { key: 'vrstaVina', label: 'Vrsta vina', type: 'select', formPage: 2, options: ['Crno', 'Bijelo', 'Rosé', 'Pjenušavo', 'Desertno', 'Ostalo'] },
+      { key: 'godinaBerbe', label: 'Godina berbe', type: 'number', formPage: 2, placeholder: 'npr. 2022' },
+      { key: 'zapremina', label: 'Zapremina', type: 'select', formPage: 2, options: ['0.375 L', '0.75 L', '1 L', '1.5 L (Magnum)', '3 L', '5 L'] },
+    );
+  }
+
+  // Piva
+  else if (s.includes('piv')) {
+    fields.push(
+      { key: 'vrstaPiva', label: 'Vrsta piva', type: 'select', formPage: 2, options: ['Lager', 'Ale', 'IPA', 'Stout / Porter', 'Pšenično', 'Craft / Zanatsko', 'Bezalkoholno', 'Ostalo'] },
+      { key: 'zapremina', label: 'Zapremina', type: 'select', formPage: 2, options: ['0.33 L', '0.5 L', '1 L', '2 L'] },
+    );
+  }
+
+  // Ostala pića (Sokovi, Kafa, Čaj, Ostala alkoholna)
+  else if (s.includes('sok') || s.includes('kaf') || s.includes('čaj') || s.includes('caj') || s.includes('alkoholn') || s.includes('pić') || s.includes('pic')) {
+    fields.push(
+      { key: 'zapremina', label: 'Zapremina / Težina', type: 'text', formPage: 2, placeholder: 'npr. 0.5 L, 250 g' },
+    );
+  }
+
+  // Med i proizvodi od meda
+  else if (s.includes('med')) {
+    fields.push(
+      { key: 'vrstaMeda', label: 'Vrsta meda', type: 'select', formPage: 2, options: ['Livadski', 'Bagremov', 'Šumski', 'Cvjetni', 'Lipov', 'Kestenov', 'Planinski', 'Ostalo'] },
+      { key: 'zapremina', label: 'Zapremina', type: 'select', formPage: 2, options: ['0.25 kg', '0.5 kg', '1 kg', '2 kg', '5 kg', '10 kg+'] },
+    );
+  }
+
+  // Meso i mesni proizvodi
+  else if (s.includes('mes') || s.includes('suhomesnat')) {
+    fields.push(
+      { key: 'vrstaMesa', label: 'Vrsta', type: 'select', formPage: 2, options: ['Govedina', 'Teletina', 'Svinjetina', 'Janjetina', 'Piletina', 'Puretina', 'Divljač', 'Suho meso / Pršut', 'Kobasice / Sudžuk', 'Slanina', 'Ostalo'] },
+      { key: 'tezina', label: 'Težina (kg)', type: 'number', formPage: 2, placeholder: 'npr. 1', unit: 'kg' },
+    );
+  }
+
+  // Ribe i morska hrana
+  else if (s.includes('rib') || s.includes('morsk')) {
+    fields.push(
+      { key: 'vrstaRibe', label: 'Vrsta', type: 'select', formPage: 2, options: ['Pastrmka', 'Šaran', 'Som', 'Pastrva', 'Losos', 'Tuna', 'Škampi / Rakovi', 'Školjke', 'Ostalo'] },
+      { key: 'tezina', label: 'Težina (kg)', type: 'number', formPage: 2, placeholder: 'npr. 1', unit: 'kg' },
+    );
+  }
+
+  // Mliječni proizvodi
+  else if (s.includes('mliječn') || s.includes('mljecn') || s.includes('mlijec')) {
+    fields.push(
+      { key: 'vrstaMlijecnog', label: 'Vrsta', type: 'select', formPage: 2, options: ['Sir', 'Kajmak', 'Mlijeko', 'Jogurt', 'Pavlaka', 'Maslac', 'Ostalo'] },
+      { key: 'tezina', label: 'Težina / Zapremina', type: 'text', formPage: 2, placeholder: 'npr. 1 kg, 1 L' },
+    );
+  }
+
+  // Ulja i začini
+  else if (s.includes('ulj') || s.includes('začin') || s.includes('zacin')) {
+    fields.push(
+      { key: 'vrstaUlja', label: 'Vrsta', type: 'select', formPage: 2, options: ['Maslinovo ulje', 'Suncokretovo ulje', 'Bučino ulje', 'Kokosovo ulje', 'Začini', 'Ostalo'] },
+      { key: 'zapremina', label: 'Zapremina / Težina', type: 'text', formPage: 2, placeholder: 'npr. 1 L, 500 g' },
+    );
+  }
+
+  // Dezerti, slastice, džem, kolači
+  else if (s.includes('dezert') || s.includes('slastic') || s.includes('džem') || s.includes('dzem') || s.includes('pekmez') || s.includes('kolač') || s.includes('kolac') || s.includes('tort') || s.includes('gricalic') || s.includes('grickalic') || s.includes('slatki')) {
+    fields.push(
+      { key: 'zapremina', label: 'Težina / Zapremina', type: 'text', formPage: 2, placeholder: 'npr. 500 g, 1 L' },
+    );
+  }
+
+  // Biljni proizvodi (Voće, Povrće, Brašna)
+  else if (s.includes('biljn') || s.includes('povrć') || s.includes('povrc') || s.includes('voć') || s.includes('voc') || s.includes('brašn') || s.includes('brasn')) {
+    fields.push(
+      { key: 'tezina', label: 'Težina (kg)', type: 'number', formPage: 2, placeholder: 'npr. 5', unit: 'kg' },
+    );
+  }
+
+  // === Page 2: Checkboxen ===
+  let featureKey = '';
+  if (s.includes('rakij') || s.includes('vin') || s.includes('piv') || s.includes('sok') || s.includes('kaf') || s.includes('čaj') || s.includes('caj') || s.includes('alkoholn') || s.includes('pić') || s.includes('pic')) {
+    featureKey = 'pica';
+  } else if (s.includes('med')) {
+    featureKey = 'med';
+  } else {
+    featureKey = 'hrana';
+  }
+
+  const features = HRANA_FEATURES[featureKey] || [];
+  features.forEach(f => {
+    fields.push({ key: f.key, label: f.label, type: 'boolean', formPage: 2 });
+  });
+
+  return fields;
+}
+
 // ── Videoigre Feature Checkboxes per Sub-Type ────────────
 const VIDEOIGRE_FEATURES: Record<string, { key: string; label: string }[]> = {
   igre: [
@@ -1526,6 +1824,341 @@ export function getLiteraturaFields(subType: string): CategoryField[] {
   return fields;
 }
 
+// ── Životinje (per-type) ─────────────────────────────────
+
+export function getZivotinjeFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+  const fields: CategoryField[] = [];
+
+  const isPas      = s.includes('psi') || s.includes('pas') || s.includes('šten') || s.includes('sten');
+  const isMacka    = s.includes('mačk') || s.includes('mack') || s.includes('mačić') || s.includes('macic');
+  const isPtica    = s.includes('ptic') || s.includes('papig');
+  const isGlodavac = s.includes('glodav') || s.includes('zečev') || s.includes('zecev') || s.includes('zamorac') || s.includes('hrčak') || s.includes('hrcak');
+  const isRiba     = s.includes('rib') || s.includes('akvarij') || s.includes('akvarist');
+  const isTerarij  = s.includes('terarij') || s.includes('gmizav') || s.includes('gušter') || s.includes('guster') || s.includes('kornjač') || s.includes('kornjac') || s.includes('zmij');
+  const isKonj     = s.includes('konj');
+  const isDomaca   = s.includes('domaće') || s.includes('domace') || s.includes('krav') || s.includes('svinj') || s.includes('koz') || s.includes('ovc') || s.includes('perad');
+  const isOprema   = s.includes('oprema') || s.includes('hrana za') || s.includes('igračk') || s.includes('igracks') || s.includes('kućic') || s.includes('kucic') || s.includes('kavez') || s.includes('nosilj') || s.includes('njega') || s.includes('ovratnik') || s.includes('povodac') || s.includes('veterinar');
+  const isUdomljavanje = s.includes('udomljavanj');
+
+  if (isOprema) {
+    // Oprema za životinje — kein Starost/Spol
+    fields.push(
+      { key: 'tip', label: 'Tip',  type: 'button-select', formPage: 1, options: ['Hrana', 'Igračke', 'Kućice/Kavezi', 'Njega/Higijena', 'Ovratnici/Povodci', 'Vet pribor', 'Ostalo'] },
+      { key: 'za',  label: 'Za',   type: 'button-select', formPage: 1, options: ['Psi', 'Mačke', 'Ptice', 'Ribe', 'Glodavci', 'Ostalo'] },
+    );
+    return fields;
+  }
+
+  // Base for all animals (not oprema)
+  if (!isRiba) {
+    fields.push(
+      { key: 'starost', label: 'Starost', type: 'button-select', formPage: 1, options: isPas ? ['Štene', 'Mlad pas', 'Odrastao', 'Stariji'] : isMacka ? ['Mačić', 'Mlada', 'Odrasla', 'Starija'] : ['Mladunče', 'Mlada', 'Odrasla', 'Starija'] },
+      { key: 'spol',    label: 'Spol',    type: 'button-select', formPage: 1, options: ['Mužjak', 'Ženka', 'Nepoznato'] },
+    );
+  }
+
+  if (isPas || isUdomljavanje && s.includes('psi')) {
+    fields.push(
+      { key: 'rasa',       label: 'Rasa/Pasmina',  type: 'text',    formPage: 1, placeholder: 'npr. Labrador, Njemački ovčar' },
+      { key: 'vakcinisan', label: 'Vakcinisan',     type: 'boolean', formPage: 1 },
+      { key: 'cipiran',    label: 'Čipiran',        type: 'boolean', formPage: 1 },
+      { key: 'kastriran',  label: 'Kastriran/Steriliziran', type: 'boolean', formPage: 1 },
+      { key: 'imaPapire',  label: 'Ima papire',     type: 'boolean', formPage: 1 },
+    );
+  } else if (isMacka || isUdomljavanje && s.includes('mačk')) {
+    fields.push(
+      { key: 'rasa',          label: 'Rasa/Pasmina',  type: 'text',    formPage: 1, placeholder: 'npr. Perzijska, Sijamska' },
+      { key: 'vakcinisana',   label: 'Vakcinisana',    type: 'boolean', formPage: 1 },
+      { key: 'cipirana',      label: 'Čipirana',       type: 'boolean', formPage: 1 },
+      { key: 'sterilizirana', label: 'Sterilizirana',  type: 'boolean', formPage: 1 },
+      { key: 'imaPapire',     label: 'Ima papire',     type: 'boolean', formPage: 1 },
+    );
+  } else if (isUdomljavanje) {
+    // Udomljavanje – ostalo
+    fields.push(
+      { key: 'vrsta',       label: 'Vrsta životinje', type: 'text',    formPage: 1, placeholder: 'npr. Zec, Papiga' },
+      { key: 'vakcinisan',  label: 'Vakcinisan',      type: 'boolean', formPage: 1 },
+      { key: 'cipiran',     label: 'Čipiran',         type: 'boolean', formPage: 1 },
+    );
+  } else if (isPtica || isGlodavac) {
+    fields.push(
+      { key: 'vrsta', label: 'Vrsta', type: 'text', formPage: 1, placeholder: isPtica ? 'npr. Papiga, Kanarinac' : 'npr. Zec, Zamorac, Hrčak' },
+    );
+  } else if (isRiba) {
+    fields.push(
+      { key: 'vrsta', label: 'Vrsta', type: 'text', formPage: 1, placeholder: 'npr. Zlatna ribica, Guppy, Neon' },
+    );
+    if (s.includes('akvarij') || s.includes('oprema')) {
+      fields.push(
+        { key: 'zapremina', label: 'Zapremina (litara)', type: 'number', formPage: 1, placeholder: 'npr. 100' },
+      );
+    }
+  } else if (isTerarij) {
+    if (s.includes('terarij') && s.includes('oprema')) {
+      fields.push(
+        { key: 'dimenzije', label: 'Dimenzije', type: 'text', formPage: 1, placeholder: 'npr. 60x40x40 cm' },
+      );
+    } else {
+      fields.push(
+        { key: 'vrsta', label: 'Vrsta', type: 'text', formPage: 1, placeholder: 'npr. Leopard gekon, Bradati zmaj' },
+      );
+    }
+  } else if (isKonj) {
+    fields.push(
+      { key: 'pasmina', label: 'Pasmina',     type: 'text',   formPage: 1, placeholder: 'npr. Arapski, Lipicaner' },
+      { key: 'visina',  label: 'Visina (cm)',  type: 'number', formPage: 1, placeholder: 'npr. 160' },
+    );
+  } else if (isDomaca) {
+    fields.push(
+      { key: 'vrsta',    label: 'Vrsta',    type: 'text',   formPage: 1, placeholder: 'npr. Krava, Svinja, Kokoš' },
+      { key: 'kolicina', label: 'Količina', type: 'number', formPage: 1, placeholder: 'npr. 5' },
+    );
+  }
+
+  return fields;
+}
+
+// ── Strojevi i alati ─────────────────────────────────────
+
+export function getStrojeviFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+
+  // ── Base fields for all ──
+  const fields: CategoryField[] = [
+    { key: 'marka',  label: 'Marka / Brand', type: 'text',          formPage: 1, placeholder: 'npr. Bosch, Makita, Stihl' },
+    { key: 'stanje', label: 'Stanje',        type: 'button-select', formPage: 1, options: ['Novo', 'Korišteno', 'Obnovljeno'] },
+  ];
+
+  // ── Ručni alati ──
+  if (s.includes('ručni') || s.includes('rucni') || s.includes('čekić') || s.includes('cekic') || s.includes('odvijač') || s.includes('odvijac') || s.includes('kliješt') || s.includes('klijest') || s.includes('ključev') || s.includes('kljucev') || s.includes('mjera') || s.includes('libel')) {
+    fields.push(
+      { key: 'tip',       label: 'Tip',       type: 'select', formPage: 1, options: ['Čekić', 'Odvijač', 'Kliješta', 'Ključ', 'Nasadni set', 'Mjerač / Libela', 'Komplet / Set', 'Ostalo'] },
+      { key: 'materijal', label: 'Materijal', type: 'select', formPage: 1, options: ['Čelik', 'Krom-vanadij', 'Nehrđajući čelik', 'Ostalo'] },
+    );
+  }
+
+  // ── Električni alati ──
+  else if (s.includes('električni') || s.includes('elektricni') || s.includes('bušilic') || s.includes('busilic') || s.includes('brusilica') || s.includes('pila') || s.includes('kompresor') || s.includes('pneumat')) {
+    fields.push(
+      { key: 'tip',         label: 'Tip',               type: 'select', formPage: 1, options: ['Bušilica', 'Udarna bušilica', 'Kutna brusilica', 'Brusilica za drvo', 'Cirkularna pila', 'Ubodna pila', 'Kompresor', 'Pneumatski alat', 'Ostalo'] },
+      { key: 'snaga',       label: 'Snaga',             type: 'number', formPage: 1, placeholder: 'npr. 750', unit: 'W' },
+      { key: 'napon',       label: 'Napon / Napajanje', type: 'select', formPage: 1, options: ['Akumulatorski', '230V', '380V'] },
+      { key: 'akumulator',  label: 'Sa akumulatorom',   type: 'boolean', formPage: 2 },
+      { key: 'garancija',   label: 'Garancija',         type: 'boolean', formPage: 2 },
+    );
+  }
+
+  // ── Građevinski strojevi ──
+  else if (s.includes('građevinsk') || s.includes('gradjevinsk') || s.includes('bager') || s.includes('utovarivač') || s.includes('utovarivac') || s.includes('dizalic') || s.includes('miješalic') || s.includes('mijesalic') || s.includes('vibracij') || s.includes('asfalt') || s.includes('platform')) {
+    fields.push(
+      { key: 'tip',        label: 'Tip',         type: 'select', formPage: 1, options: ['Mini bager', 'Utovarivač', 'Dizalica', 'Platforma', 'Betonska miješalica', 'Vibracijska ploča', 'Kompresor veliki', 'Asfalt stroj', 'Ostalo'] },
+      { key: 'snaga',      label: 'Snaga',       type: 'number', formPage: 1, placeholder: 'npr. 50', unit: 'KS' },
+      { key: 'radniSati',  label: 'Radni sati',  type: 'number', formPage: 1, placeholder: 'npr. 3500' },
+      { key: 'godiste',    label: 'Godište',     type: 'number', formPage: 2, placeholder: 'npr. 2018' },
+      { key: 'tezina',     label: 'Težina',      type: 'number', formPage: 2, placeholder: 'npr. 5000', unit: 'kg' },
+    );
+  }
+
+  // ── Poljoprivredni strojevi ──
+  else if (s.includes('poljoprivredn') || s.includes('traktor') || s.includes('kombajn') || s.includes('kosilica traktor') || s.includes('priključ') || s.includes('prikljuc') || s.includes('špric') || s.includes('spric') || s.includes('atomizer') || s.includes('cistern')) {
+    fields.push(
+      { key: 'tip',        label: 'Tip',         type: 'select', formPage: 1, options: ['Traktor', 'Kombajn', 'Kosilica traktorska', 'Priključak (plug, tanjurača...)', 'Šprica / Atomizer', 'Cisterna', 'Ostala mehanizacija'] },
+      { key: 'snaga',      label: 'Snaga',       type: 'number', formPage: 1, placeholder: 'npr. 85', unit: 'KS' },
+      { key: 'radniSati',  label: 'Radni sati',  type: 'number', formPage: 1, placeholder: 'npr. 5000' },
+      { key: 'godiste',    label: 'Godište',     type: 'number', formPage: 2, placeholder: 'npr. 2015' },
+      { key: 'pogon',      label: 'Pogon',       type: 'button-select', formPage: 2, options: ['2WD', '4WD'] },
+    );
+  }
+
+  // ── Vrtni strojevi ──
+  else if (s.includes('vrtni') || s.includes('kosilica') || s.includes('motorna pila') || s.includes('trimer') || s.includes('šišač') || s.includes('sisac') || s.includes('usisavač lišća') || s.includes('usisavac lisca') || s.includes('ride-on')) {
+    fields.push(
+      { key: 'tip',   label: 'Tip',   type: 'select', formPage: 1, options: ['Motorna kosilica', 'Ride-on kosilica', 'Motorna pila', 'Motorni trimer', 'Šišač živice', 'Usisavač lišća', 'Ostalo'] },
+      { key: 'snaga', label: 'Snaga', type: 'text',   formPage: 1, placeholder: 'npr. 2.5 KS ili 1800W' },
+      { key: 'pogon', label: 'Pogon', type: 'button-select', formPage: 1, options: ['Benzin', 'Električni', 'Akumulatorski'] },
+    );
+  }
+
+  // ── Viljuškari i manipulacijska oprema ──
+  else if (s.includes('viljuškar') || s.includes('viljuskar') || s.includes('manipulacij')) {
+    fields.push(
+      { key: 'nosivost',     label: 'Nosivost',       type: 'number', formPage: 1, placeholder: 'npr. 2500', unit: 'kg' },
+      { key: 'visinaDizanja', label: 'Visina dizanja', type: 'number', formPage: 1, placeholder: 'npr. 4.5', unit: 'm' },
+      { key: 'pogon',        label: 'Pogon',          type: 'button-select', formPage: 1, options: ['Dizel', 'Plin (LPG)', 'Električni'] },
+      { key: 'radniSati',    label: 'Radni sati',     type: 'number', formPage: 2, placeholder: 'npr. 8000' },
+      { key: 'godiste',      label: 'Godište',        type: 'number', formPage: 2, placeholder: 'npr. 2016' },
+    );
+  }
+
+  // ── Industrijski i prerađivački strojevi ──
+  else if (s.includes('industrijski') || s.includes('prerađivačk') || s.includes('preradivack') || s.includes('obradu drva') || s.includes('obradu metal') || s.includes('obradu kamen') || s.includes('pakovanj') || s.includes('tekstiln')) {
+    fields.push(
+      { key: 'tip',      label: 'Tip',      type: 'select', formPage: 1, options: ['Stroj za obradu drva', 'Stroj za obradu metala', 'Stroj za obradu kamena', 'Stroj za pakovanje', 'Tekstilni stroj', 'Ostalo'] },
+      { key: 'snaga',    label: 'Snaga',    type: 'number', formPage: 1, placeholder: 'npr. 7.5', unit: 'kW' },
+      { key: 'godiste',  label: 'Godište',  type: 'number', formPage: 2, placeholder: 'npr. 2010' },
+      { key: 'tezina',   label: 'Težina',   type: 'number', formPage: 2, placeholder: 'npr. 1200', unit: 'kg' },
+    );
+  }
+
+  // ── Ostali strojevi i alati (fallback) ──
+  else {
+    fields.push(
+      { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2020' },
+    );
+  }
+
+  return fields;
+}
+
+// ── Usluge (Services) ────────────────────────────────────
+
+export function getUslugeFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+
+  // ── Base fields for all services ──
+  const fields: CategoryField[] = [
+    { key: 'nacinObracuna', label: 'Način obračuna',  type: 'button-select', formPage: 1, options: ['Po satu', 'Paušalno', 'Po dogovoru'] },
+    { key: 'podrucjeRada',  label: 'Područje rada',   type: 'select',        formPage: 1, options: ['Lokalno (kvart)', 'Cijeli grad', 'Kanton / Županija', 'Cijela BiH', 'Online'] },
+    { key: 'iskustvo',      label: 'Iskustvo',        type: 'select',        formPage: 1, options: ['< 1 godina', '1–3 godine', '3–5 godina', '5–10 godina', '10+ godina'] },
+    { key: 'dostupnost',    label: 'Dostupnost',      type: 'select',        formPage: 2, options: ['Odmah', 'Radnim danima', 'Vikendom', 'Svaki dan', 'Po dogovoru'] },
+  ];
+
+  // ── Servisiranje vozila ──
+  if (s.includes('servisi') || s.includes('vozila') || s.includes('autoelektri') || s.includes('autolimar') || s.includes('automehani') || s.includes('klima servis') || s.includes('pranje') || s.includes('detailing') || s.includes('vulkanizer') || s.includes('tehnički pregled') || s.includes('tehnicki pregled') || s.includes('registracij')) {
+    fields.push(
+      { key: 'tipVozila',    label: 'Tip vozila',          type: 'select',  formPage: 1, options: ['Auto', 'Moto', 'Kombi / SUV', 'Kamion / Teretno', 'Sva vozila'] },
+      { key: 'mobilniServis', label: 'Dolazak na adresu',  type: 'boolean', formPage: 2 },
+    );
+  }
+
+  // ── Građevinske usluge ──
+  else if (s.includes('građevinsk') || s.includes('gradjevinsk') || s.includes('adaptacij') || s.includes('renovacij') || s.includes('elektroinstalacij') || s.includes('keramičar') || s.includes('keramicar') || s.includes('krovopokrivač') || s.includes('krovopokrivac') || s.includes('moler') || s.includes('podopolag') || s.includes('stolarij') || s.includes('pvc') || s.includes('vodoinstalacij') || s.includes('zidanj') || s.includes('fasad') || s.includes('grijanj') || s.includes('arhitektur')) {
+    fields.push(
+      { key: 'besplatanIzlazak', label: 'Besplatan izlazak / procjena', type: 'boolean', formPage: 2 },
+      { key: 'garancija',        label: 'Garancija na radove',          type: 'boolean', formPage: 2 },
+    );
+  }
+
+  // ── IT usluge ──
+  else if (s.includes('it uslug') || s.includes('dizajn i grafik') || s.includes('mrežn') || s.includes('mrezn') || s.includes('servis mobitel') || s.includes('servis računal') || s.includes('servis racunal') || s.includes('web razvoj')) {
+    fields.push(
+      { key: 'onlineUsluga', label: 'Online usluga (remote rad)', type: 'boolean', formPage: 2 },
+    );
+  }
+
+  // ── Ljepota i njega ──
+  else if (s.includes('ljepota') || s.includes('njega') || s.includes('frizer') || s.includes('kozmetičk') || s.includes('kozmetick') || s.includes('manikur') || s.includes('pedikur') || s.includes('masaž') || s.includes('masaz') || s.includes('terapij') || s.includes('tattoo') || s.includes('piercing')) {
+    fields.push(
+      { key: 'dolazakNaAdresu', label: 'Dolazak na adresu', type: 'boolean', formPage: 2 },
+    );
+  }
+
+  // ── Edukacija i poduke ──
+  else if (s.includes('edukacij') || s.includes('poduk') || s.includes('autoškol') || s.includes('autoskol') || s.includes('glazbena škol') || s.includes('glazbena skol') || s.includes('instrukcij') || s.includes('kurs') || s.includes('tečaj') || s.includes('tecaj') || s.includes('sportska škol') || s.includes('sportska skol')) {
+    fields.push(
+      { key: 'format', label: 'Format nastave', type: 'button-select', formPage: 1, options: ['Uživo', 'Online', 'Hibrid'] },
+      { key: 'uzrast', label: 'Uzrast',         type: 'select',        formPage: 2, options: ['Osnovna škola', 'Srednja škola', 'Fakultet', 'Odrasli', 'Svi uzrasti'] },
+    );
+  }
+
+  // ── Transport i selidbe ──
+  else if (s.includes('transport') || s.includes('selidb') || s.includes('dostava rob') || s.includes('kombi prijevoz') || s.includes('prijevoz osob') || s.includes('pakovanj')) {
+    fields.push(
+      { key: 'tipVozila', label: 'Tip vozila',  type: 'select', formPage: 1, options: ['Kombi', 'Kamion', 'Prikolica', 'Osobno vozilo'] },
+      { key: 'kapacitet', label: 'Kapacitet',    type: 'number', formPage: 1, placeholder: 'npr. 1500', unit: 'kg' },
+    );
+  }
+
+  // ── Čišćenje i održavanje ──
+  else if (s.includes('čišćenj') || s.includes('ciscenj') || s.includes('održavanj') || s.includes('odrzavanj') || s.includes('čišćenje') || s.includes('ciscenje')) {
+    fields.push(
+      { key: 'opremaUkljucena',   label: 'Oprema uključena',   type: 'boolean', formPage: 2 },
+      { key: 'sredstvaUkljucena', label: 'Sredstva uključena', type: 'boolean', formPage: 2 },
+    );
+  }
+
+  // ── Event, vjenčanja i zabava ──
+  else if (s.includes('event') || s.includes('vjenčanj') || s.includes('vjencanj') || s.includes('zabav')) {
+    fields.push(
+      { key: 'tip', label: 'Tip usluge', type: 'select', formPage: 1, options: ['DJ / Muzika', 'Fotograf / Snimatelj', 'Dekoracija', 'Catering', 'Voditelj / Animator', 'Ostalo'] },
+    );
+  }
+
+  // ── Kućni ljubimci – usluge ──
+  else if (s.includes('kućni ljubimci') || s.includes('kucni ljubimci') || s.includes('dog sitting') || s.includes('šetanj') || s.includes('setanj') || s.includes('veterinar') || s.includes('šišanje i njega') || s.includes('sisanje i njega')) {
+    fields.push(
+      { key: 'certifikat', label: 'Certifikat / Licenca', type: 'boolean', formPage: 2 },
+    );
+  }
+
+  // ── Dizajn, tisak, fotografija / Pravne / Iznajmljivanje / Ostale → nur Basis ──
+
+  return fields;
+}
+
+// ── Ostalo (Catch-all) ───────────────────────────────────
+
+export function getOstaloKategorijaFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+
+  // ── Karte i ulaznice ──
+  if (s.includes('karte') || s.includes('ulaznic') || s.includes('festival') || s.includes('kazalište') || s.includes('kazaliste') || s.includes('koncert')) {
+    return [
+      { key: 'tipEventa', label: 'Tip eventa', type: 'select', formPage: 1, options: ['Festival', 'Kazalište / Opera', 'Koncert', 'Sport', 'Ostalo'] },
+      { key: 'datum',     label: 'Datum',      type: 'text',   formPage: 1, placeholder: 'npr. 15.06.2026' },
+      { key: 'kolicina',  label: 'Količina',   type: 'number', formPage: 1, placeholder: 'npr. 2' },
+      { key: 'sjedalo',   label: 'Sjedalo / Zona', type: 'text', formPage: 1, placeholder: 'npr. Tribina A, Red 5' },
+    ];
+  }
+
+  // ── Kozmetika i ljepota ──
+  if (s.includes('kozmetik') || s.includes('ljepot') || s.includes('parfem') || s.includes('šmink') || s.includes('smink') || s.includes('njega kos') || s.includes('njega lic') || s.includes('salon oprema')) {
+    return [
+      { key: 'tip',    label: 'Tip',          type: 'select',        formPage: 1, options: ['Njega kose', 'Njega lica i tijela', 'Parfem', 'Šminka i boje', 'Profesionalna salon oprema', 'Ostalo'] },
+      { key: 'brand',  label: 'Brand',        type: 'text',          formPage: 1, placeholder: 'npr. MAC, L\'Oréal, dm' },
+      { key: 'stanje', label: 'Stanje',       type: 'button-select', formPage: 1, options: ['Novo (zapečaćeno)', 'Novo (otvoreno)', 'Korišteno'] },
+    ];
+  }
+
+  // ── Medicinska pomagala ──
+  if (s.includes('medicins') || s.includes('invalidsk') || s.includes('inhalator') || s.includes('štak') || s.includes('stak') || s.includes('hodalic')) {
+    return [
+      { key: 'tip',    label: 'Tip',    type: 'select',        formPage: 1, options: ['Invalidska kolica', 'Štake', 'Hodalica', 'Inhalator', 'Krevet medicinski', 'Ostalo'] },
+      { key: 'stanje', label: 'Stanje', type: 'button-select', formPage: 1, options: ['Novo', 'Korišteno'] },
+    ];
+  }
+
+  // ── Vjenčanja ──
+  if (s.includes('vjenčanj') || s.includes('vjencanj') || s.includes('vjenčanic') || s.includes('vjencanic')) {
+    return [
+      { key: 'tip',      label: 'Tip',      type: 'select',        formPage: 1, options: ['Vjenčanica', 'Odijelo', 'Dekoracija', 'Pozivnice / Tisak', 'Ostalo'] },
+      { key: 'velicina', label: 'Veličina', type: 'text',          formPage: 1, placeholder: 'npr. S, M, 38, 42' },
+      { key: 'boja',     label: 'Boja',     type: 'select',        formPage: 1, options: ['Bijela', 'Krem / Ivory', 'Champagne', 'Roza', 'Plava', 'Crna', 'Ostalo'] },
+    ];
+  }
+
+  // ── Investicijsko zlato i srebro ──
+  if (s.includes('zlato') || s.includes('srebro') || s.includes('investicijsk')) {
+    return [
+      { key: 'tip',      label: 'Tip',      type: 'button-select', formPage: 1, options: ['Zlatnik', 'Poluga', 'Srebrnjak', 'Nakit (investicijski)'] },
+      { key: 'tezina',   label: 'Težina',   type: 'number',        formPage: 1, placeholder: 'npr. 31.1', unit: 'g' },
+      { key: 'cistoca',  label: 'Čistoća',  type: 'select',        formPage: 1, options: ['999 (24K)', '986', '925 (Sterling)', '750 (18K)', '585 (14K)', 'Ostalo'] },
+    ];
+  }
+
+  // ── Grobna mjesta ──
+  if (s.includes('grobn')) {
+    return [
+      { key: 'lokacija', label: 'Lokacija (groblje)', type: 'text',          formPage: 1, placeholder: 'npr. Bare, Vlakovo' },
+      { key: 'tip',      label: 'Tip',                type: 'button-select', formPage: 1, options: ['Novo', 'Otkup'] },
+    ];
+  }
+
+  // ── Poklanjam / Sve ostalo → keine Felder ──
+  return [];
+}
+
 // ── Main export ───────────────────────────────────────────
 
 export function getCategoryFields(category: string, vehicleType?: VehicleType): CategoryField[] {
@@ -1609,6 +2242,24 @@ export function getCategoryFields(category: string, vehicleType?: VehicleType): 
     return getDjecaFields(subType);
   }
 
+  // Umjetnost i kolekcionarstvo: per-Typ Felder
+  if (c.includes('umjetnost') || c.includes('kolekcion') || c.includes('numizmatik') || c.includes('filatelij') || c.includes('antikvitet') || c.includes('militarij') || c.includes('modelarstvo')) {
+    const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
+    return getUmjetnostFields(subType);
+  }
+
+  // Poslovi: per-Typ Felder
+  if (c.includes('poslovi') || c.includes('posao') || c.includes('zaposlenje') || c.includes('karijera')) {
+    const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
+    return getPosloviFields(subType);
+  }
+
+  // Hrana i piće: per-Typ Felder
+  if (c.includes('hrana') || c.includes('piće') || c.includes('pice') || c.includes('rakij') || c.includes('vina') || c.includes('med i') || c.includes('meso') || c.includes('mliječn') || c.includes('mljecn')) {
+    const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
+    return getHranaFields(subType);
+  }
+
   // Videoigre: per-Typ Felder
   if (c.includes('videoigre') || c.includes('video igre') || (c.includes('gaming') && !c.includes('laptop') && !c.includes('pc') && !c.includes('monitor'))) {
     const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
@@ -1625,6 +2276,30 @@ export function getCategoryFields(category: string, vehicleType?: VehicleType): 
   if (c.includes('dom i vrt') || c.includes('namještaj') || c.includes('namjestaj') || c.includes('rasvjet') || c.includes('tepis') || c.includes('dekoracij') || c.includes('grijanj') || c.includes('vrt i balkon') || c.includes('bazen') || c.includes('jacuzzi') || c.includes('saun') || c.includes('sigurnosni sustav') || c.includes('vodoinstalacij') || c.includes('alati i pribor za dom')) {
     const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
     return getDomFields(subType);
+  }
+
+  // Životinje: per-Typ Felder
+  if (c.includes('životinj') || c.includes('zivotinj') || c.includes('psi') || c.includes('mačk') || c.includes('mack') || c.includes('ptic') || c.includes('papig') || c.includes('glodav') || c.includes('akvarij') || c.includes('terarij') || c.includes('gmizav') || c.includes('konj') || c.includes('udomljavanj')) {
+    const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
+    return getZivotinjeFields(subType);
+  }
+
+  // Strojevi i alati: per-Typ Felder
+  if (c.includes('strojevi') || c.includes('električni alat') || c.includes('elektricni alat') || c.includes('viljuškar') || c.includes('viljuskar') || c.includes('bušilic') || c.includes('busilic') || c.includes('brusilica') || c.includes('kompresor') || c.includes('traktor') || c.includes('kombajn')) {
+    const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
+    return getStrojeviFields(subType);
+  }
+
+  // Usluge: per-Typ Felder
+  if (c.includes('usluge') || c.includes('servisiranj') || c.includes('edukacij') || c.includes('poduk') || c.includes('selidb') || c.includes('čišćenj') || c.includes('ciscenj') || c.includes('event') || c.includes('vjenčanj') || c.includes('vjencanj')) {
+    const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
+    return getUslugeFields(subType);
+  }
+
+  // Ostalo: per-Typ Felder (Karte, Kozmetika, Medicinska, Vjenčanja, Zlato/Srebro, Grobna mjesta)
+  if (c.includes('karte i ulaznic') || c.includes('kozmetika') || c.includes('medicinska pomagal') || c.includes('investicijsk') || c.includes('grobn') || c.includes('poklanjam') || (c.includes('ostalo') && !c.includes('ostala vozila') && !c.includes('ostali strojevi') && !c.includes('ostale usluge') && !c.includes('ostale kolekcije'))) {
+    const subType = category.includes(' - ') ? category.split(' - ').slice(1).join(' - ') : category;
+    return getOstaloKategorijaFields(subType);
   }
 
   return [];
