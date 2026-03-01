@@ -65,7 +65,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {!isHome && onBack !== null && (
             <button
               onClick={onBack || (() => router.back())}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
+              className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
               aria-label="Nazad"
             >
               <i className="fa-solid fa-arrow-left text-sm"></i>

@@ -172,7 +172,7 @@ export default function LinkImportPage() {
         </div>
 
         {/* ── URL INPUT CARD ── */}
-        <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[28px] p-5 shadow-sm space-y-4">
+        <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] sm:rounded-[28px] p-3 sm:p-5 shadow-sm space-y-4">
 
           {/* Platform badge — shown when URL is valid */}
           {url && (() => {
@@ -275,7 +275,7 @@ export default function LinkImportPage() {
           <div className="space-y-4 animate-[fadeIn_0.3s_ease-out]">
 
             {/* Success Banner */}
-            <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-[18px] px-4 py-3">
+            <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-[12px] sm:rounded-[18px] px-3 sm:px-4 py-3">
               <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center shrink-0">
                 <i className="fa-solid fa-check text-emerald-600 text-sm"></i>
               </div>
@@ -287,7 +287,7 @@ export default function LinkImportPage() {
 
             {/* Imported images */}
             {importedData.images && importedData.images.length > 0 && (
-              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[24px] p-4">
+              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] sm:rounded-[24px] p-3 sm:p-4">
                 <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest mb-3">
                   <i className="fa-solid fa-images mr-1.5"></i>Slike ({importedData.images.length})
                 </p>
@@ -308,7 +308,7 @@ export default function LinkImportPage() {
             )}
 
             {/* Data fields */}
-            <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[24px] overflow-hidden divide-y divide-[var(--c-border)]">
+            <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] sm:rounded-[24px] overflow-hidden divide-y divide-[var(--c-border)]">
 
               {/* Title */}
               {importedData.title && (
@@ -448,13 +448,13 @@ export default function LinkImportPage() {
             <div className="flex gap-3">
               <button
                 onClick={handleReset}
-                className="flex-1 py-4 rounded-[18px] bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-text2)] text-[11px] font-black uppercase tracking-widest hover:bg-[var(--c-active)] transition-colors"
+                className="flex-1 py-3.5 sm:py-4 rounded-[12px] sm:rounded-[18px] bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-text2)] text-[11px] font-black uppercase tracking-widest hover:bg-[var(--c-active)] transition-colors"
               >
                 <i className="fa-solid fa-rotate-left mr-2"></i>Novi import
               </button>
               <button
                 onClick={handleCreateListing}
-                className="flex-2 flex-1 py-4 rounded-[18px] blue-gradient text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all hover:shadow-blue-500/30"
+                className="flex-2 flex-1 py-3.5 sm:py-4 rounded-[12px] sm:rounded-[18px] blue-gradient text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all hover:shadow-blue-500/30"
               >
                 <i className="fa-solid fa-paper-plane mr-2"></i>Kreiraj oglas
               </button>
@@ -479,7 +479,7 @@ export default function LinkImportPage() {
               ].map((f) => (
                 <div
                   key={f.label}
-                  className="flex items-center gap-3 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] px-4 py-3"
+                  className="flex items-center gap-3 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[12px] sm:rounded-[16px] px-3 sm:px-4 py-2.5 sm:py-3"
                 >
                   <div className={`w-8 h-8 rounded-[10px] ${f.color} flex items-center justify-center shrink-0`}>
                     <i className={`fa-solid ${f.icon} text-xs`}></i>
@@ -506,7 +506,7 @@ export default function LinkImportPage() {
                 { step: '2', icon: 'fa-wand-magic-sparkles', color: 'bg-purple-500/10 text-purple-500', label: 'AI analizira', desc: 'Naš AI preuzima sve podatke automatski' },
                 { step: '3', icon: 'fa-paper-plane', color: 'bg-emerald-500/10 text-emerald-500', label: 'Objavi', desc: 'Provjeri podatke i objavi oglas na NudiNađi' },
               ].map((s) => (
-                <div key={s.step} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-4 text-center">
+                <div key={s.step} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[12px] sm:rounded-[18px] p-3 sm:p-4 text-center">
                   <div className={`w-10 h-10 rounded-[12px] ${s.color} flex items-center justify-center mx-auto mb-2.5 border border-current/20`}>
                     <i className={`fa-solid ${s.icon} text-sm`}></i>
                   </div>

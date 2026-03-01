@@ -3113,13 +3113,13 @@ function UploadPageInner() {
           </div>
 
           {/* Link Import Shortcut */}
-          <Link href="/link-import" className="block w-full relative group overflow-hidden bg-orange-50 border border-orange-200 rounded-[24px] p-5 flex items-center justify-between active:scale-[0.98] transition-all hover:bg-orange-100">
+          <Link href="/link-import" className="block w-full relative group overflow-hidden bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 rounded-[24px] p-5 flex items-center justify-between active:scale-[0.98] transition-all hover:bg-orange-100 dark:hover:bg-orange-500/15">
               <div className="flex items-center gap-4 z-10">
                 <div className="w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500">
                   <i className="fa-solid fa-file-import"></i>
                 </div>
                 <div className="text-left">
-                  <h4 className="text-[13px] font-black text-[var(--c-text)]">Import s drugog portala</h4>
+                  <h4 className="text-[13px] font-black text-[var(--c-text)] dark:text-orange-300">Import s drugog portala</h4>
                   <p className="text-[9px] text-orange-500 font-bold uppercase mt-0.5 tracking-wide">Zalijepi link — AI uvozi sve</p>
                 </div>
               </div>

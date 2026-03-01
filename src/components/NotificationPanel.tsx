@@ -47,7 +47,7 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
       <div className="fixed inset-0 z-[140]" onClick={onClose}></div>
 
       {/* Panel */}
-      <div className="fixed top-20 right-4 z-[150] w-[340px] max-w-[calc(100vw-32px)] max-h-[70vh] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] shadow-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+      <div className="fixed top-20 right-4 z-[150] w-[280px] sm:w-[340px] max-w-[calc(100vw-32px)] max-h-[55vh] sm:max-h-[70vh] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] shadow-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out]">
 
         {/* Header */}
         <div className="px-5 py-4 border-b border-[var(--c-border)] flex items-center justify-between">
@@ -84,7 +84,7 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
         </div>
 
         {/* Notification List */}
-        <div className="overflow-y-auto max-h-[calc(70vh-70px)] no-scrollbar">
+        <div className="overflow-y-auto max-h-[calc(55vh-70px)] sm:max-h-[calc(70vh-70px)] no-scrollbar">
           {notifications.length > 0 ? (
             notifications.map((notif) => (
               <div

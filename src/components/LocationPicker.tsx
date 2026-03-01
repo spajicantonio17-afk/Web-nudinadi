@@ -85,10 +85,10 @@ export default function LocationPicker({ isOpen, onClose, onSelect, currentCity 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-4">
       <div className="absolute inset-0 bg-[var(--c-overlay)] backdrop-blur-sm" onClick={onClose}></div>
 
-      <div className="relative bg-[var(--c-card)] border border-[var(--c-border2)] w-full max-w-3xl rounded-[24px] shadow-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out] max-h-[92vh] sm:max-h-[88vh] flex flex-col">
+      <div className="relative bg-[var(--c-card)] border border-[var(--c-border2)] w-full max-w-3xl rounded-[24px] shadow-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out] max-h-[65vh] sm:max-h-[88vh] flex flex-col">
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-[var(--c-border)]">
           <div className="flex items-center justify-between mb-4 sm:mb-5">

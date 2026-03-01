@@ -1068,7 +1068,7 @@ function HomeContent() {
 
                   {/* MIDDLE CONTENT — Sub-category groups */}
                   {!showThirdLevel && (
-                    <div className="flex-1 bg-[var(--c-card)] overflow-y-auto p-4 md:p-6 pb-24 relative">
+                    <div className="flex-1 bg-[var(--c-card)] overflow-y-auto overscroll-contain touch-pan-y p-4 md:p-6 pb-24 relative">
 
                       {/* Selected Category Header */}
                       <div className="mb-6 flex items-center gap-3 relative z-10">
@@ -1123,7 +1123,7 @@ function HomeContent() {
 
                   {/* THIRD LEVEL — Detailed items within sub-group */}
                   {showThirdLevel && selectedSubGroupData && (
-                    <div className="flex-1 bg-[var(--c-card)] overflow-y-auto p-4 md:p-6 pb-24 relative animate-fadeIn">
+                    <div className="flex-1 bg-[var(--c-card)] overflow-y-auto overscroll-contain touch-pan-y p-4 md:p-6 pb-24 relative animate-fadeIn">
 
                       {/* Sub-group header */}
                       <div className="mb-5 relative z-10">

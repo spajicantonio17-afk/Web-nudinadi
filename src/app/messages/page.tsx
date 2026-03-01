@@ -83,7 +83,7 @@ const ContactRow: React.FC<{
   <div
     onClick={onClick}
     className={`
-      group relative flex items-center gap-3 p-2.5 sm:p-3 rounded-[16px] cursor-pointer transition-all duration-200 border overflow-hidden
+      group relative flex items-center justify-center sm:justify-start gap-0 sm:gap-3 p-1 sm:p-2.5 md:p-3 rounded-[12px] sm:rounded-[16px] cursor-pointer transition-all duration-200 border overflow-hidden
       ${isActive
         ? 'bg-blue-600/10 border-blue-500/50 shadow-[inset_0_0_20px_rgba(37,99,235,0.1)]'
         : isPinned
@@ -95,7 +95,7 @@ const ContactRow: React.FC<{
     {isPinned && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_10px_#3B82F6]"></div>}
 
     <div className="relative shrink-0">
-      <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[14px] p-[2px] ${isActive ? 'bg-blue-500' : 'bg-[var(--c-active)] group-hover:bg-[var(--c-border2)]'} transition-colors`}>
+      <div className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-[10px] sm:rounded-[14px] p-[2px] ${isActive ? 'bg-blue-500' : 'bg-[var(--c-active)] group-hover:bg-[var(--c-border2)]'} transition-colors`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={contact.avatar} alt={contact.name} className="w-full h-full object-cover rounded-[12px] bg-[var(--c-card-alt)]" />
       </div>
@@ -354,7 +354,7 @@ function MessagesContent() {
 
   return (
     <MainLayout title="Poruke" showSigurnost={false} headerRight={null}>
-      <div className="flex h-[calc(100vh-140px)] max-w-5xl mx-auto w-full gap-2 sm:gap-4 md:gap-6 overflow-hidden pt-2">
+      <div className="flex h-[calc(100vh-210px)] sm:h-[calc(100vh-140px)] max-w-5xl mx-auto w-full gap-2 sm:gap-4 md:gap-6 overflow-hidden pt-2">
 
         {/* --- LEFT SIDEBAR (People) --- */}
         <div className="w-[56px] sm:w-[68px] md:w-[260px] lg:w-[300px] flex flex-col gap-2 sm:gap-3 shrink-0 transition-all duration-300">

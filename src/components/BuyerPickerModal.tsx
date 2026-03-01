@@ -50,10 +50,10 @@ export default function BuyerPickerModal({ productId, sellerId, onClose, onSucce
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-start justify-center pt-16 sm:pt-24 pb-4 px-2 sm:px-4">
+    <div className="fixed inset-0 z-[150] flex items-start justify-center pt-24 sm:pt-24 pb-4 px-3 sm:px-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-[var(--c-card)] border border-[var(--c-border)] w-full max-w-md rounded-[10px] shadow-strong overflow-hidden animate-scaleIn max-h-[calc(100vh-5rem)] flex flex-col">
+      <div className="relative bg-[var(--c-card)] border border-[var(--c-border)] w-full max-w-md rounded-[10px] shadow-strong overflow-hidden animate-scaleIn max-h-[60vh] sm:max-h-[calc(100vh-7rem)] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--c-border)]">
           <h2 className="text-sm font-bold text-[var(--c-text)]">Kome ste prodali?</h2>

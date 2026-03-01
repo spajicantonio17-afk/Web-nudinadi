@@ -136,7 +136,7 @@ export default function VehicleModelPicker({
       }`}
     >
       <div
-        className={`relative w-full sm:max-w-[500px] max-h-[80vh] bg-[var(--c-card)] border border-[var(--c-border)] rounded-t-2xl sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl transition-transform duration-300 ease-out ${
+        className={`relative w-full sm:max-w-[500px] max-h-[60vh] sm:max-h-[80vh] bg-[var(--c-card)] border border-[var(--c-border)] rounded-t-2xl sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl transition-transform duration-300 ease-out ${
           animating ? 'translate-y-0' : 'translate-y-full sm:translate-y-8 sm:opacity-0'
         }`}
       >
