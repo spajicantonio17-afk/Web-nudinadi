@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/auth';
 import type { ProductFull } from '@/lib/database.types';
 import { BAM_RATE } from '@/lib/constants';
 import SimilarProducts from '@/components/SimilarProducts';
+import ProductAttributes from '@/components/ProductAttributes';
 import BuyerPickerModal from '@/components/BuyerPickerModal';
 
 function formatTimeLabel(createdAt: string): string {
@@ -580,6 +581,16 @@ export default function ProductDetailPage() {
                 </div>
             </div>
         </div>
+
+        {/* PRODUCT ATTRIBUTES / SPECS */}
+        {product.category?.name && product.attributes && (
+          <div className="mt-8 px-4 md:px-0">
+            <ProductAttributes
+              categoryName={product.category.name}
+              attributes={product.attributes as Record<string, string | number | boolean | string[]>}
+            />
+          </div>
+        )}
 
         {/* REVIEW SECTION — nur für eingeloggte Nicht-Verkäufer */}
         {user && product.seller_id !== user.id && (

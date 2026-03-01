@@ -354,7 +354,6 @@ export function getSportFields(subType: string): CategoryField[] {
   // Base for all sport items
   fields.push(
     { key: 'brand',  label: 'Brand',  type: 'text',          formPage: 1, placeholder: 'npr. Nike, Adidas, Decathlon' },
-    { key: 'stanje', label: 'Stanje', type: 'button-select', formPage: 1, options: ['Novo', 'Kao novo', 'Korišteno'] },
   );
 
   const isFitness    = ['fitness', 'fitnes', 'teretana', 'uteg', 'bučic', 'bucic', 'klup', 'trak', 'yoga', 'pilates', 'crossfit', 'sprav'].some(t => s.includes(t));
@@ -587,7 +586,6 @@ const PRIKOLICE_FIELDS: CategoryField[] = [
 
 const OSTALA_VOZILA_FIELDS: CategoryField[] = [
   { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2020' },
-  { key: 'stanje', label: 'Stanje', type: 'select', formPage: 1, options: ['Novo', 'Korišteno', 'Za dijelove'] },
   { key: 'satiRada', label: 'Sati rada', type: 'number', formPage: 1, placeholder: 'npr. 1500' },
   { key: 'registracija', label: 'Registracija do', type: 'text', formPage: 1, placeholder: 'npr. 06/2026' },
 ];
@@ -1015,7 +1013,6 @@ export function getDomFields(subType: string): CategoryField[] {
 
   // === Page 1: Basis-Felder für ALLE Dom-Artikel ===
   fields.push(
-    { key: 'stanje', label: 'Stanje', type: 'select', formPage: 1, options: ['Novo', 'Kao novo', 'Korišteno', 'Oštećeno'] },
     { key: 'materijal', label: 'Materijal', type: 'select', formPage: 1, options: ['Drvo', 'Metal', 'Plastika', 'Staklo', 'Tkanina', 'Koža', 'Keramika', 'MDF / Iverica', 'Ratan', 'Ostalo'] },
     { key: 'boja', label: 'Boja', type: 'select', formPage: 1, options: ['Bijela', 'Crna', 'Smeđa', 'Siva', 'Bež', 'Crvena', 'Plava', 'Zelena', 'Ostalo'] },
     { key: 'brand', label: 'Brend', type: 'text', formPage: 1, placeholder: 'npr. IKEA, Lesnina' },
@@ -1176,7 +1173,6 @@ export function getDjecaFields(subType: string): CategoryField[] {
 
   // === Page 1: Basis-Felder für ALLE Djeca-Artikel ===
   fields.push(
-    { key: 'stanje', label: 'Stanje', type: 'select', formPage: 1, options: ['Novo', 'Kao novo', 'Korišteno', 'Oštećeno'] },
     { key: 'spol', label: 'Spol', type: 'button-select', formPage: 1, options: ['Dječak', 'Djevojčica', 'Unisex'] },
     { key: 'dobDjeteta', label: 'Dob djeteta', type: 'select', formPage: 1, options: ['0–6 mjeseci', '6–12 mjeseci', '1–2 godine', '3–5 godina', '6–8 godina', '9–12 godina', '13–14 godina'] },
     { key: 'brand', label: 'Brend', type: 'text', formPage: 1, placeholder: 'npr. Chicco, LEGO' },
@@ -1268,6 +1264,221 @@ export function getDjecaFields(subType: string): CategoryField[] {
   return fields;
 }
 
+// ── Strojevi i alati Feature Checkboxes per Sub-Type ─────
+const STROJEVI_FEATURES: Record<string, { key: string; label: string }[]> = {
+  rucni: [
+    { key: 'kompletSet', label: 'Komplet set' },
+    { key: 'koferUkljucen', label: 'Kofer uključen' },
+  ],
+  elektricni: [
+    { key: 'garancija', label: 'Garancija' },
+    { key: 'koferUkljucen', label: 'Kofer uključen' },
+    { key: 'dodatniPribor', label: 'Dodatni pribor uključen' },
+    { key: 'bezCetkica', label: 'Bez četkica (brushless)' },
+  ],
+  gradevinski: [
+    { key: 'garancija', label: 'Garancija' },
+    { key: 'servisiran', label: 'Servisiran' },
+    { key: 'radniSati', label: 'Radni sati poznati' },
+  ],
+  poljoprivredni: [
+    { key: 'garancija', label: 'Garancija' },
+    { key: 'servisiran', label: 'Servisiran' },
+    { key: 'radniSati', label: 'Radni sati poznati' },
+    { key: 'registriran', label: 'Registriran' },
+  ],
+  vrtni: [
+    { key: 'garancija', label: 'Garancija' },
+    { key: 'samohodne', label: 'Samohodne' },
+  ],
+};
+
+// ── Strojevi i alati per-Type Fields ─────────────────────
+
+export function getStrojeviFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+  const fields: CategoryField[] = [];
+
+  // === Page 1: Basis-Felder für ALLE Strojevi-Artikel ===
+  fields.push(
+    { key: 'brand', label: 'Brend', type: 'text', formPage: 1, placeholder: 'npr. Bosch, Makita, Stihl' },
+  );
+
+  // === Page 2: Extra-Felder je nach Subtyp ===
+
+  // Ručni alati
+  if (s.includes('ručni') || s.includes('rucni') || s.includes('čekić') || s.includes('cekic') || s.includes('odvijač') || s.includes('odvijac') || s.includes('ključev') || s.includes('kljucev') || s.includes('klješt') || s.includes('kljest') || s.includes('mjerač') || s.includes('mjerac') || s.includes('libel')) {
+    fields.push(
+      { key: 'tipAlata', label: 'Tip alata', type: 'select', formPage: 2, options: ['Čekići i odvijači', 'Kliješta', 'Ključevi i nasadni seti', 'Mjerači i libele', 'Pile i noževi', 'Ostalo'] },
+    );
+  }
+
+  // Električni alati
+  else if (s.includes('električni') || s.includes('elektricni') || s.includes('bušilic') || s.includes('busilic') || s.includes('brusilica') || s.includes('pila') || s.includes('kompresor') && !s.includes('veliki') || s.includes('ubodna') || s.includes('pneumatski')) {
+    fields.push(
+      { key: 'tipAlata', label: 'Tip alata', type: 'select', formPage: 2, options: ['Bušilica / Udarna bušilica', 'Kutna brusilica', 'Cirkularna pila', 'Ubodna pila', 'Brusilica za drvo', 'Kompresor', 'Pneumatski alat', 'Ostalo'] },
+      { key: 'napajanje', label: 'Napajanje', type: 'button-select', formPage: 2, options: ['Struja (220V)', 'Baterija / Aku', 'Benzin'] },
+      { key: 'snagaW', label: 'Snaga (W)', type: 'number', formPage: 2, placeholder: 'npr. 750', unit: 'W' },
+    );
+  }
+
+  // Građevinski strojevi
+  else if (s.includes('građevinski') || s.includes('gradevinski') || s.includes('bager') || s.includes('dizalica') || s.includes('betonsk') || s.includes('miješalic') || s.includes('mjesalic') || s.includes('vibracij') || s.includes('utovariv') || s.includes('platform')) {
+    fields.push(
+      { key: 'tipStroja', label: 'Tip stroja', type: 'select', formPage: 2, options: ['Mini bager', 'Utovarivač', 'Dizalica / Platforma', 'Betonska miješalica', 'Vibracijska ploča', 'Kompresor (veliki)', 'Asfaltni stroj', 'Ostalo'] },
+      { key: 'godinaProizvodnje', label: 'Godina proizvodnje', type: 'number', formPage: 2, placeholder: 'npr. 2019' },
+      { key: 'radniSatiH', label: 'Radni sati', type: 'number', formPage: 2, placeholder: 'npr. 2500', unit: 'h' },
+      { key: 'tezina', label: 'Težina (kg)', type: 'number', formPage: 2, placeholder: 'npr. 3500', unit: 'kg' },
+    );
+  }
+
+  // Poljoprivredni strojevi
+  else if (s.includes('poljoprivredn') || s.includes('traktor') || s.includes('kombajn') || s.includes('kosilic') || s.includes('priključ') || s.includes('prikljuc') || s.includes('plug') || s.includes('tanjurač') || s.includes('tanjurac') || s.includes('špric') || s.includes('spric') || s.includes('atomizer') || s.includes('cistern')) {
+    fields.push(
+      { key: 'tipStroja', label: 'Tip stroja', type: 'select', formPage: 2, options: ['Traktor', 'Kombajn', 'Kosilica (traktorska)', 'Priključak (plug, tanjurača, roto...)', 'Šprica / Atomizer', 'Cisterna za navodnjavanje', 'Ostalo'] },
+      { key: 'godinaProizvodnje', label: 'Godina proizvodnje', type: 'number', formPage: 2, placeholder: 'npr. 2015' },
+      { key: 'radniSatiH', label: 'Radni sati', type: 'number', formPage: 2, placeholder: 'npr. 5000', unit: 'h' },
+      { key: 'snagaKS', label: 'Snaga (KS)', type: 'number', formPage: 2, placeholder: 'npr. 80', unit: 'KS' },
+    );
+  }
+
+  // Vrtni strojevi
+  else if (s.includes('vrtn') || s.includes('kosilica') || s.includes('motorna pila') || s.includes('trimer') || s.includes('šišač') || s.includes('sisac') || s.includes('lišće') || s.includes('lisce') || s.includes('ride-on')) {
+    fields.push(
+      { key: 'tipStroja', label: 'Tip stroja', type: 'select', formPage: 2, options: ['Motorna kosilica', 'Ride-on kosilica', 'Motorna pila', 'Motorni trimer', 'Motorni šišač živice', 'Usisavač lišća', 'Ostalo'] },
+      { key: 'napajanje', label: 'Napajanje', type: 'button-select', formPage: 2, options: ['Benzin', 'Baterija / Aku', 'Struja (220V)'] },
+      { key: 'sirinaRezaCm', label: 'Širina reza (cm)', type: 'number', formPage: 2, placeholder: 'npr. 46', unit: 'cm' },
+    );
+  }
+
+  // Viljuškari i manipulacijska oprema
+  else if (s.includes('viljuškar') || s.includes('viljuskar') || s.includes('manipulacij')) {
+    fields.push(
+      { key: 'godinaProizvodnje', label: 'Godina proizvodnje', type: 'number', formPage: 2, placeholder: 'npr. 2018' },
+      { key: 'nosivost', label: 'Nosivost (kg)', type: 'number', formPage: 2, placeholder: 'npr. 2500', unit: 'kg' },
+      { key: 'napajanje', label: 'Pogon', type: 'button-select', formPage: 2, options: ['Dizel', 'Plin (LPG)', 'Električni', 'Ručni'] },
+      { key: 'radniSatiH', label: 'Radni sati', type: 'number', formPage: 2, placeholder: 'npr. 4000', unit: 'h' },
+    );
+  }
+
+  // Industrijski i prerađivački strojevi
+  else if (s.includes('industrijski') || s.includes('prerađiv') || s.includes('preradiv') || s.includes('obrad') || s.includes('pakovanje') || s.includes('tekstiln')) {
+    fields.push(
+      { key: 'tipStroja', label: 'Tip stroja', type: 'select', formPage: 2, options: ['Obrada drva', 'Obrada metala', 'Obrada kamena', 'Pakovanje', 'Tekstilni stroj', 'Ostalo'] },
+      { key: 'godinaProizvodnje', label: 'Godina proizvodnje', type: 'number', formPage: 2, placeholder: 'npr. 2010' },
+      { key: 'tezina', label: 'Težina (kg)', type: 'number', formPage: 2, placeholder: 'npr. 500', unit: 'kg' },
+    );
+  }
+
+  // === Page 2: Checkboxen ===
+  let featureKey = '';
+  if (s.includes('ručni') || s.includes('rucni') || s.includes('čekić') || s.includes('odvijač') || s.includes('ključev') || s.includes('klješt') || s.includes('mjerač')) {
+    featureKey = 'rucni';
+  } else if (s.includes('električni') || s.includes('elektricni') || s.includes('bušilic') || s.includes('brusilica') || s.includes('pila') || s.includes('ubodna') || s.includes('pneumatski')) {
+    featureKey = 'elektricni';
+  } else if (s.includes('građevinski') || s.includes('gradevinski') || s.includes('bager') || s.includes('dizalica') || s.includes('betonsk') || s.includes('vibracij') || s.includes('utovariv') || s.includes('viljuškar') || s.includes('viljuskar') || s.includes('industrijski') || s.includes('prerađiv')) {
+    featureKey = 'gradevinski';
+  } else if (s.includes('poljoprivredn') || s.includes('traktor') || s.includes('kombajn') || s.includes('priključ') || s.includes('plug') || s.includes('cistern')) {
+    featureKey = 'poljoprivredni';
+  } else if (s.includes('vrtn') || s.includes('kosilica') || s.includes('motorna pila') || s.includes('trimer') || s.includes('šišač')) {
+    featureKey = 'vrtni';
+  } else {
+    featureKey = 'elektricni';
+  }
+
+  const features = STROJEVI_FEATURES[featureKey] || [];
+  features.forEach(f => {
+    fields.push({ key: f.key, label: f.label, type: 'boolean', formPage: 2 });
+  });
+
+  return fields;
+}
+
+// ── Usluge per-Type Fields ───────────────────────────────
+
+export function getUslugeFields(subType: string): CategoryField[] {
+  const s = subType.toLowerCase();
+  const fields: CategoryField[] = [];
+
+  // === Page 1: Basis-Felder für ALLE Usluge ===
+  fields.push(
+    { key: 'tipOglasa', label: 'Tip oglasa', type: 'button-select', formPage: 1, options: ['Nudim uslugu', 'Tražim uslugu'] },
+    { key: 'nacin', label: 'Način', type: 'button-select', formPage: 1, options: ['Dolazim na adresu', 'U mom prostoru', 'Online / Na daljinu'] },
+  );
+
+  // === Page 2: Extra-Felder je nach Subtyp ===
+
+  // Servisiranje vozila
+  if (s.includes('servisiranjevozila') || s.includes('servis') && (s.includes('vozil') || s.includes('auto')) || s.includes('autoelektričar') || s.includes('autolimar') || s.includes('automehaničar') || s.includes('vulkanizer') || s.includes('detailing') || s.includes('tehnički pregled') || s.includes('klima servis')) {
+    fields.push(
+      { key: 'tipServisa', label: 'Tip servisa', type: 'select', formPage: 2, options: ['Automehaničar', 'Autoelektričar', 'Autolimar', 'Klima servis', 'Pranje i detailing', 'Tehnički pregled', 'Vulkanizer', 'Ostalo'] },
+    );
+  }
+
+  // Građevinske usluge
+  else if (s.includes('građevinsk') || s.includes('gradevinsk') || s.includes('adaptacij') || s.includes('renovacij') || s.includes('elektroinstalacij') || s.includes('keramičar') || s.includes('keramicar') || s.includes('krovopokrívač') || s.includes('moler') || s.includes('vodoinstalacij') || s.includes('fasad') || s.includes('stolari') || s.includes('pvc')) {
+    fields.push(
+      { key: 'tipUsluge', label: 'Tip usluge', type: 'select', formPage: 2, options: ['Adaptacije i renovacije', 'Elektroinstalacije', 'Grijanje i klima', 'Keramičar', 'Krovopokrivač', 'Moler', 'Podopolaganje', 'Stolarija i PVC', 'Vodoinstalacije', 'Zidanje i fasade', 'Ostalo'] },
+      { key: 'iskustvo', label: 'Iskustvo', type: 'select', formPage: 2, options: ['Do 1 godine', '1–5 godina', '5–10 godina', '10+ godina'] },
+    );
+  }
+
+  // IT usluge
+  else if (s.includes('it uslug') || s.includes('dizajn') || s.includes('grafik') || s.includes('web razvoj') || s.includes('servis mobitela') || s.includes('servis računala') || s.includes('servis racunala') || s.includes('mrežn')) {
+    fields.push(
+      { key: 'tipUsluge', label: 'Tip usluge', type: 'select', formPage: 2, options: ['Web razvoj', 'Dizajn i grafika', 'Servis računala', 'Servis mobitela', 'Mrežna infrastruktura', 'Ostalo'] },
+    );
+  }
+
+  // Edukacija i poduke
+  else if (s.includes('edukacij') || s.includes('poduk') || s.includes('instrukcij') || s.includes('kurs') || s.includes('tečaj') || s.includes('tecaj') || s.includes('autoškol') || s.includes('autoskol') || s.includes('škol') || s.includes('skol')) {
+    fields.push(
+      { key: 'tipEdukacije', label: 'Tip', type: 'select', formPage: 2, options: ['Instrukcije (škola i faks)', 'Jezični tečajevi', 'IT kursevi', 'Glazbena škola', 'Sportska škola', 'Autoškola', 'Ostalo'] },
+      { key: 'nacin2', label: 'Format', type: 'button-select', formPage: 2, options: ['Uživo', 'Online', 'Oboje'] },
+    );
+  }
+
+  // Transport i selidbe
+  else if (s.includes('transport') || s.includes('selidb') || s.includes('dostav') || s.includes('kombi') || s.includes('prijevoz')) {
+    fields.push(
+      { key: 'tipTransporta', label: 'Tip', type: 'select', formPage: 2, options: ['Selidbe i pakovanje', 'Kombi prijevoz', 'Dostava robe', 'Prijevoz osoba', 'Ostalo'] },
+    );
+  }
+
+  // Ljepota i njega
+  else if (s.includes('ljepota') || s.includes('njega') || s.includes('frizer') || s.includes('kozmetičk') || s.includes('kozmetick') || s.includes('manikur') || s.includes('pedikur') || s.includes('masaž') || s.includes('masaz') || s.includes('tattoo') || s.includes('piercing')) {
+    fields.push(
+      { key: 'tipUsluge', label: 'Tip', type: 'select', formPage: 2, options: ['Frizerski salon', 'Kozmetički salon', 'Manikura i pedikura', 'Masaže i terapije', 'Tattoo i piercing', 'Ostalo'] },
+    );
+  }
+
+  // Čišćenje i održavanje
+  else if (s.includes('čišćenj') || s.includes('ciscenj') || s.includes('održavanj') || s.includes('odrzavanj') || s.includes('tepiha')) {
+    fields.push(
+      { key: 'tipCiscenja', label: 'Tip', type: 'select', formPage: 2, options: ['Čišćenje stanova', 'Čišćenje poslovnih prostora', 'Čišćenje nakon gradnje', 'Čišćenje tepiha', 'Ostalo'] },
+    );
+  }
+
+  // Event, vjenčanja i zabava
+  else if (s.includes('event') || s.includes('vjenčanj') || s.includes('vjencanj') || s.includes('zabav')) {
+    fields.push(
+      { key: 'tipEventa', label: 'Tip', type: 'select', formPage: 2, options: ['Organizacija vjenčanja', 'DJ / Muzika', 'Fotografija i video', 'Catering', 'Dekoracija', 'Voditelj programa', 'Ostalo'] },
+    );
+  }
+
+  // === Page 2: Common checkboxes for all services ===
+  const commonFeatures = [
+    { key: 'racunIzdajem', label: 'Izdajem račun / fakturu' },
+    { key: 'vikendRad', label: 'Rad vikendom' },
+    { key: 'hitneIntervencije', label: 'Hitne intervencije' },
+  ];
+  commonFeatures.forEach(f => {
+    fields.push({ key: f.key, label: f.label, type: 'boolean', formPage: 2 });
+  });
+
+  return fields;
+}
+
 // ── Umjetnost i kolekcionarstvo Feature Checkboxes ───────
 const UMJETNOST_FEATURES: Record<string, { key: string; label: string }[]> = {
   slike: [
@@ -1304,7 +1515,6 @@ export function getUmjetnostFields(subType: string): CategoryField[] {
 
   // === Page 1: Basis-Felder für ALLE Umjetnost-Artikel ===
   fields.push(
-    { key: 'stanje', label: 'Stanje', type: 'select', formPage: 1, options: ['Novo', 'Kao novo', 'Korišteno', 'Antikno / Originalno'] },
     { key: 'godinaPerido', label: 'Godina / Period', type: 'text', formPage: 1, placeholder: 'npr. 1920, 19. vijek' },
   );
 
@@ -1592,7 +1802,6 @@ export function getVideoigreFields(subType: string): CategoryField[] {
 
   // === Page 1: Basis-Felder für ALLE Videoigre-Artikel ===
   fields.push(
-    { key: 'stanje', label: 'Stanje', type: 'select', formPage: 1, options: ['Novo (zapakirano)', 'Kao novo', 'Korišteno', 'Oštećeno'] },
     { key: 'platforma', label: 'Platforma', type: 'select', formPage: 1, options: ['PlayStation 5', 'PlayStation 4', 'PlayStation 3 i stariji', 'Xbox Series X/S', 'Xbox One', 'Nintendo Switch', 'Nintendo DS / 3DS', 'Nintendo Wii / WiiU', 'PC', 'Retro konzole', 'Ostalo'] },
   );
 
@@ -1682,7 +1891,6 @@ export function getGlazbaFields(subType: string): CategoryField[] {
 
   // === Page 1: Basis-Felder für ALLE Glazba-Artikel ===
   fields.push(
-    { key: 'stanje', label: 'Stanje', type: 'select', formPage: 1, options: ['Novo', 'Kao novo', 'Korišteno', 'Oštećeno'] },
     { key: 'brand', label: 'Brend', type: 'text', formPage: 1, placeholder: 'npr. Fender, Yamaha, Roland' },
     { key: 'boja', label: 'Boja', type: 'select', formPage: 1, options: ['Crna', 'Bijela', 'Crvena', 'Plava', 'Smeđa', 'Prirodno drvo', 'Sunburst', 'Ostalo'] },
   );
@@ -1779,7 +1987,6 @@ export function getLiteraturaFields(subType: string): CategoryField[] {
 
   // Base for all
   fields.push(
-    { key: 'stanje', label: 'Stanje', type: 'button-select', formPage: 1, options: ['Novo', 'Kao novo', 'Korišteno'] },
     { key: 'jezik',  label: 'Jezik',  type: 'select',        formPage: 1, options: ['Bosanski', 'Hrvatski', 'Srpski', 'Engleski', 'Njemački', 'Ostalo'] },
   );
 
@@ -1919,184 +2126,6 @@ export function getZivotinjeFields(subType: string): CategoryField[] {
   return fields;
 }
 
-// ── Strojevi i alati ─────────────────────────────────────
-
-export function getStrojeviFields(subType: string): CategoryField[] {
-  const s = subType.toLowerCase();
-
-  // ── Base fields for all ──
-  const fields: CategoryField[] = [
-    { key: 'marka',  label: 'Marka / Brand', type: 'text',          formPage: 1, placeholder: 'npr. Bosch, Makita, Stihl' },
-    { key: 'stanje', label: 'Stanje',        type: 'button-select', formPage: 1, options: ['Novo', 'Korišteno', 'Obnovljeno'] },
-  ];
-
-  // ── Ručni alati ──
-  if (s.includes('ručni') || s.includes('rucni') || s.includes('čekić') || s.includes('cekic') || s.includes('odvijač') || s.includes('odvijac') || s.includes('kliješt') || s.includes('klijest') || s.includes('ključev') || s.includes('kljucev') || s.includes('mjera') || s.includes('libel')) {
-    fields.push(
-      { key: 'tip',       label: 'Tip',       type: 'select', formPage: 1, options: ['Čekić', 'Odvijač', 'Kliješta', 'Ključ', 'Nasadni set', 'Mjerač / Libela', 'Komplet / Set', 'Ostalo'] },
-      { key: 'materijal', label: 'Materijal', type: 'select', formPage: 1, options: ['Čelik', 'Krom-vanadij', 'Nehrđajući čelik', 'Ostalo'] },
-    );
-  }
-
-  // ── Električni alati ──
-  else if (s.includes('električni') || s.includes('elektricni') || s.includes('bušilic') || s.includes('busilic') || s.includes('brusilica') || s.includes('pila') || s.includes('kompresor') || s.includes('pneumat')) {
-    fields.push(
-      { key: 'tip',         label: 'Tip',               type: 'select', formPage: 1, options: ['Bušilica', 'Udarna bušilica', 'Kutna brusilica', 'Brusilica za drvo', 'Cirkularna pila', 'Ubodna pila', 'Kompresor', 'Pneumatski alat', 'Ostalo'] },
-      { key: 'snaga',       label: 'Snaga',             type: 'number', formPage: 1, placeholder: 'npr. 750', unit: 'W' },
-      { key: 'napon',       label: 'Napon / Napajanje', type: 'select', formPage: 1, options: ['Akumulatorski', '230V', '380V'] },
-      { key: 'akumulator',  label: 'Sa akumulatorom',   type: 'boolean', formPage: 2 },
-      { key: 'garancija',   label: 'Garancija',         type: 'boolean', formPage: 2 },
-    );
-  }
-
-  // ── Građevinski strojevi ──
-  else if (s.includes('građevinsk') || s.includes('gradjevinsk') || s.includes('bager') || s.includes('utovarivač') || s.includes('utovarivac') || s.includes('dizalic') || s.includes('miješalic') || s.includes('mijesalic') || s.includes('vibracij') || s.includes('asfalt') || s.includes('platform')) {
-    fields.push(
-      { key: 'tip',        label: 'Tip',         type: 'select', formPage: 1, options: ['Mini bager', 'Utovarivač', 'Dizalica', 'Platforma', 'Betonska miješalica', 'Vibracijska ploča', 'Kompresor veliki', 'Asfalt stroj', 'Ostalo'] },
-      { key: 'snaga',      label: 'Snaga',       type: 'number', formPage: 1, placeholder: 'npr. 50', unit: 'KS' },
-      { key: 'radniSati',  label: 'Radni sati',  type: 'number', formPage: 1, placeholder: 'npr. 3500' },
-      { key: 'godiste',    label: 'Godište',     type: 'number', formPage: 2, placeholder: 'npr. 2018' },
-      { key: 'tezina',     label: 'Težina',      type: 'number', formPage: 2, placeholder: 'npr. 5000', unit: 'kg' },
-    );
-  }
-
-  // ── Poljoprivredni strojevi ──
-  else if (s.includes('poljoprivredn') || s.includes('traktor') || s.includes('kombajn') || s.includes('kosilica traktor') || s.includes('priključ') || s.includes('prikljuc') || s.includes('špric') || s.includes('spric') || s.includes('atomizer') || s.includes('cistern')) {
-    fields.push(
-      { key: 'tip',        label: 'Tip',         type: 'select', formPage: 1, options: ['Traktor', 'Kombajn', 'Kosilica traktorska', 'Priključak (plug, tanjurača...)', 'Šprica / Atomizer', 'Cisterna', 'Ostala mehanizacija'] },
-      { key: 'snaga',      label: 'Snaga',       type: 'number', formPage: 1, placeholder: 'npr. 85', unit: 'KS' },
-      { key: 'radniSati',  label: 'Radni sati',  type: 'number', formPage: 1, placeholder: 'npr. 5000' },
-      { key: 'godiste',    label: 'Godište',     type: 'number', formPage: 2, placeholder: 'npr. 2015' },
-      { key: 'pogon',      label: 'Pogon',       type: 'button-select', formPage: 2, options: ['2WD', '4WD'] },
-    );
-  }
-
-  // ── Vrtni strojevi ──
-  else if (s.includes('vrtni') || s.includes('kosilica') || s.includes('motorna pila') || s.includes('trimer') || s.includes('šišač') || s.includes('sisac') || s.includes('usisavač lišća') || s.includes('usisavac lisca') || s.includes('ride-on')) {
-    fields.push(
-      { key: 'tip',   label: 'Tip',   type: 'select', formPage: 1, options: ['Motorna kosilica', 'Ride-on kosilica', 'Motorna pila', 'Motorni trimer', 'Šišač živice', 'Usisavač lišća', 'Ostalo'] },
-      { key: 'snaga', label: 'Snaga', type: 'text',   formPage: 1, placeholder: 'npr. 2.5 KS ili 1800W' },
-      { key: 'pogon', label: 'Pogon', type: 'button-select', formPage: 1, options: ['Benzin', 'Električni', 'Akumulatorski'] },
-    );
-  }
-
-  // ── Viljuškari i manipulacijska oprema ──
-  else if (s.includes('viljuškar') || s.includes('viljuskar') || s.includes('manipulacij')) {
-    fields.push(
-      { key: 'nosivost',     label: 'Nosivost',       type: 'number', formPage: 1, placeholder: 'npr. 2500', unit: 'kg' },
-      { key: 'visinaDizanja', label: 'Visina dizanja', type: 'number', formPage: 1, placeholder: 'npr. 4.5', unit: 'm' },
-      { key: 'pogon',        label: 'Pogon',          type: 'button-select', formPage: 1, options: ['Dizel', 'Plin (LPG)', 'Električni'] },
-      { key: 'radniSati',    label: 'Radni sati',     type: 'number', formPage: 2, placeholder: 'npr. 8000' },
-      { key: 'godiste',      label: 'Godište',        type: 'number', formPage: 2, placeholder: 'npr. 2016' },
-    );
-  }
-
-  // ── Industrijski i prerađivački strojevi ──
-  else if (s.includes('industrijski') || s.includes('prerađivačk') || s.includes('preradivack') || s.includes('obradu drva') || s.includes('obradu metal') || s.includes('obradu kamen') || s.includes('pakovanj') || s.includes('tekstiln')) {
-    fields.push(
-      { key: 'tip',      label: 'Tip',      type: 'select', formPage: 1, options: ['Stroj za obradu drva', 'Stroj za obradu metala', 'Stroj za obradu kamena', 'Stroj za pakovanje', 'Tekstilni stroj', 'Ostalo'] },
-      { key: 'snaga',    label: 'Snaga',    type: 'number', formPage: 1, placeholder: 'npr. 7.5', unit: 'kW' },
-      { key: 'godiste',  label: 'Godište',  type: 'number', formPage: 2, placeholder: 'npr. 2010' },
-      { key: 'tezina',   label: 'Težina',   type: 'number', formPage: 2, placeholder: 'npr. 1200', unit: 'kg' },
-    );
-  }
-
-  // ── Ostali strojevi i alati (fallback) ──
-  else {
-    fields.push(
-      { key: 'godiste', label: 'Godište', type: 'number', formPage: 1, placeholder: 'npr. 2020' },
-    );
-  }
-
-  return fields;
-}
-
-// ── Usluge (Services) ────────────────────────────────────
-
-export function getUslugeFields(subType: string): CategoryField[] {
-  const s = subType.toLowerCase();
-
-  // ── Base fields for all services ──
-  const fields: CategoryField[] = [
-    { key: 'nacinObracuna', label: 'Način obračuna',  type: 'button-select', formPage: 1, options: ['Po satu', 'Paušalno', 'Po dogovoru'] },
-    { key: 'podrucjeRada',  label: 'Područje rada',   type: 'select',        formPage: 1, options: ['Lokalno (kvart)', 'Cijeli grad', 'Kanton / Županija', 'Cijela BiH', 'Online'] },
-    { key: 'iskustvo',      label: 'Iskustvo',        type: 'select',        formPage: 1, options: ['< 1 godina', '1–3 godine', '3–5 godina', '5–10 godina', '10+ godina'] },
-    { key: 'dostupnost',    label: 'Dostupnost',      type: 'select',        formPage: 2, options: ['Odmah', 'Radnim danima', 'Vikendom', 'Svaki dan', 'Po dogovoru'] },
-  ];
-
-  // ── Servisiranje vozila ──
-  if (s.includes('servisi') || s.includes('vozila') || s.includes('autoelektri') || s.includes('autolimar') || s.includes('automehani') || s.includes('klima servis') || s.includes('pranje') || s.includes('detailing') || s.includes('vulkanizer') || s.includes('tehnički pregled') || s.includes('tehnicki pregled') || s.includes('registracij')) {
-    fields.push(
-      { key: 'tipVozila',    label: 'Tip vozila',          type: 'select',  formPage: 1, options: ['Auto', 'Moto', 'Kombi / SUV', 'Kamion / Teretno', 'Sva vozila'] },
-      { key: 'mobilniServis', label: 'Dolazak na adresu',  type: 'boolean', formPage: 2 },
-    );
-  }
-
-  // ── Građevinske usluge ──
-  else if (s.includes('građevinsk') || s.includes('gradjevinsk') || s.includes('adaptacij') || s.includes('renovacij') || s.includes('elektroinstalacij') || s.includes('keramičar') || s.includes('keramicar') || s.includes('krovopokrivač') || s.includes('krovopokrivac') || s.includes('moler') || s.includes('podopolag') || s.includes('stolarij') || s.includes('pvc') || s.includes('vodoinstalacij') || s.includes('zidanj') || s.includes('fasad') || s.includes('grijanj') || s.includes('arhitektur')) {
-    fields.push(
-      { key: 'besplatanIzlazak', label: 'Besplatan izlazak / procjena', type: 'boolean', formPage: 2 },
-      { key: 'garancija',        label: 'Garancija na radove',          type: 'boolean', formPage: 2 },
-    );
-  }
-
-  // ── IT usluge ──
-  else if (s.includes('it uslug') || s.includes('dizajn i grafik') || s.includes('mrežn') || s.includes('mrezn') || s.includes('servis mobitel') || s.includes('servis računal') || s.includes('servis racunal') || s.includes('web razvoj')) {
-    fields.push(
-      { key: 'onlineUsluga', label: 'Online usluga (remote rad)', type: 'boolean', formPage: 2 },
-    );
-  }
-
-  // ── Ljepota i njega ──
-  else if (s.includes('ljepota') || s.includes('njega') || s.includes('frizer') || s.includes('kozmetičk') || s.includes('kozmetick') || s.includes('manikur') || s.includes('pedikur') || s.includes('masaž') || s.includes('masaz') || s.includes('terapij') || s.includes('tattoo') || s.includes('piercing')) {
-    fields.push(
-      { key: 'dolazakNaAdresu', label: 'Dolazak na adresu', type: 'boolean', formPage: 2 },
-    );
-  }
-
-  // ── Edukacija i poduke ──
-  else if (s.includes('edukacij') || s.includes('poduk') || s.includes('autoškol') || s.includes('autoskol') || s.includes('glazbena škol') || s.includes('glazbena skol') || s.includes('instrukcij') || s.includes('kurs') || s.includes('tečaj') || s.includes('tecaj') || s.includes('sportska škol') || s.includes('sportska skol')) {
-    fields.push(
-      { key: 'format', label: 'Format nastave', type: 'button-select', formPage: 1, options: ['Uživo', 'Online', 'Hibrid'] },
-      { key: 'uzrast', label: 'Uzrast',         type: 'select',        formPage: 2, options: ['Osnovna škola', 'Srednja škola', 'Fakultet', 'Odrasli', 'Svi uzrasti'] },
-    );
-  }
-
-  // ── Transport i selidbe ──
-  else if (s.includes('transport') || s.includes('selidb') || s.includes('dostava rob') || s.includes('kombi prijevoz') || s.includes('prijevoz osob') || s.includes('pakovanj')) {
-    fields.push(
-      { key: 'tipVozila', label: 'Tip vozila',  type: 'select', formPage: 1, options: ['Kombi', 'Kamion', 'Prikolica', 'Osobno vozilo'] },
-      { key: 'kapacitet', label: 'Kapacitet',    type: 'number', formPage: 1, placeholder: 'npr. 1500', unit: 'kg' },
-    );
-  }
-
-  // ── Čišćenje i održavanje ──
-  else if (s.includes('čišćenj') || s.includes('ciscenj') || s.includes('održavanj') || s.includes('odrzavanj') || s.includes('čišćenje') || s.includes('ciscenje')) {
-    fields.push(
-      { key: 'opremaUkljucena',   label: 'Oprema uključena',   type: 'boolean', formPage: 2 },
-      { key: 'sredstvaUkljucena', label: 'Sredstva uključena', type: 'boolean', formPage: 2 },
-    );
-  }
-
-  // ── Event, vjenčanja i zabava ──
-  else if (s.includes('event') || s.includes('vjenčanj') || s.includes('vjencanj') || s.includes('zabav')) {
-    fields.push(
-      { key: 'tip', label: 'Tip usluge', type: 'select', formPage: 1, options: ['DJ / Muzika', 'Fotograf / Snimatelj', 'Dekoracija', 'Catering', 'Voditelj / Animator', 'Ostalo'] },
-    );
-  }
-
-  // ── Kućni ljubimci – usluge ──
-  else if (s.includes('kućni ljubimci') || s.includes('kucni ljubimci') || s.includes('dog sitting') || s.includes('šetanj') || s.includes('setanj') || s.includes('veterinar') || s.includes('šišanje i njega') || s.includes('sisanje i njega')) {
-    fields.push(
-      { key: 'certifikat', label: 'Certifikat / Licenca', type: 'boolean', formPage: 2 },
-    );
-  }
-
-  // ── Dizajn, tisak, fotografija / Pravne / Iznajmljivanje / Ostale → nur Basis ──
-
-  return fields;
-}
-
 // ── Ostalo (Catch-all) ───────────────────────────────────
 
 export function getOstaloKategorijaFields(subType: string): CategoryField[] {
@@ -2117,7 +2146,6 @@ export function getOstaloKategorijaFields(subType: string): CategoryField[] {
     return [
       { key: 'tip',    label: 'Tip',          type: 'select',        formPage: 1, options: ['Njega kose', 'Njega lica i tijela', 'Parfem', 'Šminka i boje', 'Profesionalna salon oprema', 'Ostalo'] },
       { key: 'brand',  label: 'Brand',        type: 'text',          formPage: 1, placeholder: 'npr. MAC, L\'Oréal, dm' },
-      { key: 'stanje', label: 'Stanje',       type: 'button-select', formPage: 1, options: ['Novo (zapečaćeno)', 'Novo (otvoreno)', 'Korišteno'] },
     ];
   }
 
@@ -2125,7 +2153,6 @@ export function getOstaloKategorijaFields(subType: string): CategoryField[] {
   if (s.includes('medicins') || s.includes('invalidsk') || s.includes('inhalator') || s.includes('štak') || s.includes('stak') || s.includes('hodalic')) {
     return [
       { key: 'tip',    label: 'Tip',    type: 'select',        formPage: 1, options: ['Invalidska kolica', 'Štake', 'Hodalica', 'Inhalator', 'Krevet medicinski', 'Ostalo'] },
-      { key: 'stanje', label: 'Stanje', type: 'button-select', formPage: 1, options: ['Novo', 'Korišteno'] },
     ];
   }
 
