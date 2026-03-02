@@ -501,6 +501,7 @@ const MODA_ARTIKLI: Record<string, Array<{name: string, icon: string}>> = {
   ],
   'Cipele': [
     { name: 'Ženske cipele', icon: 'fa-shoe-prints' },
+    { name: 'Štikle', icon: 'fa-shoe-prints' },
     { name: 'Ženske čizme', icon: 'fa-shoe-prints' },
     { name: 'Ženske sandale i papuče', icon: 'fa-umbrella-beach' },
     { name: 'Muške cipele', icon: 'fa-shoe-prints' },

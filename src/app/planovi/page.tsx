@@ -12,7 +12,7 @@ const FEATURES = [
   { name: 'Favoriti', free: true, pro: true, business: true },
   { name: 'AI Link-Import', free: true, pro: true, business: true },
   { name: 'AI VIN Dekoder', free: true, pro: true, business: true },
-  { name: 'AI Opis (generisanje teksta)', free: false, pro: true, business: true },
+  { name: 'AI Opis (Generiranje teksta)', free: false, pro: true, business: true },
   { name: 'Statistike (pregledi, klikovi)', free: false, pro: true, business: true },
   { name: 'Pro značka na profilu', free: false, pro: true, business: true },
   { name: 'Prioritet u rezultatima pretrage', free: false, pro: true, business: true },
@@ -118,7 +118,7 @@ export default function PlansPage() {
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 30 aktivnih oglasa</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 20 slika po oglasu</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Opis (generisanje teksta)</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Opis (Generiranje teksta)</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI VIN Dekoder</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Statistike i analitika</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Pro značka + prioritet u pretrazi</li>

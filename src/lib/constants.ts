@@ -151,7 +151,7 @@ export const CATEGORIES: Category[] = [
     id: 'odjeca', name: 'Odjeća i obuća', icon: 'fa-shirt',
     subCategories: [
       { name: 'Ženska odjeća', items: ['Gornji dijelovi', 'Donji dijelovi', 'Haljine i kombinezoni', 'Džemperi', 'Vanjska odjeća', 'Casual', 'Business', 'Svečano', 'Sport i rekreacija', 'Donje rublje i spavaći program', 'Specijalne linije'] },
-      { name: 'Ženska obuća', items: ['Tenisice', 'Cipele na petu', 'Ravne cipele', 'Čizme', 'Sandale i natikače', 'Casual', 'Formalno/Svečano', 'Outdoor', 'Kućna obuća'] },
+      { name: 'Ženska obuća', items: ['Tenisice', 'Štikle', 'Cipele na petu', 'Ravne cipele', 'Čizme', 'Sandale i natikače', 'Casual', 'Formalno/Svečano', 'Outdoor', 'Kućna obuća'] },
       { name: 'Muška odjeća', items: ['Gornji dijelovi', 'Donji dijelovi', 'Vanjska odjeća', 'Odijela i formalna odjeća', 'Sport i slobodno vrijeme', 'Rublje i spavaći program'] },
       { name: 'Muška obuća', items: ['Tenisice', 'Elegantne cipele', 'Čizme i gležnjače', 'Ljetna i kućna obuća'] },
       { name: 'Dječja odjeća i obuća', items: ['Dječja obuća', 'Za bebe (0–2 god)', 'Za djecu (3–8 god)', 'Za djecu (9–14 god)', 'Za tinejdžere (15+)'] },

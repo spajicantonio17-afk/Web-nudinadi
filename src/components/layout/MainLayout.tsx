@@ -61,7 +61,18 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
         {/* LEFT: Back Button + Logo & Brand + Info Buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4">
 
-          {/* Back Button — visible on all sub-pages, LEFT side */}
+          {/* Back Button — Mobile: only arrow icon */}
+          {!isHome && onBack !== null && (
+            <button
+              onClick={onBack || (() => router.back())}
+              className="flex sm:hidden w-8 h-8 items-center justify-center rounded-full bg-[var(--c-card-alt)] border border-[var(--c-border)] text-[var(--c-text3)] active:scale-95 transition-all duration-150"
+              aria-label="Nazad"
+            >
+              <i className="fa-solid fa-arrow-left text-sm"></i>
+            </button>
+          )}
+
+          {/* Back Button — Desktop: arrow + "Nazad" text */}
           {!isHome && onBack !== null && (
             <button
               onClick={onBack || (() => router.back())}
