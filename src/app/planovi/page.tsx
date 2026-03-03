@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
+import { useAuth } from '@/lib/auth';
+import { isPro, isBusiness } from '@/lib/plans';
 
 const FEATURES = [
   { name: 'Objavljivanje oglasa', free: '10 aktivnih', pro: '30 aktivnih', business: 'Neograničeno' },
   { name: 'Slike po oglasu', free: 'Do 7', pro: 'Do 20', business: 'Neograničeno' },
+  { name: 'Istaknuti oglas', free: 'Pojedinačno (uskoro)', pro: '3 besplatna/mj', business: '10 besplatnih/mj' },
   { name: 'Pretraga i filteri', free: true, pro: true, business: true },
   { name: 'AI Pretraga / Kategorija', free: true, pro: true, business: true },
   { name: 'Chat s kupcima i prodavačima', free: true, pro: true, business: true },
@@ -40,6 +43,9 @@ function Cell({ value }: { value: boolean | string }) {
 }
 
 export default function PlansPage() {
+  const { user, isAuthenticated } = useAuth();
+  const userIsPro = isPro(user?.accountType);
+
   return (
     <MainLayout title="Planovi">
       <div className="max-w-4xl mx-auto py-6">
@@ -112,20 +118,33 @@ export default function PlansPage() {
                 <p className="text-[10px] text-[var(--c-text3)] mt-1">Za aktivne prodavače i kupce</p>
               </div>
               <div className="mb-4">
-                <p className="text-2xl font-black text-blue-400">Uskoro</p>
-                <p className="text-[9px] text-[var(--c-text3)]">mjesečno, bez ugovora</p>
+                <p className="text-2xl font-black text-blue-400">5 €<span className="text-sm font-bold text-[var(--c-text3)]">/mjesečno</span></p>
+                <p className="text-[9px] text-[var(--c-text3)]">~9,78 KM · bez ugovora</p>
               </div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 30 aktivnih oglasa</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 20 slika po oglasu</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Opis (Generiranje teksta)</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI VIN Dekoder</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>3 besplatna istaknuta oglasa/mj</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Statistike i analitika</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Pro značka + prioritet u pretrazi</li>
               </ul>
-              <div className="block text-center py-2.5 bg-blue-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
-                Uskoro dostupno
-              </div>
+              {userIsPro ? (
+                <div className="block text-center py-2.5 bg-emerald-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
+                  <i className="fa-solid fa-check mr-1"></i> Aktivan plan
+                </div>
+              ) : !isAuthenticated ? (
+                <Link href="/login?redirect=/planovi" className="block text-center py-2.5 bg-blue-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider hover:bg-blue-600 transition-colors">
+                  Nadogradi na Pro
+                </Link>
+              ) : (
+                <div className="text-center">
+                  <div className="block text-center py-2.5 bg-blue-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
+                    Nadogradi na Pro
+                  </div>
+                  <p className="text-[8px] text-[var(--c-text3)] mt-1.5">Kontaktirajte nas za aktivaciju</p>
+                </div>
+              )}
             </div>
 
             {/* BUSINESS */}
@@ -138,19 +157,32 @@ export default function PlansPage() {
                 <p className="text-[10px] text-[var(--c-text3)] mt-1">Za firme, agencije i profesionalne prodavače</p>
               </div>
               <div className="mb-4">
-                <p className="text-2xl font-black text-purple-400">Uskoro</p>
-                <p className="text-[9px] text-[var(--c-text3)]">mjesečno, bez ugovora</p>
+                <p className="text-2xl font-black text-purple-400">30 €<span className="text-sm font-bold text-[var(--c-text3)]">/mjesečno</span></p>
+                <p className="text-[9px] text-[var(--c-text3)]">~58,67 KM · bez ugovora</p>
               </div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Neograničeno oglasa</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Foto → Oglas (samo aplikacija)</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>10 besplatnih istaknutih oglasa/mj</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Verificirani poslovni profil</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Bulk Upload + Dashboard</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Bulk Upload + Analitički dashboard</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Timski računi + prioritetna podrška</li>
               </ul>
-              <div className="block text-center py-2.5 border border-purple-500/40 rounded-[4px] text-[10px] font-black text-purple-400 uppercase tracking-wider cursor-default">
-                Uskoro dostupno
-              </div>
+              {isBusiness(user?.accountType) ? (
+                <div className="block text-center py-2.5 bg-emerald-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
+                  <i className="fa-solid fa-check mr-1"></i> Aktivan plan
+                </div>
+              ) : !isAuthenticated ? (
+                <Link href="/login?redirect=/planovi" className="block text-center py-2.5 bg-purple-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider hover:bg-purple-600 transition-colors">
+                  Nadogradi na Business
+                </Link>
+              ) : (
+                <div className="text-center">
+                  <div className="block text-center py-2.5 bg-purple-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
+                    Nadogradi na Business
+                  </div>
+                  <p className="text-[8px] text-[var(--c-text3)] mt-1.5">Kontaktirajte nas za aktivaciju</p>
+                </div>
+              )}
             </div>
 
           </div>

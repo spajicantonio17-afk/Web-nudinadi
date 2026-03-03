@@ -8,7 +8,8 @@ import { CATEGORIES } from '@/lib/constants';
 import { useToast } from '@/components/Toast';
 import { useAuth } from '@/lib/auth';
 import { uploadProductImages } from '@/services/uploadService';
-import { createProduct, updateProduct, getProductById } from '@/services/productService';
+import { createProduct, updateProduct, getProductById, getActiveListingCount } from '@/services/productService';
+import { getPlanLimits, isPro } from '@/lib/plans';
 import { resolveCategoryId } from '@/services/categoryService';
 import { resolveDeepCategory } from '@/lib/category-resolver';
 
@@ -1676,6 +1677,8 @@ function UploadPageInner() {
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [currency, setCurrency] = useState<'EUR' | 'KM'>('EUR');
+  const [listingLimitReached, setListingLimitReached] = useState(false);
+  const [activeListingCount, setActiveListingCount] = useState(0);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [newProductId, setNewProductId] = useState<string | null>(null);
   const [standaloneInput, setStandaloneInput] = useState('');
@@ -1759,6 +1762,16 @@ function UploadPageInner() {
       router.replace('/login?redirect=/upload');
     }
   }, [isLoading, isAuthenticated, router]);
+
+  // Check listing limit for the user's plan
+  useEffect(() => {
+    if (!user?.id || isEditMode) return;
+    const limits = getPlanLimits(user.accountType);
+    getActiveListingCount(user.id).then(count => {
+      setActiveListingCount(count);
+      setListingLimitReached(count >= limits.maxActiveListings);
+    }).catch(() => {});
+  }, [user?.id, user?.accountType, isEditMode]);
 
   // Load existing product data when in edit mode
   useEffect(() => {
@@ -1971,6 +1984,33 @@ function UploadPageInner() {
   }
 
   if (!isAuthenticated) return null;
+
+  // Show limit-reached screen for free users who hit their cap
+  if (listingLimitReached && !isEditMode) {
+    const limits = getPlanLimits(user?.accountType);
+    return (
+      <MainLayout onBack={null}>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
+            <i className="fa-solid fa-lock text-amber-500 text-2xl"></i>
+          </div>
+          <h2 className="text-lg font-black text-[var(--c-text)] mb-2">
+            Dostigli ste limit od {limits.maxActiveListings} aktivnih oglasa
+          </h2>
+          <p className="text-[12px] text-[var(--c-text3)] mb-1">
+            Trenutno imate {activeListingCount} aktivnih oglasa.
+          </p>
+          <p className="text-[12px] text-[var(--c-text3)] mb-6">
+            Nadogradite na Pro za do 30 oglasa, više slika i AI opis.
+          </p>
+          <a href="/planovi" className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-500 text-white rounded-[4px] text-[11px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors">
+            <i className="fa-solid fa-bolt text-xs"></i>
+            Nadogradi na Pro
+          </a>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const selectCategory = (catName: string) => {
     if (catName.toLowerCase().includes('dijelovi')) {
@@ -5044,7 +5084,7 @@ function UploadPageInner() {
               )}
 
               {/* Image Upload */}
-              <ImageUpload images={images} onImagesChange={(imgs) => { setImages(imgs); if (formErrors.images && imgs.length > 0) setFormErrors(prev => ({ ...prev, images: undefined })); }} onImageClick={(idx) => handleImagePreview('new', idx)} selectedIndex={selectedPreviewSource?.type === 'new' ? selectedPreviewSource.index : null} />
+              <ImageUpload images={images} maxImages={getPlanLimits(user?.accountType).maxImagesPerListing} onImagesChange={(imgs) => { setImages(imgs); if (formErrors.images && imgs.length > 0) setFormErrors(prev => ({ ...prev, images: undefined })); }} onImageClick={(idx) => handleImagePreview('new', idx)} selectedIndex={selectedPreviewSource?.type === 'new' ? selectedPreviewSource.index : null} />
               {formErrors.images && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.images}</p>}
 
               {/* OCR Button - only for vehicle parts */}
@@ -5482,18 +5522,28 @@ function UploadPageInner() {
                 <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-5 focus-within:border-[var(--c-text3)] transition-colors min-h-[140px]">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Opis Artikla</label>
-                    <button
-                      onClick={handleAiGenerateDescription}
-                      disabled={!formData.title || isAiLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[9px] font-black uppercase tracking-wider hover:bg-purple-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
-                    >
-                      {isAiLoading ? (
-                        <i className="fa-solid fa-spinner animate-spin text-[9px]"></i>
-                      ) : (
-                        <i className="fa-solid fa-wand-magic-sparkles text-[9px]"></i>
-                      )}
-                      AI Opis
-                    </button>
+                    {isPro(user?.accountType) ? (
+                      <button
+                        onClick={handleAiGenerateDescription}
+                        disabled={!formData.title || isAiLoading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[9px] font-black uppercase tracking-wider hover:bg-purple-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                      >
+                        {isAiLoading ? (
+                          <i className="fa-solid fa-spinner animate-spin text-[9px]"></i>
+                        ) : (
+                          <i className="fa-solid fa-wand-magic-sparkles text-[9px]"></i>
+                        )}
+                        AI Opis
+                      </button>
+                    ) : (
+                      <a
+                        href="/planovi"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--c-border)]/50 text-[var(--c-text3)] text-[9px] font-black uppercase tracking-wider hover:bg-[var(--c-border)] transition-all"
+                      >
+                        <i className="fa-solid fa-lock text-[8px]"></i>
+                        AI Opis — Pro
+                      </a>
+                    )}
                   </div>
                   <textarea
                     rows={4}
@@ -5543,18 +5593,28 @@ function UploadPageInner() {
                 <div className="bg-[var(--c-card)] rounded-xl border border-[var(--c-border)] p-5 focus-within:border-[var(--c-text3)] transition-colors min-h-[140px]">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Opis Artikla</label>
-                    <button
-                      onClick={handleAiGenerateDescription}
-                      disabled={!formData.title || isAiLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[9px] font-black uppercase tracking-wider hover:bg-purple-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
-                    >
-                      {isAiLoading ? (
-                        <i className="fa-solid fa-spinner animate-spin text-[9px]"></i>
-                      ) : (
-                        <i className="fa-solid fa-wand-magic-sparkles text-[9px]"></i>
-                      )}
-                      AI Opis
-                    </button>
+                    {isPro(user?.accountType) ? (
+                      <button
+                        onClick={handleAiGenerateDescription}
+                        disabled={!formData.title || isAiLoading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[9px] font-black uppercase tracking-wider hover:bg-purple-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                      >
+                        {isAiLoading ? (
+                          <i className="fa-solid fa-spinner animate-spin text-[9px]"></i>
+                        ) : (
+                          <i className="fa-solid fa-wand-magic-sparkles text-[9px]"></i>
+                        )}
+                        AI Opis
+                      </button>
+                    ) : (
+                      <a
+                        href="/planovi"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--c-border)]/50 text-[var(--c-text3)] text-[9px] font-black uppercase tracking-wider hover:bg-[var(--c-border)] transition-all"
+                      >
+                        <i className="fa-solid fa-lock text-[8px]"></i>
+                        AI Opis — Pro
+                      </a>
+                    )}
                   </div>
                   <textarea
                     rows={4}

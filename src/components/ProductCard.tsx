@@ -25,6 +25,7 @@ function ProductCard({ product }: ProductCardProps) {
   const isFavorite = checkFavorite(product.id);
   const isBiH = bihCities.has(product.location.toLowerCase().trim());
   const currencyMode = getCurrencyMode();
+  const promoted = !!product.promoted_until && new Date(product.promoted_until) > new Date();
 
   const handleCardClick = () => {
     router.push(`/product/${product.id}`);
@@ -39,7 +40,7 @@ function ProductCard({ product }: ProductCardProps) {
   return (
     <div
       onClick={handleCardClick}
-      className="bg-[var(--c-card)] rounded-[14px] overflow-hidden flex flex-col border border-[var(--c-border)] relative group transition-all duration-150 h-[240px] w-full cursor-pointer shadow-subtle hover:shadow-medium hover:border-[var(--c-active)]"
+      className={`bg-[var(--c-card)] rounded-[14px] overflow-hidden flex flex-col border relative group transition-all duration-150 h-[240px] w-full cursor-pointer shadow-subtle hover:shadow-medium ${promoted ? 'border-amber-500/40 hover:border-amber-500/60' : 'border-[var(--c-border)] hover:border-[var(--c-active)]'}`}
     >
       {/* Image Area */}
       <div className="relative h-[150px] w-full shrink-0 overflow-hidden">
@@ -49,6 +50,16 @@ function ProductCard({ product }: ProductCardProps) {
           </div>
         ) : (
           <Image src={product.imageUrl} alt={product.name} fill sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw" className="object-cover group-hover:scale-[1.03] transition-transform duration-300" onError={() => setImgError(true)} />
+        )}
+
+        {/* Promoted Badge */}
+        {promoted && (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-sm shadow-sm">
+              <i className="fa-solid fa-star text-[7px]"></i>
+              Istaknuto
+            </span>
+          </div>
         )}
 
         {/* Heart Icon */}

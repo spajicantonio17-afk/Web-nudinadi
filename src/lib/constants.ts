@@ -3,6 +3,31 @@ import { Product, User, Category } from './types';
 /** Fixed EUR → BAM (Convertible Mark) exchange rate */
 export const BAM_RATE = 1.95583;
 
+// ─── Business Profile Constants ──────────────────────────────
+
+export const BUSINESS_DAYS = [
+  { key: 'pon', label: 'Ponedjeljak' },
+  { key: 'uto', label: 'Utorak' },
+  { key: 'sri', label: 'Srijeda' },
+  { key: 'čet', label: 'Četvrtak' },
+  { key: 'pet', label: 'Petak' },
+  { key: 'sub', label: 'Subota' },
+  { key: 'ned', label: 'Nedjelja' },
+] as const;
+
+export const BUSINESS_DAY_KEYS = ['ned', 'pon', 'uto', 'sri', 'čet', 'pet', 'sub'] as const;
+// Index = JS Date.getDay() (0=Sonntag, 1=Montag, ...)
+
+export const BUSINESS_CATEGORIES = [
+  'Auto salon',
+  'Elektronika',
+  'Odjeća i obuća',
+  'Namještaj',
+  'Sport i rekreacija',
+  'Nekretnine',
+  'Općenito',
+] as const;
+
 export const CATEGORIES: Category[] = [
   // ─── 1. VOZILA ────────────────────────────────────────────
   {

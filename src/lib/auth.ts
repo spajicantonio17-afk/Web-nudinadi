@@ -39,12 +39,23 @@ export interface AuthUser {
   bio?: string | null;
   phone?: string | null;
   emailVerified: boolean;
+  phoneVerified: boolean;
   location?: string;
   level: number;
   xp: number;
   instagramUrl?: string | null;
   facebookUrl?: string | null;
   isAdmin: boolean;
+  accountType: 'free' | 'pro' | 'business';
+  promotedCredits: number;
+  companyName?: string | null;
+  companyLogo?: string | null;
+  bannerImage?: string | null;
+  businessVerified: boolean;
+  businessAddress?: string | null;
+  businessHours?: Record<string, string> | null;
+  businessCategory?: string | null;
+  websiteUrl?: string | null;
   createdAt?: string;
   totalSales?: number;
   totalPurchases?: number;
@@ -79,12 +90,23 @@ function toAuthUser(user: User, profile?: Profile | null): AuthUser {
     bio: profile?.bio ?? null,
     phone: profile?.phone ?? null,
     emailVerified: profile?.email_verified || false,
+    phoneVerified: profile?.phone_verified || false,
     location: profile?.location || undefined,
     level: profile?.level || 1,
     xp: profile?.xp || 0,
     instagramUrl: profile?.instagram_url ?? null,
     facebookUrl: profile?.facebook_url ?? null,
     isAdmin: profile?.is_admin || false,
+    accountType: profile?.account_type || 'free',
+    promotedCredits: profile?.promoted_credits || 0,
+    companyName: profile?.company_name ?? null,
+    companyLogo: profile?.company_logo ?? null,
+    bannerImage: profile?.banner_image ?? null,
+    businessVerified: profile?.business_verified || false,
+    businessAddress: profile?.business_address ?? null,
+    businessHours: profile?.business_hours as Record<string, string> | null ?? null,
+    businessCategory: profile?.business_category ?? null,
+    websiteUrl: profile?.website_url ?? null,
     createdAt: profile?.created_at || user.created_at,
     totalSales: profile?.total_sales || 0,
     totalPurchases: profile?.total_purchases || 0,

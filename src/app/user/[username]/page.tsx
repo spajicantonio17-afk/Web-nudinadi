@@ -9,9 +9,13 @@ import { getProfileByUsername, getProfile } from '@/services/profileService';
 import { getUserProducts } from '@/services/productService';
 import { getUserReviews } from '@/services/reviewService';
 import { getOrCreateConversation } from '@/services/messageService';
+import { isFollowing as checkIsFollowing, followUser, unfollowUser } from '@/services/followerService';
+import { blockUser, unblockUser, isBlocked as checkIsBlocked } from '@/services/blockService';
 import type { Profile, ProductWithSeller, ReviewWithUsers } from '@/lib/database.types';
-import { BAM_RATE } from '@/lib/constants';
+import { BAM_RATE, BUSINESS_DAY_KEYS } from '@/lib/constants';
+import ProBadge from '@/components/ProBadge';
 import { getCurrencyMode, eurToKm } from '@/lib/currency';
+import { isBusiness } from '@/lib/plans';
 
 function formatTimeLabel(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
@@ -60,6 +64,15 @@ function UserProfileContent() {
 
   const [contacting, setContacting] = useState(false);
   const [shareToast, setShareToast] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followHover, setFollowHover] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [blocked, setBlocked] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreMenuRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!params.username) return;
@@ -80,6 +93,49 @@ function UserProfileContent() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [params.username]);
+
+  // Check follow status + load counts + block status
+  useEffect(() => {
+    if (!profile) return;
+    setFollowerCount(profile.followers_count || 0);
+    setFollowingCount(profile.following_count || 0);
+    if (user?.id && user.id !== profile.id) {
+      checkIsFollowing(user.id, profile.id).then(setFollowing).catch(() => {});
+      checkIsBlocked(user.id, profile.id).then(setBlocked).catch(() => {});
+    }
+  }, [profile, user?.id]);
+
+  // Close more menu on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    }
+    if (showMoreMenu) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showMoreMenu]);
+
+  const handleFollow = async () => {
+    if (!user) { router.push('/login'); return; }
+    if (!profile || followLoading) return;
+    setFollowLoading(true);
+    try {
+      if (following) {
+        await unfollowUser(user.id, profile.id);
+        setFollowing(false);
+        setFollowerCount(c => Math.max(0, c - 1));
+      } else {
+        await followUser(user.id, profile.id);
+        setFollowing(true);
+        setFollowerCount(c => c + 1);
+      }
+    } catch {
+      showToast('Greška', 'error');
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const handleContact = async () => {
     if (!user) { router.push('/login'); return; }
@@ -108,6 +164,28 @@ function UserProfileContent() {
       }
     } catch {
       // User cancelled share
+    }
+  };
+
+  const handleBlockToggle = async () => {
+    if (!user) { router.push('/login'); return; }
+    if (!profile || blockLoading) return;
+    setBlockLoading(true);
+    try {
+      if (blocked) {
+        await unblockUser(user.id, profile.id);
+        setBlocked(false);
+        showToast('Korisnik je odblokiran');
+      } else {
+        await blockUser(user.id, profile.id);
+        setBlocked(true);
+        showToast('Korisnik je blokiran');
+      }
+    } catch {
+      showToast('Greška', 'error');
+    } finally {
+      setBlockLoading(false);
+      setShowMoreMenu(false);
     }
   };
 
@@ -141,6 +219,10 @@ function UserProfileContent() {
   }
 
   const currencyMode = getCurrencyMode();
+  const isBiz = isBusiness(profile.account_type);
+
+  // Get today's day key for business hours
+  const todayDayKey = BUSINESS_DAY_KEYS[new Date().getDay()];
 
   const avgRating = reviews.length > 0
     ? Math.round(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length * 10) / 10
@@ -156,6 +238,84 @@ function UserProfileContent() {
         {shareToast && (
           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg animate-[fadeIn_0.2s_ease-out]">
             <i className="fa-solid fa-check mr-1.5"></i> Link kopiran!
+          </div>
+        )}
+
+        {/* ── BUSINESS BANNER (only for business accounts) ── */}
+        {isBiz && (
+          <div className="relative bg-[var(--c-card)] rounded-[24px] overflow-hidden border border-purple-500/30">
+            {/* Banner Image */}
+            <div className="h-40 w-full overflow-hidden">
+              {profile.banner_image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.banner_image} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-r from-amber-500/20 to-purple-500/20" />
+              )}
+            </div>
+
+            {/* Logo + Company Name overlay */}
+            <div className="px-5 pb-4 -mt-7 relative z-10">
+              <div className="flex items-end gap-3">
+                <div className="w-[60px] h-[60px] rounded-[8px] border-2 border-white shadow-lg overflow-hidden shrink-0 bg-[var(--c-card)]">
+                  {profile.company_logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profile.company_logo} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-[var(--c-hover)]">
+                      <i className="fa-solid fa-building text-[var(--c-text-muted)] text-xl"></i>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 pb-1">
+                  <div className="flex items-center gap-1.5">
+                    <h2 className="text-lg font-black text-[var(--c-text)] truncate">{profile.company_name || profile.username}</h2>
+                    <ProBadge accountType={profile.account_type} />
+                  </div>
+                  <p className="text-[11px] text-[var(--c-text3)]">@{profile.username}</p>
+                </div>
+              </div>
+              {profile.business_verified && (
+                <div className="flex items-center gap-1.5 text-emerald-500 text-[10px] font-bold mt-2">
+                  <i className="fa-solid fa-circle-check"></i> Zvanična radnja
+                </div>
+              )}
+            </div>
+
+            {/* Business Info */}
+            <div className="px-5 pb-5 space-y-1.5">
+              {profile.business_address && (
+                <div className="flex items-center gap-2 text-[10px] text-[var(--c-text2)]">
+                  <i className="fa-solid fa-location-dot text-[var(--c-text-muted)] w-3 text-center"></i>
+                  <span>{profile.business_address}</span>
+                </div>
+              )}
+              {profile.business_hours && (
+                <div className="flex items-center gap-2 text-[10px] text-[var(--c-text2)]">
+                  <i className="fa-solid fa-clock text-[var(--c-text-muted)] w-3 text-center"></i>
+                  <span>
+                    Danas: {' '}
+                    <span className={(profile.business_hours as Record<string, string>)[todayDayKey] === 'Zatvoreno' ? 'text-red-400 font-bold' : 'font-bold text-[var(--c-text)]'}>
+                      {(profile.business_hours as Record<string, string>)[todayDayKey] || 'Nepoznato'}
+                    </span>
+                  </span>
+                </div>
+              )}
+              {profile.website_url && (
+                <div className="flex items-center gap-2 text-[10px]">
+                  <i className="fa-solid fa-globe text-[var(--c-text-muted)] w-3 text-center"></i>
+                  <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline truncate">
+                    {profile.website_url.replace(/^https?:\/\//, '')}
+                  </a>
+                </div>
+              )}
+              {profile.business_category && (
+                <div className="flex items-center gap-2 text-[10px] text-[var(--c-text2)]">
+                  <i className="fa-solid fa-tag text-[var(--c-text-muted)] w-3 text-center"></i>
+                  <span>{profile.business_category}</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -182,7 +342,7 @@ function UserProfileContent() {
 
               {/* Name + Location + Badges */}
               <div className="flex-1 min-w-0 pt-0.5">
-                <h2 className="text-base md:text-lg font-black text-[var(--c-text)] tracking-tight leading-none truncate">{profile.username}</h2>
+                <h2 className="text-base md:text-lg font-black text-[var(--c-text)] tracking-tight leading-none truncate flex items-center gap-1.5">{profile.username} <ProBadge accountType={profile.account_type} /></h2>
                 {profile.full_name && (
                   <p className="text-xs text-[var(--c-text3)] mt-0.5 truncate">{profile.full_name}</p>
                 )}
@@ -192,6 +352,16 @@ function UserProfileContent() {
                     <span className="text-[11px] font-medium truncate">{profile.location}</span>
                   </div>
                 )}
+
+                {/* Follower/Following Counts */}
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-[10px] text-[var(--c-text2)]">
+                    <span className="font-black text-[var(--c-text)]">{followerCount}</span> pratitelja
+                  </span>
+                  <span className="text-[10px] text-[var(--c-text2)]">
+                    <span className="font-black text-[var(--c-text)]">{followingCount}</span> prati
+                  </span>
+                </div>
 
                 {/* Verification Badges */}
                 <div className="flex flex-wrap gap-1.5 mt-2.5">
@@ -214,11 +384,15 @@ function UserProfileContent() {
                       <i className="fa-solid fa-shield text-[8px]"></i> Premium
                     </span>
                   )}
-                  {profile.phone && (
+                  {profile.phone_verified ? (
+                    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
+                      <i className="fa-solid fa-phone text-[8px]"></i> Telefon verificiran
+                    </span>
+                  ) : profile.phone ? (
                     <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
                       <i className="fa-solid fa-phone text-[8px]"></i> Telefon
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Social Media Links */}
@@ -279,14 +453,41 @@ function UserProfileContent() {
                   <span className="text-[8px] md:text-[9px] font-bold text-blue-500 uppercase tracking-wide">Uredi profil</span>
                 </button>
               ) : (
-                <button
-                  onClick={handleContact}
-                  disabled={contacting}
-                  className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-blue-500/20"
-                >
-                  {contacting ? <i className="fa-solid fa-spinner animate-spin text-[9px]"></i> : <i className="fa-regular fa-comment text-[9px]"></i>}
-                  <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-wide">Pošalji Poruku</span>
-                </button>
+                <>
+                  <button
+                    onClick={handleContact}
+                    disabled={contacting || blocked}
+                    title={blocked ? 'Korisnik je blokiran' : undefined}
+                    className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-blue-500/20"
+                  >
+                    {contacting ? <i className="fa-solid fa-spinner animate-spin text-[9px]"></i> : <i className="fa-regular fa-comment text-[9px]"></i>}
+                    <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-wide">Pošalji Poruku</span>
+                  </button>
+                  <button
+                    onClick={handleFollow}
+                    disabled={followLoading}
+                    onMouseEnter={() => setFollowHover(true)}
+                    onMouseLeave={() => setFollowHover(false)}
+                    className={`flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-full transition-all active:scale-95 disabled:opacity-50 shadow-lg ${
+                      following
+                        ? followHover
+                          ? 'bg-red-500/10 border border-red-500/30 text-red-400'
+                          : 'bg-blue-500/10 border border-blue-500/30 text-blue-500'
+                        : 'bg-[var(--c-bg)] border border-[var(--c-border2)] text-[var(--c-text)] hover:border-blue-500/40 hover:bg-blue-500/5'
+                    }`}
+                  >
+                    {followLoading ? (
+                      <i className="fa-solid fa-spinner animate-spin text-[9px]"></i>
+                    ) : following ? (
+                      <i className={`fa-solid ${followHover ? 'fa-user-minus' : 'fa-user-check'} text-[9px]`}></i>
+                    ) : (
+                      <i className="fa-solid fa-user-plus text-[9px]"></i>
+                    )}
+                    <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-wide">
+                      {following ? (followHover ? 'Otprati' : 'Pratiš') : 'Prati'}
+                    </span>
+                  </button>
+                </>
               )}
               <button
                 onClick={handleShareProfile}
@@ -295,6 +496,35 @@ function UserProfileContent() {
                 <i className="fa-solid fa-share-nodes text-[9px] md:text-[10px] text-[var(--c-text2)] group-hover:text-blue-500 transition-colors"></i>
                 <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">Podijeli</span>
               </button>
+              {!isOwnProfile && (
+                <div className="relative" ref={moreMenuRef}>
+                  <button
+                    onClick={() => setShowMoreMenu(v => !v)}
+                    className="w-8 h-8 rounded-full bg-[var(--c-bg)] border border-[var(--c-border2)] flex items-center justify-center hover:border-blue-500/40 hover:bg-blue-500/5 transition-all active:scale-95 shadow-lg"
+                  >
+                    <i className="fa-solid fa-ellipsis text-[10px] text-[var(--c-text3)]"></i>
+                  </button>
+                  {showMoreMenu && (
+                    <div className="absolute right-0 top-10 z-50 w-48 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] shadow-xl overflow-hidden animate-[fadeIn_0.15s_ease-out]">
+                      <button
+                        onClick={handleBlockToggle}
+                        disabled={blockLoading}
+                        className={`w-full px-4 py-3 text-left text-[12px] font-bold flex items-center gap-2.5 transition-colors hover:bg-[var(--c-hover)] ${blocked ? 'text-emerald-500' : 'text-red-400'}`}
+                      >
+                        <i className="fa-solid fa-ban text-xs"></i>
+                        {blocked ? 'Odblokiraj korisnika' : 'Blokiraj korisnika'}
+                      </button>
+                      <button
+                        onClick={() => setShowMoreMenu(false)}
+                        className="w-full px-4 py-3 text-left text-[12px] font-bold text-orange-400 hover:bg-[var(--c-hover)] flex items-center gap-2.5 transition-colors border-t border-[var(--c-border)]"
+                      >
+                        <i className="fa-solid fa-flag text-xs"></i>
+                        Prijavi korisnika
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

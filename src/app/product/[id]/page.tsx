@@ -6,8 +6,10 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useFavorites } from '@/lib/favorites';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/Toast';
-import { getProductById, incrementViews, deleteProduct } from '@/services/productService';
+import { getProductById, incrementViews, deleteProduct, promoteProduct, isPromoted } from '@/services/productService';
 import { getOrCreateConversation } from '@/services/messageService';
+import { isPro, getPlanLimits } from '@/lib/plans';
+import ProBadge from '@/components/ProBadge';
 import { getProductQuestions, askQuestion, answerQuestion, type QuestionWithUser } from '@/services/questionService';
 import { createReview, hasUserReviewed } from '@/services/reviewService';
 import { useAuth } from '@/lib/auth';
@@ -17,6 +19,7 @@ import { getCurrencyMode, eurToKm } from '@/lib/currency';
 import SimilarProducts from '@/components/SimilarProducts';
 import ProductAttributes from '@/components/ProductAttributes';
 import BuyerPickerModal from '@/components/BuyerPickerModal';
+import { addRecentlyViewed } from '@/lib/recently-viewed';
 
 function formatTimeLabel(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
@@ -63,6 +66,9 @@ export default function ProductDetailPage() {
   const [reportDetails, setReportDetails] = useState('');
   const [reportSubmitting, setReportSubmitting] = useState(false);
 
+  // Phone popup state
+  const [showPhonePopup, setShowPhonePopup] = useState(false);
+
   // Review state
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewHover, setReviewHover] = useState(0);
@@ -78,6 +84,7 @@ export default function ProductDetailPage() {
       .then(data => {
         setProduct(data);
         incrementViews(params.id).catch(() => {});
+        addRecentlyViewed(params.id);
       })
       .catch(() => setNotFound(true))
       .finally(() => setIsLoading(false));
@@ -393,6 +400,37 @@ export default function ProductDetailPage() {
         />
       )}
 
+      {/* Phone Popup */}
+      {showPhonePopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowPhonePopup(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative bg-[var(--c-card)] border border-[var(--c-border)] rounded-2xl p-5 w-full max-w-[280px] shadow-xl" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowPhonePopup(false)} className="absolute top-3 right-3 w-7 h-7 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors">
+              <i className="fa-solid fa-xmark text-xs"></i>
+            </button>
+            {product?.seller?.phone ? (
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
+                  <i className="fa-solid fa-phone text-emerald-500"></i>
+                </div>
+                <p className="text-[11px] text-[var(--c-text3)] mb-1">{product.seller.username}</p>
+                <a href={`tel:${product.seller.phone}`} className="text-lg font-bold text-[var(--c-text)] hover:text-blue-400 transition-colors">
+                  {product.seller.phone}
+                </a>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-[var(--c-hover)] flex items-center justify-center mx-auto mb-3">
+                  <i className="fa-solid fa-phone-slash text-[var(--c-text3)]"></i>
+                </div>
+                <p className="text-[13px] font-semibold text-[var(--c-text)] mb-1">Telefon nije dostupan</p>
+                <p className="text-[11px] text-[var(--c-text3)]">Korisnik još nije dodao broj telefona.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto pt-4 md:pt-8 pb-24">
         <div className="flex items-center justify-between mb-6 px-4 md:px-0">
             <button onClick={() => router.back()} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors">
@@ -510,7 +548,7 @@ export default function ProductDetailPage() {
                         <button onClick={handleContactSeller} aria-label="Pošalji poruku prodavaču" className="flex-1 bg-[var(--c-text)] text-[var(--c-bg)] h-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:opacity-80 transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
                             <i className="fa-regular fa-comment" aria-hidden="true"></i> <span className="truncate">Poruku</span>
                         </button>
-                        <button aria-label="Pozovi prodavača telefonom" className="flex-1 bg-[var(--c-card)] text-[var(--c-text)] border border-[var(--c-border2)] h-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-[var(--c-hover)] transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
+                        <button onClick={() => setShowPhonePopup(true)} aria-label="Pozovi prodavača telefonom" className="flex-1 bg-[var(--c-card)] text-[var(--c-text)] border border-[var(--c-border2)] h-12 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest hover:bg-[var(--c-hover)] transition-colors rounded-sm flex items-center justify-center gap-1.5 sm:gap-2 min-w-0">
                             <i className="fa-solid fa-phone" aria-hidden="true"></i> <span className="truncate">Telefon</span>
                         </button>
                         <button
@@ -529,7 +567,7 @@ export default function ProductDetailPage() {
                         className={`w-full h-12 text-xs font-bold uppercase tracking-widest transition-colors rounded-sm flex items-center justify-center gap-2 ${inCart ? 'bg-emerald-600 text-white hover:bg-emerald-500' : 'bg-blue-600 text-white hover:bg-blue-500'}`}
                     >
                         <i className={`fa-solid ${inCart ? 'fa-check' : 'fa-bag-shopping'}`} aria-hidden="true"></i>
-                        {inCart ? 'U Korpi' : 'Kupi Artikal'}
+                        {inCart ? 'U Korpi' : 'Stavi u korpu'}
                     </button>
                 </div>
 
@@ -561,6 +599,51 @@ export default function ProductDetailPage() {
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </div>
+
+                    {/* Istakni oglas (Promote) */}
+                    {product.status === 'active' && (
+                      <div className="mt-3 pt-3 border-t border-amber-500/10">
+                        {isPromoted(product) ? (
+                          <div className="flex items-center gap-2 text-[10px] text-emerald-600 font-bold">
+                            <i className="fa-solid fa-star text-amber-500"></i>
+                            Istaknuto do {new Date(product.promoted_until!).toLocaleDateString('bs-BA')}
+                          </div>
+                        ) : isPro(user?.accountType) && (user?.promotedCredits ?? 0) > 0 ? (
+                          <button
+                            onClick={async () => {
+                              try {
+                                await promoteProduct(product.id, user!.id, 3);
+                                setProduct({ ...product, promoted_until: new Date(Date.now() + 3 * 86400000).toISOString() });
+                                showToast('Oglas je istaknut na 3 dana!');
+                              } catch { showToast('Greška pri isticanju', 'error'); }
+                            }}
+                            className="flex items-center gap-2 text-[10px] font-bold text-amber-600 hover:text-amber-500 transition-colors"
+                          >
+                            <i className="fa-solid fa-star"></i>
+                            Istakni oglas ({user?.promotedCredits} preostalo)
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-[var(--c-text3)]">
+                            <i className="fa-solid fa-star text-[var(--c-text-muted)] mr-1"></i>
+                            Istakni oglas — Uskoro dostupno
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Pro Stats — only for seller viewing their own product */}
+                    {isPro(user?.accountType) && (
+                      <div className="mt-3 pt-3 border-t border-amber-500/10 flex gap-4">
+                        <div className="flex items-center gap-1.5 text-[10px] text-[var(--c-text3)]">
+                          <i className="fa-solid fa-eye text-blue-400"></i>
+                          Pogledano: <span className="font-bold text-[var(--c-text)]">{product.views_count}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-[var(--c-text3)]">
+                          <i className="fa-solid fa-heart text-red-400"></i>
+                          Omiljeno: <span className="font-bold text-[var(--c-text)]">{product.favorites_count}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -576,7 +659,7 @@ export default function ProductDetailPage() {
                                 <img src={sellerAvatar} alt={sellerName} className="w-full h-full object-cover" />
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-[var(--c-text)] uppercase tracking-wider">@{sellerName}</p>
+                                <p className="text-xs font-bold text-[var(--c-text)] uppercase tracking-wider flex items-center gap-1.5">@{sellerName} <ProBadge accountType={(product.seller as unknown as Record<string, unknown>)?.account_type as string} /></p>
                                 <p className="text-[10px] text-[var(--c-text3)]">
                                     {product.seller?.rating_average ? `★ ${product.seller.rating_average} · ` : ''}Verificirani Prodavač
                                 </p>

@@ -1,13 +1,64 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
 
+// ─── OTP Code Input Component ────────────────────────────────
+function OtpInput({ length = 6, onComplete }: { length?: number; onComplete: (code: string) => void }) {
+  const [values, setValues] = useState<string[]>(Array(length).fill(''));
+  const refs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleChange = (index: number, val: string) => {
+    if (!/^\d*$/.test(val)) return;
+    const next = [...values];
+    next[index] = val.slice(-1);
+    setValues(next);
+    if (val && index < length - 1) refs.current[index + 1]?.focus();
+    const code = next.join('');
+    if (code.length === length) onComplete(code);
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !values[index] && index > 0) {
+      refs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, length);
+    const next = [...values];
+    for (let i = 0; i < pasted.length; i++) next[i] = pasted[i];
+    setValues(next);
+    const focusIdx = Math.min(pasted.length, length - 1);
+    refs.current[focusIdx]?.focus();
+    if (pasted.length === length) onComplete(pasted);
+  };
+
+  return (
+    <div className="flex gap-2 justify-center" onPaste={handlePaste}>
+      {values.map((v, i) => (
+        <input
+          key={i}
+          ref={el => { refs.current[i] = el; }}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={v}
+          onChange={e => handleChange(i, e.target.value)}
+          onKeyDown={e => handleKeyDown(i, e)}
+          className="w-10 h-12 rounded-[12px] bg-[var(--c-card)] border border-[var(--c-border2)] text-center text-lg font-black text-[var(--c-text)] outline-none focus:border-blue-500 transition-colors"
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, loginWithOAuth, lastError } = useAuth();
+  const { register, loginWithOAuth, lastError, user, refreshProfile } = useAuth();
   const { showToast } = useToast();
   const [formData, setFormData] = useState({
       email: '',
@@ -16,16 +67,103 @@ export default function RegisterPage() {
       phone: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; auth?: string }>({});
 
-  // Sync auth provider errors to local error state (React state updates are async,
-  // so lastError may not be available immediately after register() returns)
-  React.useEffect(() => {
+  // Verification state
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [phoneCodeSent, setPhoneCodeSent] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [phoneSending, setPhoneSending] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [phoneResendCooldown, setPhoneResendCooldown] = useState(0);
+  const [verifyPhone, setVerifyPhone] = useState(formData.phone);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  useEffect(() => {
+    if (phoneResendCooldown <= 0) return;
+    const timer = setTimeout(() => setPhoneResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [phoneResendCooldown]);
+
+  // Sync auth provider errors to local error state
+  useEffect(() => {
     if (lastError && !isLoading) {
       setErrors(prev => ({ ...prev, auth: lastError }));
     }
   }, [lastError, isLoading]);
+
+  // Auto-send email code when entering verification screen
+  useEffect(() => {
+    if (showVerification && !emailCodeSent && !emailSending) {
+      sendCode('email');
+    }
+  }, [showVerification]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sendCode = useCallback(async (type: 'email' | 'phone') => {
+    const isSending = type === 'email' ? emailSending : phoneSending;
+    if (isSending) return;
+
+    if (type === 'email') setEmailSending(true);
+    else setPhoneSending(true);
+    setVerifyError(null);
+
+    try {
+      const res = await fetch('/api/verify/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setVerifyError(data.error || 'Greška pri slanju koda.');
+        return;
+      }
+      if (type === 'email') {
+        setEmailCodeSent(true);
+        setResendCooldown(60);
+      } else {
+        setPhoneCodeSent(true);
+        setPhoneResendCooldown(60);
+      }
+    } catch {
+      setVerifyError('Greška pri slanju koda.');
+    } finally {
+      if (type === 'email') setEmailSending(false);
+      else setPhoneSending(false);
+    }
+  }, [emailSending, phoneSending]);
+
+  const confirmCode = useCallback(async (type: 'email' | 'phone', code: string) => {
+    setVerifyError(null);
+    try {
+      const res = await fetch('/api/verify/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, code }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setVerifyError(data.error || 'Pogrešan kod.');
+        return;
+      }
+      if (type === 'email') setEmailVerified(true);
+      else setPhoneVerified(true);
+      showToast('Uspješno verificirano!');
+      refreshProfile();
+    } catch {
+      setVerifyError('Greška pri verifikaciji.');
+    }
+  }, [showToast, refreshProfile]);
 
   const validate = () => {
     const e: typeof errors = {};
@@ -49,12 +187,11 @@ export default function RegisterPage() {
 
         if (result === 'success') {
           showToast('Račun uspješno kreiran!');
-          router.push('/');
+          setVerifyPhone(formData.phone);
+          setShowVerification(true);
         } else if (result === 'needs_confirmation') {
-          setShowConfirmation(true);
+          setShowVerification(true);
         } else {
-          // lastError is set by register() via React state — useEffect will sync it.
-          // Set a delayed fallback in case lastError is empty (shouldn't happen)
           setTimeout(() => {
             setErrors(prev => prev.auth ? prev : { auth: 'Greška pri registraciji. Pokušajte ponovo.' });
           }, 100);
@@ -72,23 +209,151 @@ export default function RegisterPage() {
     handleRegister();
   };
 
-  if (showConfirmation) {
+  const verifiedCount = (emailVerified ? 1 : 0) + (phoneVerified ? 1 : 0);
+  const totalVerify = verifyPhone ? 2 : 1;
+
+  // ─── Verification Screen ────────────────────────────────
+  if (showVerification) {
     return (
       <div className="min-h-screen bg-[var(--c-bg)] text-[var(--c-text)] flex flex-col items-center justify-center p-8">
-        <div className="w-full max-w-xs text-center space-y-4 animate-[fadeIn_0.3s_ease-out]">
-          <div className="w-16 h-16 bg-green-600 rounded-[20px] flex items-center justify-center text-white text-2xl mx-auto">
-            <i className="fa-solid fa-envelope-circle-check"></i>
+        <div className="w-full max-w-sm space-y-6 animate-[fadeIn_0.3s_ease-out]">
+          {/* Header */}
+          <div className="text-center">
+            <div className="w-16 h-16 bg-blue-600 rounded-[20px] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+              <i className="fa-solid fa-shield-check"></i>
+            </div>
+            <h2 className="text-xl font-black">Verificiraj svoj račun</h2>
+            <p className="text-[10px] text-[var(--c-text3)] font-bold uppercase tracking-widest mt-2">
+              {verifiedCount}/{totalVerify} verificirano
+            </p>
           </div>
-          <h2 className="text-xl font-black">Provjeri svoj email!</h2>
-          <p className="text-sm text-[var(--c-text2)]">
-            Poslali smo link za potvrdu na <span className="text-[var(--c-text)] font-bold">{formData.email}</span>
-          </p>
-          <p className="text-xs text-[var(--c-text3)]">Klikni na link u emailu da aktiviraš račun, zatim se prijavi.</p>
+
+          {/* Email Verification */}
+          <div className={`bg-[var(--c-card)] border rounded-[18px] p-5 ${emailVerified ? 'border-green-500/30' : 'border-[var(--c-border2)]'}`}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${emailVerified ? 'bg-green-500/10 text-green-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                <i className={`fa-solid ${emailVerified ? 'fa-check' : 'fa-envelope'}`}></i>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-black text-[var(--c-text)]">Email</p>
+                <p className="text-[10px] text-[var(--c-text2)]">
+                  {emailVerified ? 'Verificirano' : `Poslali smo kod na ${formData.email}`}
+                </p>
+              </div>
+              {emailVerified && (
+                <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">
+                  <i className="fa-solid fa-circle-check mr-1"></i>OK
+                </span>
+              )}
+            </div>
+
+            {!emailVerified && emailCodeSent && (
+              <div className="space-y-3">
+                <OtpInput onComplete={(code) => confirmCode('email', code)} />
+                <div className="text-center">
+                  {resendCooldown > 0 ? (
+                    <p className="text-[10px] text-[var(--c-text3)]">Pošalji ponovo za {resendCooldown}s</p>
+                  ) : (
+                    <button
+                      onClick={() => sendCode('email')}
+                      disabled={emailSending}
+                      className="text-[10px] text-blue-400 font-bold hover:text-blue-300 transition-colors"
+                    >
+                      {emailSending ? 'Šaljem...' : 'Pošalji ponovo'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Phone Verification */}
+          <div className={`bg-[var(--c-card)] border rounded-[18px] p-5 ${phoneVerified ? 'border-green-500/30' : 'border-[var(--c-border2)]'}`}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${phoneVerified ? 'bg-green-500/10 text-green-500' : 'bg-purple-500/10 text-purple-500'}`}>
+                <i className={`fa-solid ${phoneVerified ? 'fa-check' : 'fa-phone'}`}></i>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-black text-[var(--c-text)]">Telefon</p>
+                <p className="text-[10px] text-[var(--c-text2)]">
+                  {phoneVerified
+                    ? 'Verificirano'
+                    : verifyPhone
+                      ? 'Verificiraj broj telefona za pouzdaniji profil'
+                      : 'Dodaj broj telefona za verificiran profil'
+                  }
+                </p>
+              </div>
+              {phoneVerified && (
+                <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">
+                  <i className="fa-solid fa-circle-check mr-1"></i>OK
+                </span>
+              )}
+            </div>
+
+            {!phoneVerified && (
+              <div className="space-y-3">
+                {!verifyPhone && (
+                  <div className="bg-[var(--c-hover)] rounded-[14px] p-1.5 pr-4 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-[10px] bg-[var(--c-card)] flex items-center justify-center text-[var(--c-text3)]">
+                      <i className="fa-solid fa-phone text-xs"></i>
+                    </div>
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      value={verifyPhone}
+                      onChange={e => setVerifyPhone(e.target.value)}
+                      placeholder="+387 6..."
+                      className="flex-1 bg-transparent text-sm text-[var(--c-text)] font-bold outline-none placeholder:text-[var(--c-placeholder)]"
+                    />
+                  </div>
+                )}
+                {!phoneCodeSent ? (
+                  <button
+                    onClick={() => sendCode('phone')}
+                    disabled={phoneSending || (!verifyPhone)}
+                    className="w-full py-3 rounded-[14px] bg-purple-600/10 text-purple-500 text-[11px] font-black uppercase tracking-widest hover:bg-purple-600/20 transition-colors disabled:opacity-50"
+                  >
+                    {phoneSending ? <i className="fa-solid fa-spinner animate-spin"></i> : 'Pošalji kod'}
+                  </button>
+                ) : (
+                  <>
+                    <p className="text-[10px] text-[var(--c-text2)] text-center">
+                      Kod je poslan na {verifyPhone}
+                    </p>
+                    <OtpInput onComplete={(code) => confirmCode('phone', code)} />
+                    <div className="text-center">
+                      {phoneResendCooldown > 0 ? (
+                        <p className="text-[10px] text-[var(--c-text3)]">Pošalji ponovo za {phoneResendCooldown}s</p>
+                      ) : (
+                        <button
+                          onClick={() => sendCode('phone')}
+                          disabled={phoneSending}
+                          className="text-[10px] text-purple-400 font-bold hover:text-purple-300 transition-colors"
+                        >
+                          {phoneSending ? 'Šaljem...' : 'Pošalji ponovo'}
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Error */}
+          {verifyError && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-[14px] px-4 py-3 text-xs text-red-400 text-center">
+              <i className="fa-solid fa-circle-exclamation mr-2"></i>{verifyError}
+            </div>
+          )}
+
+          {/* Skip Button */}
           <button
-            onClick={() => router.push('/login')}
-            className="w-full py-4 rounded-[20px] blue-gradient text-white font-black text-xs uppercase tracking-[2px] mt-4"
+            onClick={() => router.push('/')}
+            className="w-full py-3 text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest hover:text-[var(--c-text)] transition-colors"
           >
-            <i className="fa-solid fa-arrow-right-to-bracket mr-2"></i>Idi na prijavu
+            Preskoči
           </button>
         </div>
       </div>

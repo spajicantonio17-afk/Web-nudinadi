@@ -30,6 +30,7 @@ export interface Profile {
   bio: string | null
   phone: string | null
   email_verified: boolean
+  phone_verified: boolean
   level: number
   xp: number
   total_sales: number
@@ -39,6 +40,19 @@ export interface Profile {
   instagram_url: string | null
   facebook_url: string | null
   is_admin: boolean
+  followers_count: number
+  following_count: number
+  account_type: 'free' | 'pro' | 'business'
+  plan_expires_at: string | null
+  promoted_credits: number
+  company_name: string | null
+  company_logo: string | null
+  banner_image: string | null
+  business_address: string | null
+  business_hours: Record<string, string> | null
+  business_category: string | null
+  business_verified: boolean
+  website_url: string | null
   created_at: string
   updated_at: string
 }
@@ -60,6 +74,7 @@ export interface Product {
   updated_at: string
   attributes?: Record<string, string | number | boolean | string[]> | null
   tags: string[]
+  promoted_until: string | null
 }
 
 export interface Category {
@@ -105,8 +120,10 @@ export interface Message {
   id: string
   conversation_id: string
   sender_id: string
-  content: string
+  content: string | null
+  image_url: string | null
   is_read: boolean
+  read_at: string | null
   created_at: string
 }
 
@@ -138,6 +155,7 @@ export interface ProfileInsert {
   bio?: string | null
   phone?: string | null
   email_verified?: boolean
+  phone_verified?: boolean
   level?: number
   xp?: number
   total_sales?: number
@@ -198,7 +216,8 @@ export interface MessageInsert {
   id?: string
   conversation_id: string
   sender_id: string
-  content: string
+  content?: string | null
+  image_url?: string | null
   is_read?: boolean
 }
 
@@ -225,9 +244,17 @@ export interface ProfileUpdate {
   bio?: string | null
   phone?: string | null
   email_verified?: boolean
+  phone_verified?: boolean
   location?: string | null
   instagram_url?: string | null
   facebook_url?: string | null
+  company_name?: string | null
+  company_logo?: string | null
+  banner_image?: string | null
+  business_address?: string | null
+  business_hours?: Record<string, string> | null
+  business_category?: string | null
+  website_url?: string | null
 }
 
 export interface ProductUpdate {
@@ -272,6 +299,7 @@ export interface ConversationWithUsers extends Conversation {
   user1: Profile
   user2: Profile
   last_message?: Message | null
+  product?: Pick<Product, 'id' | 'title' | 'price' | 'images' | 'status'> | null
 }
 
 export interface MessageWithSender extends Message {
@@ -430,6 +458,71 @@ export interface UserBanWithAdmin extends UserBan {
   admin: Profile
 }
 
+// ─── Block System Types ─────────────────────────────
+
+export interface UserBlock {
+  id: string
+  blocker_id: string
+  blocked_id: string
+  created_at: string
+}
+
+export interface UserBlockInsert {
+  id?: string
+  blocker_id: string
+  blocked_id: string
+}
+
+// ─── Follow System Types ─────────────────────────────
+
+export interface UserFollower {
+  id: string
+  follower_id: string
+  followed_id: string
+  created_at: string
+}
+
+// ─── Notification Types ──────────────────────────────
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: string
+  title: string
+  body: string | null
+  data: Record<string, unknown>
+  is_read: boolean
+  created_at: string
+}
+
+// ─── Verification Code Types ─────────────────────────
+
+export interface VerificationCode {
+  id: string
+  user_id: string
+  type: 'email' | 'phone'
+  code: string
+  expires_at: string
+  used: boolean
+  attempts: number
+  created_at: string
+}
+
+// ─── Business Team Types ────────────────────────────────
+
+export interface BusinessTeamMember {
+  id: string
+  business_user_id: string
+  member_user_id: string
+  role: 'owner' | 'admin' | 'member'
+  invited_at: string
+  accepted_at: string | null
+}
+
+export interface BusinessTeamMemberWithProfile extends BusinessTeamMember {
+  member: Profile
+}
+
 // ─── Supabase Database Type Map ───────────────────────
 
 export interface Database {
@@ -517,6 +610,12 @@ export interface Database {
         Row: AiModerationLog
         Insert: AiModerationLogInsert
         Update: Partial<AiModerationLogInsert>
+        Relationships: []
+      }
+      user_blocks: {
+        Row: UserBlock
+        Insert: UserBlockInsert
+        Update: Partial<UserBlockInsert>
         Relationships: []
       }
     }

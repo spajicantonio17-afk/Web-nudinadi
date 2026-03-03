@@ -5,6 +5,7 @@ import type {
 } from '@/lib/database.types'
 import { CITIES } from '@/lib/location'
 import type { CountryPreference } from '@/lib/country'
+import { getPlanLimits } from '@/lib/plans'
 
 const supabase = getSupabase()
 
@@ -32,7 +33,7 @@ export interface ProductFilters {
 }
 
 // Lightweight select for list views (avoids fetching all profile/category columns)
-const LIST_SELECT = 'id,title,price,images,condition,location,views_count,favorites_count,created_at,status,seller_id,category_id,attributes,seller:profiles!seller_id(id,username,avatar_url,rating_average),category:categories!category_id(id,name,slug,icon)'
+const LIST_SELECT = 'id,title,price,images,condition,location,views_count,favorites_count,created_at,status,seller_id,category_id,attributes,promoted_until,seller:profiles!seller_id(id,username,avatar_url,rating_average,account_type),category:categories!category_id(id,name,slug,icon)'
 
 // ─── Get All Products (with filters) ──────────────────
 
@@ -60,9 +61,13 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
     query = query.textSearch('search_vector', filters.search, { config: 'simple', type: 'plain' })
   }
 
-  // Sorting
+  // Sorting — promoted products appear first for default sort
   const sortBy = filters.sortBy || 'created_at'
   const sortOrder = filters.sortOrder || 'desc'
+  if (sortBy === 'created_at') {
+    // Promoted first, then by date
+    query = query.order('promoted_until', { ascending: false, nullsFirst: false })
+  }
   query = query.order(sortBy, { ascending: sortOrder === 'asc' })
 
   // Pagination
@@ -92,6 +97,31 @@ export async function getProductById(id: string): Promise<ProductFull> {
 // ─── Create Product ───────────────────────────────────
 
 export async function createProduct(product: ProductInsert): Promise<Product> {
+  // Enforce plan limits before inserting
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('account_type')
+    .eq('id', product.seller_id)
+    .single()
+
+  const limits = getPlanLimits(profile?.account_type)
+
+  // Check active listing count
+  const { count } = await supabase
+    .from('products')
+    .select('id', { count: 'exact', head: true })
+    .eq('seller_id', product.seller_id)
+    .eq('status', 'active')
+
+  if ((count ?? 0) >= limits.maxActiveListings) {
+    throw new Error('LIMIT_REACHED')
+  }
+
+  // Check image count
+  if (product.images && product.images.length > limits.maxImagesPerListing) {
+    throw new Error('IMAGE_LIMIT_REACHED')
+  }
+
   const { data, error } = await supabase
     .from('products')
     .insert(product)
@@ -201,6 +231,23 @@ export async function getSearchSuggestions(query: string, limit = 5): Promise<Se
   return (data ?? []) as SearchSuggestion[]
 }
 
+// ─── Get Products by IDs (batch fetch) ───────────────
+
+export async function getProductsByIds(ids: string[]): Promise<ProductFull[]> {
+  if (!ids.length) return []
+
+  const { data, error } = await supabase
+    .from('products')
+    .select(LIST_SELECT)
+    .in('id', ids)
+
+  if (error) throw error
+
+  // Return in same order as input IDs
+  const map = new Map((data ?? []).map((p: { id: string }) => [p.id, p]))
+  return ids.map(id => map.get(id)).filter(Boolean) as unknown as ProductFull[]
+}
+
 // ─── Similar Products (tag overlap + category) ───────
 
 export interface SimilarProduct {
@@ -215,6 +262,53 @@ export interface SimilarProduct {
   category_id: string | null
   tag_overlap: number
 }
+
+// ─── Promote Product ─────────────────────────────────
+export async function promoteProduct(productId: string, userId: string, days: number = 3): Promise<void> {
+  // Deduct a promoted credit from the user
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('promoted_credits')
+    .eq('id', userId)
+    .single()
+
+  if (profileError || !profile || (profile.promoted_credits ?? 0) < 1) {
+    throw new Error('NO_CREDITS')
+  }
+
+  const until = new Date()
+  until.setDate(until.getDate() + days)
+
+  const { error } = await supabase
+    .from('products')
+    .update({ promoted_until: until.toISOString() })
+    .eq('id', productId)
+    .eq('seller_id', userId)
+
+  if (error) throw error
+
+  // Deduct credit
+  await supabase
+    .from('profiles')
+    .update({ promoted_credits: (profile.promoted_credits ?? 1) - 1 })
+    .eq('id', userId)
+}
+
+export function isPromoted(product: { promoted_until?: string | null }): boolean {
+  return !!product.promoted_until && new Date(product.promoted_until) > new Date()
+}
+
+// ─── Get Active Listing Count ────────────────────────
+export async function getActiveListingCount(userId: string): Promise<number> {
+  const { count } = await supabase
+    .from('products')
+    .select('id', { count: 'exact', head: true })
+    .eq('seller_id', userId)
+    .eq('status', 'active')
+  return count ?? 0
+}
+
+// ─── Similar Products (tag overlap + category) ───────
 
 export async function getSimilarProducts(
   productId: string,

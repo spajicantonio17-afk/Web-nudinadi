@@ -6,11 +6,17 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
 import { getUserProducts, deleteProduct, archiveProduct, unarchiveProduct } from '@/services/productService';
 import { isUsernameAvailable } from '@/services/profileService';
+import { getFavorites } from '@/services/favoriteService';
 import { uploadAvatar } from '@/services/uploadService';
 import { getSupabase } from '@/lib/supabase';
 import { CITIES, getRegionsForCountry, getCitiesByRegion } from '@/lib/location';
-import type { ProductWithSeller, Review } from '@/lib/database.types';
+import { getCurrencyMode, eurToKm } from '@/lib/currency';
+import type { ProductWithSeller, Review, FavoriteWithProduct } from '@/lib/database.types';
 import { xpForNextLevel } from '@/lib/database.types';
+import ProBadge from '@/components/ProBadge';
+import BusinessProfileEditor from '@/components/BusinessProfileEditor';
+import TeamManager from '@/components/TeamManager';
+import { isPro, isBusiness } from '@/lib/plans';
 
 type ReviewWithReviewer = Review & {
   reviewer: { username: string; avatar_url: string | null } | null;
@@ -86,13 +92,17 @@ function ProfileContent() {
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [shareToast, setShareToast] = useState(false);
 
+  // ── Markirani (Favorites) ───────────────────────────────
+  const [markedProducts, setMarkedProducts] = useState<FavoriteWithProduct[]>([]);
+  const [markedLoading, setMarkedLoading] = useState(false);
+
   // ── Edit Profile ──────────────────────────────────────
   const [verifyPopup, setVerifyPopup] = useState(false);
   const [verifySending, setVerifySending] = useState(false);
   const [verifySent, setVerifySent] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ username: '', fullName: '', bio: '', location: '', phone: '' });
+  const [editForm, setEditForm] = useState({ username: '', fullName: '', bio: '', location: '', phone: '', instagram: '', facebook: '' });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -118,6 +128,8 @@ function ProfileContent() {
       bio: user?.bio || '',
       location: loc,
       phone: user?.phone || '',
+      instagram: user?.instagramUrl || '',
+      facebook: user?.facebookUrl || '',
     });
     setAvatarFile(null);
     setAvatarPreview(null);
@@ -172,6 +184,8 @@ function ProfileContent() {
         bio: editForm.bio.trim() || null,
         location: locationValue,
         phone: editForm.phone.trim() || null,
+        instagram_url: editForm.instagram.trim().replace(/^@/, '') || null,
+        facebook_url: editForm.facebook.trim() || null,
       };
       if (editForm.username.trim() && editForm.username.trim() !== user.username) {
         body.username = editForm.username.trim();
@@ -235,6 +249,16 @@ function ProfileContent() {
     if (!user?.id) return;
     getUserProducts(user.id).then(setUserProducts).catch(console.error);
   }, [user?.id]);
+
+  // Fetch favorites when Markirani tab is active
+  useEffect(() => {
+    if (activeTab !== 'Markirani' || !user?.id) return;
+    setMarkedLoading(true);
+    getFavorites(user.id)
+      .then(setMarkedProducts)
+      .catch(console.error)
+      .finally(() => setMarkedLoading(false));
+  }, [activeTab, user?.id]);
 
   // Fetch reviews (paginated)
   const fetchReviews = useCallback(async (page: number, append = false) => {
@@ -380,7 +404,7 @@ function ProfileContent() {
     Aktivni: activeProducts.length,
     'Završeni': soldProducts.length,
     Dojmovi: totalReviews,
-    Arhiv: archivedProducts.length + draftProducts.length,
+    Markirani: markedProducts.length,
   };
 
   return (
@@ -644,6 +668,40 @@ function ProfileContent() {
                     </div>
                     <p className="text-[8px] text-[var(--c-text3)] mt-1">Vidljiv kupcima ako ga uneseš</p>
                   </div>
+
+                  {/* Instagram */}
+                  <div>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Instagram <span className="opacity-50 lowercase">(opcionalno)</span></label>
+                    <div className="relative">
+                      <i className="fa-brands fa-instagram absolute left-3.5 top-1/2 -translate-y-1/2 text-[10px] text-pink-400 pointer-events-none"></i>
+                      <input
+                        type="text"
+                        value={editForm.instagram}
+                        onChange={e => setEditForm(f => ({ ...f, instagram: e.target.value }))}
+                        maxLength={50}
+                        placeholder="korisnicko_ime"
+                        className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] pl-9 pr-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-pink-500/50 transition-colors"
+                      />
+                    </div>
+                    <p className="text-[8px] text-[var(--c-text3)] mt-1">Samo korisničko ime, bez @</p>
+                  </div>
+
+                  {/* Facebook */}
+                  <div>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Facebook <span className="opacity-50 lowercase">(opcionalno)</span></label>
+                    <div className="relative">
+                      <i className="fa-brands fa-facebook absolute left-3.5 top-1/2 -translate-y-1/2 text-[10px] text-blue-500 pointer-events-none"></i>
+                      <input
+                        type="text"
+                        value={editForm.facebook}
+                        onChange={e => setEditForm(f => ({ ...f, facebook: e.target.value }))}
+                        maxLength={100}
+                        placeholder="korisnicko_ime ili profil link"
+                        className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] pl-9 pr-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-blue-500/50 transition-colors"
+                      />
+                    </div>
+                    <p className="text-[8px] text-[var(--c-text3)] mt-1">Korisničko ime ili puni link profila</p>
+                  </div>
                 </div>
               </div>
 
@@ -691,7 +749,7 @@ function ProfileContent() {
 
                     {/* Name + Location + Badges */}
                     <div className="flex-1 min-w-0 pt-0.5">
-                        <h2 className="text-base md:text-lg font-black text-[var(--c-text)] tracking-tight leading-none truncate">{displayName}</h2>
+                        <h2 className="text-base md:text-lg font-black text-[var(--c-text)] tracking-tight leading-none truncate flex items-center gap-1.5">{displayName} <ProBadge accountType={user?.accountType} /></h2>
                         <div className="flex items-center gap-1.5 text-[var(--c-text2)] mt-1.5">
                             <i className="fa-solid fa-location-dot text-[10px] text-blue-400"></i>
                             <span className="text-[11px] font-medium truncate">{displayLocation}</span>
@@ -709,20 +767,27 @@ function ProfileContent() {
                               <>
                                 {user?.emailVerified ? (
                                   <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                      <i className="fa-solid fa-check-circle text-[9px]"></i> Verificiran
+                                      <i className="fa-solid fa-check-circle text-[9px]"></i> Email verificiran
                                   </span>
                                 ) : (
                                   <button
-                                    onClick={() => { setVerifySent(false); setVerifyPopup(true); }}
+                                    onClick={() => router.push('/menu?step=verification')}
                                     className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 hover:bg-orange-500/20 transition-colors cursor-pointer"
                                   >
-                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> Nije verificiran
+                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> Email nije verificiran
                                   </button>
                                 )}
-                                {user?.phone && (
-                                  <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                      <i className="fa-solid fa-phone text-[8px]"></i> {user.phone}
+                                {user?.phoneVerified ? (
+                                  <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                      <i className="fa-solid fa-phone text-[8px]"></i> Telefon verificiran
                                   </span>
+                                ) : (
+                                  <button
+                                    onClick={() => router.push('/menu?step=verification')}
+                                    className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 hover:bg-orange-500/20 transition-colors cursor-pointer"
+                                  >
+                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> Telefon nije verificiran
+                                  </button>
                                 )}
                                 {userLevel >= 5 && (
                                   <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
@@ -822,10 +887,32 @@ function ProfileContent() {
             )}
         </div>
 
+        {/* PRO STATS SUMMARY */}
+        {isPro(user?.accountType) && activeProducts.length > 0 && (
+          <div className="bg-[var(--c-card)] border border-blue-500/20 rounded-[14px] p-4 flex items-center gap-6">
+            <div className="flex items-center gap-2 text-[11px] text-[var(--c-text3)]">
+              <i className="fa-solid fa-eye text-blue-400 text-xs"></i>
+              <span>Pregleda ovog mjeseca: <span className="font-bold text-[var(--c-text)]">{activeProducts.reduce((s, p) => s + (p.views_count || 0), 0)}</span></span>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-[var(--c-text3)]">
+              <i className="fa-solid fa-heart text-red-400 text-xs"></i>
+              <span>Omiljeno ukupno: <span className="font-bold text-[var(--c-text)]">{activeProducts.reduce((s, p) => s + (p.favorites_count || 0), 0)}</span></span>
+            </div>
+          </div>
+        )}
+
+        {/* BUSINESS PROFILE EDITOR + TEAM (only for business users) */}
+        {user && isBusiness(user.accountType) && (
+          <>
+            <BusinessProfileEditor user={user} onUpdate={refreshProfile} />
+            <TeamManager userId={user.id} />
+          </>
+        )}
+
         {/* COMPACT TABS WITH COUNTS */}
         <div>
             <div className="flex p-0.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] overflow-x-auto no-scrollbar">
-                {['Aktivni', 'Završeni', 'Dojmovi', 'Arhiv', 'Info'].map((tab) => (
+                {['Aktivni', 'Završeni', 'Dojmovi', 'Markirani', 'Info'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => handleTabChange(tab)}
@@ -835,8 +922,8 @@ function ProfileContent() {
                             : 'text-[var(--c-text3)] hover:text-[var(--c-text2)]'
                         }`}
                     >
-                        {tab === 'Arhiv' && (
-                            <i className="fa-solid fa-box-archive text-[9px]"></i>
+                        {tab === 'Markirani' && (
+                            <i className="fa-solid fa-heart text-[9px]"></i>
                         )}
                         {tab}
                         {tabCounts[tab] !== undefined && tabCounts[tab] > 0 && (
@@ -855,123 +942,69 @@ function ProfileContent() {
 
         {/* TAB CONTENT */}
 
-        {/* ARHIV TAB */}
-        {activeTab === 'Arhiv' && (
-            <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
-
-                {/* ── ARCHIVED PRODUCTS ── */}
-                <div className="space-y-2">
-                    <div className="px-1 mb-1">
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-orange-400">Arhivirani Oglasi</h3>
-                        <p className="text-[9px] text-[var(--c-text3)]">Privremeno sklonjeni sa tržišta</p>
-                    </div>
-
-                    {archivedProducts.length === 0 ? (
-                        <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-5 text-center">
-                            <i className="fa-solid fa-box-archive text-lg text-[var(--c-text-muted)] mb-1.5"></i>
-                            <p className="text-[11px] text-[var(--c-text3)]">Nema arhiviranih oglasa.</p>
-                            <p className="text-[9px] text-[var(--c-text-muted)] mt-0.5">Koristi <i className="fa-solid fa-box-archive text-[8px]"></i> dugme na aktivnim oglasima za arhiviranje.</p>
-                        </div>
-                    ) : archivedProducts.map(p => (
-                        <div key={p.id} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)] opacity-80">
-                            <div className="relative w-16 h-16 rounded-[12px] overflow-hidden shrink-0">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={p.images?.[0] || `https://picsum.photos/seed/${p.id}/200/200`} alt={p.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
-                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                    <span className="text-[7px] font-black text-white bg-orange-500 px-1.5 py-0.5 rounded-full uppercase">Arhiv</span>
-                                </div>
-                                <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[7px] font-black px-1 py-0.5 rounded-[4px] leading-none backdrop-blur-sm z-10">#{productNumberMap.get(p.id)}</span>
-                            </div>
-                            <div className="flex-1 flex flex-col justify-between py-0.5">
-                                <div>
-                                    <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
-                                    <span className="text-[11px] font-black text-orange-400 mt-0.5 block">{Number(p.price).toLocaleString()} &euro;</span>
-                                </div>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <button
-                                        onClick={() => handleUnarchive(p.id)}
-                                        disabled={archivingId === p.id}
-                                        className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/20 px-2.5 py-1 rounded-[6px] text-[8px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
-                                    >
-                                        {archivingId === p.id ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-rotate-left text-[7px] mr-1"></i>Vrati na tržište</>}
-                                    </button>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteDraft(p.id); }}
-                                        disabled={deletingDraftId === p.id}
-                                        className="text-[var(--c-text-muted)] hover:text-red-400 p-1 transition-colors disabled:opacity-50"
-                                        title="Obriši"
-                                    >
-                                        <i className={`text-[10px] ${deletingDraftId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-trash'}`}></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* ── DRAFTS ── */}
-                {draftProducts.length > 0 && (
-                    <div className="space-y-2">
-                        <div className="px-1 mb-1 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--c-text3)]">Nedovršeni Oglasi</h3>
-                                <p className="text-[9px] text-[var(--c-text-muted)]">Drafts</p>
-                            </div>
+        {/* MARKIRANI TAB */}
+        {activeTab === 'Markirani' && (
+            <div className="space-y-2 animate-[fadeIn_0.2s_ease-out]">
+                {markedLoading ? (
+                  <div className="flex justify-center py-12">
+                    <i className="fa-solid fa-spinner animate-spin text-blue-500 text-lg"></i>
+                  </div>
+                ) : markedProducts.length === 0 ? (
+                  <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-8 text-center">
+                    <i className="fa-regular fa-heart text-2xl text-[var(--c-text3)] mb-3 block"></i>
+                    <p className="text-[11px] font-bold text-[var(--c-text2)] mb-1">Još niste označili nijedan artikal</p>
+                    <p className="text-[9px] text-[var(--c-text3)] mb-4">Klikni na <i className="fa-solid fa-heart text-[8px] text-red-400"></i> da sačuvaš artikle</p>
+                    <button onClick={() => router.push('/')} className="px-4 py-2 rounded-full blue-gradient text-white text-[10px] font-black uppercase tracking-widest">
+                      <i className="fa-solid fa-compass mr-1.5"></i>Istraži
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {markedProducts.map(fav => {
+                      const p = fav.product;
+                      const currency = getCurrencyMode();
+                      const priceDisplay = currency === 'km-only'
+                        ? `${eurToKm(Number(p.price)).toFixed(2)} KM`
+                        : currency === 'dual'
+                        ? `${Number(p.price).toFixed(2)} € / ${eurToKm(Number(p.price)).toFixed(2)} KM`
+                        : `${Number(p.price).toFixed(2)} €`;
+                      return (
+                        <div
+                          key={fav.id}
+                          className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] overflow-hidden group cursor-pointer hover:border-[var(--c-border2)] transition-all"
+                          onClick={() => router.push(`/product/${p.id}`)}
+                        >
+                          <div className="relative aspect-square">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={p.images?.[0] || `https://picsum.photos/seed/${p.id}/300`}
+                              alt={p.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            {p.status === 'sold' && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <span className="text-white text-[9px] font-black uppercase tracking-widest bg-red-500 px-2 py-0.5 rounded-full">Prodano</span>
+                              </div>
+                            )}
                             <button
-                                onClick={() => router.push('/upload')}
-                                className="w-6 h-6 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text2)] hover:text-[var(--c-text)] border border-[var(--c-border)] hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-500 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMarkedProducts(prev => prev.filter(f => f.id !== fav.id));
+                                import('@/services/favoriteService').then(m => m.removeFavorite(user!.id, p.id)).catch(() => {});
+                              }}
+                              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                             >
-                                <i className="fa-solid fa-plus text-[10px]"></i>
+                              <i className="fa-solid fa-heart text-xs"></i>
                             </button>
+                          </div>
+                          <div className="p-2.5">
+                            <h4 className="text-[11px] font-bold text-[var(--c-text)] line-clamp-1">{p.title}</h4>
+                            <p className="text-[11px] font-black text-blue-500 mt-0.5">{priceDisplay}</p>
+                          </div>
                         </div>
-
-                        {draftProducts.map((draft) => {
-                            const completion = calcDraftCompletion(draft);
-                            return (
-                            <div key={draft.id} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)]">
-                                <div className="relative w-16 h-16 rounded-[12px] overflow-hidden shrink-0">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={draft.images?.[0] || `https://picsum.photos/seed/${draft.id}/200/200`} alt="Draft" className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition-all" />
-                                    <div className="absolute inset-0 bg-[var(--c-overlay)] flex items-center justify-center">
-                                        <i className="fa-solid fa-pen text-white/80 text-xs"></i>
-                                    </div>
-                                    <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[7px] font-black px-1 py-0.5 rounded-[4px] leading-none backdrop-blur-sm z-10">#{productNumberMap.get(draft.id)}</span>
-                                </div>
-                                <div className="flex-1 flex flex-col justify-between py-0.5">
-                                    <div>
-                                        <div className="flex justify-between items-start">
-                                            <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{draft.title || 'Bez naslova'}</h4>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleDeleteDraft(draft.id); }}
-                                                disabled={deletingDraftId === draft.id}
-                                                className="text-[var(--c-text-muted)] hover:text-red-400 p-1 -mr-2 -mt-2 transition-colors disabled:opacity-50"
-                                            >
-                                                <i className={`text-[10px] ${deletingDraftId === draft.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-xmark'}`}></i>
-                                            </button>
-                                        </div>
-                                        <span className="text-[10px] text-orange-400 font-bold mt-0.5 block">
-                                            {draft.price ? `${Number(draft.price).toLocaleString()} €` : 'Cijena nije def.'}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-3 mt-1.5">
-                                        <div className="flex-1">
-                                            <div className="flex justify-between text-[8px] font-bold text-[var(--c-text3)] mb-0.5">
-                                                <span>Popunjeno</span>
-                                                <span>{completion}%</span>
-                                            </div>
-                                            <div className="h-1 bg-[var(--c-overlay)] rounded-full overflow-hidden">
-                                                <div style={{ width: `${completion}%` }} className={`h-full rounded-full ${completion >= 80 ? 'bg-emerald-500' : completion >= 50 ? 'bg-orange-500' : 'bg-red-400'}`}></div>
-                                            </div>
-                                        </div>
-                                        <button onClick={() => router.push(`/upload?draft=${draft.id}`)} className="bg-[var(--c-active)] hover:bg-blue-600 text-white px-2 py-1 rounded-[6px] text-[8px] font-bold uppercase tracking-wider transition-colors">
-                                            Nastavi
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            );
-                        })}
-                    </div>
+                      );
+                    })}
+                  </div>
                 )}
             </div>
         )}
@@ -1135,18 +1168,56 @@ function ProfileContent() {
                 {/* Social Links */}
                 <h4 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest px-1">Social & Links</h4>
                 <div className="space-y-2">
-                    <div className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 cursor-pointer hover:bg-[var(--c-hover)] transition-colors group">
-                        <span className="text-[10px] font-bold text-[var(--c-text2)] uppercase group-hover:text-[var(--c-text)] transition-colors">Web stranica</span>
-                        <i className="fa-solid fa-arrow-up-right-from-square text-[var(--c-text-muted)] text-xs group-hover:text-blue-400 transition-colors"></i>
-                    </div>
-                    <div className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 cursor-pointer hover:bg-[var(--c-hover)] transition-colors group">
-                        <span className="text-[10px] font-bold text-[var(--c-text2)] uppercase group-hover:text-[var(--c-text)] transition-colors">Instagram</span>
-                        <i className="fa-brands fa-instagram text-[var(--c-text-muted)] text-xs group-hover:text-pink-400 transition-colors"></i>
-                    </div>
-                    <div className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 cursor-pointer hover:bg-[var(--c-hover)] transition-colors group">
-                        <span className="text-[10px] font-bold text-[var(--c-text2)] uppercase group-hover:text-[var(--c-text)] transition-colors">Facebook</span>
-                        <i className="fa-brands fa-facebook text-[var(--c-text-muted)] text-xs group-hover:text-blue-600 transition-colors"></i>
-                    </div>
+                    {user?.instagramUrl ? (
+                      <a
+                        href={`https://instagram.com/${user.instagramUrl.replace('@', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 cursor-pointer hover:bg-[var(--c-hover)] transition-colors group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <i className="fa-brands fa-instagram text-pink-400 text-xs"></i>
+                          <span className="text-[10px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] transition-colors">@{user.instagramUrl.replace('@', '')}</span>
+                        </div>
+                        <i className="fa-solid fa-arrow-up-right-from-square text-[var(--c-text-muted)] text-xs group-hover:text-pink-400 transition-colors"></i>
+                      </a>
+                    ) : (
+                      <div
+                        onClick={openEdit}
+                        className="flex items-center justify-between bg-[var(--c-card)] border border-dashed border-[var(--c-border)] rounded-[16px] p-4 cursor-pointer hover:bg-[var(--c-hover)] transition-colors group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <i className="fa-brands fa-instagram text-[var(--c-text-muted)] text-xs group-hover:text-pink-400 transition-colors"></i>
+                          <span className="text-[10px] font-bold text-[var(--c-text-muted)] group-hover:text-[var(--c-text3)] transition-colors">Dodaj Instagram</span>
+                        </div>
+                        <i className="fa-solid fa-plus text-[var(--c-text-muted)] text-[9px] group-hover:text-pink-400 transition-colors"></i>
+                      </div>
+                    )}
+                    {user?.facebookUrl ? (
+                      <a
+                        href={user.facebookUrl.startsWith('http') ? user.facebookUrl : `https://facebook.com/${user.facebookUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 cursor-pointer hover:bg-[var(--c-hover)] transition-colors group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <i className="fa-brands fa-facebook text-blue-500 text-xs"></i>
+                          <span className="text-[10px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] transition-colors">Facebook</span>
+                        </div>
+                        <i className="fa-solid fa-arrow-up-right-from-square text-[var(--c-text-muted)] text-xs group-hover:text-blue-500 transition-colors"></i>
+                      </a>
+                    ) : (
+                      <div
+                        onClick={openEdit}
+                        className="flex items-center justify-between bg-[var(--c-card)] border border-dashed border-[var(--c-border)] rounded-[16px] p-4 cursor-pointer hover:bg-[var(--c-hover)] transition-colors group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <i className="fa-brands fa-facebook text-[var(--c-text-muted)] text-xs group-hover:text-blue-500 transition-colors"></i>
+                          <span className="text-[10px] font-bold text-[var(--c-text-muted)] group-hover:text-[var(--c-text3)] transition-colors">Dodaj Facebook</span>
+                        </div>
+                        <i className="fa-solid fa-plus text-[var(--c-text-muted)] text-[9px] group-hover:text-blue-500 transition-colors"></i>
+                      </div>
+                    )}
                 </div>
             </div>
         )}

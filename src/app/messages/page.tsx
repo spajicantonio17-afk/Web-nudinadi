@@ -12,8 +12,16 @@ import {
   markMessagesAsRead,
   subscribeToMessages,
   unsubscribeFromMessages,
+  getUnreadCounts,
+  subscribeToTyping,
+  sendTypingStatus,
+  clearTypingStatus,
+  unsubscribeFromTyping,
 } from '@/services/messageService';
-import type { ConversationWithUsers, MessageWithSender } from '@/lib/database.types';
+import { uploadChatImage } from '@/services/uploadService';
+import { blockUser, unblockUser, isBlocked, isBlockedByEither, getBlockedUserIds } from '@/services/blockService';
+import type { ConversationWithUsers, MessageWithSender, Message, Product } from '@/lib/database.types';
+import ChatProductBanner from '@/components/ChatProductBanner';
 
 // ─── UI types ─────────────────────────────────────────
 
@@ -26,6 +34,9 @@ interface ContactItem {
   isSaved?: boolean;
   avatar?: string;
   otherUserId: string;
+  productId: string | null;
+  productData: Pick<Product, 'id' | 'title' | 'price' | 'images' | 'status'> | null;
+  unreadCount: number;
 }
 
 interface ChatMessage {
@@ -33,7 +44,12 @@ interface ChatMessage {
   text: string;
   sender: 'me' | 'them';
   time: string;
+  imageUrl?: string | null;
+  isRead: boolean;
 }
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // ─── Helpers ──────────────────────────────────────────
 
@@ -48,25 +64,30 @@ function formatTime(dateStr: string | null): string {
   return date.toLocaleDateString('hr', { day: '2-digit', month: '2-digit' });
 }
 
-function convToContact(conv: ConversationWithUsers, myId: string): ContactItem {
+function convToContact(conv: ConversationWithUsers, myId: string, unreadCount = 0): ContactItem {
   const other = conv.user1_id === myId ? conv.user2 : conv.user1;
   return {
     id: conv.id,
     name: other?.username || 'Korisnik',
-    item: 'Poruka',
+    item: conv.product?.title || 'Poruka',
     snippet: conv.last_message?.content || (conv.last_message_at ? 'Poruka...' : 'Početak razgovora'),
     time: formatTime(conv.last_message_at),
     avatar: other?.avatar_url || `https://picsum.photos/seed/${other?.username || conv.id}/100/100`,
     otherUserId: other?.id || '',
+    productId: conv.product_id,
+    productData: conv.product ?? null,
+    unreadCount,
   };
 }
 
-function dbMsgToChat(msg: MessageWithSender, myId: string): ChatMessage {
+function dbMsgToChat(msg: MessageWithSender | Message, myId: string): ChatMessage {
   return {
     id: msg.id,
-    text: msg.content,
+    text: msg.content || '',
     sender: msg.sender_id === myId ? 'me' : 'them',
     time: formatTime(msg.created_at),
+    imageUrl: msg.image_url || null,
+    isRead: msg.is_read,
   };
 }
 
@@ -107,8 +128,19 @@ const ContactRow: React.FC<{
           <h4 className={`text-[13px] font-bold truncate ${isActive ? 'text-[var(--c-text)]' : 'text-[var(--c-text2)]'}`}>{contact.name}</h4>
           {isPinned && <i className="fa-solid fa-thumbtack text-[8px] text-blue-400 rotate-45"></i>}
         </div>
-        <span className="text-[9px] text-[var(--c-text3)] font-mono">{contact.time}</span>
+        <div className="flex items-center gap-1.5">
+          {contact.unreadCount > 0 && (
+            <span className="min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[8px] font-black flex items-center justify-center">{contact.unreadCount}</span>
+          )}
+          <span className="text-[9px] text-[var(--c-text3)] font-mono">{contact.time}</span>
+        </div>
       </div>
+      {contact.item !== 'Poruka' && (
+        <p className="text-[10px] text-[var(--c-accent)] truncate mb-0.5 flex items-center gap-1">
+          <i className="fa-solid fa-tag text-[8px]"></i>
+          {contact.item}
+        </p>
+      )}
       <p className={`text-[11px] truncate ${isActive ? 'text-blue-400 font-medium' : 'text-[var(--c-text3)]'}`}>
         {contact.snippet}
       </p>
@@ -133,19 +165,42 @@ const ContactRow: React.FC<{
   </div>
 );
 
-const ChatBubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
+const ChatBubble: React.FC<{ msg: ChatMessage; onImageClick?: (url: string) => void }> = ({ msg, onImageClick }) => {
   const isMe = msg.sender === 'me';
+  const hasImage = !!msg.imageUrl;
+  const hasText = !!msg.text;
   return (
     <div className={`flex w-full mb-3 ${isMe ? 'justify-end' : 'justify-start'}`}>
       <div className={`
-          max-w-[80%] sm:max-w-[70%] rounded-[18px] px-4 py-3 relative text-[13px] leading-relaxed font-medium
+          max-w-[80%] sm:max-w-[70%] rounded-[18px] ${hasImage && !hasText ? 'p-1.5' : 'px-4 py-3'} relative text-[13px] leading-relaxed font-medium
           ${isMe
               ? 'bg-blue-600 text-white rounded-br-[6px] shadow-md shadow-blue-500/20'
               : 'bg-[var(--c-card)] text-[var(--c-text2)] border border-[var(--c-border)] rounded-bl-[6px] shadow-sm'
           }
       `}>
-        <p className="pb-3">{msg.text}</p>
-        <span className={`text-[9px] absolute bottom-1.5 ${isMe ? 'right-3 text-blue-200/70' : 'right-3 text-[var(--c-text3)]'}`}>{msg.time}</span>
+        {hasImage && (
+          <button
+            onClick={() => msg.imageUrl && onImageClick?.(msg.imageUrl)}
+            className={`block ${hasText ? 'mb-2 -mx-1 -mt-0.5' : ''} cursor-pointer`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={msg.imageUrl!}
+              alt=""
+              className="max-w-[240px] w-full rounded-lg object-cover"
+              loading="lazy"
+            />
+          </button>
+        )}
+        {hasText && <p className="pb-3">{msg.text}</p>}
+        <span className={`text-[9px] absolute bottom-1.5 flex items-center gap-1 ${isMe ? 'right-3 text-blue-200/70' : 'right-3 text-[var(--c-text3)]'}`}>
+          {msg.time}
+          {isMe && (
+            msg.isRead
+              ? <i className="fa-solid fa-check-double text-[8px] text-blue-300"></i>
+              : <i className="fa-solid fa-check text-[8px] opacity-50"></i>
+          )}
+        </span>
       </div>
     </div>
   );
@@ -185,6 +240,19 @@ function MessagesContent() {
   const [pinnedIds, setPinnedIds] = useState<string[]>(() => loadIds(PINNED_KEY));
   const [savedIds, setSavedIds] = useState<string[]>(() => loadIds(SAVED_KEY));
   const [isSending, setIsSending] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTypingSentRef = useRef<number>(0);
+  const [imagePreview, setImagePreview] = useState<{ file: File; url: string } | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [blockedUserIds, setBlockedUserIds] = useState<string[]>([]);
+  const [isOtherBlocked, setIsOtherBlocked] = useState(false);
+  const [amBlockedByOther, setAmBlockedByOther] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // ── Persist pin/save to localStorage ─────────────────
   useEffect(() => {
@@ -199,12 +267,36 @@ function MessagesContent() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const currentConvIdRef = useRef<string | null>(null);
 
+  // ── Load blocked user IDs ───────────────────────────
+  useEffect(() => {
+    if (!user?.id) return;
+    getBlockedUserIds(user.id).then(setBlockedUserIds).catch(() => {});
+  }, [user?.id]);
+
+  // ── Close dropdown on outside click ────────────────
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    if (showDropdown) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showDropdown]);
+
   // ── Load Conversations ───────────────────────────────
   const loadConversations = useCallback(async () => {
     if (!user?.id) return;
     try {
       const data = await getConversations(user.id);
-      const contacts = data.map(c => convToContact(c, user.id));
+      const convIds = data.map(c => c.id);
+      const unreadMap = await getUnreadCounts(user.id, convIds);
+      const contacts = data
+        .filter(c => {
+          const otherId = c.user1_id === user.id ? c.user2_id : c.user1_id;
+          return !blockedUserIds.includes(otherId);
+        })
+        .map(c => convToContact(c, user.id, unreadMap[c.id] || 0));
       setConversations(contacts);
 
       // Auto-select from URL param or first conversation (only if none selected yet)
@@ -219,7 +311,7 @@ function MessagesContent() {
     } finally {
       setLoadingConvos(false);
     }
-  }, [user?.id, searchParams]);
+  }, [user?.id, searchParams, blockedUserIds]);
 
   useEffect(() => {
     loadConversations();
@@ -232,11 +324,13 @@ function MessagesContent() {
     // Unsubscribe from previous conversation
     if (currentConvIdRef.current && currentConvIdRef.current !== selectedConvId) {
       unsubscribeFromMessages(currentConvIdRef.current);
+      unsubscribeFromTyping(currentConvIdRef.current);
     }
     currentConvIdRef.current = selectedConvId;
 
     setLoadingMessages(true);
     setChatMessages([]);
+    setTypingUsers([]);
 
     getMessages(selectedConvId).then(msgs => {
       setChatMessages(msgs.map(m => dbMsgToChat(m, user.id)));
@@ -245,22 +339,41 @@ function MessagesContent() {
 
     // Mark as read
     markMessagesAsRead(selectedConvId, user.id).catch(() => {});
+    // Reset unread count for this conversation in sidebar
+    setConversations(prev => prev.map(c =>
+      c.id === selectedConvId ? { ...c, unreadCount: 0 } : c
+    ));
 
-    // Realtime subscription
-    const channel = subscribeToMessages(selectedConvId, (newMsg) => {
-      setChatMessages(prev => {
-        // Avoid duplicates (optimistic updates)
-        if (prev.some(m => m.id === newMsg.id)) return prev;
-        return [...prev, dbMsgToChat({ ...newMsg, sender: { id: '', username: '', avatar_url: null, bio: null, level: 1, xp: 0, total_sales: 0, total_purchases: 0, rating_average: null, location: null, created_at: '', updated_at: '' } } as MessageWithSender, user.id)];
-      });
-      // Update snippet in sidebar
-      setConversations(prev => prev.map(c =>
-        c.id === selectedConvId ? { ...c, snippet: newMsg.content, time: formatTime(newMsg.created_at) } : c
-      ));
-    });
+    // Realtime subscription (INSERT + UPDATE)
+    const channel = subscribeToMessages(
+      selectedConvId,
+      (newMsg) => {
+        setChatMessages(prev => {
+          if (prev.some(m => m.id === newMsg.id)) return prev;
+          return [...prev, dbMsgToChat(newMsg, user.id)];
+        });
+        setConversations(prev => prev.map(c =>
+          c.id === selectedConvId ? { ...c, snippet: newMsg.content || '📷', time: formatTime(newMsg.created_at) } : c
+        ));
+        // Auto mark as read if we're viewing this conversation
+        if (newMsg.sender_id !== user.id) {
+          markMessagesAsRead(selectedConvId, user.id).catch(() => {});
+        }
+      },
+      (updatedMsg) => {
+        // Handle read status updates
+        setChatMessages(prev => prev.map(m =>
+          m.id === updatedMsg.id ? { ...m, isRead: updatedMsg.is_read } : m
+        ));
+      }
+    );
+
+    // Typing subscription
+    const typingChannel = subscribeToTyping(selectedConvId, user.id, setTypingUsers);
 
     return () => {
       channel.unsubscribe();
+      typingChannel.unsubscribe();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedConvId, user?.id]);
@@ -271,12 +384,57 @@ function MessagesContent() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [chatMessages]);
 
+  // ── Handle Typing ────────────────────────────────────
+  const handleTyping = useCallback(() => {
+    if (!selectedConvId || !user?.id) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current > 2000) {
+      sendTypingStatus(selectedConvId, user.id);
+      lastTypingSentRef.current = now;
+    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      if (selectedConvId) clearTypingStatus(selectedConvId);
+    }, 3000);
+  }, [selectedConvId, user?.id]);
+
+  // ── Handle Image Select ─────────────────────────────
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      alert(t('chat.invalidFormat'));
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      alert(t('chat.imageTooLarge'));
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setImagePreview({ file, url });
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+  }, [t]);
+
+  const clearImagePreview = useCallback(() => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview.url);
+    setImagePreview(null);
+  }, [imagePreview]);
+
   // ── Handle Send ──────────────────────────────────────
   const handleSend = useCallback(async () => {
-    if (!inputText.trim() || !selectedConvId || !user?.id || isSending) return;
+    const hasText = !!inputText.trim();
+    const hasImage = !!imagePreview;
+    if ((!hasText && !hasImage) || !selectedConvId || !user?.id || isSending) return;
+
+    // Block check
+    if (isOtherBlocked || amBlockedByOther) return;
 
     const text = inputText.trim();
     setInputText('');
+
+    // Clear typing status
+    if (selectedConvId) clearTypingStatus(selectedConvId);
 
     // Optimistic add
     const optimisticId = `opt-${Date.now()}`;
@@ -285,33 +443,46 @@ function MessagesContent() {
       text,
       sender: 'me',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      imageUrl: imagePreview?.url || null,
+      isRead: false,
     };
     setChatMessages(prev => [...prev, optimistic]);
     setIsSending(true);
 
     try {
+      let imageUrl: string | null = null;
+      if (imagePreview) {
+        setImageUploading(true);
+        imageUrl = await uploadChatImage(selectedConvId, user.id, imagePreview.file);
+        clearImagePreview();
+        setImageUploading(false);
+      }
+
       const sent = await sendMessage({
         conversation_id: selectedConvId,
         sender_id: user.id,
-        content: text,
+        content: text || null,
+        image_url: imageUrl,
       });
       // Replace optimistic with real
       setChatMessages(prev => prev.map(m => m.id === optimisticId
-        ? { ...m, id: sent.id }
+        ? { ...m, id: sent.id, imageUrl: sent.image_url || imageUrl }
         : m
       ));
       // Update sidebar snippet
+      const snippetText = text || (imageUrl ? '📷 Slika' : '');
       setConversations(prev => prev.map(c =>
-        c.id === selectedConvId ? { ...c, snippet: text, time: formatTime(sent.created_at) } : c
+        c.id === selectedConvId ? { ...c, snippet: snippetText, time: formatTime(sent.created_at) } : c
       ));
     } catch {
       // Remove optimistic message on error
       setChatMessages(prev => prev.filter(m => m.id !== optimisticId));
       setInputText(text);
+      setImageUploading(false);
     } finally {
       setIsSending(false);
     }
-  }, [inputText, selectedConvId, user?.id, isSending]);
+  }, [inputText, selectedConvId, user?.id, isSending, imagePreview, isOtherBlocked, amBlockedByOther, clearImagePreview]);
 
   const handlePin = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -341,6 +512,39 @@ function MessagesContent() {
   const activeContact = useMemo(() =>
     conversations.find(c => c.id === selectedConvId) || null
   , [selectedConvId, conversations]);
+
+  // ── Check block status when conversation changes ─────
+  useEffect(() => {
+    if (!selectedConvId || !user?.id || !activeContact) return;
+    setIsOtherBlocked(false);
+    setAmBlockedByOther(false);
+    const otherId = activeContact.otherUserId;
+    if (!otherId) return;
+    isBlocked(user.id, otherId).then(setIsOtherBlocked).catch(() => {});
+    isBlocked(otherId, user.id).then(setAmBlockedByOther).catch(() => {});
+  }, [selectedConvId, user?.id, activeContact]);
+
+  // ── Handle Block/Unblock ────────────────────────────
+  const handleBlock = useCallback(async () => {
+    if (!user?.id || !activeContact) return;
+    try {
+      await blockUser(user.id, activeContact.otherUserId);
+      setIsOtherBlocked(true);
+      setBlockedUserIds(prev => [...prev, activeContact.otherUserId]);
+      setShowBlockConfirm(false);
+      setShowDropdown(false);
+    } catch { /* ignore */ }
+  }, [user?.id, activeContact]);
+
+  const handleUnblock = useCallback(async () => {
+    if (!user?.id || !activeContact) return;
+    try {
+      await unblockUser(user.id, activeContact.otherUserId);
+      setIsOtherBlocked(false);
+      setBlockedUserIds(prev => prev.filter(id => id !== activeContact.otherUserId));
+      setShowDropdown(false);
+    } catch { /* ignore */ }
+  }, [user?.id, activeContact]);
 
   if (isLoading) {
     return (
@@ -460,11 +664,47 @@ function MessagesContent() {
                   >
                     <i className="fa-solid fa-thumbtack text-xs"></i>
                   </button>
-                  <button className="w-9 h-9 rounded-full bg-[var(--c-hover)] hover:bg-[var(--c-active)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors">
-                    <i className="fa-solid fa-ellipsis-vertical text-xs"></i>
-                  </button>
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => setShowDropdown(v => !v)}
+                      className="w-9 h-9 rounded-full bg-[var(--c-hover)] hover:bg-[var(--c-active)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors"
+                    >
+                      <i className="fa-solid fa-ellipsis-vertical text-xs"></i>
+                    </button>
+                    {showDropdown && (
+                      <div className="absolute right-0 top-11 z-50 w-52 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] shadow-xl overflow-hidden animate-[fadeIn_0.15s_ease-out]">
+                        {isOtherBlocked ? (
+                          <button
+                            onClick={handleUnblock}
+                            className="w-full px-4 py-3 text-left text-[12px] font-bold text-emerald-500 hover:bg-[var(--c-hover)] flex items-center gap-2.5 transition-colors"
+                          >
+                            <i className="fa-solid fa-ban text-xs"></i>
+                            {t('chat.unblockUser')}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => { setShowBlockConfirm(true); setShowDropdown(false); }}
+                            className="w-full px-4 py-3 text-left text-[12px] font-bold text-red-400 hover:bg-[var(--c-hover)] flex items-center gap-2.5 transition-colors"
+                          >
+                            <i className="fa-solid fa-ban text-xs"></i>
+                            {t('chat.blockUser')}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setShowDropdown(false)}
+                          className="w-full px-4 py-3 text-left text-[12px] font-bold text-orange-400 hover:bg-[var(--c-hover)] flex items-center gap-2.5 transition-colors border-t border-[var(--c-border)]"
+                        >
+                          <i className="fa-solid fa-flag text-xs"></i>
+                          {t('chat.reportUser')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              {/* Article Banner */}
+              <ChatProductBanner product={activeContact.productData} productId={activeContact.productId} />
 
               {/* Messages Scroll Area */}
               <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 no-scrollbar">
@@ -483,44 +723,104 @@ function MessagesContent() {
                       <span className="bg-[var(--c-card)] text-[var(--c-text3)] text-[9px] px-3 py-1 rounded-full border border-[var(--c-border)]">{t('messages.conversation')}</span>
                     </div>
                     {chatMessages.map((msg) => (
-                      <ChatBubble key={msg.id} msg={msg} />
+                      <ChatBubble key={msg.id} msg={msg} onImageClick={setLightboxUrl} />
                     ))}
                   </>
                 )}
                 <div ref={chatEndRef} />
               </div>
 
-              {/* Input Area */}
-              <div className="p-3 sm:p-4 bg-[var(--c-card)] border-t border-[var(--c-border)] shrink-0">
-                <div className="flex items-end gap-2 sm:gap-3 bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-[20px] sm:rounded-[24px] p-2 sm:p-2 focus-within:border-blue-500/50 transition-colors shadow-md">
-                  <button className="w-10 h-10 rounded-full text-[var(--c-text3)] hover:text-blue-400 hover:bg-[var(--c-hover)] flex items-center justify-center transition-colors">
-                    <i className="fa-solid fa-plus"></i>
-                  </button>
-                  <textarea
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSend();
-                      }
-                    }}
-                    placeholder={t('messages.placeholder')}
-                    rows={1}
-                    className="flex-1 bg-transparent text-sm text-[var(--c-text)] py-3 max-h-32 focus:outline-none resize-none no-scrollbar placeholder:text-[var(--c-placeholder)]"
-                  />
-                  <button
-                    onClick={handleSend}
-                    disabled={!inputText.trim() || isSending}
-                    className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
-                  >
-                    {isSending
-                      ? <i className="fa-solid fa-circle-notch fa-spin text-xs"></i>
-                      : <i className="fa-solid fa-paper-plane text-xs"></i>
-                    }
-                  </button>
+              {/* Typing Indicator */}
+              {typingUsers.length > 0 && (
+                <div className="px-4 py-1.5 text-[11px] text-[var(--c-text3)] italic flex items-center gap-2 shrink-0">
+                  <span className="flex gap-0.5">
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </span>
+                  {activeContact?.name} {t('chat.typing')}
                 </div>
-              </div>
+              )}
+
+              {/* Block Overlay */}
+              {(isOtherBlocked || amBlockedByOther) ? (
+                <div className="p-4 bg-[var(--c-card)] border-t border-[var(--c-border)] shrink-0">
+                  <div className="text-center py-3">
+                    <i className="fa-solid fa-ban text-[var(--c-text3)] text-lg mb-2"></i>
+                    <p className="text-[12px] text-[var(--c-text3)] font-bold">
+                      {isOtherBlocked ? t('chat.blocked') : t('chat.blockedByOther')}
+                    </p>
+                    {isOtherBlocked && (
+                      <button
+                        onClick={handleUnblock}
+                        className="mt-2 px-4 py-1.5 text-[11px] font-bold text-blue-500 border border-blue-500/30 rounded-full hover:bg-blue-500/10 transition-colors"
+                      >
+                        {t('chat.unblockUser')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Input Area */
+                <div className="p-3 sm:p-4 bg-[var(--c-card)] border-t border-[var(--c-border)] shrink-0">
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="mb-2 relative inline-block">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagePreview.url} alt="" className="h-20 w-auto rounded-lg object-cover border border-[var(--c-border)]" />
+                      {imageUploading && (
+                        <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                          <i className="fa-solid fa-circle-notch fa-spin text-white"></i>
+                        </div>
+                      )}
+                      <button
+                        onClick={clearImagePreview}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[8px] shadow-lg hover:bg-red-600"
+                      >
+                        <i className="fa-solid fa-xmark"></i>
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex items-end gap-2 sm:gap-3 bg-[var(--c-card-alt)] border border-[var(--c-border2)] rounded-[20px] sm:rounded-[24px] p-2 sm:p-2 focus-within:border-blue-500/50 transition-colors shadow-md">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      onChange={handleImageSelect}
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-10 h-10 rounded-full text-[var(--c-text3)] hover:text-blue-400 hover:bg-[var(--c-hover)] flex items-center justify-center transition-colors"
+                    >
+                      <i className="fa-solid fa-plus"></i>
+                    </button>
+                    <textarea
+                      value={inputText}
+                      onChange={(e) => { setInputText(e.target.value); handleTyping(); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      placeholder={t('messages.placeholder')}
+                      rows={1}
+                      className="flex-1 bg-transparent text-sm text-[var(--c-text)] py-3 max-h-32 focus:outline-none resize-none no-scrollbar placeholder:text-[var(--c-placeholder)]"
+                    />
+                    <button
+                      onClick={handleSend}
+                      disabled={(!inputText.trim() && !imagePreview) || isSending}
+                      className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+                    >
+                      {isSending
+                        ? <i className="fa-solid fa-circle-notch fa-spin text-xs"></i>
+                        : <i className="fa-solid fa-paper-plane text-xs"></i>
+                      }
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-40">
@@ -532,6 +832,57 @@ function MessagesContent() {
             </div>
           )}
         </div>
+
+        {/* Lightbox */}
+        {lightboxUrl && (
+          <div
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center cursor-pointer"
+            onClick={() => setLightboxUrl(null)}
+          >
+            <button
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+              onClick={() => setLightboxUrl(null)}
+            >
+              <i className="fa-solid fa-xmark text-lg"></i>
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxUrl}
+              alt=""
+              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
+
+        {/* Block Confirmation Dialog */}
+        {showBlockConfirm && (
+          <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center">
+            <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-6 max-w-sm mx-4 shadow-2xl">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-3">
+                  <i className="fa-solid fa-ban text-red-400 text-xl"></i>
+                </div>
+                <h3 className="text-sm font-black text-[var(--c-text)] mb-2">{t('chat.blockUser')}</h3>
+                <p className="text-[12px] text-[var(--c-text3)] mb-4">{t('chat.blockConfirm')}</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowBlockConfirm(false)}
+                    className="flex-1 py-2.5 text-[12px] font-bold text-[var(--c-text2)] border border-[var(--c-border)] rounded-[12px] hover:bg-[var(--c-hover)] transition-colors"
+                  >
+                    {t('chat.no')}
+                  </button>
+                  <button
+                    onClick={handleBlock}
+                    className="flex-1 py-2.5 bg-red-500 text-white text-[12px] font-bold rounded-[12px] hover:bg-red-600 transition-colors"
+                  >
+                    {t('chat.yes')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </MainLayout>

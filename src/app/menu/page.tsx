@@ -12,8 +12,11 @@ import { getSupabase } from '@/lib/supabase';
 import { uploadAvatar } from '@/services/uploadService';
 import AppSettings from '@/components/settings/AppSettings';
 import LanguageSettings from '@/components/settings/LanguageSettings';
+import { getBlockedUsers, unblockUser } from '@/services/blockService';
+import { isBusiness } from '@/lib/plans';
+import type { Profile } from '@/lib/database.types';
 
-type MenuStep = 'main' | 'account' | 'main-settings' | 'security' | 'devices' | 'notifications' | 'appearance' | 'language' | 'support' | 'privacy';
+type MenuStep = 'main' | 'account' | 'main-settings' | 'security' | 'devices' | 'notifications' | 'appearance' | 'language' | 'support' | 'privacy' | 'verification' | 'blocked-users';
 
 // ── localStorage Persistence Helpers ─────────────────────────
 
@@ -85,6 +88,302 @@ const MenuOption: React.FC<{ label: string; badge?: string; icon: string; onClic
 );
 
 // ══════════════════════════════════════════════════════════════
+// VERIFICATION STEP COMPONENT
+// ══════════════════════════════════════════════════════════════
+
+function OtpInputMenu({ length = 6, onComplete }: { length?: number; onComplete: (code: string) => void }) {
+  const [values, setValues] = React.useState<string[]>(Array(length).fill(''));
+  const refs = React.useRef<(HTMLInputElement | null)[]>([]);
+  const handleChange = (index: number, val: string) => {
+    if (!/^\d*$/.test(val)) return;
+    const next = [...values];
+    next[index] = val.slice(-1);
+    setValues(next);
+    if (val && index < length - 1) refs.current[index + 1]?.focus();
+    const code = next.join('');
+    if (code.length === length) onComplete(code);
+  };
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !values[index] && index > 0) refs.current[index - 1]?.focus();
+  };
+  return (
+    <div className="flex gap-2 justify-center">
+      {values.map((v, i) => (
+        <input key={i} ref={el => { refs.current[i] = el; }} type="text" inputMode="numeric" maxLength={1} value={v}
+          onChange={e => handleChange(i, e.target.value)} onKeyDown={e => handleKeyDown(i, e)}
+          className="w-10 h-12 rounded-[12px] bg-[var(--c-card)] border border-[var(--c-border2)] text-center text-lg font-black text-[var(--c-text)] outline-none focus:border-blue-500 transition-colors" />
+      ))}
+    </div>
+  );
+}
+
+// ─── Blocked Users Step ──────────────────────────────────
+function BlockedUsersStep({ onBack, userId, t, showToast }: { onBack: () => void; userId?: string; t: (key: string) => string; showToast: (msg: string) => void }) {
+  const [blockedUsers, setBlockedUsers] = useState<(Profile & { blockedAt: string })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [unblocking, setUnblocking] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!userId) return;
+    getBlockedUsers(userId)
+      .then(setBlockedUsers)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  const handleUnblock = async (blockedId: string) => {
+    if (!userId) return;
+    setUnblocking(blockedId);
+    try {
+      await unblockUser(userId, blockedId);
+      setBlockedUsers(prev => prev.filter(u => u.id !== blockedId));
+      showToast(t('chat.unblocked'));
+    } catch {
+      showToast('Greška');
+    } finally {
+      setUnblocking(null);
+    }
+  };
+
+  return (
+    <MainLayout title={t('settings.blockedUsers')} showSigurnost={false} onBack={onBack}>
+      <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-3">
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-16 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] animate-pulse"></div>
+            ))}
+          </div>
+        ) : blockedUsers.length === 0 ? (
+          <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-10 text-center">
+            <i className="fa-solid fa-user-check text-3xl text-[var(--c-text3)] mb-3"></i>
+            <p className="text-sm font-bold text-[var(--c-text)]">{t('settings.blockedUsers.empty')}</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {blockedUsers.map(u => (
+              <div
+                key={u.id}
+                className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 flex items-center gap-3"
+              >
+                <button
+                  onClick={() => router.push(`/user/${u.username}`)}
+                  className="w-10 h-10 rounded-[12px] bg-[var(--c-card-alt)] overflow-hidden shrink-0"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={u.avatar_url || `https://picsum.photos/seed/${u.id}/100/100`}
+                    alt={u.username}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-[var(--c-text)] truncate">{u.username}</p>
+                  {u.full_name && <p className="text-[10px] text-[var(--c-text3)] truncate">{u.full_name}</p>}
+                </div>
+                <button
+                  onClick={() => handleUnblock(u.id)}
+                  disabled={unblocking === u.id}
+                  className="px-3 py-1.5 text-[10px] font-bold text-blue-500 border border-blue-500/30 rounded-full hover:bg-blue-500/10 transition-colors disabled:opacity-50"
+                >
+                  {unblocking === u.id ? (
+                    <i className="fa-solid fa-spinner animate-spin text-xs"></i>
+                  ) : (
+                    t('settings.blockedUsers.unblock')
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </MainLayout>
+  );
+}
+
+interface VerificationStepProps {
+  onBack: () => void;
+  user: ReturnType<typeof useAuth>['user'];
+  refreshProfile: () => Promise<void>;
+  showToast: (msg: string) => void;
+  t: (key: string) => string;
+}
+
+function VerificationStep({ onBack, user, refreshProfile, showToast, t }: VerificationStepProps) {
+  const [emailCodeSent, setEmailCodeSent] = React.useState(false);
+  const [phoneCodeSent, setPhoneCodeSent] = React.useState(false);
+  const [emailSending, setEmailSending] = React.useState(false);
+  const [phoneSending, setPhoneSending] = React.useState(false);
+  const [verifyError, setVerifyError] = React.useState<string | null>(null);
+  const [emailVerified, setEmailVerified] = React.useState(user?.emailVerified || false);
+  const [phoneVerified, setPhoneVerified] = React.useState(user?.phoneVerified || false);
+  const [resendCooldown, setResendCooldown] = React.useState(0);
+  const [phoneResendCooldown, setPhoneResendCooldown] = React.useState(0);
+  const [phoneNumber, setPhoneNumber] = React.useState(user?.phone || '');
+
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  React.useEffect(() => {
+    if (phoneResendCooldown <= 0) return;
+    const timer = setTimeout(() => setPhoneResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [phoneResendCooldown]);
+
+  const sendCode = async (type: 'email' | 'phone') => {
+    if (type === 'email') setEmailSending(true);
+    else setPhoneSending(true);
+    setVerifyError(null);
+    try {
+      // If phone and number not saved yet, update profile first
+      if (type === 'phone' && phoneNumber && phoneNumber !== user?.phone) {
+        await getSupabase().from('profiles').update({ phone: phoneNumber }).eq('id', user!.id);
+      }
+      const res = await fetch('/api/verify/send-code', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setVerifyError(data.error); return; }
+      if (type === 'email') { setEmailCodeSent(true); setResendCooldown(60); }
+      else { setPhoneCodeSent(true); setPhoneResendCooldown(60); }
+    } catch { setVerifyError('Greška pri slanju koda.'); }
+    finally {
+      if (type === 'email') setEmailSending(false);
+      else setPhoneSending(false);
+    }
+  };
+
+  const confirmCode = async (type: 'email' | 'phone', code: string) => {
+    setVerifyError(null);
+    try {
+      const res = await fetch('/api/verify/confirm', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, code }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setVerifyError(data.error); return; }
+      if (type === 'email') setEmailVerified(true);
+      else setPhoneVerified(true);
+      showToast(t('verify.success'));
+      refreshProfile();
+    } catch { setVerifyError('Greška pri verifikaciji.'); }
+  };
+
+  return (
+    <MainLayout title={t('verify.section')} showSigurnost={false} onBack={onBack}>
+      <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-4">
+        {/* Email */}
+        <div className={`bg-[var(--c-card)] border rounded-[18px] p-5 ${emailVerified ? 'border-green-500/30' : 'border-[var(--c-border)]'}`}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`w-10 h-10 rounded-[12px] flex items-center justify-center ${emailVerified ? 'bg-green-500/10 text-green-500' : 'bg-blue-500/10 text-blue-500'}`}>
+              <i className={`fa-solid ${emailVerified ? 'fa-check' : 'fa-envelope'}`}></i>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-[13px] font-bold text-[var(--c-text)]">Email</h3>
+              <p className="text-[10px] text-[var(--c-text2)]">{user?.email}</p>
+            </div>
+            {emailVerified ? (
+              <span className="text-[9px] font-black text-green-500 uppercase tracking-widest">
+                <i className="fa-solid fa-circle-check mr-1"></i>{t('verify.verified')}
+              </span>
+            ) : (
+              <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest">
+                <i className="fa-solid fa-exclamation-circle mr-1"></i>{t('verify.notVerified')}
+              </span>
+            )}
+          </div>
+          {!emailVerified && (
+            <div className="space-y-3">
+              {!emailCodeSent ? (
+                <button onClick={() => sendCode('email')} disabled={emailSending}
+                  className="w-full py-3 rounded-[14px] bg-blue-600/10 text-blue-500 text-[11px] font-black uppercase tracking-widest hover:bg-blue-600/20 transition-colors disabled:opacity-50">
+                  {emailSending ? <i className="fa-solid fa-spinner animate-spin"></i> : t('verify.phone.send')}
+                </button>
+              ) : (
+                <>
+                  <OtpInputMenu onComplete={(code) => confirmCode('email', code)} />
+                  <div className="text-center">
+                    {resendCooldown > 0 ? (
+                      <p className="text-[10px] text-[var(--c-text3)]">{t('verify.resendIn')} {resendCooldown}s</p>
+                    ) : (
+                      <button onClick={() => sendCode('email')} className="text-[10px] text-blue-400 font-bold">{t('verify.resend')}</button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Phone */}
+        <div className={`bg-[var(--c-card)] border rounded-[18px] p-5 ${phoneVerified ? 'border-green-500/30' : 'border-[var(--c-border)]'}`}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`w-10 h-10 rounded-[12px] flex items-center justify-center ${phoneVerified ? 'bg-green-500/10 text-green-500' : 'bg-purple-500/10 text-purple-500'}`}>
+              <i className={`fa-solid ${phoneVerified ? 'fa-check' : 'fa-phone'}`}></i>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-[13px] font-bold text-[var(--c-text)]">Telefon</h3>
+              <p className="text-[10px] text-[var(--c-text2)]">{phoneNumber || t('verify.phone.add')}</p>
+            </div>
+            {phoneVerified ? (
+              <span className="text-[9px] font-black text-green-500 uppercase tracking-widest">
+                <i className="fa-solid fa-circle-check mr-1"></i>{t('verify.verified')}
+              </span>
+            ) : (
+              <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest">
+                <i className="fa-solid fa-exclamation-circle mr-1"></i>{t('verify.notVerified')}
+              </span>
+            )}
+          </div>
+          {!phoneVerified && (
+            <div className="space-y-3">
+              {!phoneNumber && (
+                <div className="bg-[var(--c-hover)] rounded-[14px] p-1.5 pr-4 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[10px] bg-[var(--c-card)] flex items-center justify-center text-[var(--c-text3)]">
+                    <i className="fa-solid fa-phone text-xs"></i>
+                  </div>
+                  <input type="tel" inputMode="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)}
+                    placeholder="+387 6..." className="flex-1 bg-transparent text-sm text-[var(--c-text)] font-bold outline-none placeholder:text-[var(--c-placeholder)]" />
+                </div>
+              )}
+              {!phoneCodeSent ? (
+                <button onClick={() => sendCode('phone')} disabled={phoneSending || !phoneNumber}
+                  className="w-full py-3 rounded-[14px] bg-purple-600/10 text-purple-500 text-[11px] font-black uppercase tracking-widest hover:bg-purple-600/20 transition-colors disabled:opacity-50">
+                  {phoneSending ? <i className="fa-solid fa-spinner animate-spin"></i> : t('verify.phone.send')}
+                </button>
+              ) : (
+                <>
+                  <p className="text-[10px] text-[var(--c-text2)] text-center">{t('verify.phone.sent')} {phoneNumber}</p>
+                  <OtpInputMenu onComplete={(code) => confirmCode('phone', code)} />
+                  <div className="text-center">
+                    {phoneResendCooldown > 0 ? (
+                      <p className="text-[10px] text-[var(--c-text3)]">{t('verify.resendIn')} {phoneResendCooldown}s</p>
+                    ) : (
+                      <button onClick={() => sendCode('phone')} className="text-[10px] text-purple-400 font-bold">{t('verify.resend')}</button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {verifyError && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-[14px] px-4 py-3 text-xs text-red-400 text-center">
+            <i className="fa-solid fa-circle-exclamation mr-2"></i>{verifyError}
+          </div>
+        )}
+      </div>
+    </MainLayout>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════
 
@@ -94,7 +393,11 @@ export default function MenuPage() {
   const { showToast } = useToast();
   const { locale, setLocale, t } = useI18n();
   const { theme, setTheme } = useTheme();
-  const [step, setStep] = useState<MenuStep>('main');
+
+  // Support URL-based step: /menu?step=verification
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const initialStep = (searchParams?.get('step') as MenuStep) || 'main';
+  const [step, setStep] = useState<MenuStep>(initialStep);
 
   // Scroll to top when switching menu sections
   useEffect(() => {
@@ -207,17 +510,20 @@ export default function MenuPage() {
         full_name: accountForm.fullName,
         bio: accountForm.bio,
         phone: accountForm.phone || null,
-        instagram_url: accountForm.instagram || null,
-        facebook_url: accountForm.facebook || null,
+        instagram_url: accountForm.instagram.trim().replace(/^@/, '') || null,
+        facebook_url: accountForm.facebook.trim() || null,
       };
       if (avatarUrl) updatePayload.avatar_url = avatarUrl;
 
-      const { error } = await getSupabase()
-        .from('profiles')
-        .update(updatePayload)
-        .eq('id', user.id);
+      const res = await fetch('/api/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatePayload),
+      });
 
-      if (error) throw error;
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Greška');
+
       setAvatarFile(null);
       setAvatarPreview(null);
       await refreshProfile();
@@ -739,7 +1045,7 @@ export default function MenuPage() {
                 { q: 'Kako objaviti oglas?', a: 'Kliknite na "+" dugme, odaberite kategoriju i popunite podatke. AI će pomoći s opisom.', icon: 'fa-plus-circle' },
                 { q: 'Kako kontaktirati prodavca?', a: 'Otvorite oglas i kliknite "Pošalji Poruku" ili "Telefon".', icon: 'fa-comment' },
                 { q: 'Kako promijeniti lozinku?', a: 'Idite na Meni → Sigurnost → Promijeni Lozinku. Unesite trenutnu i novu lozinku.', icon: 'fa-lock' },
-                { q: 'Kako izbrisati oglas?', a: 'Otvorite svoj oglas i kliknite na tri tačke → Obriši.', icon: 'fa-trash' },
+                { q: 'Kako izbrisati oglas?', a: 'Otvorite svoj oglas i kliknite na tri točke → Obriši.', icon: 'fa-trash' },
                 { q: 'Kako funkcioniše AI pretraga?', a: 'Upišite šta tražite prirodnim jezikom. AI razumije sinonime i ispravlja greške.', icon: 'fa-wand-magic-sparkles' },
               ].map((faq, i) => (
                 <details key={i} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] group">
@@ -796,7 +1102,18 @@ export default function MenuPage() {
     );
   }
 
+  // ── Verification ───────────────────────────────────────
+
+  if (step === 'verification') {
+    return <VerificationStep onBack={() => setStep('main')} user={user} refreshProfile={refreshProfile} showToast={showToast} t={t} />;
+  }
+
   // ── Privacy & Data ─────────────────────────────────────
+
+  // ── Blocked Users ─────────────────────────────────────────
+  if (step === 'blocked-users') {
+    return <BlockedUsersStep onBack={() => setStep('privacy')} userId={user?.id} t={t} showToast={showToast} />;
+  }
 
   if (step === 'privacy') {
     return (
@@ -820,14 +1137,17 @@ export default function MenuPage() {
                 <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-[10px]"></i>
               </button>
 
-              <button className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-4 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors">
+              <button
+                onClick={() => setStep('blocked-users')}
+                className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-4 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-[10px] bg-[var(--c-hover)] flex items-center justify-center">
                     <i className="fa-solid fa-user-slash text-[var(--c-text3)] text-xs"></i>
                   </div>
                   <div>
-                    <span className="text-[13px] font-bold text-[var(--c-text)] block">Blokirani korisnici</span>
-                    <span className="text-[10px] text-[var(--c-text3)]">Upravljajte blokiranim korisnicima</span>
+                    <span className="text-[13px] font-bold text-[var(--c-text)] block">{t('settings.blockedUsers')}</span>
+                    <span className="text-[10px] text-[var(--c-text3)]">{t('settings.blockedUsers.desc')}</span>
                   </div>
                 </div>
                 <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-[10px]"></i>
@@ -929,13 +1249,14 @@ export default function MenuPage() {
             <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-[var(--c-text-muted)] mb-3 px-2">{t('menu.myListings')}</h2>
             <MenuOption label={t('menu.activeListings')} icon="fa-bolt" onClick={() => goToProfileTab('Aktivni')} />
             <MenuOption label={t('menu.finishedListings')} icon="fa-flag-checkered" onClick={() => goToProfileTab('Završeni')} />
-            <MenuOption label={t('menu.archivedListings')} icon="fa-box-archive" onClick={() => goToProfileTab('Arhiv')} />
+            <MenuOption label={t('menu.markedListings')} icon="fa-heart" onClick={() => goToProfileTab('Markirani')} />
         </div>
 
         {/* RAČUN */}
         <div>
             <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-[var(--c-text-muted)] mb-3 mt-4 px-2">{t('menu.account')}</h2>
             <MenuOption label={t('menu.personalInfo')} icon="fa-user-gear" onClick={() => setStep('account')} />
+            <MenuOption label={t('verify.section')} icon="fa-certificate" onClick={() => setStep('verification')} />
             <MenuOption label={t('menu.security')} icon="fa-lock" onClick={() => setStep('security')} />
             <MenuOption label={t('menu.privacy')} icon="fa-shield-halved" onClick={() => setStep('privacy')} />
         </div>
@@ -948,6 +1269,15 @@ export default function MenuPage() {
             <MenuOption label={t('menu.appearance')} icon="fa-palette" onClick={() => setStep('appearance')} />
             <MenuOption label={t('menu.language')} icon="fa-globe" onClick={() => setStep('language')} />
         </div>
+
+        {/* POSLOVNI ALATI (only for Business users) */}
+        {isBusiness(user?.accountType) && (
+          <div>
+            <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-[var(--c-text-muted)] mb-3 mt-4 px-2">Poslovni alati</h2>
+            <MenuOption label="Analitika" icon="fa-chart-line" onClick={() => router.push('/analytics')} />
+            <MenuOption label="Masovno objavljivanje" icon="fa-layer-group" onClick={() => router.push('/bulk-upload')} />
+          </div>
+        )}
 
         {/* PODRŠKA */}
         <div>

@@ -12,6 +12,8 @@ export interface Product {
   seller: string;
   condition: 'New' | 'Like New' | 'Used';
   views?: number;
+  promoted_until?: string | null;
+  sellerAccountType?: string;
 }
 
 export interface SubCategoryGroup {

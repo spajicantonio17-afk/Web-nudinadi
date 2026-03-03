@@ -4,7 +4,7 @@ import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { username, full_name, bio, location, avatar_url, phone } = body
+    const { username, full_name, bio, location, avatar_url, phone, instagram_url, facebook_url } = body
 
     // 1. Authenticate — with 5s timeout so it never hangs
     let userId: string | null = null
@@ -57,6 +57,8 @@ export async function POST(req: NextRequest) {
     if (location !== undefined) updates.location = location
     if (avatar_url !== undefined) updates.avatar_url = avatar_url
     if (phone !== undefined) updates.phone = phone
+    if (instagram_url !== undefined) updates.instagram_url = instagram_url
+    if (facebook_url !== undefined) updates.facebook_url = facebook_url
 
     // 5. Update with admin client (no RLS)
     const { data, error } = await admin

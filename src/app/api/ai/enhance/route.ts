@@ -1,6 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { sanitizeTags } from '@/lib/ai-utils';
+import { createClient } from '@supabase/supabase-js';
+import { isPro } from '@/lib/plans';
+
+// Check user's account type from the auth cookie
+async function getUserAccountType(req: NextRequest): Promise<string> {
+  try {
+    const cookieHeader = req.headers.get('cookie') || '';
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { global: { headers: { cookie: cookieHeader } } }
+    );
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return 'free';
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('account_type')
+      .eq('id', user.id)
+      .single();
+    return profile?.account_type || 'free';
+  } catch {
+    return 'free';
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,6 +33,17 @@ export async function POST(req: NextRequest) {
 
     if (!action) {
       return NextResponse.json({ error: 'Akcija je obavezna' }, { status: 400 });
+    }
+
+    // Gate AI description and quality actions to Pro users
+    if (action === 'description' || action === 'quality') {
+      const accountType = await getUserAccountType(req);
+      if (!isPro(accountType)) {
+        return NextResponse.json(
+          { error: 'Pro plan required', upgrade: true },
+          { status: 403 }
+        );
+      }
     }
 
     if (action === 'title') {

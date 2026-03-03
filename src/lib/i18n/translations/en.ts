@@ -109,6 +109,8 @@ const en: Record<string, string> = {
   'messages.noMessages': 'No messages yet.',
   'messages.sendFirst': 'Send the first message!',
   'messages.conversation': 'Conversation',
+  'messages.articleUnavailable': 'Article no longer available',
+  'messages.articleSold': 'Article has been sold',
 
   // Profile Edit
   'profile.edit.title': 'Edit Profile',
@@ -285,6 +287,156 @@ const en: Record<string, string> = {
   'footer.paymentMethods': 'Payment Methods',
   'footer.allRightsReserved': 'All rights reserved',
   'footer.brandDescription': 'Modern marketplace platform. AI-powered, secure transactions, fast search.',
+
+  // Markirani (Favorites in Profile)
+  'profile.tab.marked': 'Marked',
+  'profile.marked.empty': 'You haven\'t marked any items yet',
+  'profile.marked.explore': 'Explore',
+  'menu.markedListings': 'Marked Listings',
+
+  // Recently Viewed
+  'recentlyViewed.title': 'Recently viewed',
+  'recentlyViewed.clear': 'Clear',
+
+  // Follow System
+  'user.follow': 'Follow',
+  'user.following.label': 'Following',
+  'user.unfollow': 'Unfollow',
+  'user.followers': 'followers',
+  'user.followingCount': 'following',
+
+  // Verification
+  'verify.title': 'Verify your account',
+  'verify.emailSent': 'We sent a code to',
+  'verify.enterCode': 'Enter code',
+  'verify.resend': 'Resend',
+  'verify.resendIn': 'Resend in',
+  'verify.skip': 'Skip',
+  'verify.phone.title': 'Verify your phone number for a more trusted profile',
+  'verify.phone.add': 'Add a phone number for a verified profile',
+  'verify.phone.send': 'Send code',
+  'verify.phone.sent': 'Code sent to',
+  'verify.success': 'Successfully verified!',
+  'verify.wrongCode': 'Wrong code, try again',
+  'verify.expired': 'Code expired, send a new one',
+  'verify.notVerified': 'Not verified',
+  'verify.verified': 'Verified',
+  'verify.section': 'Verification',
+  'verify.progress': 'verified',
+
+  // Notifications (DB-based)
+  'notifications.priceDropTitle': 'Price drop!',
+  'notifications.newListingTitle': 'New listing!',
+  'notifications.markAllRead': 'Mark all as read',
+  'notifications.empty': 'No notifications',
+
+  // Chat Images
+  'chat.sendImage': 'Send image',
+  'chat.imageUploading': 'Uploading image...',
+  'chat.imageTooLarge': 'Image too large (max 5MB)',
+  'chat.viewFullImage': 'View full image',
+  'chat.invalidFormat': 'Unsupported image format',
+
+  // Read Receipts
+  'chat.sent': 'Sent',
+  'chat.read': 'Read',
+
+  // Typing
+  'chat.typing': 'typing...',
+
+  // Blocking
+  'chat.blockUser': 'Block user',
+  'chat.unblockUser': 'Unblock user',
+  'chat.blockConfirm': 'Are you sure you want to block this user?',
+  'chat.blocked': 'You have blocked this user',
+  'chat.blockedByOther': 'You cannot send messages to this user',
+  'chat.unblocked': 'User has been unblocked',
+  'chat.reportUser': 'Report user',
+  'chat.yes': 'Yes',
+  'chat.no': 'No',
+
+  // Block Settings
+  'settings.blockedUsers': 'Blocked users',
+  'settings.blockedUsers.desc': 'Manage blocked users',
+  'settings.blockedUsers.empty': 'You haven\'t blocked anyone',
+  'settings.blockedUsers.unblock': 'Unblock',
+
+  // Pro Plan
+  'plan.pro': 'Pro',
+  'plan.free': 'Free',
+  'plan.business': 'Business',
+  'plan.proBadge': 'PRO',
+  'plan.upgrade': 'Upgrade to Pro',
+  'plan.active': 'Active plan',
+  'plan.expires': 'Plan expires',
+  'plan.contact': 'Contact us for activation',
+
+  // Limits
+  'limits.reached': 'You have reached the limit of {{count}} active listings',
+  'limits.upgrade': 'Upgrade to Pro for up to 30 listings',
+  'limits.imagesMax': 'Maximum {{count}} images',
+
+  // AI Gating
+  'ai.proRequired': 'Available with Pro plan',
+  'ai.upgrade': 'Upgrade to Pro',
+
+  // Promoted / Featured
+  'promoted.badge': 'Featured',
+  'promoted.promote': 'Promote listing',
+  'promoted.promoteDesc': 'Feature your listing for 3 days',
+  'promoted.active': 'Featured until',
+  'promoted.credits': 'You have {{count}} free promotions',
+  'promoted.noCredits': 'No free promotions left',
+  'promoted.comingSoon': 'Coming soon',
+
+  // Statistics
+  'stats.views': 'Views',
+  'stats.favorites': 'Favorites',
+  'stats.messages': 'Messages',
+  'stats.monthlyViews': 'Views this month',
+  'stats.totalFavorites': 'Total favorites',
+
+  // Business
+  'business.title': 'Business Profile',
+  'business.companyName': 'Company Name',
+  'business.address': 'Address',
+  'business.hours': 'Business Hours',
+  'business.website': 'Website',
+  'business.category': 'Business Category',
+  'business.verified': 'Verified Business',
+  'business.team': 'Team',
+  'business.invite': 'Invite Member',
+  'business.owner': 'Owner',
+  'business.admin': 'Admin',
+  'business.member': 'Member',
+  'business.bulkUpload': 'Bulk Upload',
+  'business.analytics': 'Analytics',
+  'business.totalViews': 'Total Views',
+  'business.totalFavorites': 'Total Favorites',
+  'business.activeListings': 'Active Listings',
+  'business.soldItems': 'Sold',
+  'business.topArticles': 'Top Articles',
+  'business.exportCsv': 'Download CSV',
+  'business.onlyBusiness': 'This feature is only available for Business users.',
+  'business.upgradeHint': 'Upgrade to Business',
+  'business.invited': 'Invited',
+  'business.active': 'Active',
+  'business.removeConfirm': 'Are you sure you want to remove this member?',
+  'business.userNotFound': 'No user found with this email.',
+  'business.today': 'Today',
+  'business.closed': 'Closed',
+  'business.chartPlaceholder': 'Views chart — coming soon',
+  'business.bulkMax': 'Maximum 10 articles per batch.',
+  'business.bulkSuccess': 'Successfully published {count} articles!',
+  'business.publishAll': 'Publish All',
+  'business.addArticle': 'Add Article',
+  'business.preview': 'Preview',
+  'business.tools': 'Business Tools',
+  'business.logo': 'Logo',
+  'business.banner': 'Banner Image',
+  'business.save': 'Save Business Profile',
+  'business.saving': 'Saving...',
+  'business.saved': 'Business profile updated!',
 
   // Common
   'common.back': 'Back',

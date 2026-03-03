@@ -109,6 +109,8 @@ const de: Record<string, string> = {
   'messages.noMessages': 'Noch keine Nachrichten.',
   'messages.sendFirst': 'Schreibe die erste Nachricht!',
   'messages.conversation': 'Unterhaltung',
+  'messages.articleUnavailable': 'Artikel nicht mehr verfügbar',
+  'messages.articleSold': 'Artikel wurde verkauft',
 
   // Profile Edit
   'profile.edit.title': 'Profil bearbeiten',
@@ -285,6 +287,156 @@ const de: Record<string, string> = {
   'footer.paymentMethods': 'Zahlungsmethoden',
   'footer.allRightsReserved': 'Alle Rechte vorbehalten',
   'footer.brandDescription': 'Moderner Marktplatz. KI-gestützt, sichere Transaktionen, schnelle Suche.',
+
+  // Markirani (Favoriten im Profil)
+  'profile.tab.marked': 'Markiert',
+  'profile.marked.empty': 'Du hast noch keine Artikel markiert',
+  'profile.marked.explore': 'Entdecken',
+  'menu.markedListings': 'Markierte Anzeigen',
+
+  // Kürzlich angesehen
+  'recentlyViewed.title': 'Kürzlich angesehen',
+  'recentlyViewed.clear': 'Löschen',
+
+  // Follow-System
+  'user.follow': 'Folgen',
+  'user.following.label': 'Folgst du',
+  'user.unfollow': 'Entfolgen',
+  'user.followers': 'Follower',
+  'user.followingCount': 'folgt',
+
+  // Verifizierung
+  'verify.title': 'Verifiziere dein Konto',
+  'verify.emailSent': 'Wir haben einen Code gesendet an',
+  'verify.enterCode': 'Code eingeben',
+  'verify.resend': 'Erneut senden',
+  'verify.resendIn': 'Erneut senden in',
+  'verify.skip': 'Überspringen',
+  'verify.phone.title': 'Verifiziere deine Telefonnummer für ein vertrauenswürdigeres Profil',
+  'verify.phone.add': 'Füge eine Telefonnummer für ein verifiziertes Profil hinzu',
+  'verify.phone.send': 'Code senden',
+  'verify.phone.sent': 'Code gesendet an',
+  'verify.success': 'Erfolgreich verifiziert!',
+  'verify.wrongCode': 'Falscher Code, versuche es erneut',
+  'verify.expired': 'Code abgelaufen, sende einen neuen',
+  'verify.notVerified': 'Nicht verifiziert',
+  'verify.verified': 'Verifiziert',
+  'verify.section': 'Verifizierung',
+  'verify.progress': 'verifiziert',
+
+  // Benachrichtigungen (DB-basiert)
+  'notifications.priceDropTitle': 'Preissenkung!',
+  'notifications.newListingTitle': 'Neuer Artikel!',
+  'notifications.markAllRead': 'Alle als gelesen markieren',
+  'notifications.empty': 'Keine Benachrichtigungen',
+
+  // Chat-Bilder
+  'chat.sendImage': 'Bild senden',
+  'chat.imageUploading': 'Bild wird hochgeladen...',
+  'chat.imageTooLarge': 'Bild zu groß (max 5MB)',
+  'chat.viewFullImage': 'Bild ansehen',
+  'chat.invalidFormat': 'Nicht unterstütztes Bildformat',
+
+  // Lesebestätigungen
+  'chat.sent': 'Gesendet',
+  'chat.read': 'Gelesen',
+
+  // Tipp-Indikator
+  'chat.typing': 'tippt...',
+
+  // Blockieren
+  'chat.blockUser': 'Benutzer blockieren',
+  'chat.unblockUser': 'Benutzer freigeben',
+  'chat.blockConfirm': 'Möchtest du diesen Benutzer wirklich blockieren?',
+  'chat.blocked': 'Du hast diesen Benutzer blockiert',
+  'chat.blockedByOther': 'Du kannst diesem Benutzer keine Nachrichten senden',
+  'chat.unblocked': 'Benutzer wurde freigegeben',
+  'chat.reportUser': 'Benutzer melden',
+  'chat.yes': 'Ja',
+  'chat.no': 'Nein',
+
+  // Block-Einstellungen
+  'settings.blockedUsers': 'Blockierte Benutzer',
+  'settings.blockedUsers.desc': 'Blockierte Benutzer verwalten',
+  'settings.blockedUsers.empty': 'Du hast niemanden blockiert',
+  'settings.blockedUsers.unblock': 'Freigeben',
+
+  // Pro-Plan
+  'plan.pro': 'Pro',
+  'plan.free': 'Kostenlos',
+  'plan.business': 'Business',
+  'plan.proBadge': 'PRO',
+  'plan.upgrade': 'Auf Pro upgraden',
+  'plan.active': 'Aktiver Plan',
+  'plan.expires': 'Plan läuft ab',
+  'plan.contact': 'Kontaktiere uns für die Aktivierung',
+
+  // Limits
+  'limits.reached': 'Du hast das Limit von {{count}} aktiven Anzeigen erreicht',
+  'limits.upgrade': 'Upgrade auf Pro für bis zu 30 Anzeigen',
+  'limits.imagesMax': 'Maximal {{count}} Bilder',
+
+  // KI-Zugang
+  'ai.proRequired': 'Verfügbar mit Pro-Plan',
+  'ai.upgrade': 'Auf Pro upgraden',
+
+  // Hervorgehoben
+  'promoted.badge': 'Hervorgehoben',
+  'promoted.promote': 'Anzeige hervorheben',
+  'promoted.promoteDesc': 'Hebe deine Anzeige für 3 Tage hervor',
+  'promoted.active': 'Hervorgehoben bis',
+  'promoted.credits': 'Du hast {{count}} kostenlose Hervorhebungen',
+  'promoted.noCredits': 'Keine kostenlosen Hervorhebungen mehr',
+  'promoted.comingSoon': 'Demnächst verfügbar',
+
+  // Statistiken
+  'stats.views': 'Aufrufe',
+  'stats.favorites': 'Favoriten',
+  'stats.messages': 'Nachrichten',
+  'stats.monthlyViews': 'Aufrufe diesen Monat',
+  'stats.totalFavorites': 'Favoriten gesamt',
+
+  // Business
+  'business.title': 'Geschäftsprofil',
+  'business.companyName': 'Firmenname',
+  'business.address': 'Adresse',
+  'business.hours': 'Öffnungszeiten',
+  'business.website': 'Webseite',
+  'business.category': 'Geschäftskategorie',
+  'business.verified': 'Verifiziertes Unternehmen',
+  'business.team': 'Team',
+  'business.invite': 'Mitglied einladen',
+  'business.owner': 'Inhaber',
+  'business.admin': 'Administrator',
+  'business.member': 'Mitglied',
+  'business.bulkUpload': 'Massenveröffentlichung',
+  'business.analytics': 'Analytik',
+  'business.totalViews': 'Gesamtaufrufe',
+  'business.totalFavorites': 'Gesamtfavoriten',
+  'business.activeListings': 'Aktive Anzeigen',
+  'business.soldItems': 'Verkauft',
+  'business.topArticles': 'Top Artikel',
+  'business.exportCsv': 'CSV herunterladen',
+  'business.onlyBusiness': 'Diese Funktion ist nur für Business-Nutzer verfügbar.',
+  'business.upgradeHint': 'Auf Business upgraden',
+  'business.invited': 'Eingeladen',
+  'business.active': 'Aktiv',
+  'business.removeConfirm': 'Möchtest du dieses Mitglied wirklich entfernen?',
+  'business.userNotFound': 'Kein Benutzer mit dieser E-Mail gefunden.',
+  'business.today': 'Heute',
+  'business.closed': 'Geschlossen',
+  'business.chartPlaceholder': 'Aufrufdiagramm — demnächst verfügbar',
+  'business.bulkMax': 'Maximal 10 Artikel pro Veröffentlichung.',
+  'business.bulkSuccess': 'Erfolgreich {count} Artikel veröffentlicht!',
+  'business.publishAll': 'Alle veröffentlichen',
+  'business.addArticle': 'Artikel hinzufügen',
+  'business.preview': 'Vorschau',
+  'business.tools': 'Business-Tools',
+  'business.logo': 'Logo',
+  'business.banner': 'Bannerbild',
+  'business.save': 'Geschäftsprofil speichern',
+  'business.saving': 'Speichern...',
+  'business.saved': 'Geschäftsprofil aktualisiert!',
 
   // Common
   'common.back': 'Zurück',

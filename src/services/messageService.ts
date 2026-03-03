@@ -11,7 +11,7 @@ const supabase = getSupabase()
 export async function getConversations(userId: string): Promise<ConversationWithUsers[]> {
   const { data, error } = await supabase
     .from('conversations')
-    .select('*, user1:profiles!user1_id(*), user2:profiles!user2_id(*)')
+    .select('*, user1:profiles!user1_id(*), user2:profiles!user2_id(*), product:products!product_id(id, title, price, images, status)')
     .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
     .order('last_message_at', { ascending: false, nullsFirst: false })
 
@@ -90,7 +90,7 @@ export async function sendMessage(message: MessageInsert): Promise<Message> {
 export async function markMessagesAsRead(conversationId: string, userId: string): Promise<void> {
   const { error } = await supabase
     .from('messages')
-    .update({ is_read: true })
+    .update({ is_read: true, read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)
     .neq('sender_id', userId)
     .eq('is_read', false)
@@ -122,13 +122,38 @@ export async function getUnreadCount(userId: string): Promise<number> {
   return count ?? 0
 }
 
+// ─── Get Unread Counts per Conversation ──────────────
+
+export async function getUnreadCounts(
+  userId: string,
+  conversationIds: string[]
+): Promise<Record<string, number>> {
+  if (conversationIds.length === 0) return {}
+
+  const { data, error } = await supabase
+    .from('messages')
+    .select('conversation_id')
+    .in('conversation_id', conversationIds)
+    .neq('sender_id', userId)
+    .eq('is_read', false)
+
+  if (error) throw error
+
+  const counts: Record<string, number> = {}
+  for (const row of data || []) {
+    counts[row.conversation_id] = (counts[row.conversation_id] || 0) + 1
+  }
+  return counts
+}
+
 // ─── Subscribe to New Messages (Realtime) ─────────────
 
 export function subscribeToMessages(
   conversationId: string,
-  onNewMessage: (message: Message) => void
+  onNewMessage: (message: Message) => void,
+  onMessageUpdated?: (message: Message) => void
 ) {
-  return supabase
+  const channel = supabase
     .channel(`messages:${conversationId}`)
     .on(
       'postgres_changes',
@@ -142,11 +167,62 @@ export function subscribeToMessages(
         onNewMessage(payload.new as Message)
       }
     )
-    .subscribe()
+
+  if (onMessageUpdated) {
+    channel.on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      (payload) => {
+        onMessageUpdated(payload.new as Message)
+      }
+    )
+  }
+
+  return channel.subscribe()
 }
 
 // ─── Unsubscribe from Messages ────────────────────────
 
 export function unsubscribeFromMessages(conversationId: string) {
   supabase.channel(`messages:${conversationId}`).unsubscribe()
+}
+
+// ─── Typing Presence ──────────────────────────────────
+
+export function subscribeToTyping(
+  conversationId: string,
+  myUserId: string,
+  onTypingChange: (typingUserIds: string[]) => void
+) {
+  const channel = supabase.channel(`typing:${conversationId}`)
+  channel
+    .on('presence', { event: 'sync' }, () => {
+      const state = channel.presenceState()
+      const typingUserIds = Object.values(state)
+        .flat()
+        .filter((p: Record<string, unknown>) => p.user_id !== myUserId && p.typing)
+        .map((p: Record<string, unknown>) => p.user_id as string)
+      onTypingChange(typingUserIds)
+    })
+    .subscribe()
+  return channel
+}
+
+export function sendTypingStatus(conversationId: string, userId: string) {
+  const channel = supabase.channel(`typing:${conversationId}`)
+  channel.track({ user_id: userId, typing: true })
+}
+
+export function clearTypingStatus(conversationId: string) {
+  const channel = supabase.channel(`typing:${conversationId}`)
+  channel.untrack()
+}
+
+export function unsubscribeFromTyping(conversationId: string) {
+  supabase.channel(`typing:${conversationId}`).unsubscribe()
 }

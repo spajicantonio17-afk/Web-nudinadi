@@ -32,7 +32,7 @@ export default function TermsPage() {
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
             <h2 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide mb-3">1. Opći uvjeti</h2>
             <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">
-              Korištenjem NudiNađi platforme (web stranica i mobilna aplikacija) prihvatate ove Uvjete korištenja u cijelosti. NudiNađi zadržava pravo izmjene ovih uvjeta u bilo kojem trenutku. O značajnim promjenama ćete biti obaviješteni putem e-maila ili obavijesti na platformi.
+              Korištenjem NudiNađi platforme (web stranica i mobilna aplikacija) prihvaćate ove Uvjete korištenja u cijelosti. NudiNađi zadržava pravo izmjene ovih uvjeta u bilo kojem trenutku. O značajnim promjenama ćete biti obaviješteni putem e-maila ili obavijesti na platformi.
             </p>
           </div>
 
@@ -40,7 +40,7 @@ export default function TermsPage() {
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
             <h2 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide mb-3">2. Korisnički račun</h2>
             <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">
-              Za korištenje određenih funkcija platforme potrebno je kreirati korisnički račun. Minimalni uzrast za registraciju i korištenje platforme je 18 godina — korisnici mlađi od 18 godina ne smiju koristiti NudiNađi platformu. Korisnik je odgovoran za tačnost podataka, sigurnost lozinke i sve aktivnosti koje se odvijaju pod njihovim računom. NudiNađi zadržava pravo suspendovanja ili brisanja računa koji krše ove uvjete.
+              Za korištenje određenih funkcija platforme potrebno je kreirati korisnički račun. Minimalni uzrast za registraciju i korištenje platforme je 18 godina — korisnici mlađi od 18 godina ne smiju koristiti NudiNađi platformu. Korisnik je odgovoran za točnost podataka, sigurnost lozinke i sve aktivnosti koje se odvijaju pod njihovim računom. NudiNađi zadržava pravo suspendiranja ili brisanja računa koji krše ove uvjete.
             </p>
           </div>
 
@@ -48,7 +48,7 @@ export default function TermsPage() {
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
             <h2 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide mb-3">3. Pravila objavljivanja oglasa</h2>
             <p className="text-[11px] text-[var(--c-text3)] leading-relaxed mb-3">
-              Korisnici se obavezuju da će objavljivati samo istinite i tačne oglase. NudiNađi koristi AI sisteme za automatsku detekciju nedozvoljenog sadržaja. Strogo je zabranjeno objavljivanje sljedećih kategorija:
+              Korisnici se obavezuju da će objavljivati samo istinite i točne oglase. NudiNađi koristi AI sisteme za automatsku detekciju nedozvoljenog sadržaja. Strogo je zabranjeno objavljivanje sljedećih kategorija:
             </p>
             <ul className="text-[11px] text-[var(--c-text3)] leading-relaxed list-disc list-inside space-y-1">
               <li>Oružje i municija</li>
@@ -68,7 +68,7 @@ export default function TermsPage() {
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
             <h2 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide mb-3">4. Transakcije</h2>
             <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">
-              NudiNađi je platforma koja povezuje kupce i prodavce. Ne učestvujemo direktno u transakcijama i ne garantujemo kvalitet, sigurnost ili zakonitost oglašenih predmeta. Preporučujemo korištenje sigurnih metoda plaćanja i preuzimanje na javnim mjestima.
+              NudiNađi je platforma koja povezuje kupce i prodavače. Ne sudjelujemo direktno u transakcijama i ne garantujemo kvalitet, sigurnost ili zakonitost oglašenih predmeta. Preporučujemo korištenje sigurnih metoda plaćanja i preuzimanje na javnim mjestima.
             </p>
           </div>
 
@@ -76,7 +76,7 @@ export default function TermsPage() {
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
             <h2 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide mb-3">5. Intelektualno vlasništvo</h2>
             <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">
-              Sav sadržaj na platformi (dizajn, logotipi, tekstovi, softver, AI algoritmi) je vlasništvo NudiNađi ili licencirano. Korisnički sadržaj (slike, opisi oglasa) ostaje vlasništvo korisnika, ali korištenjem platforme dajete NudiNađi neekskluzivnu licencu za prikazivanje tog sadržaja.
+              Sav sadržaj na platformi (dizajn, logotipi, tekstovi, softver, AI algoritmi) je vlasništvo NudiNađi ili ovlašteno. Korisnički sadržaj (slike, opisi oglasa) ostaje vlasništvo korisnika, ali korištenjem platforme dajete NudiNađi neekskluzivnu licencu za prikazivanje tog sadržaja.
             </p>
           </div>
 
@@ -84,7 +84,7 @@ export default function TermsPage() {
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
             <h2 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide mb-3">6. Privatnost i zaštita podataka</h2>
             <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">
-              Obradu osobnih podataka reguliše naša Politika privatnosti. Prikupljamo samo podatke neophodne za funkcionisanje platforme. Detaljne informacije dostupne su u našoj <Link href="/privatnost" className="text-blue-500 font-bold hover:underline">Politici privatnosti</Link>.
+              Obradu osobnih podataka regulira naša Politika privatnosti. Prikupljamo samo podatke nužne za funkcioniranje platforme. Detaljne informacije dostupne su u našoj <Link href="/privatnost" className="text-blue-500 font-bold hover:underline">Politici privatnosti</Link>.
             </p>
           </div>
 
@@ -92,7 +92,7 @@ export default function TermsPage() {
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
             <h2 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide mb-3">7. Ograničenje odgovornosti</h2>
             <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">
-              NudiNađi ne snosi odgovornost za: (a) kvalitet ili stanje oglašenih predmeta, (b) ponašanje korisnika, (c) gubitak nastao korištenjem platforme, (d) privremenu nedostupnost servisa. Platforma se pruža &quot;kao što jeste&quot; bez ikakvih garancija.
+              NudiNađi ne snosi odgovornost za: (a) kvalitet ili stanje oglašenih predmeta, (b) ponašanje korisnika, (c) gubitak nastao korištenjem platforme, (d) privremenu nedostupnost servisa. Platforma se pruža &quot;kao što je&quot; bez ikakvih garancija.
             </p>
           </div>
 
@@ -141,7 +141,7 @@ export default function TermsPage() {
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
             <h2 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide mb-3">11. Brisanje korisničkog računa</h2>
             <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">
-              Korisnik može u svakom trenutku zatražiti brisanje računa putem Postavke → Profil. Nakon zahtjeva, svi osobni podaci bit će trajno uklonjeni u roku od 30 dana. Aktivni oglasi se odmah deaktiviraju, a poruke i chat historija se anonimiziraju. Za pomoć pri brisanju računa možete kontaktirati našu <Link href="/kontakt" className="text-blue-500 font-bold hover:underline">podršku</Link>.
+              Korisnik može u svakom trenutku zatražiti brisanje računa putem Postavke → Profil. Nakon zahtjeva, svi osobni podaci bit će trajno uklonjeni u roku od 30 dana. Aktivni oglasi se odmah deaktiviraju, a poruke i chat povijest se anonimiziraju. Za pomoć pri brisanju računa možete kontaktirati našu <Link href="/kontakt" className="text-blue-500 font-bold hover:underline">podršku</Link>.
             </p>
           </div>
 

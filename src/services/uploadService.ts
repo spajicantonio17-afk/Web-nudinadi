@@ -65,6 +65,28 @@ export async function uploadProductVideo(userId: string, file: File): Promise<st
   return getPublicUrl('product-videos', fileName)
 }
 
+// ─── Upload Chat Image ───────────────────────────────
+
+export async function uploadChatImage(
+  conversationId: string,
+  senderId: string,
+  file: File
+): Promise<string> {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+  const fileName = `chat/${conversationId}/${senderId}_${Date.now()}.${ext}`
+
+  const { error } = await supabase.storage
+    .from('chat-images')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
+
+  if (error) throw error
+
+  return getPublicUrl('chat-images', fileName)
+}
+
 // ─── Delete File ──────────────────────────────────────
 
 export async function deleteFile(bucket: string, path: string): Promise<void> {

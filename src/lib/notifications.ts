@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/auth';
 
 export interface AppNotification {
   id: string;
-  type: 'message' | 'price_drop' | 'promotion' | 'system' | 'sale_confirmation';
+  type: 'message' | 'price_drop' | 'promotion' | 'system' | 'sale_confirmation' | 'new_listing_by_followed' | 'new_follower';
   title: string;
   body: string;
   icon: string;
@@ -204,6 +204,64 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             read: false,
             link: '/',
             transactionId: tx.id,
+          };
+
+          setNotifications(prev => {
+            if (prev.some(n => n.id === notif.id)) return prev;
+            const next = [notif, ...prev].slice(0, MAX_NOTIFICATIONS);
+            storeNotifications(user.id, next);
+            return next;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Supabase Realtime: listen for DB notifications (price_drop, new_listing, new_follower)
+  useEffect(() => {
+    if (!user) return;
+
+    const supabase = getSupabase();
+
+    const channel = supabase
+      .channel(`notif_db_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const dbNotif = payload.new as {
+            id: string;
+            type: string;
+            title: string;
+            body: string | null;
+            data: Record<string, unknown>;
+          };
+
+          const iconMap: Record<string, string> = {
+            price_drop: 'fa-tag',
+            new_listing_by_followed: 'fa-store',
+            new_follower: 'fa-user-plus',
+          };
+
+          const linkMap: Record<string, string | undefined> = {
+            price_drop: dbNotif.data?.product_id ? `/product/${dbNotif.data.product_id}` : undefined,
+            new_listing_by_followed: dbNotif.data?.product_id ? `/product/${dbNotif.data.product_id}` : undefined,
+            new_follower: dbNotif.data?.follower_username ? `/user/${dbNotif.data.follower_username}` : undefined,
+          };
+
+          const notif: AppNotification = {
+            id: `db_${dbNotif.id}`,
+            type: (dbNotif.type as AppNotification['type']) || 'system',
+            title: dbNotif.title,
+            body: dbNotif.body || '',
+            icon: iconMap[dbNotif.type] || 'fa-bell',
+            timestamp: Date.now(),
+            read: false,
+            link: linkMap[dbNotif.type],
           };
 
           setNotifications(prev => {

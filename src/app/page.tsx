@@ -21,6 +21,7 @@ import SearchSuggestions from '@/components/SearchSuggestions';
 import ActiveFilterChips from '@/components/ActiveFilterChips';
 import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import PendingSaleBanner from '@/components/PendingSaleBanner';
+import RecentlyViewed from '@/components/RecentlyViewed';
 import { getCountryPreference } from '@/lib/country';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
@@ -61,6 +62,8 @@ function dbToDisplayProduct(p: ProductFull): Product {
     seller: p.seller?.username || 'korisnik',
     condition: condMap[p.condition] ?? 'Used',
     views: p.views_count,
+    promoted_until: p.promoted_until ?? null,
+    sellerAccountType: (p.seller as unknown as Record<string, unknown>)?.account_type as string | undefined,
   };
 }
 
@@ -1224,6 +1227,9 @@ function HomeContent() {
             </div>
           </div>
         )}
+
+        {/* RECENTLY VIEWED */}
+        <RecentlyViewed />
 
         {/* PRODUCT GRID */}
         <div className="pt-2">

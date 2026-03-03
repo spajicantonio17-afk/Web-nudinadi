@@ -59,7 +59,7 @@ const bs: Record<string, string> = {
   'cart.alreadyIn': 'Već je u korpi',
 
   // Product Detail
-  'product.buy': 'Kupi Artikal',
+  'product.buy': 'Stavi u korpu',
   'product.inCart': 'U Korpi',
   'product.sendMessage': 'Pošalji Poruku',
   'product.phone': 'Telefon',
@@ -109,6 +109,8 @@ const bs: Record<string, string> = {
   'messages.noMessages': 'Još nema poruka.',
   'messages.sendFirst': 'Pošalji prvu poruku!',
   'messages.conversation': 'Razgovor',
+  'messages.articleUnavailable': 'Artikal nije više dostupan',
+  'messages.articleSold': 'Artikal je prodan',
 
   // Profile Edit
   'profile.edit.title': 'Uredi Profil',
@@ -285,6 +287,156 @@ const bs: Record<string, string> = {
   'footer.paymentMethods': 'Načini Plaćanja',
   'footer.allRightsReserved': 'Sva prava zadržana',
   'footer.brandDescription': 'Moderna platforma za kupovinu i prodaju. AI podrška, sigurne transakcije, brza pretraga.',
+
+  // Markirani (Favorites in Profile)
+  'profile.tab.marked': 'Markirani',
+  'profile.marked.empty': 'Još niste označili nijedan artikal',
+  'profile.marked.explore': 'Istraži',
+  'menu.markedListings': 'Markirani Oglasi',
+
+  // Recently Viewed
+  'recentlyViewed.title': 'Nedavno pregledano',
+  'recentlyViewed.clear': 'Obriši',
+
+  // Follow System
+  'user.follow': 'Prati',
+  'user.following.label': 'Pratiš',
+  'user.unfollow': 'Otprati',
+  'user.followers': 'pratitelja',
+  'user.followingCount': 'prati',
+
+  // Verification
+  'verify.title': 'Verificiraj svoj račun',
+  'verify.emailSent': 'Poslali smo kod na',
+  'verify.enterCode': 'Unesi kod',
+  'verify.resend': 'Pošalji ponovo',
+  'verify.resendIn': 'Pošalji ponovo za',
+  'verify.skip': 'Preskoči',
+  'verify.phone.title': 'Verificiraj broj telefona za pouzdaniji profil',
+  'verify.phone.add': 'Dodaj broj telefona za verificiran profil',
+  'verify.phone.send': 'Pošalji kod',
+  'verify.phone.sent': 'Kod je poslan na',
+  'verify.success': 'Uspješno verificirano!',
+  'verify.wrongCode': 'Pogrešan kod, pokušaj ponovo',
+  'verify.expired': 'Kod je istekao, pošalji novi',
+  'verify.notVerified': 'Nije verificirano',
+  'verify.verified': 'Verificirano',
+  'verify.section': 'Verifikacija',
+  'verify.progress': 'verificirano',
+
+  // Notifications (DB-based)
+  'notifications.priceDropTitle': 'Snižena cijena!',
+  'notifications.newListingTitle': 'Novi artikal!',
+  'notifications.markAllRead': 'Označi sve kao pročitano',
+  'notifications.empty': 'Nema obavijesti',
+
+  // Chat Images
+  'chat.sendImage': 'Pošalji sliku',
+  'chat.imageUploading': 'Slanje slike...',
+  'chat.imageTooLarge': 'Slika je prevelika (max 5MB)',
+  'chat.viewFullImage': 'Pogledaj sliku',
+  'chat.invalidFormat': 'Nepodržani format slike',
+
+  // Read Receipts
+  'chat.sent': 'Poslano',
+  'chat.read': 'Pročitano',
+
+  // Typing
+  'chat.typing': 'tipka...',
+
+  // Blocking
+  'chat.blockUser': 'Blokiraj korisnika',
+  'chat.unblockUser': 'Odblokiraj korisnika',
+  'chat.blockConfirm': 'Jeste li sigurni da želite blokirati ovog korisnika?',
+  'chat.blocked': 'Blokirali ste ovog korisnika',
+  'chat.blockedByOther': 'Ne možete slati poruke ovom korisniku',
+  'chat.unblocked': 'Korisnik je odblokiran',
+  'chat.reportUser': 'Prijavi korisnika',
+  'chat.yes': 'Da',
+  'chat.no': 'Ne',
+
+  // Block Settings
+  'settings.blockedUsers': 'Blokirani korisnici',
+  'settings.blockedUsers.desc': 'Upravljajte blokiranim korisnicima',
+  'settings.blockedUsers.empty': 'Niste blokirali nijednog korisnika',
+  'settings.blockedUsers.unblock': 'Odblokiraj',
+
+  // Pro Plan
+  'plan.pro': 'Pro',
+  'plan.free': 'Besplatno',
+  'plan.business': 'Business',
+  'plan.proBadge': 'PRO',
+  'plan.upgrade': 'Nadogradi na Pro',
+  'plan.active': 'Aktivan plan',
+  'plan.expires': 'Plan ističe',
+  'plan.contact': 'Kontaktirajte nas za aktivaciju',
+
+  // Limits
+  'limits.reached': 'Dostigli ste limit od {{count}} aktivnih oglasa',
+  'limits.upgrade': 'Nadogradite na Pro za do 30 oglasa',
+  'limits.imagesMax': 'Maksimalno {{count}} slika',
+
+  // AI Gating
+  'ai.proRequired': 'Dostupno uz Pro plan',
+  'ai.upgrade': 'Nadogradite na Pro',
+
+  // Promoted / Istaknuti
+  'promoted.badge': 'Istaknuto',
+  'promoted.promote': 'Istakni oglas',
+  'promoted.promoteDesc': 'Istaknite svoj oglas na 3 dana',
+  'promoted.active': 'Istaknuto do',
+  'promoted.credits': 'Imate {{count}} besplatnih isticanja',
+  'promoted.noCredits': 'Nemate besplatnih isticanja',
+  'promoted.comingSoon': 'Uskoro dostupno',
+
+  // Statistics
+  'stats.views': 'Pogledano',
+  'stats.favorites': 'Omiljeno',
+  'stats.messages': 'Poruke',
+  'stats.monthlyViews': 'Pregleda ovog mjeseca',
+  'stats.totalFavorites': 'Omiljeno ukupno',
+
+  // Business
+  'business.title': 'Poslovni profil',
+  'business.companyName': 'Naziv firme',
+  'business.address': 'Adresa',
+  'business.hours': 'Radno vrijeme',
+  'business.website': 'Web stranica',
+  'business.category': 'Kategorija djelatnosti',
+  'business.verified': 'Zvanična radnja',
+  'business.team': 'Tim',
+  'business.invite': 'Pozovi člana',
+  'business.owner': 'Vlasnik',
+  'business.admin': 'Administrator',
+  'business.member': 'Član',
+  'business.bulkUpload': 'Masovno objavljivanje',
+  'business.analytics': 'Analitika',
+  'business.totalViews': 'Ukupni pregledi',
+  'business.totalFavorites': 'Ukupni favoriti',
+  'business.activeListings': 'Aktivni oglasi',
+  'business.soldItems': 'Prodano',
+  'business.topArticles': 'Top artikli',
+  'business.exportCsv': 'Preuzmi CSV',
+  'business.onlyBusiness': 'Ova funkcija je dostupna samo za Business korisnike.',
+  'business.upgradeHint': 'Nadogradi na Business',
+  'business.invited': 'Pozvan',
+  'business.active': 'Aktivan',
+  'business.removeConfirm': 'Jeste li sigurni da želite ukloniti ovog člana?',
+  'business.userNotFound': 'Korisnik s ovim emailom nije pronađen.',
+  'business.today': 'Danas',
+  'business.closed': 'Zatvoreno',
+  'business.chartPlaceholder': 'Grafikon pregleda — uskoro dostupno',
+  'business.bulkMax': 'Maksimalno 10 artikala po objavi.',
+  'business.bulkSuccess': 'Uspješno objavljeno {count} artikala!',
+  'business.publishAll': 'Objavi sve',
+  'business.addArticle': 'Dodaj artikal',
+  'business.preview': 'Pregled',
+  'business.tools': 'Poslovni alati',
+  'business.logo': 'Logo',
+  'business.banner': 'Banner slika',
+  'business.save': 'Spremi poslovni profil',
+  'business.saving': 'Snimanje...',
+  'business.saved': 'Poslovni profil ažuriran!',
 
   // Common
   'common.back': 'Nazad',
