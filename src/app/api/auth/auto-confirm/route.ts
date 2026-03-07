@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -22,6 +23,9 @@ function getAdminClient() {
 }
 
 export async function POST(request: Request) {
+  const rl = rateLimit(`auth:${getIp(request)}`, RATE_LIMITS.auth);
+  if (!rl.success) return rateLimitResponse(rl.resetAt);
+
   try {
     const supabaseAdmin = getAdminClient();
     if (!supabaseAdmin) {

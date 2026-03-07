@@ -3,6 +3,7 @@ import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemi
 import { sanitizeTags } from '@/lib/ai-utils';
 import { createClient } from '@supabase/supabase-js';
 import { isPro } from '@/lib/plans';
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 // Check user's account type from the auth cookie
 async function getUserAccountType(req: NextRequest): Promise<string> {
@@ -27,6 +28,9 @@ async function getUserAccountType(req: NextRequest): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
+  if (!rl.success) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await req.json();
     const { action, title, description, category, subcategory, price, images } = body;

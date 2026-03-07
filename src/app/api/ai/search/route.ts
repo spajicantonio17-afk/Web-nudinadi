@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
+  if (!rl.success) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await req.json();
     const { query } = body;

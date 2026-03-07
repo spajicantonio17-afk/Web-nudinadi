@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * POST /api/ai/resolve-item
@@ -11,6 +12,9 @@ import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemi
  * Returns: { success: true, item: string } or { success: false }
  */
 export async function POST(request: Request) {
+  const rl = rateLimit(`ai:${getIp(request)}`, RATE_LIMITS.ai);
+  if (!rl.success) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await request.json();
     const { title, description, subcategory, items } = body as {

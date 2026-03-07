@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import { CATEGORIES } from '@/lib/constants';
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 // ── URL normalization ────────────────────────────────────
 function normalizeUrl(raw: string): string {
@@ -1827,6 +1828,9 @@ Ako podatak nije pronađen, postavi null. NE izmišljaj podatke koji ne postoje 
 }
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
+  if (!rl.success) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await req.json();
     let { url } = body;

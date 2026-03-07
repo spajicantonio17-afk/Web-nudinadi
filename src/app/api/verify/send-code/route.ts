@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { Resend } from 'resend'
 import crypto from 'crypto'
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit'
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY || '')
 }
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`verify:${getIp(req)}`, RATE_LIMITS.verify)
+  if (!rl.success) return rateLimitResponse(rl.resetAt)
+
   try {
     const body = await req.json()
     const { type } = body as { type: 'email' | 'phone' }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server';
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY || '');
@@ -9,6 +10,9 @@ function getResend() {
 const VALID_CATEGORIES = ['bug', 'account', 'listing', 'payment', 'suggestion', 'other'] as const;
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`support:${getIp(req)}`, RATE_LIMITS.support);
+  if (!rl.success) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await req.json();
     const { category, name, email, subject, message, screenshotUrl } = body;

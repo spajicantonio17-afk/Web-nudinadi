@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin } from '@/lib/admin-auth';
 import { createClient } from '@supabase/supabase-js';
+import { sendAccountBanEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await verifyAdmin(req);
@@ -31,6 +32,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Send ban email to user
+  try {
+    const { data: userData } = await supabase.auth.admin.getUserById(userId);
+    if (userData?.user?.email) {
+      await sendAccountBanEmail(userData.user.email, reason, expires_at);
+    }
+  } catch (emailErr) {
+    console.error('[admin/ban] Email notification failed:', emailErr);
+  }
+
   return NextResponse.json({ data });
 }
 

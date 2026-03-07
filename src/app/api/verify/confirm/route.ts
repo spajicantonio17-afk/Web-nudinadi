@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`verify:${getIp(req)}`, RATE_LIMITS.verify)
+  if (!rl.success) return rateLimitResponse(rl.resetAt)
+
   try {
     const body = await req.json()
     const { type, code } = body as { type: 'email' | 'phone'; code: string }

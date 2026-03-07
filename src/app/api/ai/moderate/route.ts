@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 // Auto-log AI results + auto-flag to moderation_reports if needed
 async function logAiResult(action: string, inputData: Record<string, unknown>, resultData: Record<string, unknown>, startTime: number) {
@@ -53,6 +54,9 @@ async function logAiResult(action: string, inputData: Record<string, unknown>, r
 }
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
+  if (!rl.success) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await req.json();
     const { action, title, description, price, category, userId, images, productId } = body;
