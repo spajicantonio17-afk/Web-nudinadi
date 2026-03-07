@@ -20,9 +20,18 @@ interface MainLayoutProps {
   onBack?: (() => void) | null;
 }
 
+const MAIN_ROUTES = ['/', '/messages', '/upload', '/profile', '/menu'];
+
+function getParentRoute(pathname: string): string {
+  // Find the matching main route prefix (e.g. /profile/level → /profile)
+  const parent = MAIN_ROUTES.find((r) => r !== '/' && pathname.startsWith(r + '/'));
+  return parent || '/';
+}
+
 export default function MainLayout({ children, headerRight, hideSearchOnMobile, onBack }: MainLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const isMainRoute = MAIN_ROUTES.includes(pathname);
   const [showSecurityInfo, setShowSecurityInfo] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
@@ -50,8 +59,6 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [isAuthenticated, user?.id, fetchUnread]);
 
-  const isHome = pathname === '/';
-
   return (
     <div className="flex min-h-screen bg-[var(--c-bg)] text-[var(--c-text)] font-sans relative overflow-x-hidden selection:bg-blue-500/20">
 
@@ -61,11 +68,11 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
         {/* LEFT: Back Button + Logo & Brand + Info Buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4">
 
-          {/* Back Button — Mobile: only arrow icon */}
-          {!isHome && onBack !== null && (
+          {/* Back Button — Mobile: only arrow icon, 44x44 touch target */}
+          {!isMainRoute && onBack !== null && (
             <button
-              onClick={onBack || (() => router.back())}
-              className="flex sm:hidden w-8 h-8 items-center justify-center rounded-full bg-[var(--c-card-alt)] border border-[var(--c-border)] text-[var(--c-text3)] active:scale-95 transition-all duration-150"
+              onClick={onBack || (() => router.push(getParentRoute(pathname)))}
+              className="flex sm:hidden w-11 h-11 items-center justify-center rounded-full bg-[var(--c-card-alt)] border border-[var(--c-border)] text-[var(--c-text3)] active:scale-95 active:opacity-70 transition-all duration-150"
               aria-label="Nazad"
             >
               <i className="fa-solid fa-arrow-left text-sm"></i>
@@ -73,9 +80,9 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           )}
 
           {/* Back Button — Desktop: arrow + "Nazad" text */}
-          {!isHome && onBack !== null && (
+          {!isMainRoute && onBack !== null && (
             <button
-              onClick={onBack || (() => router.back())}
+              onClick={onBack || (() => router.push(getParentRoute(pathname)))}
               className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
               aria-label="Nazad"
             >

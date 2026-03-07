@@ -17,6 +17,7 @@ import ProBadge from '@/components/ProBadge';
 import BusinessProfileEditor from '@/components/BusinessProfileEditor';
 import TeamManager from '@/components/TeamManager';
 import { isPro, isBusiness } from '@/lib/plans';
+import VerificationProgress from '@/components/VerificationProgress';
 
 type ReviewWithReviewer = Review & {
   reviewer: { username: string; avatar_url: string | null } | null;
@@ -474,7 +475,7 @@ function ProfileContent() {
         {editOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10" role="dialog" aria-modal="true">
             <div className="absolute inset-0 bg-[var(--c-overlay)] backdrop-blur-sm" onClick={() => !saving && setEditOpen(false)} role="presentation"></div>
-            <div className="relative w-full max-w-lg bg-[var(--c-card)] border border-[var(--c-border)] rounded-[6px] shadow-2xl animate-fadeIn flex flex-col max-h-[90vh]">
+            <div className="relative w-full max-w-lg bg-[var(--c-card)] border border-[var(--c-border)] rounded-[6px] shadow-2xl animate-fadeIn flex flex-col max-h-[80vh]">
 
               {/* HEADER */}
               <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-[var(--c-border)]">
@@ -886,6 +887,9 @@ function ProfileContent() {
               </div>
             )}
         </div>
+
+        {/* VERIFICATION PROGRESS */}
+        {user && <VerificationProgress authUser={user} />}
 
         {/* PRO STATS SUMMARY */}
         {isPro(user?.accountType) && activeProducts.length > 0 && (

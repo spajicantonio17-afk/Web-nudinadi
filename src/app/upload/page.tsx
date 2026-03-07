@@ -4689,38 +4689,41 @@ function UploadPageInner() {
           <div className="max-w-4xl mx-auto space-y-6 pt-2 pb-24">
             {renderBreadcrumb()}
 
-            {/* Godina */}
-            <div>
-              <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-3 px-1">Godina proizvodnje</h2>
-              <div className="relative">
-                <select
-                  value={vehicleYear}
-                  onChange={(e) => setVehicleYear(Number(e.target.value))}
-                  className="w-full appearance-none bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl px-4 py-3.5 text-base font-bold text-[var(--c-text)] outline-none focus:border-blue-500/50 transition-colors cursor-pointer"
-                >
-                  {years.map(y => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <i className="fa-solid fa-chevron-down text-[var(--c-text3)] text-xs"></i>
+            {/* Godina + Gorivo nebeneinander */}
+            <div className="flex gap-4 items-start">
+              {/* Godina */}
+              <div className="w-[140px] shrink-0">
+                <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-3 px-1">Godina</h2>
+                <div className="relative">
+                  <select
+                    value={vehicleYear}
+                    onChange={(e) => setVehicleYear(Number(e.target.value))}
+                    className="w-full appearance-none bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl px-4 py-2.5 text-base font-bold text-[var(--c-text)] outline-none focus:border-blue-500/50 transition-colors cursor-pointer"
+                  >
+                    {years.map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <i className="fa-solid fa-chevron-down text-[var(--c-text3)] text-xs"></i>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Gorivo / Tip pogona */}
-            {fuelOrDrive.length > 0 && (
-              <div>
-                <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-3 px-1">{isBicycle ? 'Tip pogona' : 'Gorivo'}</h2>
-                <div className="flex flex-wrap gap-2">
-                  {fuelOrDrive.map(f => (
-                    <button key={f} onClick={() => setVehicleFuel(f)} className={`px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all ${vehicleFuel === f ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-hover)]'}`}>
-                      {f}
-                    </button>
-                  ))}
+              {/* Gorivo / Tip pogona */}
+              {fuelOrDrive.length > 0 && (
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-[11px] font-black text-blue-500 uppercase tracking-[3px] mb-3 px-1">{isBicycle ? 'Tip pogona' : 'Gorivo'}</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {fuelOrDrive.map(f => (
+                      <button key={f} onClick={() => setVehicleFuel(f)} className={`px-3.5 py-2.5 rounded-xl text-[12px] font-bold transition-all ${vehicleFuel === f ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-text)] hover:bg-[var(--c-hover)]'}`}>
+                        {f}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Odaberi model */}
             <div>

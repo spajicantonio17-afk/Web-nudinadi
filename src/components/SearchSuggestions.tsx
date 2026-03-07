@@ -4,8 +4,10 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSearchSuggestions, type SearchSuggestion } from '@/services/productService'
 import { getAllCategories } from '@/services/categoryService'
+import { searchUsers } from '@/services/profileService'
 import { lookupChassis, chassisLabel } from '@/lib/vehicle-chassis-codes'
 import { getCurrencyMode, eurToKm } from '@/lib/currency'
+import type { Profile } from '@/lib/database.types'
 
 interface SearchSuggestionsProps {
   query: string
@@ -23,6 +25,7 @@ export default function SearchSuggestions({
   onSelectSuggestion,
 }: SearchSuggestionsProps) {
   const [products, setProducts] = useState<SearchSuggestion[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
   const [matchingCategories, setMatchingCategories] = useState<{ id: string; name: string; icon: string | null }[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -43,21 +46,24 @@ export default function SearchSuggestions({
 
     if (q.trim().length < 2) {
       setProducts([])
+      setProfiles([])
       setMatchingCategories([])
       return
     }
 
     setIsLoading(true)
     try {
-      // Parallel: product suggestions + category matching
-      const [suggestions, allCats] = await Promise.all([
+      // Parallel: product suggestions + category matching + profile search
+      const [suggestions, allCats, profileResults] = await Promise.all([
         getSearchSuggestions(q, 5),
         getAllCategories(),
+        searchUsers(q, 4),
       ])
 
       if (controller.signal.aborted) return
 
       setProducts(suggestions)
+      setProfiles(profileResults)
 
       // Match categories by name (case-insensitive)
       const lowerQ = q.toLowerCase()
@@ -68,6 +74,7 @@ export default function SearchSuggestions({
     } catch {
       if (!controller.signal.aborted) {
         setProducts([])
+        setProfiles([])
         setMatchingCategories([])
       }
     } finally {
@@ -96,7 +103,7 @@ export default function SearchSuggestions({
 
   if (!visible || query.trim().length < 2) return null
 
-  const hasResults = products.length > 0 || matchingCategories.length > 0 || chassisMatches.length > 0
+  const hasResults = products.length > 0 || profiles.length > 0 || matchingCategories.length > 0 || chassisMatches.length > 0
 
   return (
     <div className="absolute top-full left-0 right-0 mt-2 z-[200] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] shadow-strong overflow-hidden animate-fadeIn">
@@ -113,9 +120,43 @@ export default function SearchSuggestions({
         </div>
       )}
 
+      {/* Profile matches (shown first) */}
+      {profiles.length > 0 && (
+        <div>
+          <div className="px-4 pt-3 pb-1.5">
+            <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Korisnici</p>
+          </div>
+          <div className="px-3 pb-2 flex gap-2 overflow-x-auto no-scrollbar">
+            {profiles.map(p => (
+              <button
+                key={p.id}
+                onMouseDown={() => router.push(`/user/${p.username}`)}
+                className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-[10px] hover:bg-[var(--c-accent-light)] transition-all duration-150 shrink-0 min-w-[72px]"
+              >
+                {p.avatar_url ? (
+                  <img
+                    src={p.avatar_url}
+                    alt={p.username}
+                    className="w-10 h-10 rounded-full object-cover bg-[var(--c-card-alt)]"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[var(--c-card-alt)] flex items-center justify-center">
+                    <i className="fa-solid fa-user text-[var(--c-text3)] text-[12px]"></i>
+                  </div>
+                )}
+                <span className="text-[11px] font-semibold text-[var(--c-text)] truncate max-w-[80px]">
+                  {p.full_name || p.username}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Vehicle chassis code matches (instant, shown first) */}
       {chassisMatches.length > 0 && (
         <div>
+          {profiles.length > 0 && <div className="border-t border-[var(--c-border)]"></div>}
           <div className="px-4 pt-3 pb-1.5">
             <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Vozila</p>
           </div>
@@ -142,7 +183,7 @@ export default function SearchSuggestions({
       {/* Category matches */}
       {matchingCategories.length > 0 && (
         <div>
-          {chassisMatches.length > 0 && <div className="border-t border-[var(--c-border)]"></div>}
+          {(profiles.length > 0 || chassisMatches.length > 0) && <div className="border-t border-[var(--c-border)]"></div>}
           <div className="px-4 pt-3 pb-1.5">
             <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Kategorije</p>
           </div>
@@ -164,7 +205,7 @@ export default function SearchSuggestions({
       {/* Product matches */}
       {products.length > 0 && (
         <div>
-          {(matchingCategories.length > 0 || chassisMatches.length > 0) && <div className="border-t border-[var(--c-border)]"></div>}
+          {(profiles.length > 0 || matchingCategories.length > 0 || chassisMatches.length > 0) && <div className="border-t border-[var(--c-border)]"></div>}
           <div className="px-4 pt-3 pb-1.5">
             <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Proizvodi</p>
           </div>

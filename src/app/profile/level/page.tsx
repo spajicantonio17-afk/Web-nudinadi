@@ -11,7 +11,7 @@ const XP_ACTIONS = [
   { icon: 'fa-star', label: 'Dojam / Review', desc: 'Od 5 do 25 XP zavisno od ocjene', xp: '5-25', color: 'yellow' },
   { icon: 'fa-handshake', label: 'Uspješna Prodaja', desc: 'Kupac potvrdi transakciju', xp: 50, color: 'emerald' },
   { icon: 'fa-clock', label: 'Dnevna Prijava', desc: 'Svakodnevni bonus', xp: 5, color: 'cyan', iconStyle: 'fa-regular' },
-  { icon: 'fa-shield-halved', label: 'Verifikacija', desc: 'Email + telefon potvrđeni (jednokratno)', xp: 500, color: 'red' },
+  { icon: 'fa-shield-halved', label: 'Verifikacija', desc: 'Svih 5 koraka zavrseno (jednokratno)', xp: 500, color: 'red' },
 ];
 
 const COLOR_MAP: Record<string, string> = {

@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/auth';
 
 export interface AppNotification {
   id: string;
-  type: 'message' | 'price_drop' | 'promotion' | 'system' | 'sale_confirmation' | 'new_listing_by_followed' | 'new_follower';
+  type: 'message' | 'price_drop' | 'promotion' | 'system' | 'sale_confirmation' | 'new_listing_by_followed' | 'new_follower' | 'oglas_published' | 'review_received' | 'sale_completed' | 'level_up' | 'new_message' | 'public_question' | 'verification_step' | 'fully_verified' | 'like_received' | 'price_drop_liked';
   title: string;
   body: string;
   icon: string;
@@ -18,6 +18,7 @@ export interface AppNotification {
   read: boolean;
   link?: string;
   transactionId?: string;
+  xpEarned?: number;
 }
 
 const STORAGE_KEY = 'nudinadi_notifications';

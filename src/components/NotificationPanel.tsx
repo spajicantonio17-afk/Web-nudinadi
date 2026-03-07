@@ -18,6 +18,16 @@ const ICON_COLORS: Record<string, string> = {
   new_listing_by_followed: 'text-indigo-400 bg-indigo-500/10',
   new_follower: 'text-pink-400 bg-pink-500/10',
   sale_confirmation: 'text-green-400 bg-green-500/10',
+  oglas_published: 'text-blue-400 bg-blue-500/10',
+  review_received: 'text-yellow-400 bg-yellow-500/10',
+  sale_completed: 'text-emerald-400 bg-emerald-500/10',
+  level_up: 'text-amber-400 bg-amber-500/10',
+  new_message: 'text-blue-400 bg-blue-500/10',
+  public_question: 'text-purple-400 bg-purple-500/10',
+  verification_step: 'text-cyan-400 bg-cyan-500/10',
+  fully_verified: 'text-emerald-400 bg-emerald-500/10',
+  like_received: 'text-pink-400 bg-pink-500/10',
+  price_drop_liked: 'text-emerald-400 bg-emerald-500/10',
 };
 
 function timeAgo(ts: number, t: (key: string, params?: Record<string, string | number>) => string): string {

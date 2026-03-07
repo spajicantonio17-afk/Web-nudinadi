@@ -484,15 +484,61 @@ export interface UserFollower {
 
 // ─── Notification Types ──────────────────────────────
 
+export type NotificationType =
+  | 'oglas_published'
+  | 'review_received'
+  | 'sale_completed'
+  | 'level_up'
+  | 'new_message'
+  | 'public_question'
+  | 'verification_step'
+  | 'fully_verified'
+  | 'like_received'
+  | 'price_drop_liked'
+  | 'price_drop'
+  | 'new_listing_by_followed'
+  | 'new_follower'
+  | 'system'
+
 export interface Notification {
   id: string
   user_id: string
-  type: string
+  type: NotificationType | string
   title: string
   body: string | null
   data: Record<string, unknown>
   is_read: boolean
   created_at: string
+}
+
+export interface NotificationInsert {
+  id?: string
+  user_id: string
+  type: NotificationType | string
+  title: string
+  body?: string | null
+  data?: Record<string, unknown>
+  is_read?: boolean
+}
+
+// ─── Product Questions Types ─────────────────────────
+
+export interface ProductQuestion {
+  id: string
+  product_id: string
+  user_id: string
+  question: string
+  answer: string | null
+  answered_at: string | null
+  created_at: string
+}
+
+export interface ProductQuestionInsert {
+  id?: string
+  product_id: string
+  user_id: string
+  question: string
+  answer?: string | null
 }
 
 // ─── Verification Code Types ─────────────────────────
@@ -616,6 +662,18 @@ export interface Database {
         Row: UserBlock
         Insert: UserBlockInsert
         Update: Partial<UserBlockInsert>
+        Relationships: []
+      }
+      notifications: {
+        Row: Notification
+        Insert: NotificationInsert
+        Update: Partial<NotificationInsert>
+        Relationships: []
+      }
+      product_questions: {
+        Row: ProductQuestion
+        Insert: ProductQuestionInsert
+        Update: Partial<ProductQuestionInsert>
         Relationships: []
       }
     }

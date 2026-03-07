@@ -22,6 +22,8 @@ import { uploadChatImage } from '@/services/uploadService';
 import { blockUser, unblockUser, isBlocked, isBlockedByEither, getBlockedUserIds } from '@/services/blockService';
 import type { ConversationWithUsers, MessageWithSender, Message, Product } from '@/lib/database.types';
 import ChatProductBanner from '@/components/ChatProductBanner';
+import ObavjestiContactRow from '@/components/ObavjestiContactRow';
+import ObavjestiChat from '@/components/ObavjestiChat';
 
 // ─── UI types ─────────────────────────────────────────
 
@@ -253,6 +255,8 @@ function MessagesContent() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showObavijesti, setShowObavijesti] = useState(false);
+  const [obavjestiUnread, setObavjestiUnread] = useState(0);
 
   // ── Persist pin/save to localStorage ─────────────────
   useEffect(() => {
@@ -608,6 +612,13 @@ function MessagesContent() {
 
           {/* Contact List */}
           <div className="flex-1 overflow-y-auto no-scrollbar space-y-1 pr-1">
+            {/* Obavijesti Channel — always first */}
+            <ObavjestiContactRow
+              isSelected={showObavijesti}
+              onClick={() => { setShowObavijesti(true); setSelectedConvId(null); }}
+              unreadCount={obavjestiUnread}
+            />
+
             {loadingConvos ? (
               <div className="space-y-2 px-1">
                 {[1, 2, 3].map(i => (
@@ -621,7 +632,7 @@ function MessagesContent() {
                   contact={contact}
                   isActive={selectedConvId === contact.id}
                   isPinned={pinnedIds.includes(contact.id)}
-                  onClick={() => setSelectedConvId(contact.id)}
+                  onClick={() => { setSelectedConvId(contact.id); setShowObavijesti(false); }}
                   onPin={(e) => handlePin(e, contact.id)}
                   onSave={(e) => handleSave(e, contact.id)}
                 />
@@ -637,17 +648,29 @@ function MessagesContent() {
 
         {/* --- RIGHT CHAT AREA --- */}
         <div className="flex-1 min-w-0 bg-[var(--c-card)]/50 backdrop-blur-md rounded-[20px] sm:rounded-[32px] border border-[var(--c-border)] flex flex-col relative overflow-hidden shadow-2xl">
-          {activeContact ? (
+          {showObavijesti ? (
+            <ObavjestiChat
+              isOpen={true}
+              onClose={() => setShowObavijesti(false)}
+              onUnreadCountChange={setObavjestiUnread}
+            />
+          ) : activeContact ? (
             <>
               {/* Chat Header */}
               <div className="h-16 sm:h-20 border-b border-[var(--c-border)] flex items-center justify-between px-4 sm:px-6 bg-[var(--c-card)]/80 shrink-0">
-                <div className="flex items-center gap-3 sm:gap-4">
+                <div
+                  className="flex items-center gap-3 sm:gap-4 cursor-pointer group min-h-[44px]"
+                  onClick={() => router.push(`/user/${activeContact.name}`)}
+                  role="link"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/user/${activeContact.name}`) }}
+                >
                   <div className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={activeContact.avatar} alt={activeContact.name} className="w-10 h-10 sm:w-11 sm:h-11 rounded-[12px] object-cover bg-[var(--c-card-alt)]" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-[var(--c-text)] leading-none flex gap-2 items-center">
+                    <h3 className="text-sm font-black text-[var(--c-text)] leading-none flex gap-2 items-center group-hover:text-[var(--c-accent)] transition-colors">
                       {activeContact.name}
                       {pinnedIds.includes(activeContact.id) && <i className="fa-solid fa-thumbtack text-[8px] text-blue-400 rotate-45"></i>}
                     </h3>
