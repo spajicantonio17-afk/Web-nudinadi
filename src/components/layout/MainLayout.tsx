@@ -69,7 +69,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4">
 
           {/* Back Button — Mobile: only arrow icon, 44x44 touch target */}
-          {!isMainRoute && onBack !== null && (
+          {(onBack !== undefined ? onBack !== null : !isMainRoute) && (
             <button
               onClick={onBack || (() => router.push(getParentRoute(pathname)))}
               className="flex sm:hidden w-11 h-11 items-center justify-center rounded-full bg-[var(--c-card-alt)] border border-[var(--c-border)] text-[var(--c-text3)] active:scale-95 active:opacity-70 transition-all duration-150"
@@ -80,7 +80,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           )}
 
           {/* Back Button — Desktop: arrow + "Nazad" text */}
-          {!isMainRoute && onBack !== null && (
+          {(onBack !== undefined ? onBack !== null : !isMainRoute) && (
             <button
               onClick={onBack || (() => router.push(getParentRoute(pathname)))}
               className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-[10px] blue-gradient text-white shadow-accent hover:brightness-110 transition-all duration-150 active:scale-95"
