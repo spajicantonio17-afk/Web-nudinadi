@@ -23,6 +23,7 @@ import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import PendingSaleBanner from '@/components/PendingSaleBanner';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import { getCountryPreference } from '@/lib/country';
+import CategoryFilterBar, { type AttributeFilters } from '@/components/CategoryFilterBar';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
 
@@ -104,6 +105,9 @@ function HomeContent() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [isDetectingGPS, setIsDetectingGPS] = useState(false);
+  const [attributeFilters, setAttributeFilters] = useState<AttributeFilters>({});
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [selectedSubItem, setSelectedSubItem] = useState<string | null>(null);
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -140,13 +144,35 @@ function HomeContent() {
     if (activeCategory !== 'Sve') {
       try {
         const allCats = await getAllCategories();
-        const parent = allCats.find(c => c.name === activeCategory);
-        if (parent) {
-          const subs = allCats.filter(c => c.parent_category_id === parent.id);
-          if (subs.length > 0) {
-            serverFilters.category_ids = [parent.id, ...subs.map(s => s.id)];
+
+        // If a subcategory or item is selected, narrow to that specific category
+        if (selectedSubCategory || selectedSubItem) {
+          const targetName = selectedSubItem || selectedSubCategory;
+          const match = allCats.find(c => c.name === targetName);
+          if (match) {
+            // Also include children of this subcategory
+            const children = allCats.filter(c => c.parent_category_id === match.id);
+            if (children.length > 0) {
+              serverFilters.category_ids = [match.id, ...children.map(c => c.id)];
+            } else {
+              serverFilters.category_id = match.id;
+            }
           } else {
-            serverFilters.category_id = parent.id;
+            // Fallback: use parent category
+            const parent = allCats.find(c => c.name === activeCategory);
+            if (parent) {
+              serverFilters.category_id = parent.id;
+            }
+          }
+        } else {
+          const parent = allCats.find(c => c.name === activeCategory);
+          if (parent) {
+            const subs = allCats.filter(c => c.parent_category_id === parent.id);
+            if (subs.length > 0) {
+              serverFilters.category_ids = [parent.id, ...subs.map(s => s.id)];
+            } else {
+              serverFilters.category_id = parent.id;
+            }
           }
         }
       } catch { /* fallback: no category filter */ }
@@ -185,6 +211,11 @@ function HomeContent() {
     const countryPref = getCountryPreference();
     if (countryPref !== 'all') serverFilters.country = countryPref;
 
+    // Category-specific attribute filters
+    if (Object.keys(attributeFilters).length > 0) {
+      serverFilters.attributes = attributeFilters;
+    }
+
     // Sort
     if (filters.sortBy === 'price_asc') { serverFilters.sortBy = 'price'; serverFilters.sortOrder = 'asc'; }
     else if (filters.sortBy === 'price_desc') { serverFilters.sortBy = 'price'; serverFilters.sortOrder = 'desc'; }
@@ -192,7 +223,7 @@ function HomeContent() {
     else { serverFilters.sortBy = 'created_at'; serverFilters.sortOrder = 'desc'; }
 
     return serverFilters;
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem]);
 
   // Load products from Supabase (re-fetches when filters change)
   const filterVersion = useRef(0);
@@ -229,7 +260,7 @@ function HomeContent() {
         if (version === filterVersion.current) setIsLoadingProducts(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem]);
 
   // Load more products (infinite scroll — uses same server-side filters)
   const loadMoreProducts = useCallback(async () => {
@@ -268,6 +299,9 @@ function HomeContent() {
   // Sync category to URL
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
+    setAttributeFilters({}); // Reset attribute filters on category change
+    setSelectedSubCategory(null);
+    setSelectedSubItem(null);
     const url = cat === 'Sve' ? '/' : `/?category=${encodeURIComponent(cat)}`;
     window.history.replaceState(null, '', url);
   };
@@ -396,6 +430,10 @@ function HomeContent() {
         // Apply AI radius filter (only 5-200km, must have location too)
         if (d.filters?.radius && typeof d.filters.radius === 'number' && d.filters.radius >= 5 && d.filters.radius <= 200 && d.filters?.location) {
           setFilters(prev => ({ ...prev, radiusKm: d.filters.radius }));
+        }
+        // Apply AI-extracted category-specific attributes
+        if (d.attributes && typeof d.attributes === 'object' && Object.keys(d.attributes).length > 0) {
+          setAttributeFilters(d.attributes);
         }
         if (d.suggestions?.length) setAiSearchSuggestions(d.suggestions);
       }
@@ -867,7 +905,7 @@ function HomeContent() {
               )}
               {/* Filter chips */}
               <div className="flex flex-wrap gap-1.5 px-1 max-w-[480px] w-full">
-                {aiCategory && (
+                {aiCategory && activeCategory === 'Sve' && (
                   <button onClick={() => { setAiCategory(null); handleCategoryChange('Sve'); }} className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-[10px] hover:bg-red-50 hover:border-red-200 transition-all duration-150 group">
                     <i className="fa-solid fa-tags text-blue-500 text-[10px] group-hover:text-red-500"></i>
                     <span className="text-[11px] font-bold text-blue-600 group-hover:text-red-600">{aiCategory}</span>
@@ -903,6 +941,7 @@ function HomeContent() {
                     setAiCategory(null);
                     setAiCondition(null);
                     setAiCorrectedQuery(null);
+                    setAttributeFilters({});
                     setFilters(prev => ({ ...prev, condition: 'all' }));
                     handleCategoryChange('Sve');
                   }}
@@ -1228,6 +1267,28 @@ function HomeContent() {
           </div>
         )}
 
+        {/* CATEGORY-SPECIFIC FILTER BAR */}
+        {activeCategory !== 'Sve' && (
+          <div className="flex justify-center mb-1.5 mt-2">
+            <CategoryFilterBar
+              activeCategory={activeCategory}
+              attributeFilters={attributeFilters}
+              onAttributeFiltersChange={setAttributeFilters}
+              onClearCategory={() => {
+                setAiCategory(null);
+                setAttributeFilters({});
+                handleCategoryChange('Sve');
+              }}
+              selectedSubCategory={selectedSubCategory}
+              selectedSubItem={selectedSubItem}
+              onSubCategoryChange={(sub, item) => {
+                setSelectedSubCategory(sub);
+                setSelectedSubItem(item);
+              }}
+            />
+          </div>
+        )}
+
         {/* RECENTLY VIEWED */}
         <RecentlyViewed />
 
@@ -1332,6 +1393,9 @@ function HomeContent() {
           aiPriceMax={aiPriceMax}
           currency={aiCurrency}
           onCurrencyChange={setAiCurrency}
+          activeCategory={activeCategory}
+          attributeFilters={attributeFilters}
+          onAttributeFiltersChange={setAttributeFilters}
         />
       </div>
     </MainLayout>

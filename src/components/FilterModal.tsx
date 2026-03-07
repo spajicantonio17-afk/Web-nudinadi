@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import type { SearchCurrency } from '@/lib/utils';
+import { getCategoryFilters } from '@/lib/category-filters';
+import type { AttributeFilters } from '@/components/CategoryFilterBar';
 
 const BAM_RATE = 1.95583;
 
@@ -116,6 +118,12 @@ interface FilterModalProps {
   aiPriceMax?: number;
   currency?: SearchCurrency;
   onCurrencyChange?: (currency: SearchCurrency) => void;
+  /** Active category name for showing boolean attribute filters */
+  activeCategory?: string;
+  /** Current attribute filters (boolean toggles) */
+  attributeFilters?: AttributeFilters;
+  /** Callback when attribute filters change */
+  onAttributeFiltersChange?: (filters: AttributeFilters) => void;
 }
 
 // ── Component ────────────────────────────────────────────────────
@@ -133,6 +141,9 @@ export default function FilterModal({
   aiPriceMax,
   currency = 'EUR',
   onCurrencyChange,
+  activeCategory,
+  attributeFilters,
+  onAttributeFiltersChange,
 }: FilterModalProps) {
   const [filters, setFilters] = useState<FilterState>(currentFilters);
   const [displayCurrency, setDisplayCurrency] = useState<SearchCurrency>(currency);
@@ -438,6 +449,44 @@ export default function FilterModal({
               activeClass="bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
             />
           </Section>
+
+          {/* ROW 6: Category-Specific Boolean Filters */}
+          {activeCategory && activeCategory !== 'Sve' && (() => {
+            const config = getCategoryFilters(activeCategory);
+            if (!config || config.booleanFilters.length === 0) return null;
+            return (
+              <Section icon="fa-list-check" label={`${activeCategory} — Dodatno`} accent="bg-indigo-500">
+                <div className="grid grid-cols-2 gap-2">
+                  {config.booleanFilters.map((bf) => {
+                    const isActive = attributeFilters?.[bf.key] === true;
+                    return (
+                      <button
+                        key={bf.key}
+                        onClick={() => {
+                          if (!onAttributeFiltersChange) return;
+                          const newAttrs = { ...(attributeFilters || {}) };
+                          if (isActive) {
+                            delete newAttrs[bf.key];
+                          } else {
+                            newAttrs[bf.key] = true;
+                          }
+                          onAttributeFiltersChange(newAttrs);
+                        }}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-[4px] text-[11px] font-semibold transition-all duration-150 active:scale-95 border ${
+                          isActive
+                            ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/30'
+                            : 'bg-[var(--c-card-alt)] text-[var(--c-text3)] border-[var(--c-border)] hover:border-[var(--c-active)] hover:text-[var(--c-text2)]'
+                        }`}
+                      >
+                        <i className={`fa-solid ${isActive ? 'fa-toggle-on' : 'fa-toggle-off'} text-[12px]`}></i>
+                        <span className="truncate">{bf.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Section>
+            );
+          })()}
 
           <div className="h-1" />
         </div>

@@ -1904,18 +1904,6 @@ export async function POST(req: NextRequest) {
     // Extract location directly from HTML (structured data — always reliable)
     const htmlLocation = extractLocationFromHtml(html);
 
-    // ── DEBUG: log what we extracted ──
-    console.log('[import] DEBUG breadcrumbs:', breadcrumbs);
-    console.log('[import] DEBUG htmlLocation:', htmlLocation);
-    console.log('[import] DEBUG html length:', html.length);
-    // Check if __NUXT__ or location data exists in HTML
-    const hasNuxt = html.includes('__NUXT__');
-    const hasLocationJson = html.includes('"location"');
-    const hasCityName = html.includes('"cityName"');
-    const locationSnippet = html.match(/"location"\s*:\s*\{[^}]{0,200}/i);
-    console.log('[import] DEBUG hasNuxt:', hasNuxt, 'hasLocationJson:', hasLocationJson, 'hasCityName:', hasCityName);
-    console.log('[import] DEBUG location snippet from HTML:', locationSnippet?.[0]?.slice(0, 200));
-
     const metaFallback = {
       title: meta['og:title'] || meta.title || null,
       description: (htmlDescription || meta['og:description'] || meta.description || '')
@@ -1984,13 +1972,8 @@ export async function POST(req: NextRequest) {
       data.images = images.slice(0, 10);
     }
 
-    // ── DEBUG: AI result ──
-    console.log('[import] DEBUG AI category:', data.category, '| AI location:', data.location, '| AI subcategory:', data.subcategory);
-
     // ── Post-process: fill missing price, year, km, condition from text ──
     postProcessData(data, meta, pageText, jsonLd, htmlLocation);
-
-    console.log('[import] DEBUG after postProcess — location:', data.location, '| category:', data.category);
 
     // ── BREADCRUMB OVERRIDE: source page category is ALWAYS most reliable ──
     if (breadcrumbs) {

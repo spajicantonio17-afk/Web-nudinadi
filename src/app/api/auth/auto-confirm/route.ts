@@ -39,8 +39,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'userId required' }, { status: 400 });
     }
 
-    console.log('[auto-confirm] Confirming user:', userId);
-
     const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
       email_confirm: true,
     });
@@ -50,7 +48,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log('[auto-confirm] Success — user confirmed:', data.user?.id, 'email_confirmed_at:', data.user?.email_confirmed_at);
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[auto-confirm] Unexpected error:', err);

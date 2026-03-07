@@ -26,6 +26,8 @@ const VEHICLE_FIELDS: CategoryField[] = [
   { key: 'godiste',    label: 'Godište',      type: 'number', formPage: 1, placeholder: 'npr. 2018' },
   { key: 'km',         label: 'Kilometraža',  type: 'number', formPage: 1, placeholder: 'npr. 120000', unit: 'km' },
   { key: 'motor',      label: 'Motor',        type: 'text',   formPage: 1, placeholder: 'npr. 2.0 TDI 110 kW' },
+  { key: 'kubikaza',   label: 'Kubikaža (ccm)', type: 'number', formPage: 1, placeholder: 'npr. 1998', unit: 'ccm' },
+  { key: 'snaga',      label: 'Snaga (kW)',   type: 'number', formPage: 1, placeholder: 'npr. 110', unit: 'kW' },
   { key: 'gorivo',     label: 'Gorivo',       type: 'select', formPage: 1, options: ['Dizel', 'Benzin', 'Benzin + LPG', 'Hibrid', 'Plug-in hibrid', 'Električni', 'CNG'] },
   { key: 'mjenjac',    label: 'Mjenjač',      type: 'select', formPage: 1, options: ['Ručni', 'Automatik', 'Poluautomatik', 'DSG / DCT'] },
   { key: 'karoserija', label: 'Karoserija',   type: 'select', formPage: 1, options: ['Sedan', 'Karavan', 'Hatchback', 'Coupe', 'Kabriolet', 'SUV', 'Crossover', 'Pickup', 'Van', 'Minivan', 'Limuzina'] },
@@ -111,8 +113,11 @@ const NEKRETNINE_FIELDS: CategoryField[] = [
   // Page 1 — Grunddaten (Quick-Tap Daten kommen über attributes)
   { key: 'povrsina',        label: 'Površina (m²)',          type: 'number', formPage: 1, placeholder: 'npr. 65' },
   { key: 'godinaIzgradnje', label: 'Godina izgradnje',       type: 'number', formPage: 1, placeholder: 'npr. 2005' },
+  { key: 'brojSoba',        label: 'Broj soba',              type: 'select', formPage: 1, options: ['1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5+'] },
   { key: 'brojKupatila',    label: 'Broj kupatila',          type: 'select', formPage: 1, options: ['1', '2', '3', '4', '5+'] },
+  { key: 'kat',             label: 'Kat/Sprat',              type: 'select', formPage: 1, options: ['Prizemlje', '1', '2', '3', '4', '5+'] },
   { key: 'ukupnoEtaza',     label: 'Ukupno etaža u zgradi', type: 'number', formPage: 1, placeholder: 'npr. 6' },
+  { key: 'namjestenost',    label: 'Namještenost',           type: 'select', formPage: 1, options: ['Namješten', 'Polunamješten', 'Nenamješten'] },
   // Page 2 — Dodatne informacije
   { key: 'energetskirazred', label: 'Energetski razred',    type: 'select', formPage: 2, options: ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'] },
   { key: 'orijentacija',    label: 'Orijentacija',           type: 'select', formPage: 2, options: ['Sjever', 'Jug', 'Zapad', 'Istok'] },
@@ -1617,6 +1622,7 @@ export function getPosloviFields(_subType: string): CategoryField[] {
   // === Page 1 ===
   fields.push(
     { key: 'tipOglasa', label: 'Tip oglasa', type: 'button-select', formPage: 1, options: ['Nudim posao', 'Tražim posao'] },
+    { key: 'tipPosla', label: 'Tip posla', type: 'select', formPage: 1, options: ['Puno radno vrijeme', 'Pola radnog vremena', 'Honorarno', 'Praksa'] },
     { key: 'vrstaZaposlenja', label: 'Vrsta zaposlenja', type: 'select', formPage: 1, options: ['Stalni radni odnos', 'Na određeno vrijeme', 'Honorarni posao', 'Sezonski posao', 'Pripravnički rad', 'Volontiranje'] },
     { key: 'radnoVrijeme', label: 'Radno vrijeme', type: 'button-select', formPage: 1, options: ['Puno', 'Pola', 'Fleksibilno'] },
     { key: 'iskustvo', label: 'Iskustvo', type: 'select', formPage: 1, options: ['Nije potrebno', '1 godina', '2–3 godine', '3–5 godina', '5+ godina'] },

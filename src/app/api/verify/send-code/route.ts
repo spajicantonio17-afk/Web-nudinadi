@@ -88,8 +88,7 @@ export async function POST(req: NextRequest) {
         .eq('id', user.id)
         .single()
 
-      const phone = profile?.phone || 'nepoznat'
-      console.log(`[verify/send-code] SMS an ${phone}: Verifikacijski kod ${code}`)
+      // TODO: integrate SMS provider (currently not sending SMS)
     }
 
     return NextResponse.json({ success: true, message: 'Kod je poslan.' })

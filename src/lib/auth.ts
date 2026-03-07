@@ -260,17 +260,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   if (data.user) {
     let autoConfirmOk = false;
     try {
-      console.log('[register] Calling auto-confirm for user:', data.user.id);
       const res = await fetch('/api/auth/auto-confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: data.user.id }),
       });
-      console.log('[register] Auto-confirm response status:', res.status);
       if (res.ok) {
         const json = await res.json();
         autoConfirmOk = !!json.success;
-        console.log('[register] Auto-confirm result:', json);
       } else {
         const errorBody = await res.text();
         console.error('[register] Auto-confirm failed:', res.status, errorBody);
@@ -285,14 +282,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Attempt login (works if auto-confirm succeeded or autoconfirm is on)
-    console.log('[register] Attempting login after auto-confirm...');
     const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (!loginError && loginData.session) {
-      console.log('[register] Login successful after auto-confirm');
       await setUserFromSession(loginData.session);
       return 'success';
     }
@@ -303,14 +298,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // If auto-confirm reported success but login failed, retry with longer delay
     if (autoConfirmOk && loginError) {
-      console.log('[register] Retrying login after 2s delay...');
       await new Promise(resolve => setTimeout(resolve, 2000));
       const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (!retryError && retryData.session) {
-        console.log('[register] Login successful on retry');
         await setUserFromSession(retryData.session);
         return 'success';
       }
@@ -325,7 +318,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (loginError) {
       const msg = loginError.message || '';
       if (msg.includes('Email not confirmed') || msg.includes('Invalid login credentials')) {
-        console.log('[register] User needs email confirmation (auto-confirm failed or propagation delayed)');
         return 'needs_confirmation';
       }
     }

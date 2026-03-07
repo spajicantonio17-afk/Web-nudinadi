@@ -30,6 +30,8 @@ export interface ProductFilters {
   sortOrder?: 'asc' | 'desc'
   limit?: number
   offset?: number
+  /** Category-specific attribute filters (JSONB) */
+  attributes?: Record<string, string | number | boolean | [number, number]>
 }
 
 // Lightweight select for list views (avoids fetching all profile/category columns)
@@ -59,6 +61,25 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   if (filters.search) {
     // Full-text search via tsvector (search_vector column, powered by title+tags+description)
     query = query.textSearch('search_vector', filters.search, { config: 'simple', type: 'plain' })
+  }
+
+  // JSONB attribute filters (category-specific)
+  if (filters.attributes) {
+    for (const [key, value] of Object.entries(filters.attributes)) {
+      if (value === undefined || value === null) continue
+      if (typeof value === 'boolean') {
+        // Boolean: (attributes->>'key')::boolean = true
+        query = query.eq(`attributes->>${key}`, String(value))
+      } else if (Array.isArray(value)) {
+        // Range: [min, max]
+        const [min, max] = value
+        if (min) query = query.gte(`attributes->>${key}`, min)
+        if (max) query = query.lte(`attributes->>${key}`, max)
+      } else {
+        // String or number exact match
+        query = query.eq(`attributes->>${key}`, String(value))
+      }
+    }
   }
 
   // Sorting — promoted products appear first for default sort
