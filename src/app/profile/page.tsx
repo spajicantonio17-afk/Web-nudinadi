@@ -475,7 +475,7 @@ function ProfileContent() {
         {editOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10" role="dialog" aria-modal="true">
             <div className="absolute inset-0 bg-[var(--c-overlay)] backdrop-blur-sm" onClick={() => !saving && setEditOpen(false)} role="presentation"></div>
-            <div className="relative w-full max-w-lg bg-[var(--c-card)] border border-[var(--c-border)] rounded-[6px] shadow-2xl animate-fadeIn flex flex-col max-h-[80vh]">
+            <div className="relative w-full max-w-lg bg-[var(--c-card)] border border-[var(--c-border)] rounded-[6px] shadow-2xl animate-fadeIn flex flex-col max-h-[70vh] mb-20">
 
               {/* HEADER */}
               <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-[var(--c-border)]">

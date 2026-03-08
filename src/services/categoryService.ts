@@ -18,7 +18,10 @@ export async function getAllCategories(): Promise<Category[]> {
     .select('*')
     .order('name')
 
-  if (error) throw error
+  if (error) {
+    console.error('[NudiNadi] getAllCategories Supabase error:', error);
+    throw error
+  }
   allCategoryCache = data ?? []
   categoryCacheTime = Date.now()
   return allCategoryCache

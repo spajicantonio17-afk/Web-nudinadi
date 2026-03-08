@@ -175,7 +175,40 @@ function HomeContent() {
             }
           }
         }
-      } catch { /* fallback: no category filter */ }
+      } catch (err) {
+        console.error('[NudiNadi] Category filter failed:', err);
+        // Fallback: try direct Supabase query for category resolution
+        try {
+          const { getSupabase } = await import('@/lib/supabase');
+          const sb = getSupabase();
+          const { data: fallbackCats } = await sb.from('categories').select('*');
+          if (fallbackCats && fallbackCats.length > 0) {
+            const targetName = selectedSubItem || selectedSubCategory || activeCategory;
+            const match = fallbackCats.find((c: { name: string }) => c.name === targetName);
+            if (match) {
+              const children = fallbackCats.filter((c: { parent_category_id: string | null }) => c.parent_category_id === match.id);
+              if (children.length > 0) {
+                serverFilters.category_ids = [match.id, ...children.map((c: { id: string }) => c.id)];
+              } else {
+                serverFilters.category_id = match.id;
+              }
+            } else if (activeCategory !== targetName) {
+              // Try parent category
+              const parent = fallbackCats.find((c: { name: string }) => c.name === activeCategory);
+              if (parent) {
+                const subs = fallbackCats.filter((c: { parent_category_id: string | null }) => c.parent_category_id === parent.id);
+                if (subs.length > 0) {
+                  serverFilters.category_ids = [parent.id, ...subs.map((s: { id: string }) => s.id)];
+                } else {
+                  serverFilters.category_id = parent.id;
+                }
+              }
+            }
+          }
+        } catch (fallbackErr) {
+          console.error('[NudiNadi] Category fallback also failed:', fallbackErr);
+        }
+      }
     }
 
     // Price filters (from filter modal or AI-parsed)
