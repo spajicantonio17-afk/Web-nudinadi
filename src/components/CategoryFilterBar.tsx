@@ -503,9 +503,6 @@ function SubCategoryDrilldown({
   onSelect: (sub: string | null, item: string | null) => void;
   isMobile: boolean;
 }) {
-  const [showSubSheet, setShowSubSheet] = useState(false);
-  const [showItemSheet, setShowItemSheet] = useState(false);
-  const [showGroupSheet, setShowGroupSheet] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
   const categoryData = useMemo(() => {
@@ -524,7 +521,18 @@ function SubCategoryDrilldown({
 
   if (!categoryData?.subCategories?.length) return null;
 
-  const subs = categoryData.subCategories;
+  // Sort "Ostalo/Ostale/Ostali" to the end
+  const subs = useMemo(() => {
+    const sorted = [...categoryData.subCategories];
+    sorted.sort((a, b) => {
+      const aIsOstalo = /^ostal/i.test(a.name);
+      const bIsOstalo = /^ostal/i.test(b.name);
+      if (aIsOstalo && !bIsOstalo) return 1;
+      if (!aIsOstalo && bIsOstalo) return -1;
+      return 0;
+    });
+    return sorted;
+  }, [categoryData.subCategories]);
   const groups = useMemo(() => detectSubGroups(subs), [subs]);
   const hasGroups = groups !== null;
 
@@ -604,7 +612,7 @@ function SubCategoryDrilldown({
 
       {/* ── DESKTOP OPTIONS ── */}
 
-      {/* Group options (step 1 for grouped categories) */}
+      {/* Group options (step 1 for grouped categories) — desktop */}
       {showingGroups && !isMobile && groups.map((g) => (
         <button
           key={g.label}
@@ -661,105 +669,61 @@ function SubCategoryDrilldown({
         </button>
       ))}
 
-      {/* ── MOBILE BUTTONS ── */}
+      {/* ── MOBILE INLINE CHIPS (scrollable) ── */}
 
-      {showingGroups && isMobile && (
+      {showingGroups && isMobile && groups.map((g) => (
         <button
-          onClick={() => setShowGroupSheet(true)}
+          key={g.label}
+          onClick={() => {
+            if (g.subs.length === 1) {
+              setSelectedGroup(g.label);
+              onSelect(g.subs[0].name, null);
+            } else {
+              setSelectedGroup(g.label);
+            }
+          }}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">Tip vozila</span>
-          <i className="fa-solid fa-chevron-down text-[8px] ml-0.5 opacity-50"></i>
+          <span className="text-[11px] font-semibold whitespace-nowrap">{g.label}</span>
+          {g.subs.length > 1 && (
+            <span className="text-[9px] text-[var(--c-text-muted)] ml-0.5">{g.subs.length}</span>
+          )}
         </button>
-      )}
+      ))}
 
-      {(showingSubs || showingGroupedSubs) && isMobile && (
+      {showingGroupedSubs && isMobile && currentGroupSubs.map((sub) => (
         <button
-          onClick={() => setShowSubSheet(true)}
+          key={sub.name}
+          onClick={() => onSelect(sub.name, null)}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">Potkategorija</span>
-          <i className="fa-solid fa-chevron-down text-[8px] ml-0.5 opacity-50"></i>
+          <span className="text-[11px] font-semibold whitespace-nowrap">
+            {stripPrefix(sub.name, groups?.find(g => g.label === selectedGroup)?.prefix || '')}
+          </span>
         </button>
-      )}
+      ))}
 
-      {showingItems && isMobile && (
+      {showingSubs && isMobile && subs.map((sub) => (
         <button
-          onClick={() => setShowItemSheet(true)}
+          key={sub.name}
+          onClick={() => onSelect(sub.name, null)}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">Vrsta</span>
-          <i className="fa-solid fa-chevron-down text-[8px] ml-0.5 opacity-50"></i>
+          <span className="text-[11px] font-semibold whitespace-nowrap">{sub.name}</span>
         </button>
-      )}
+      ))}
 
-      {/* ── MOBILE BOTTOM SHEETS ── */}
+      {showingItems && isMobile && items.map((item) => (
+        <button
+          key={item}
+          onClick={() => onSelect(selectedSub, item)}
+          className={optionClass}
+        >
+          <span className="text-[11px] font-semibold whitespace-nowrap">{item}</span>
+        </button>
+      ))}
 
-      {isMobile && showGroupSheet && groups && (
-        <BottomSheet isOpen={true} onClose={() => setShowGroupSheet(false)} title="Tip vozila">
-          <div className="space-y-1">
-            {groups.map((g) => (
-              <button
-                key={g.label}
-                onClick={() => {
-                  if (g.subs.length === 1) {
-                    setSelectedGroup(g.label);
-                    onSelect(g.subs[0].name, null);
-                  } else {
-                    setSelectedGroup(g.label);
-                  }
-                  setShowGroupSheet(false);
-                }}
-                className="w-full px-4 py-3 text-left text-[13px] font-medium rounded-[8px] text-[var(--c-text2)] hover:bg-[var(--c-hover)] transition-colors flex items-center justify-between"
-              >
-                <span>{g.label}</span>
-                {g.subs.length > 1 && (
-                  <span className="text-[10px] text-[var(--c-text-muted)]">{g.subs.length}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </BottomSheet>
-      )}
-
-      {isMobile && showSubSheet && (
-        <BottomSheet isOpen={true} onClose={() => setShowSubSheet(false)} title="Potkategorija">
-          <div className="space-y-1">
-            {(showingGroupedSubs ? currentGroupSubs : subs).map((sub) => (
-              <button
-                key={sub.name}
-                onClick={() => { onSelect(sub.name, null); setShowSubSheet(false); }}
-                className="w-full px-4 py-3 text-left text-[13px] font-medium rounded-[8px] text-[var(--c-text2)] hover:bg-[var(--c-hover)] transition-colors flex items-center justify-between"
-              >
-                <span>
-                  {showingGroupedSubs && selectedGroup
-                    ? stripPrefix(sub.name, groups?.find(g => g.label === selectedGroup)?.prefix || '')
-                    : sub.name}
-                </span>
-                {sub.items && sub.items.length > 0 && (
-                  <span className="text-[10px] text-[var(--c-text-muted)]">{sub.items.length}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </BottomSheet>
-      )}
-
-      {isMobile && showItemSheet && (
-        <BottomSheet isOpen={true} onClose={() => setShowItemSheet(false)} title={selectedSub || 'Vrsta'}>
-          <div className="space-y-1">
-            {items.map((item) => (
-              <button
-                key={item}
-                onClick={() => { onSelect(selectedSub, item); setShowItemSheet(false); }}
-                className="w-full px-4 py-3 text-left text-[13px] font-medium rounded-[8px] text-[var(--c-text2)] hover:bg-[var(--c-hover)] transition-colors"
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </BottomSheet>
-      )}
+      {/* Mobile bottom sheets removed — subcategory chips are now inline scrollable */}
     </>
   );
 }
