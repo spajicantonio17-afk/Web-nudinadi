@@ -560,7 +560,7 @@ function SubCategoryDrilldown({
     : null;
 
   const chipClass = "flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] transition-all duration-150 group shrink-0";
-  const optionClass = "flex items-center gap-1 px-2.5 py-1.5 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[10px] text-[var(--c-text3)] hover:border-[var(--c-active)] hover:text-[var(--c-text2)] transition-all duration-150 shrink-0";
+  const optionClass = "flex items-center gap-1 px-2.5 py-1.5 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[10px] text-[var(--c-text3)] hover:border-[var(--c-active)] hover:text-[var(--c-text2)] transition-all duration-150 shrink-0 text-[10px]";
 
   return (
     <>
@@ -631,7 +631,7 @@ function SubCategoryDrilldown({
           }}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">{g.label}</span>
+          <span className="font-semibold whitespace-nowrap">{g.label}</span>
           {g.subs.length > 1 && (
             <span className="text-[9px] text-[var(--c-text-muted)] ml-0.5">{g.subs.length}</span>
           )}
@@ -645,7 +645,7 @@ function SubCategoryDrilldown({
           onClick={() => onSelect(sub.name, null)}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">
+          <span className="font-semibold whitespace-nowrap">
             {stripPrefix(sub.name, groups.find(g => g.label === selectedGroup)?.prefix || '')}
           </span>
         </button>
@@ -658,7 +658,7 @@ function SubCategoryDrilldown({
           onClick={() => onSelect(sub.name, null)}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">{sub.name}</span>
+          <span className="font-semibold whitespace-nowrap">{sub.name}</span>
         </button>
       ))}
 
@@ -669,7 +669,7 @@ function SubCategoryDrilldown({
           onClick={() => onSelect(selectedSub, item)}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">{item}</span>
+          <span className="font-semibold whitespace-nowrap">{item}</span>
         </button>
       ))}
 
@@ -688,7 +688,7 @@ function SubCategoryDrilldown({
           }}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">{g.label}</span>
+          <span className="font-semibold whitespace-nowrap">{g.label}</span>
           {g.subs.length > 1 && (
             <span className="text-[9px] text-[var(--c-text-muted)] ml-0.5">{g.subs.length}</span>
           )}
@@ -701,7 +701,7 @@ function SubCategoryDrilldown({
           onClick={() => onSelect(sub.name, null)}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">
+          <span className="font-semibold whitespace-nowrap">
             {stripPrefix(sub.name, groups?.find(g => g.label === selectedGroup)?.prefix || '')}
           </span>
         </button>
@@ -713,7 +713,7 @@ function SubCategoryDrilldown({
           onClick={() => onSelect(sub.name, null)}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">{sub.name}</span>
+          <span className="font-semibold whitespace-nowrap">{sub.name}</span>
         </button>
       ))}
 
@@ -723,7 +723,7 @@ function SubCategoryDrilldown({
           onClick={() => onSelect(selectedSub, item)}
           className={optionClass}
         >
-          <span className="text-[11px] font-semibold whitespace-nowrap">{item}</span>
+          <span className="font-semibold whitespace-nowrap">{item}</span>
         </button>
       ))}
 
@@ -749,10 +749,34 @@ export default function CategoryFilterBar({
   const buttonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const isMobile = useIsMobile();
 
+  // ── Scroll-dots state (mobile only) ──
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScroll, setCanScroll] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  const handleRowScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll > 4) {
+      setScrollProgress(el.scrollLeft / maxScroll);
+      setCanScroll(true);
+    } else {
+      setCanScroll(false);
+    }
+  }, []);
+
   // Close dropdown on category change
   useEffect(() => {
     setOpenFilter(null);
   }, [activeCategory]);
+
+  // Re-check scroll capability when category/subcategory changes
+  useEffect(() => {
+    // Small delay to let chips render before measuring
+    const t = setTimeout(handleRowScroll, 50);
+    return () => clearTimeout(t);
+  }, [activeCategory, selectedSubCategory, handleRowScroll]);
 
   const handleFilterSelect = useCallback((key: string, value: string | number | [number, number] | undefined) => {
     const newFilters = { ...attributeFilters };
@@ -779,7 +803,11 @@ export default function CategoryFilterBar({
   return (
     <div className="flex flex-col items-center gap-1 w-full">
       {/* ── Row 1: Category chip + subcategories ── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1 max-w-5xl w-full">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleRowScroll}
+        className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1 max-w-5xl w-full"
+      >
         {/* Category chip — always first */}
         <button
           onClick={onClearCategory}
@@ -802,6 +830,26 @@ export default function CategoryFilterBar({
         )}
       </div>
 
+      {/* ── Scroll dots (mobile only) ── */}
+      {isMobile && canScroll && (
+        <div className="flex justify-center gap-1.5 -mt-0.5">
+          {[0, 1, 2].map((i) => {
+            const dotPos = i / 2; // 0, 0.5, 1
+            const isActive = Math.abs(scrollProgress - dotPos) < 0.25;
+            return (
+              <div
+                key={i}
+                className={`w-1 h-1 rounded-full transition-all duration-200 ${
+                  isActive
+                    ? 'bg-[var(--c-accent)] scale-125'
+                    : 'bg-[var(--c-text-muted)] opacity-30'
+                }`}
+              />
+            );
+          })}
+        </div>
+      )}
+
       {/* ── Row 2: Attribute filter chips (all categories with filters) ── */}
       {hasQuickFilters && config && (
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1 max-w-5xl w-full">
@@ -822,7 +870,7 @@ export default function CategoryFilterBar({
                     : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:border-[var(--c-active)] hover:text-[var(--c-text2)]'
                 }`}
               >
-                <span className="text-[11px] font-semibold whitespace-nowrap">
+                <span className="font-semibold whitespace-nowrap">
                   {hasValue ? getFilterDisplayValue(filter, value) : filter.label}
                 </span>
                 {hasValue ? (
