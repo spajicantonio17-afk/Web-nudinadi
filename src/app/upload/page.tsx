@@ -2335,7 +2335,13 @@ function UploadPageInner() {
           if (matchedBrand) {
             setAttributes(prev => ({ ...prev, marka: matchedBrand.name }));
             setFormData(prev => ({ ...prev, title: result.title, category: 'Vozila', brand: matchedBrand.name, description: result.description || prev.description }));
-            setStep('form');
+            setVehicleType('car');
+            setStep('car-method');
+            setCarFlowStep('model');
+            setBreadcrumb([
+              { label: 'Vozila', step: 'vehicle-sub' as UploadStep },
+              { label: matchedBrand.name, step: 'car-method' as UploadStep },
+            ]);
             showToast(`AI: Vozila → ${matchedBrand.name}`);
           } else {
             setFormData(prev => ({ ...prev, title: result.title, category: 'Vozila', description: result.description || prev.description }));
@@ -4528,13 +4534,7 @@ function UploadPageInner() {
                   <i className={`fa-solid ${vLabel.icon} text-lg text-blue-400`}></i>
                 </div>
                 <h2 className="text-lg font-black text-[var(--c-text)]">Smart Identifikacija</h2>
-                <p className="text-[10px] text-[var(--c-text3)]">Unesite VIN broj ili opišite vozilo</p>
-              </div>
-              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[24px] p-1.5">
-                <div className="bg-[var(--c-overlay)] rounded-[20px] p-3 flex gap-3 items-center border border-[var(--c-border)] focus-within:border-blue-500/50 transition-colors">
-                  <input type="text" value={formData.vin} onChange={(e) => setFormData({...formData, vin: e.target.value.toUpperCase()})} placeholder="VIN broj..." className="w-full bg-transparent text-sm font-mono text-[var(--c-text)] outline-none placeholder:text-[var(--c-placeholder)] uppercase tracking-widest text-center" />
-                  <button onClick={handleVinLookup} className="w-10 h-10 rounded-xl blue-gradient flex items-center justify-center text-white shadow-lg shadow-blue-500/20 active:scale-95 transition-transform shrink-0"><i className="fa-solid fa-arrow-right"></i></button>
-                </div>
+                <p className="text-[10px] text-[var(--c-text3)]">Opišite vozilo koje prodajete</p>
               </div>
               <div className="relative group w-full">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-[22px] blur opacity-20 group-focus-within:opacity-60 transition duration-500"></div>

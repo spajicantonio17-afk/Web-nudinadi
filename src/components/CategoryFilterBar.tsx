@@ -472,16 +472,23 @@ function detectSubGroups(subs: { name: string; items?: string[] }[]): SubGroup[]
   const multiGroups = groups.filter(([, items]) => items.length >= 2);
   if (multiGroups.length < 1) return null;
 
-  return groups.map(([prefix, items]) => ({
-    label: prefix === '__standalone__' ? 'Ostalo' : prefix,
+  const result = groups.map(([prefix, items]) => ({
+    label: prefix === '__standalone__' ? 'Kategorije' : prefix,
     prefix,
     subs: items,
   }));
+  // Put "Kategorije" (standalone) group first
+  result.sort((a, b) => {
+    if (a.prefix === '__standalone__') return -1;
+    if (b.prefix === '__standalone__') return 1;
+    return 0;
+  });
+  return result;
 }
 
 /** Strip the group prefix from a subcategory name for cleaner display */
 function stripPrefix(name: string, prefix: string): string {
-  if (prefix === '__standalone__' || prefix === 'Ostalo') return name;
+  if (prefix === '__standalone__' || prefix === 'Kategorije') return name;
   // Remove "Za automobile – " prefix to show just "Motor i mjenjač"
   const regex = new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[–\\-]\\s*`, 'i');
   const stripped = name.replace(regex, '');
@@ -739,8 +746,9 @@ export default function CategoryFilterBar({
   selectedSubItem,
   onSubCategoryChange,
 }: CategoryFilterBarProps) {
-  const useAttributeFilters = ATTRIBUTE_FILTER_CATEGORIES.includes(activeCategory);
-  const config = useAttributeFilters ? getCategoryFilters(activeCategory) : null;
+  const isVozila = ATTRIBUTE_FILTER_CATEGORIES.includes(activeCategory);
+  const config = getCategoryFilters(activeCategory);
+  const hasQuickFilters = !isVozila && config && config.quickFilters.length > 0;
   const [openFilter, setOpenFilter] = useState<string | null>(null);
   const buttonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const isMobile = useIsMobile();
@@ -767,13 +775,15 @@ export default function CategoryFilterBar({
     return (cat?.subCategories?.length ?? 0) > 0;
   }, [activeCategory]);
 
-  if (useAttributeFilters && (!config || config.quickFilters.length === 0)) return null;
-  if (!useAttributeFilters && !hasSubCategories) return null;
+  // Vozila with no config → hide; non-Vozila with no subcategories AND no filters → hide
+  if (isVozila && (!config || config.quickFilters.length === 0)) return null;
+  if (!isVozila && !hasSubCategories && !hasQuickFilters) return null;
 
   const activeAttrCount = Object.keys(attributeFilters).length;
 
   return (
-    <>
+    <div className="flex flex-col items-center gap-1 w-full">
+      {/* ── Row 1: Category chip + subcategories (or Vozila filters) ── */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1 max-w-5xl w-full">
         {/* Category chip — always first */}
         <button
@@ -785,8 +795,8 @@ export default function CategoryFilterBar({
           <i className="fa-solid fa-xmark text-[var(--c-accent)] text-[9px] ml-0.5 opacity-60 group-hover:text-red-500 group-hover:opacity-100"></i>
         </button>
 
-        {/* MODE A: Attribute filters (Vozila) */}
-        {useAttributeFilters && config && config.quickFilters.map((filter) => {
+        {/* Vozila: Attribute filter chips (unchanged) */}
+        {isVozila && config && config.quickFilters.map((filter) => {
           const value = attributeFilters[filter.key];
           const hasValue = value !== undefined;
 
@@ -818,8 +828,8 @@ export default function CategoryFilterBar({
           );
         })}
 
-        {/* MODE B: Subcategory drilldown (all other categories) */}
-        {!useAttributeFilters && (
+        {/* Non-Vozila: Subcategory drilldown */}
+        {!isVozila && hasSubCategories && (
           <SubCategoryDrilldown
             activeCategory={activeCategory}
             selectedSub={selectedSubCategory}
@@ -829,8 +839,8 @@ export default function CategoryFilterBar({
           />
         )}
 
-        {/* Clear all attribute filters (Mode A only) */}
-        {useAttributeFilters && activeAttrCount > 0 && (
+        {/* Clear all attribute filters (Vozila only in row 1) */}
+        {isVozila && activeAttrCount > 0 && (
           <button
             onClick={() => onAttributeFiltersChange({})}
             className="flex items-center gap-1 px-2.5 py-1.5 bg-red-500/10 border border-red-500/20 rounded-[10px] hover:bg-red-500/20 transition-all duration-150 shrink-0"
@@ -841,8 +851,56 @@ export default function CategoryFilterBar({
         )}
       </div>
 
-      {/* Desktop dropdown (Mode A) */}
-      {useAttributeFilters && !isMobile && openFilter && (() => {
+      {/* ── Row 2: Attribute filter chips (non-Vozila categories with filters) ── */}
+      {hasQuickFilters && config && (
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1 max-w-5xl w-full">
+          {config.quickFilters.map((filter) => {
+            const value = attributeFilters[filter.key];
+            const hasValue = value !== undefined;
+
+            if (filter.dependsOn && !attributeFilters[filter.dependsOn]) return null;
+
+            return (
+              <button
+                key={filter.key}
+                ref={(el) => { if (el) buttonRefs.current.set(filter.key, el); }}
+                onClick={() => setOpenFilter(openFilter === filter.key ? null : filter.key)}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] border transition-all duration-150 shrink-0 ${
+                  hasValue
+                    ? 'bg-[var(--c-accent-light)] border-[var(--c-accent)]/30 text-[var(--c-accent)]'
+                    : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:border-[var(--c-active)] hover:text-[var(--c-text2)]'
+                }`}
+              >
+                <span className="text-[11px] font-semibold whitespace-nowrap">
+                  {hasValue ? getFilterDisplayValue(filter, value) : filter.label}
+                </span>
+                {hasValue ? (
+                  <i
+                    className="fa-solid fa-xmark text-[9px] ml-0.5 opacity-60 hover:opacity-100"
+                    onClick={(e) => { e.stopPropagation(); handleFilterSelect(filter.key, undefined); }}
+                  ></i>
+                ) : (
+                  <i className="fa-solid fa-chevron-down text-[8px] ml-0.5 opacity-50"></i>
+                )}
+              </button>
+            );
+          })}
+
+          {/* Reset button for row 2 */}
+          {activeAttrCount > 0 && (
+            <button
+              onClick={() => onAttributeFiltersChange({})}
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-red-500/10 border border-red-500/20 rounded-[10px] hover:bg-red-500/20 transition-all duration-150 shrink-0"
+            >
+              <i className="fa-solid fa-rotate-left text-red-500 text-[9px]"></i>
+              <span className="text-[11px] font-semibold text-red-500 whitespace-nowrap">Reset</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Desktop dropdown */}
+      {(isVozila || hasQuickFilters) && !isMobile && openFilter && (() => {
         const filter = config?.quickFilters.find(f => f.key === openFilter);
         if (!filter) return null;
         const ref = { current: buttonRefs.current.get(openFilter) || null };
@@ -859,8 +917,8 @@ export default function CategoryFilterBar({
         );
       })()}
 
-      {/* Mobile bottom sheet (Mode A) */}
-      {useAttributeFilters && isMobile && openFilter && (() => {
+      {/* Mobile bottom sheet */}
+      {(isVozila || hasQuickFilters) && isMobile && openFilter && (() => {
         const filter = config?.quickFilters.find(f => f.key === openFilter);
         if (!filter) return null;
         return (
@@ -879,6 +937,6 @@ export default function CategoryFilterBar({
           </BottomSheet>
         );
       })()}
-    </>
+    </div>
   );
 }
