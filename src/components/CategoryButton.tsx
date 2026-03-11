@@ -16,7 +16,7 @@ function CategoryButton({ cat, isActive, onClick, flexible }: CategoryButtonProp
   const colors = CATEGORY_COLORS[cat.id] || CATEGORY_COLORS['ostalo'];
 
   const sizeClass = flexible
-    ? 'w-[90px] min-w-[90px] h-[72px] rounded-[12px] shrink-0'
+    ? 'w-[100px] min-w-[100px] h-[72px] rounded-[12px] shrink-0'
     : 'min-w-[80px] h-[80px] rounded-[12px] shrink-0';
 
   const iconSize = flexible ? 'w-6 h-6' : 'w-7 h-7';

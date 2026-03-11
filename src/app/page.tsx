@@ -87,6 +87,9 @@ function HomeContent() {
   const [showAiInfo, setShowAiInfo] = useState(false);
   const [showLocalSecurity, setShowLocalSecurity] = useState(false);
   const [showSecondaryCats, setShowSecondaryCats] = useState(false);
+  const secondaryCatsRef = useRef<HTMLDivElement>(null);
+  const [secondaryCanScroll, setSecondaryCanScroll] = useState(false);
+  const [secondaryScrollProgress, setSecondaryScrollProgress] = useState(0);
   const [showAllCatsPopup, setShowAllCatsPopup] = useState(false);
   const [selectedCatId, setSelectedCatId] = useState(CATEGORIES[0].id);
   const [selectedSubGroup, setSelectedSubGroup] = useState<string | null>(null);
@@ -131,6 +134,26 @@ function HomeContent() {
   useEffect(() => {
     if (typeof window !== 'undefined') localStorage.setItem('nudinadi_currency', aiCurrency);
   }, [aiCurrency]);
+
+  // ── Secondary categories scroll handler (mobile dots) ──
+  const handleSecondaryScroll = useCallback(() => {
+    const el = secondaryCatsRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll > 4) {
+      setSecondaryScrollProgress(el.scrollLeft / maxScroll);
+      setSecondaryCanScroll(true);
+    } else {
+      setSecondaryCanScroll(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showSecondaryCats) {
+      const t = setTimeout(handleSecondaryScroll, 50);
+      return () => clearTimeout(t);
+    }
+  }, [showSecondaryCats, handleSecondaryScroll]);
 
   // Build server-side filter params from current state
   const buildServerFilters = useCallback(async (offset = 0): Promise<ProductFilters> => {
@@ -1087,13 +1110,36 @@ function HomeContent() {
           {/* SECONDARY CATEGORIES */}
           {showSecondaryCats && (
             <div className="animate-fadeIn border-t border-[var(--c-border)] pt-2 pb-2">
-              <div className="overflow-x-auto no-scrollbar touch-pan-x">
-                <div className="flex gap-2 px-1 justify-center flex-wrap">
+              <div
+                ref={secondaryCatsRef}
+                onScroll={handleSecondaryScroll}
+                className="overflow-x-auto no-scrollbar touch-pan-x"
+              >
+                <div className="flex gap-2 px-1 min-w-max md:min-w-0 md:justify-center md:flex-wrap">
                   {secondaryCategories.map((cat) => (
                     <CategoryButton key={cat.id} cat={cat} isActive={activeCategory === cat.name} onClick={() => handleCategoryChange(cat.name)} flexible />
                   ))}
                 </div>
               </div>
+              {/* Scroll dots — mobile only */}
+              {secondaryCanScroll && (
+                <div className="flex justify-center gap-1.5 pt-1.5 md:hidden">
+                  {[0, 1, 2].map((i) => {
+                    const dotPos = i / 2;
+                    const isActive = Math.abs(secondaryScrollProgress - dotPos) < 0.25;
+                    return (
+                      <div
+                        key={i}
+                        className={`w-1 h-1 rounded-full transition-all duration-200 ${
+                          isActive
+                            ? 'bg-[var(--c-accent)] scale-125'
+                            : 'bg-[var(--c-text-muted)] opacity-30'
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
