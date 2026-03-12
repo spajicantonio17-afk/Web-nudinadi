@@ -1639,7 +1639,9 @@ function UploadPageInner() {
 
   // Scroll to top when switching upload steps
   useEffect(() => {
-    window.scrollTo(0, 0);
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
   }, [step]);
 
   const [mobileSubBrand, setMobileSubBrand] = useState('');
@@ -2606,35 +2608,22 @@ function UploadPageInner() {
 
     setIsPublishing(true);
     try {
-      // 0. AI Moderation check (non-blocking — only warns, never prevents publish)
-      if (!aiWarningBypass) {
-        try {
-          const modRes = await fetch('/api/ai/moderate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'moderate',
-              title: formData.title,
-              description: formData.description,
-              price: Number(formData.price),
-              category: formData.category,
-              images: images.length,
-            }),
-          });
-          const modJson = await modRes.json();
-          if (modJson.success && modJson.data) {
-            const { warnings = [], recommendation, score = 100 } = modJson.data;
-            // Show a confirmation dialog if AI has concerns (but never block)
-            if (warnings.length > 0 || score < 50) {
-              setAiWarning({ warnings, recommendation: recommendation || 'Provjeri', score: score ?? 0 });
-              setIsPublishing(false);
-              return; // Pause — user will see the warning dialog and can choose to proceed
-            }
-          }
-        } catch { /* moderation failure must not block publish */ }
-      }
-      // Reset bypass flag for next publish
-      setAiWarningBypass(false);
+      // 0. AI Moderation check (silent — results auto-logged for admin review)
+      try {
+        await fetch('/api/ai/moderate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'moderate',
+            title: formData.title,
+            description: formData.description,
+            price: Number(formData.price),
+            category: formData.category,
+            images: images.length,
+          }),
+        });
+        // Results are auto-logged to ai_moderation_logs + moderation_reports
+      } catch { /* moderation failure must not block publish */ }
 
       // 1. Upload new images to Supabase Storage
       let newImageUrls: string[] = [];
