@@ -63,9 +63,9 @@ function CategoryButton({ cat, isActive, onClick, flexible }: CategoryButtonProp
       {/* Label */}
       <span
         className={`text-center font-semibold uppercase leading-[1.1] px-1
-          ${flexible
-            ? 'text-[10px] tracking-[0.2px]'
-            : 'text-[11px] tracking-[0.3px]'
+          ${cat.name.length > 20
+            ? (flexible ? 'text-[8px] tracking-[0.1px]' : 'text-[9px] tracking-[0.2px]')
+            : (flexible ? 'text-[10px] tracking-[0.2px]' : 'text-[11px] tracking-[0.3px]')
           }
           ${isActive
             ? 'text-[var(--c-accent)]'

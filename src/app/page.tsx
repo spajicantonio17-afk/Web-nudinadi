@@ -310,6 +310,7 @@ function HomeContent() {
         setHasMore(data.length >= PRODUCTS_PER_PAGE && data.length < count);
       })
       .catch(err => {
+        if (err?.name === 'AbortError') return; // React Strict Mode cancels in-flight fetches
         if (version === filterVersion.current) console.error('Failed to load products:', err);
       })
       .finally(() => {

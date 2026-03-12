@@ -743,16 +743,19 @@ export default function CategoryFilterBar({
   selectedSubItem,
   onSubCategoryChange,
 }: CategoryFilterBarProps) {
-  const config = getCategoryFilters(activeCategory);
+  const config = useMemo(
+    () => getCategoryFilters(activeCategory, selectedSubCategory ?? undefined),
+    [activeCategory, selectedSubCategory]
+  );
   const hasQuickFilters = config && config.quickFilters.length > 0;
   const [openFilter, setOpenFilter] = useState<string | null>(null);
   const buttonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const isMobile = useIsMobile();
 
-  // Close dropdown on category change
+  // Close dropdown on category/subcategory change
   useEffect(() => {
     setOpenFilter(null);
-  }, [activeCategory]);
+  }, [activeCategory, selectedSubCategory]);
 
   const handleFilterSelect = useCallback((key: string, value: string | number | [number, number] | undefined) => {
     const newFilters = { ...attributeFilters };
