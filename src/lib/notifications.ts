@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/auth';
 
 export interface AppNotification {
   id: string;
-  type: 'message' | 'price_drop' | 'promotion' | 'system' | 'sale_confirmation' | 'new_listing_by_followed' | 'new_follower' | 'oglas_published' | 'review_received' | 'sale_completed' | 'level_up' | 'new_message' | 'public_question' | 'verification_step' | 'fully_verified' | 'like_received' | 'price_drop_liked';
+  type: 'message' | 'price_drop' | 'promotion' | 'system' | 'sale_confirmation' | 'new_listing_by_followed' | 'new_follower' | 'oglas_published' | 'review_received' | 'sale_completed' | 'level_up' | 'new_message' | 'public_question' | 'verification_step' | 'fully_verified' | 'like_received' | 'price_drop_liked' | 'outbid' | 'auction_won' | 'auction_ending' | 'new_bid' | 'auction_reserve_decision';
   title: string;
   body: string;
   icon: string;
@@ -205,6 +205,71 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             read: false,
             link: '/',
             transactionId: tx.id,
+          };
+
+          setNotifications(prev => {
+            if (prev.some(n => n.id === notif.id)) return prev;
+            const next = [notif, ...prev].slice(0, MAX_NOTIFICATIONS);
+            storeNotifications(user.id, next);
+            return next;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Supabase Realtime: listen for confirmed/denied transactions where user is seller
+  useEffect(() => {
+    if (!user) return;
+
+    const supabase = getSupabase();
+
+    const channel = supabase
+      .channel(`notif_sales_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'transactions', filter: `seller_id=eq.${user.id}` },
+        async (payload) => {
+          const tx = payload.new as {
+            id: string;
+            product_id: string;
+            buyer_id: string;
+            status: string;
+          };
+
+          if (tx.status !== 'confirmed' && tx.status !== 'denied') return;
+
+          const { data: product } = await supabase
+            .from('products')
+            .select('title')
+            .eq('id', tx.product_id)
+            .single();
+
+          const { data: buyer } = await supabase
+            .from('profiles')
+            .select('username, full_name')
+            .eq('id', tx.buyer_id)
+            .single();
+
+          const buyerName = buyer?.full_name || buyer?.username || 'Korisnik';
+          const productTitle = product?.title || 'Artikal';
+
+          const isConfirmed = tx.status === 'confirmed';
+          const notif: AppNotification = {
+            id: `sale_${tx.id}_${tx.status}`,
+            type: 'sale_completed',
+            title: isConfirmed ? 'Prodaja potvrđena!' : 'Prodaja odbijena',
+            body: isConfirmed
+              ? `${buyerName} je potvrdio/la kupovinu artikla "${productTitle}".`
+              : `${buyerName} je odbio/la kupovinu artikla "${productTitle}".`,
+            icon: isConfirmed ? 'fa-circle-check' : 'fa-circle-xmark',
+            timestamp: Date.now(),
+            read: false,
+            link: '/',
           };
 
           setNotifications(prev => {

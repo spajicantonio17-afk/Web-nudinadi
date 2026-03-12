@@ -37,6 +37,9 @@ export function sanitizeForPrompt(input: string, maxLength = 2000): string {
     .slice(0, maxLength)
     // Remove control characters except newline and tab
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Escape quotes to prevent prompt structure breaking
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "\\'")
     // Compress excessive whitespace
     .replace(/\n{4,}/g, '\n\n\n')
     .replace(/ {4,}/g, '   ')

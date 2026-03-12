@@ -47,6 +47,7 @@ export default function SiteFooter() {
               <li><Link href="/partneri" className={linkClass}>Partneri</Link></li>
               <li><Link href="/planovi" className={linkClass}>Planovi</Link></li>
               <li><Link href="/kako-funkcionira" className={linkClass}>Kako funkcionira</Link></li>
+              <li><Link href="/aukcije" className={linkClass}>Aukcije</Link></li>
             </ul>
           </div>
 

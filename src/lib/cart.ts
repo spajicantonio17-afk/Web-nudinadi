@@ -1,7 +1,8 @@
 // ── Cart System ──────────────────────────────────────────────
 // localStorage-based cart with React hook
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { getSupabase } from '@/lib/supabase';
 
 export interface CartItem {
   productId: string;
@@ -31,8 +32,31 @@ function storeCart(items: CartItem[]): void {
 export function useCart() {
   const [items, setItems] = useState<CartItem[]>([]);
 
+  const validated = useRef(false);
+
   useEffect(() => {
-    setItems(getStoredCart());
+    const stored = getStoredCart();
+    setItems(stored);
+
+    // Validate cart items are still active products (remove sold/deleted)
+    if (stored.length > 0 && !validated.current) {
+      validated.current = true;
+      const supabase = getSupabase();
+      supabase
+        .from('products')
+        .select('id')
+        .in('id', stored.map(i => i.productId))
+        .eq('status', 'active')
+        .then(({ data }) => {
+          if (!data) return;
+          const validIds = new Set(data.map(p => p.id));
+          const validItems = stored.filter(i => validIds.has(i.productId));
+          if (validItems.length !== stored.length) {
+            storeCart(validItems);
+            setItems(validItems);
+          }
+        });
+    }
   }, []);
 
   const addToCart = useCallback((productId: string) => {

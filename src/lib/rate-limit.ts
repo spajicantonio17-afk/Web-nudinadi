@@ -59,8 +59,10 @@ export function getIp(req: Request): string {
 }
 
 export const RATE_LIMITS = {
-  ai:      { limit: 10, windowSeconds: 60 },
-  auth:    { limit: 5,  windowSeconds: 300 },
-  verify:  { limit: 3,  windowSeconds: 3600 },
-  support: { limit: 3,  windowSeconds: 3600 },
+  ai:             { limit: 10, windowSeconds: 60 },
+  auth:           { limit: 5,  windowSeconds: 300 },
+  verify:         { limit: 3,  windowSeconds: 3600 },
+  support:        { limit: 3,  windowSeconds: 3600 },
+  profile_update: { limit: 5,  windowSeconds: 300 },
+  admin:          { limit: 30, windowSeconds: 60 },
 } as const

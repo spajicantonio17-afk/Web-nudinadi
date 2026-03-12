@@ -98,12 +98,15 @@ Vrati SAMO JSON:
     if (action === 'moderate') {
       if (!title) return NextResponse.json({ error: 'Naslov je obavezan' }, { status: 400 });
 
+      const safeImages = typeof images === 'number' && images >= 0 ? images : 0;
+      const safePrice = typeof price === 'number' || typeof price === 'string' ? price : null;
+
       const prompt = `Moderiran oglas za second-hand marketplace. Provjeri da li je oglas siguran za objavu.
 Naslov: "${sanitizeForPrompt(title, 200)}"
 Opis: "${sanitizeForPrompt(description || '(nema opisa)', 2000)}"
-Cijena: ${price ? price + ' KM' : '(nije navedena)'}
+Cijena: ${safePrice ? safePrice + ' KM' : '(nije navedena)'}
 Kategorija: ${sanitizeForPrompt(category || 'nepoznato', 100)}
-Broj slika: ${images || 0}
+Broj slika: ${safeImages}
 
 Provjeri na:
 1. Prevare i lažne ponude (preniski cijena, phishing, advance-fee fraud)

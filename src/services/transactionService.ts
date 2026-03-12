@@ -92,7 +92,7 @@ export async function confirmTransaction(transactionId: string, buyerId: string)
     .select()
     .single()
 
-  if (error) throw new Error('Greška pri potvrdi transakcije.')
+  if (error || !data) throw new Error('Transakcija je već potvrđena ili ne postoji.')
   return data
 }
 
@@ -108,7 +108,7 @@ export async function denyTransaction(transactionId: string, buyerId: string): P
     .select()
     .single()
 
-  if (error) throw new Error('Greška pri odbijanju transakcije.')
+  if (error || !data) throw new Error('Transakcija je već obrađena ili ne postoji.')
   return data
 }
 

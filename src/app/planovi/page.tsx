@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
@@ -45,10 +47,74 @@ function Cell({ value }: { value: boolean | string }) {
 export default function PlansPage() {
   const { user, isAuthenticated } = useAuth();
   const userIsPro = isPro(user?.accountType);
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState<'pro' | 'business' | 'portal' | null>(null);
+
+  const success = searchParams.get('success');
+  const cancelled = searchParams.get('cancelled');
+
+  async function handleUpgrade(plan: 'pro' | 'business') {
+    setLoading(plan);
+    try {
+      const res = await fetch('/api/payments/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Greška pri kreiranju plaćanja.');
+        setLoading(null);
+      }
+    } catch {
+      alert('Greška pri povezivanju sa serverom.');
+      setLoading(null);
+    }
+  }
+
+  async function handleManage() {
+    setLoading('portal');
+    try {
+      const res = await fetch('/api/payments/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Greška.');
+        setLoading(null);
+      }
+    } catch {
+      alert('Greška pri povezivanju sa serverom.');
+      setLoading(null);
+    }
+  }
 
   return (
     <MainLayout title="Planovi">
       <div className="max-w-4xl mx-auto py-6">
+
+        {/* SUCCESS/CANCEL BANNER */}
+        {success && (
+          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-[4px]">
+            <p className="text-[12px] font-bold text-emerald-400">
+              <i className="fa-solid fa-check-circle mr-2"></i>
+              Uspješno! Tvoj plan je aktiviran.
+            </p>
+          </div>
+        )}
+        {cancelled && (
+          <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-[4px]">
+            <p className="text-[12px] font-bold text-yellow-400">
+              <i className="fa-solid fa-info-circle mr-2"></i>
+              Plaćanje je otkazano. Možeš pokušati ponovo.
+            </p>
+          </div>
+        )}
 
         {/* HERO */}
         <div className="mb-10">
@@ -130,20 +196,22 @@ export default function PlansPage() {
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Pro značka + prioritet u pretrazi</li>
               </ul>
               {userIsPro ? (
-                <div className="block text-center py-2.5 bg-emerald-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
-                  <i className="fa-solid fa-check mr-1"></i> Aktivan plan
+                <div className="space-y-2">
+                  <div className="block text-center py-2.5 bg-emerald-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
+                    <i className="fa-solid fa-check mr-1"></i> Aktivan plan
+                  </div>
+                  <button onClick={handleManage} disabled={loading === 'portal'} className="block w-full text-center py-2 border border-[var(--c-border)] rounded-[4px] text-[9px] font-bold text-[var(--c-text3)] hover:bg-[var(--c-border)] transition-colors disabled:opacity-50">
+                    {loading === 'portal' ? 'Učitavanje...' : 'Upravljaj pretplatom'}
+                  </button>
                 </div>
               ) : !isAuthenticated ? (
                 <Link href="/login?redirect=/planovi" className="block text-center py-2.5 bg-blue-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider hover:bg-blue-600 transition-colors">
                   Nadogradi na Pro
                 </Link>
               ) : (
-                <div className="text-center">
-                  <div className="block text-center py-2.5 bg-blue-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
-                    Nadogradi na Pro
-                  </div>
-                  <p className="text-[8px] text-[var(--c-text3)] mt-1.5">Kontaktirajte nas za aktivaciju</p>
-                </div>
+                <button onClick={() => handleUpgrade('pro')} disabled={loading === 'pro'} className="block w-full text-center py-2.5 bg-blue-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider hover:bg-blue-600 transition-colors disabled:opacity-50">
+                  {loading === 'pro' ? 'Preusmjeravanje...' : 'Nadogradi na Pro'}
+                </button>
               )}
             </div>
 
@@ -168,20 +236,22 @@ export default function PlansPage() {
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Timski računi + prioritetna podrška</li>
               </ul>
               {isBusiness(user?.accountType) ? (
-                <div className="block text-center py-2.5 bg-emerald-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
-                  <i className="fa-solid fa-check mr-1"></i> Aktivan plan
+                <div className="space-y-2">
+                  <div className="block text-center py-2.5 bg-emerald-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
+                    <i className="fa-solid fa-check mr-1"></i> Aktivan plan
+                  </div>
+                  <button onClick={handleManage} disabled={loading === 'portal'} className="block w-full text-center py-2 border border-[var(--c-border)] rounded-[4px] text-[9px] font-bold text-[var(--c-text3)] hover:bg-[var(--c-border)] transition-colors disabled:opacity-50">
+                    {loading === 'portal' ? 'Učitavanje...' : 'Upravljaj pretplatom'}
+                  </button>
                 </div>
               ) : !isAuthenticated ? (
                 <Link href="/login?redirect=/planovi" className="block text-center py-2.5 bg-purple-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider hover:bg-purple-600 transition-colors">
                   Nadogradi na Business
                 </Link>
               ) : (
-                <div className="text-center">
-                  <div className="block text-center py-2.5 bg-purple-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-default">
-                    Nadogradi na Business
-                  </div>
-                  <p className="text-[8px] text-[var(--c-text3)] mt-1.5">Kontaktirajte nas za aktivaciju</p>
-                </div>
+                <button onClick={() => handleUpgrade('business')} disabled={loading === 'business'} className="block w-full text-center py-2.5 bg-purple-500 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider hover:bg-purple-600 transition-colors disabled:opacity-50">
+                  {loading === 'business' ? 'Preusmjeravanje...' : 'Nadogradi na Business'}
+                </button>
               )}
             </div>
 

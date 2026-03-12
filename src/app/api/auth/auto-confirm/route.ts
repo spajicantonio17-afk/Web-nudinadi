@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const supabaseAdmin = getAdminClient();
     if (!supabaseAdmin) {
       return NextResponse.json(
-        { error: 'Server configuration error — missing SUPABASE_SERVICE_ROLE_KEY' },
+        { error: 'Interna greška servera.' },
         { status: 500 },
       );
     }

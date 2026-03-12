@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin } from '@/lib/admin-auth';
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function GET(req: NextRequest) {
+  const rl = rateLimit(`admin:${getIp(req)}`, RATE_LIMITS.admin);
+  if (!rl.success) return rateLimitResponse(rl.resetAt);
+
   const admin = await verifyAdmin(req);
   if (!admin) return NextResponse.json({ error: 'Neautorizovano' }, { status: 403 });
 
@@ -23,7 +27,8 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false });
 
   if (search) {
-    query = query.or(`username.ilike.%${search}%,full_name.ilike.%${search}%`);
+    const escapedSearch = search.replace(/%/g, '\\%').replace(/_/g, '\\_');
+    query = query.or(`username.ilike.%${escapedSearch}%,full_name.ilike.%${escapedSearch}%`);
   }
 
   query = query.range(offset, offset + limit - 1);

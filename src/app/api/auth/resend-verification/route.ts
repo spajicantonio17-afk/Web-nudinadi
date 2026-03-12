@@ -35,7 +35,8 @@ export async function POST(request: Request) {
     });
 
     if (resendError) {
-      return NextResponse.json({ error: resendError.message }, { status: 500 });
+      // User is already re-confirmed above so they can still log in
+      return NextResponse.json({ error: 'Greška pri slanju emaila. Pokušajte ponovo.' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
