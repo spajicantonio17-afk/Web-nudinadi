@@ -190,7 +190,7 @@ const MOBITELI_FILTERS: CategoryFilterConfig = {
 // ── RAČUNALA I IT ───────────────────────────────────────────────
 
 const RACUNALA_FILTERS: CategoryFilterConfig = {
-  categoryName: 'Računala i oprema',
+  categoryName: 'Računala i IT',
   quickFilters: [
     { key: 'ram', label: 'RAM', type: 'select', options: ['4GB', '8GB', '16GB', '32GB', '64GB'] },
     { key: 'ssd', label: 'SSD', type: 'select', options: ['128GB', '256GB', '512GB', '1TB', '2TB'] },
@@ -212,7 +212,7 @@ const TEHNIKA_FILTERS: CategoryFilterConfig = {
 // ── DOM I VRT ───────────────────────────────────────────────────
 
 const DOM_FILTERS: CategoryFilterConfig = {
-  categoryName: 'Dom i vrt',
+  categoryName: 'Dom i vrtne garniture',
   quickFilters: [],
   booleanFilters: [],
 };
@@ -239,40 +239,40 @@ const SPORT_FILTERS: CategoryFilterConfig = {
   booleanFilters: [],
 };
 
-// ── DJEČJI KUTAK ────────────────────────────────────────────────
+// ── ODJEĆA ZA DJECU ─────────────────────────────────────────────
 
 const DJECJI_FILTERS: CategoryFilterConfig = {
-  categoryName: 'Dječji kutak',
+  categoryName: 'Odjeća za djecu',
   quickFilters: [
     { key: 'uzrast', label: 'Uzrast', type: 'select', options: ['0-6 mjeseci', '6-12 mjeseci', '1-2 godine', '2-4 godine', '4-6 godina', '6-10 godina', '10-14 godina'] },
   ],
   booleanFilters: [],
 };
 
-// ── GLAZBENI INSTRUMENTI ────────────────────────────────────────
+// ── GLAZBA I GLAZBENI INSTRUMENTI ───────────────────────────────
 
 const GLAZBA_FILTERS: CategoryFilterConfig = {
-  categoryName: 'Glazbeni instrumenti',
+  categoryName: 'Glazba i glazbeni instrumenti',
   quickFilters: [
     { key: 'marka', label: 'Marka', type: 'text' },
   ],
   booleanFilters: [],
 };
 
-// ── LITERATURA I EDUKACIJA ──────────────────────────────────────
+// ── LITERATURA I MEDIJI ─────────────────────────────────────────
 
 const LITERATURA_FILTERS: CategoryFilterConfig = {
-  categoryName: 'Literatura i edukacija',
+  categoryName: 'Literatura i mediji',
   quickFilters: [
     { key: 'zanr', label: 'Žanr', type: 'select', options: ['Roman', 'Naučna fantastika', 'Kriminalistički', 'Biografija', 'Historija', 'Udžbenik', 'Dječja literatura', 'Stručna', 'Ostalo'] },
   ],
   booleanFilters: [],
 };
 
-// ── VIDEO IGRE I KONZOLE ────────────────────────────────────────
+// ── VIDEOIGRE ───────────────────────────────────────────────────
 
 const VIDEOIGRE_FILTERS: CategoryFilterConfig = {
-  categoryName: 'Video igre i konzole',
+  categoryName: 'Videoigre',
   quickFilters: [
     { key: 'platforma', label: 'Platforma', type: 'select', options: ['PlayStation', 'Xbox', 'Nintendo', 'PC', 'Retro'] },
   ],
@@ -305,10 +305,10 @@ const STROJEVI_FILTERS: CategoryFilterConfig = {
   booleanFilters: [],
 };
 
-// ── POSLOVI I ZAPOŠLJAVANJE ─────────────────────────────────────
+// ── POSLOVI ─────────────────────────────────────────────────────
 
 const POSLOVI_FILTERS: CategoryFilterConfig = {
-  categoryName: 'Poslovi i zapošljavanje',
+  categoryName: 'Poslovi',
   quickFilters: [
     { key: 'tipPosla', label: 'Tip posla', type: 'select', options: ['Puno radno vrijeme', 'Pola radnog vremena', 'Honorarno', 'Praksa'] },
   ],
@@ -323,10 +323,10 @@ const USLUGE_FILTERS: CategoryFilterConfig = {
   booleanFilters: [],
 };
 
-// ── UMJETNOST I ANTIKVITETI ─────────────────────────────────────
+// ── UMJETNOST I KOLEKCIONARSTVO ─────────────────────────────────
 
 const UMJETNOST_FILTERS: CategoryFilterConfig = {
-  categoryName: 'Umjetnost i antikviteti',
+  categoryName: 'Umjetnost i kolekcionarstvo',
   quickFilters: [],
   booleanFilters: [],
 };
