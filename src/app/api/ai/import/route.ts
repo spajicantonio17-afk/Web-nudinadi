@@ -295,9 +295,9 @@ function normalizeCategoryForApp(
   if (!category) return { category, subcategory };
   const c = category.toLowerCase();
 
-  // "Dijelovi za automobile" → "Dijelovi za vozila" (upload page format)
+  // "Dijelovi za automobile" → "Dijelovi za automobile" (upload page format)
   if (c.includes('dijelovi')) {
-    return { category: 'Dijelovi za vozila', subcategory };
+    return { category: 'Dijelovi za automobile', subcategory };
   }
   // "Mobiteli i oprema" → "Mobilni uređaji" (upload page format)
   if (c.includes('mobiteli') || c.includes('mobitel')) {
@@ -1258,7 +1258,7 @@ function detectCategoryFromKeywords(text: string): string | null {
   if (!text) return null;
   const t = text.toLowerCase();
 
-  // ── Dijelovi za vozila (car parts) — BEFORE Vozila! ──
+  // ── Dijelovi za automobile (car parts) — BEFORE Vozila! ──
   if (/\b(felg[ae]|gum[ae]\s+\d|branik|far\b|farovi|sjedal|mjenja[čć]|amortiz|disk\s+za\s+ko[čć]|ko[čć]nic|karoserij|haub[ae]|blatobran|retrovizor|auspuh|alternator|servo|turbin[ae]|radijator\s+za|filte?r\s+(za\s+)?(ulje|zrak)|svje[čć]ic|akumulator|remen|kvačil|dizna|ecu\b|abs\b|airbag|navigacij|auto\s*radio|ksenon|bi[\s-]?xenon|led\s+far)\b/i.test(t)
       || /\b(za\s+(vw|audi|bmw|mercedes|opel|ford|toyota|fiat|renault|peugeot|škod|seat|volvo|hyundai|kia|honda|mazda|nissan|citroen))\b/i.test(t)
       || /\b(dijelov[ie]|auto[\s-]?dijel|spare\s*part)/i.test(t)) {
@@ -1295,7 +1295,7 @@ function detectCategoryFromKeywords(text: string): string | null {
   if (/\b(televizor|tv\b.*(?:inch|col|samsung|lg|sony)|soundbar|sluša|zvučnik|fotoaparat|kamera|gopro|bijel[ae]\s+tehnik|perilica|hladnjak|fri[žz]ider|klima\s+ure[đd]|mikrovalna)\b/i.test(t)) return 'Tehnika i elektronika';
 
   // ── Dom i vrt ──
-  if (/\b(namještaj|kau[čć]|sofa|krevet|madrac|ormar|sto[l]?\b|stolic|polica|tepih|zavjes|lusteri?|rasvjet|vrt\s|bazen|jacuzzi|saun[ae])\b/i.test(t)) return 'Dom i vrt';
+  if (/\b(namještaj|kau[čć]|sofa|krevet|madrac|ormar|sto[l]?\b|stolic|polica|tepih|zavjes|lusteri?|rasvjet|vrt\s|bazen|jacuzzi|saun[ae])\b/i.test(t)) return 'Dom i vrtne garniture';
 
   // ── Odjeća ──
   if (/\b(haljin|jakn[ae]|kaput|košulj|majic[ae]|hlač[ae]|farmerice|suknja|cipel[ae]|patik[ae]|tenisic|čizm[ae]|sandal|nike\b|adidas|zara\b|h&m|gucci|prada|louis\s+vuitton)\b/i.test(t)) return 'Odjeća i obuća';
@@ -1754,7 +1754,7 @@ VAŽNO — TRAKTORI, motorne pile, kosilice NISU "Vozila"!
 KRITIČNO — POTKATEGORIJA (subcategory):
 Ako stranica ima breadcrumb navigaciju, koristi DRUGU razinu breadcrumb-a kao potkategoriju.
 Primjeri:
-- Breadcrumb "Dijelovi za vozila > Za automobile > Vrata" → category: "Dijelovi za automobile", subcategory: "Za automobile – Karoserija i stakla"
+- Breadcrumb "Dijelovi za automobile > Za automobile > Vrata" → category: "Dijelovi za automobile", subcategory: "Za automobile – Karoserija i stakla"
 - Breadcrumb "Vozila > Osobni automobili" → category: "Vozila", subcategory: "Osobni automobili"
 - Breadcrumb "Nekretnine > Stanovi" → category: "Nekretnine", subcategory: "Stanovi"
 
