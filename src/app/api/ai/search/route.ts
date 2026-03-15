@@ -121,6 +121,25 @@ Primjeri:
 - "stan 3 sobe" → attributes: { brojSoba: "3" }
 - "iPhone 256GB" → attributes: { memorija: "256GB" }
 
+7. Generiraj "searchVariants" — sinonime, alternativne nazive, varijante modela, prijevode.
+Ovo je KLJUČNO za pronalaženje proizvoda! Korisnici pretražuju različito od toga kako su oglasi napisani.
+
+PRAVILA za searchVariants:
+- Za vozila: dodaj varijante modela (320→3er, serija 3, serie 3, 3 series), tip karoserije na više jezika (Limousine→sedan, limuzina, berlina)
+- Za marke: dodaj alternativne nazive (VW→Volkswagen, Merc→Mercedes, MB→Mercedes-Benz)
+- Za kategorije: dodaj sinonime (mobitel→telefon→smartphone→handy, stan→apartman→wohnung)
+- Za stanje: dodaj varijante (novo→new→neu, korišteno→used→gebraucht→polovno→rabljeno)
+- Za tehničke pojmove: dodaj skraćenice i pune nazive (SSD→solid state drive, RAM→memorija)
+- Dodaj i bosanski/hrvatski/srpski i njemačke i engleske varijante ako su relevantne
+- Maksimalno 15 varijanti, samo relevantne riječi
+
+Primjeri:
+- "BMW 320 Limousine" → searchVariants: ["3er", "serija 3", "serie 3", "sedan", "limuzina", "berlina", "e90", "f30", "g20"]
+- "iPhone 15 Pro" → searchVariants: ["apple", "iphone15", "pro max", "smartphone"]
+- "stan Sarajevo" → searchVariants: ["apartman", "wohnung", "nekretnina", "stambeni"]
+- "Golf 7" → searchVariants: ["volkswagen", "vw", "golf VII", "mk7", "hatchback"]
+- "patike Nike" → searchVariants: ["tenisice", "cipele", "sneakers", "sportske", "turnschuhe"]
+
 Vrati SAMO JSON:
 {
   "cleanQuery": "ispravljeni upit BEZ filtera (samo ključne riječi za pretragu proizvoda)",
@@ -138,7 +157,8 @@ Vrati SAMO JSON:
     "ključ": "vrijednost — SAMO prepoznati atributi, prazan objekt {} ako ništa nije prepoznato"
   },
   "suggestions": ["alternativni upit 1", "alternativni upit 2", "alternativni upit 3"],
-  "keywords": ["ključna_riječ_1", "ključna_riječ_2", "ključna_riječ_3"]
+  "keywords": ["ključna_riječ_1", "ključna_riječ_2", "ključna_riječ_3"],
+  "searchVariants": ["sinonim_1", "varijanta_2", "alternativni_naziv_3"]
 }`;
 
     const raw = await textWithGemini(prompt);

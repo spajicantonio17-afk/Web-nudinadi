@@ -26,6 +26,8 @@ export interface ProductFilters {
   location?: string
   country?: CountryPreference  // Country filter: 'ba' | 'hr' | 'all'
   search?: string
+  /** Extra keywords/synonyms from AI to broaden search (OR'd with search) */
+  searchKeywords?: string[]
   sortBy?: 'created_at' | 'price' | 'views_count' | 'favorites_count'
   sortOrder?: 'asc' | 'desc'
   limit?: number
@@ -59,8 +61,27 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   if (filters.country === 'ba') query = query.in('location', BIH_CITIES)
   if (filters.country === 'hr') query = query.in('location', HR_CITIES)
   if (filters.search) {
-    // Full-text search via tsvector (search_vector column, powered by title+tags+description)
-    query = query.textSearch('search_vector', filters.search, { config: 'simple', type: 'plain' })
+    // Use flexible_search RPC for AND→OR fallback with synonym support
+    const hasExtraKeywords = filters.searchKeywords && filters.searchKeywords.length > 0
+    if (hasExtraKeywords || filters.search.split(/\s+/).length > 1) {
+      // Multi-word or keyword-expanded search: use flexible_search for OR fallback
+      const { data: searchIds } = await supabase.rpc('flexible_search', {
+        p_query: filters.search,
+        p_extra_keywords: filters.searchKeywords ?? [],
+        p_limit: (filters.limit || 20) + (filters.offset || 0) + 10, // fetch enough for pagination
+        p_offset: 0,
+      })
+      if (searchIds && searchIds.length > 0) {
+        const ids = searchIds.map((r: { product_id: string }) => r.product_id)
+        query = query.in('id', ids)
+      } else {
+        // No results from flexible search — force empty result
+        query = query.in('id', ['00000000-0000-0000-0000-000000000000'])
+      }
+    } else {
+      // Single word: simple prefix search is fine
+      query = query.textSearch('search_vector', filters.search, { config: 'simple', type: 'plain' })
+    }
   }
 
   // JSONB attribute filters (category-specific)

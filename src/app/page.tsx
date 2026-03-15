@@ -103,6 +103,7 @@ function HomeContent() {
   const [aiCorrectedQuery, setAiCorrectedQuery] = useState<string | null>(null);
   const [aiCondition, setAiCondition] = useState<string | null>(null); // Bosnian label: "Korišteno" etc.
   const [aiCurrency, setAiCurrency] = useState<SearchCurrency>('EUR');
+  const [aiSearchVariants, setAiSearchVariants] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<City | null>(null);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -257,6 +258,10 @@ function HomeContent() {
     if (searchQuery.trim()) {
       const parsed = parseAiQuery(searchQuery);
       serverFilters.search = parsed.cleanQuery || searchQuery.trim();
+      // Pass AI-generated synonyms/variants for broader matching
+      if (aiSearchVariants.length > 0) {
+        serverFilters.searchKeywords = aiSearchVariants;
+      }
     }
 
     // Location filter — only apply when user explicitly set a radius > 0
@@ -279,7 +284,7 @@ function HomeContent() {
     else { serverFilters.sortBy = 'created_at'; serverFilters.sortOrder = 'desc'; }
 
     return serverFilters;
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants]);
 
   // Load products from Supabase (re-fetches when filters change)
   const filterVersion = useRef(0);
@@ -317,7 +322,7 @@ function HomeContent() {
         if (version === filterVersion.current) setIsLoadingProducts(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants]);
 
   // Load more products (infinite scroll — uses same server-side filters)
   const loadMoreProducts = useCallback(async () => {
@@ -403,6 +408,7 @@ function HomeContent() {
       setAiPriceMax(undefined);
       setAiCategory(null);
       setAiCondition(null);
+      setAiSearchVariants([]);
       return;
     }
     const result = parseAiQuery(value);
@@ -528,6 +534,9 @@ function HomeContent() {
           setAttributeFilters(d.attributes);
         }
         if (d.suggestions?.length) setAiSearchSuggestions(d.suggestions);
+        // Capture search variants (synonyms/model variants from AI)
+        if (d.searchVariants?.length) setAiSearchVariants(d.searchVariants);
+        else setAiSearchVariants([]);
       }
     } catch (err) { console.error('[AI Search] FAILED:', err); }
     setIsAiSearching(false);
