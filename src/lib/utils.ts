@@ -216,27 +216,27 @@ export function parseAiQuery(input: string): AiQueryResult {
   // Matches any number: "20000", "20.000", "1.500,50", "5"
   const numPat = '(\\d[\\d.,]*\\d|\\d)';
 
-  // "od X do Y" / "von X bis Y" / "X do Y" / "između X i Y"
+  // "od X do Y" / "X do Y" / "from X to Y" / "između X i Y"
   const rangeMatch = normalized.match(
-    new RegExp(`(?:od|von)?\\s*${numPat}\\s*(?:do|bis|-)\\s*${numPat}`, 'i')
+    new RegExp(`(?:od|from)?\\s*${numPat}\\s*(?:do|to|-)\\s*${numPat}`, 'i')
   );
   if (rangeMatch) {
     priceMin = parseNum(rangeMatch[1]);
     priceMax = parseNum(rangeMatch[2]);
     text = text.replace(rangeMatch[0], '').trim();
   } else {
-    // "ispod X" / "do X" / "bis X" / "manje od X"
+    // "ispod X" / "do X" / "manje od X" / "under X" / "up to X"
     const maxMatch = normalized.match(
-      new RegExp(`(?:ispod|do|bis|manje od|max\\.?|unter)\\s+${numPat}`, 'i')
+      new RegExp(`(?:ispod|do|manje od|max\\.?|under|up to)\\s+${numPat}`, 'i')
     );
     if (maxMatch) {
       priceMax = parseNum(maxMatch[1]);
       text = text.replace(maxMatch[0], '').trim();
     }
 
-    // "od X" / "von X" / "preko X" / "više od X" / "minimum X"
+    // "od X" / "preko X" / "više od X" / "minimum X" / "from X"
     const minMatch = normalized.match(
-      new RegExp(`(?:od|von|ab|preko|više od|min\\.?|minimum)\\s+${numPat}`, 'i')
+      new RegExp(`(?:od|from|preko|više od|min\\.?|minimum)\\s+${numPat}`, 'i')
     );
     if (minMatch) {
       priceMin = parseNum(minMatch[1]);

@@ -18,9 +18,21 @@ export async function POST(req: NextRequest) {
 Upit: "${sanitizeForPrompt(query, 500)}"
 
 Tržište: Bosna i Hercegovina / Hrvatska / Srbija region
-Jezik upita može biti: bosanski, hrvatski, srpski, sa tipfelima ili slengom
+Jezik upita može biti: bosanski, hrvatski, srpski, engleski — sa tipfelima ili slengom
 
-Kategorije: Vozila, Dijelovi za vozila, Nekretnine, Mobiteli i telekomunikacija, Računala i oprema, Tehnika i elektronika, Dom i vrt, Odjeća i obuća, Sport i rekreacija, Dječji kutak, Glazbeni instrumenti, Literatura i edukacija, Video igre i konzole, Životinje, Hrana i piće, Strojevi i alati, Poslovi i zapošljavanje, Usluge, Umjetnost i antikviteti, Ostalo
+Kategorije i potkategorije (koristi TAČNO ova imena za subcategory):
+- Vozila: Osobni automobili, Motocikli i skuteri, Teretna vozila, Autobusi i minibusi, Bicikli, Kamper i kamp prikolice, Prikolice, Nautika i plovila
+- Dijelovi za automobile: Za automobile – Motor i mjenjač, Za automobile – Karoserija, Za automobile – Unutrašnjost i sjedala, Za automobile – Felge i gume, Za automobile – Tuning i oprema, Za automobile – Navigacija i auto akustika
+- Nekretnine: Stanovi, Kuće, Zemljišta, Poslovni prostori, Garaže i parkirna mjesta, Turistički smještaj, Luksuzne nekretnine
+- Mobiteli i oprema: Mobiteli – Apple iPhone, Mobiteli – Samsung, Mobiteli – Xiaomi / Redmi / POCO, Mobiteli – Huawei / Honor, Tableti
+- Računala i IT: Laptopi, Desktop računala, Monitori, Komponente, Mrežna oprema, Printeri i skeneri
+- Tehnika i elektronika: Televizori, Audio oprema, Foto i video oprema, Bijela tehnika, Mali kućanski aparati, Smart home i IoT
+- Dom i vrtne garniture: Namještaj – Dnevna soba, Namještaj – Spavaća soba, Namještaj – Kuhinja i blagovaonica, Rasvjeta, Tepisi zavjese i tekstil
+- Odjeća i obuća: Ženska odjeća, Ženska obuća, Muška odjeća, Muška obuća, Dječja odjeća i obuća, Nakit i satovi, Torbe novčanici i ruksaci
+- Sport i rekreacija: Fitness i teretana, Biciklizam (oprema), Nogomet, Tenis i badminton, Zimski sportovi, Vodeni sportovi, Planinarenje i kampiranje
+- Videoigre: PlayStation, Xbox, Nintendo, PC igre, Gaming oprema
+- Životinje: Psi, Mačke, Ptice i papige, Ribe i akvaristika
+- Strojevi i alati: Ručni alati, Električni alati, Građevinski strojevi, Poljoprivredni strojevi, Vrtni strojevi
 
 Zadaci:
 1. Ispravi tipfelere i normaliziraj upit
@@ -36,6 +48,9 @@ CIJENA — brojevi uz novčane indikatore:
 - "od 1000 do 5000", "1000-5000" → priceMin: 1000, priceMax: 5000
 - "10k", "10.000 KM" → cijena, NE radius
 - Ako nema "km" (kilometar) iza broja, onda je to CIJENA!
+- VAŽNO: "do X" BEZ "od" ispred = SAMO priceMax! "laptop do 800" → priceMin: null, priceMax: 800
+- "under X", "up to X" → SAMO priceMax (NE postavljaj priceMin!)
+- "od X do Y" / "from X to Y" = raspon → priceMin: X, priceMax: Y
 
 RADIUS — SAMO kada korisnik EKSPLICITNO pomene udaljenost:
 - "30km", "30 km", "u krugu 30km" → radius: 30
@@ -48,13 +63,27 @@ LOKACIJA — ime grada/regije:
 - "sarajevo", "u sarajevu", "mostar" → location: "Sarajevo"
 - Lokacija MOŽE biti bez radiusa (samo grad, bez km)
 
-Primjeri:
-- "auto do 5000e" → priceMax: 5000, radius: null, location: null
-- "auto sarajevo" → priceMax: null, radius: null, location: "Sarajevo"
-- "auto sarajevo 30km" → priceMax: null, radius: 30, location: "Sarajevo"
-- "auto do 5000e sarajevo 30km" → priceMax: 5000, radius: 30, location: "Sarajevo"
-- "laptop ispod 800 mostar" → priceMax: 800, radius: null, location: "Mostar"
-- "stan u blizini tuzle do 50000" → priceMax: 50000, radius: 20, location: "Tuzla"
+LOKACIJA — gradovi BiH, HR, Srbija:
+- BiH: Sarajevo, Mostar, Banja Luka, Tuzla, Zenica, Brčko, Bihać, Trebinje, Prijedor, Doboj, Bijeljina, Livno, Goražde, Travnik, Visoko, Cazin, Bugojno, Konjic, Stolac, Široki Brijeg, Čapljina, Neum
+- HR: Zagreb, Split, Rijeka, Osijek, Zadar, Dubrovnik, Pula, Slavonski Brod, Karlovac, Varaždin, Šibenik, Sisak, Vinkovci, Velika Gorica, Samobor, Koprivnica
+- Srbija: Beograd, Novi Sad, Niš, Kragujevac, Subotica, Novi Pazar, Čačak, Zrenjanin, Šabac, Leskovac, Užice, Smederevo, Valjevo, Vranje, Kruševac
+
+Primjeri (KOMPLETNI — category + subcategory + location + attributes + price):
+- "stan sarajevo 80m²" → category: "Nekretnine", subcategory: "Stanovi", location: "Sarajevo", attributes: { kvadraturaM2: 80 }
+- "BMW 320 dizel automatik do 15000" → category: "Vozila", subcategory: "Osobni automobili", priceMax: 15000, attributes: { marka: "BMW", model: "320", gorivo: "Dizel", mjenjac: "Automatik" }
+- "iPhone 15 Pro 256GB" → category: "Mobiteli i oprema", subcategory: "Mobiteli – Apple iPhone", attributes: { memorija: "256GB" }
+- "laptop do 800" → category: "Računala i IT", subcategory: "Laptopi", priceMin: null, priceMax: 800
+- "stan 3 sobe mostar do 100000" → category: "Nekretnine", subcategory: "Stanovi", location: "Mostar", priceMax: 100000, attributes: { brojSoba: "3" }
+- "PS5 igre" → category: "Videoigre", subcategory: "PlayStation"
+- "kuća zenica" → category: "Nekretnine", subcategory: "Kuće", location: "Zenica"
+- "auto do 5000e" → category: "Vozila", subcategory: "Osobni automobili", priceMax: 5000
+- "auto sarajevo 30km" → category: "Vozila", subcategory: "Osobni automobili", radius: 30, location: "Sarajevo"
+- "laptop ispod 800 mostar" → category: "Računala i IT", subcategory: "Laptopi", priceMax: 800, location: "Mostar"
+- "stan u blizini tuzle do 50000" → category: "Nekretnine", subcategory: "Stanovi", priceMax: 50000, radius: 20, location: "Tuzla"
+- "Samsung Galaxy S24" → category: "Mobiteli i oprema", subcategory: "Mobiteli – Samsung"
+- "gaming pc" → category: "Računala i IT", subcategory: "Desktop računala"
+- "traktor" → category: "Strojevi i alati", subcategory: "Poljoprivredni strojevi"
+- "gitara" → category: "Glazba i glazbeni instrumenti", subcategory: "Gitare"
 
 6. Izvuci kategorie-specifične atribute iz upita (ako su prepoznatljivi)
 

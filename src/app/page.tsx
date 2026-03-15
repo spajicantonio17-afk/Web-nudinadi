@@ -341,12 +341,25 @@ function HomeContent() {
     }
   }, [isLoadingMore, hasMore, dbProducts.length, buildServerFilters]);
 
+  // Pause infinite scroll while "Više informacija" scrolls to footer
+  const scrollPausedRef = useRef(false);
+  useEffect(() => {
+    const pause = () => { scrollPausedRef.current = true; };
+    const resume = () => { scrollPausedRef.current = false; };
+    window.addEventListener('scrollToFooterStart', pause);
+    window.addEventListener('scrollToFooterEnd', resume);
+    return () => {
+      window.removeEventListener('scrollToFooterStart', pause);
+      window.removeEventListener('scrollToFooterEnd', resume);
+    };
+  }, []);
+
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const el = loadMoreRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      (entries) => { if (entries[0].isIntersecting) loadMoreProducts(); },
+      (entries) => { if (entries[0].isIntersecting && !scrollPausedRef.current) loadMoreProducts(); },
       { rootMargin: '200px' }
     );
     observer.observe(el);
@@ -440,6 +453,7 @@ function HomeContent() {
         body: JSON.stringify({ query }),
       });
       const json = await res.json();
+      console.log('[AI Search] API response:', JSON.stringify(json, null, 2));
       if (json.success && json.data) {
         const d = json.data;
 
@@ -457,11 +471,16 @@ function HomeContent() {
         // Currency: prefer local detection (based on original user input)
         if (localParsed.detectedCurrency) setAiCurrency(localParsed.detectedCurrency);
 
-        // Price: prefer AI, fallback to local regex parsing
-        const resolvedMin = (typeof d.filters?.priceMin === 'number' && d.filters.priceMin > 0) ? d.filters.priceMin : localParsed.priceMin;
-        const resolvedMax = (typeof d.filters?.priceMax === 'number' && d.filters.priceMax > 0) ? d.filters.priceMax : localParsed.priceMax;
-        if (resolvedMin) setAiPriceMin(resolvedMin);
-        if (resolvedMax) setAiPriceMax(resolvedMax);
+        // Price: prefer local regex (deterministic & reliable), fallback to AI
+        const hasLocalPrice = localParsed.priceMin !== undefined || localParsed.priceMax !== undefined;
+        const resolvedMin = hasLocalPrice
+          ? localParsed.priceMin
+          : ((typeof d.filters?.priceMin === 'number' && d.filters.priceMin > 0) ? d.filters.priceMin : undefined);
+        const resolvedMax = hasLocalPrice
+          ? localParsed.priceMax
+          : ((typeof d.filters?.priceMax === 'number' && d.filters.priceMax > 0) ? d.filters.priceMax : undefined);
+        setAiPriceMin(resolvedMin);
+        setAiPriceMax(resolvedMax);
 
         // Category: prefer AI
         if (d.filters?.category) {
@@ -470,6 +489,19 @@ function HomeContent() {
         } else if (localParsed.detectedCategory) {
           setAiCategory(localParsed.detectedCategory);
           handleCategoryChange(localParsed.detectedCategory);
+        }
+        // Apply AI subcategory (after category, since handleCategoryChange resets it)
+        if (d.filters?.subcategory) {
+          const catName = d.filters.category || localParsed.detectedCategory;
+          const catDef = CATEGORIES.find(c => c.name === catName);
+          if (catDef?.subCategories) {
+            const aiSub = d.filters.subcategory.toLowerCase();
+            const match = catDef.subCategories.find(sc => {
+              const scLower = sc.name.toLowerCase();
+              return scLower === aiSub || scLower.includes(aiSub) || aiSub.includes(scLower);
+            });
+            if (match) setSelectedSubCategory(match.name);
+          }
         }
         // Apply AI condition filter
         if (d.filters?.condition && AI_CONDITION_MAP[d.filters.condition]) {
@@ -494,7 +526,7 @@ function HomeContent() {
         }
         if (d.suggestions?.length) setAiSearchSuggestions(d.suggestions);
       }
-    } catch { /* fallback: keep existing local parse */ }
+    } catch (err) { console.error('[AI Search] FAILED:', err); }
     setIsAiSearching(false);
     setShowSearchHints(false);
   };
