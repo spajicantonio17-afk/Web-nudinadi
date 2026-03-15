@@ -452,8 +452,8 @@ function HomeContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
-      console.log('[AI Search] API response:', JSON.stringify(json, null, 2));
       if (json.success && json.data) {
         const d = json.data;
 
@@ -482,15 +482,18 @@ function HomeContent() {
         setAiPriceMin(resolvedMin);
         setAiPriceMax(resolvedMax);
 
-        // Category: prefer AI
-        if (d.filters?.category) {
-          setAiCategory(d.filters.category);
-          handleCategoryChange(d.filters.category);
-        } else if (localParsed.detectedCategory) {
-          setAiCategory(localParsed.detectedCategory);
-          handleCategoryChange(localParsed.detectedCategory);
+        // Category: prefer AI — set directly WITHOUT handleCategoryChange()
+        // (handleCategoryChange resets subcategory & attributes, which we need to preserve)
+        const resolvedCat = d.filters?.category || localParsed.detectedCategory;
+        if (resolvedCat) {
+          setAiCategory(resolvedCat);
+          setActiveCategory(resolvedCat);
+          setSelectedSubCategory(null);
+          setSelectedSubItem(null);
+          const url = `/?category=${encodeURIComponent(resolvedCat)}`;
+          window.history.replaceState(null, '', url);
         }
-        // Apply AI subcategory (after category, since handleCategoryChange resets it)
+        // Apply AI subcategory
         if (d.filters?.subcategory) {
           const catName = d.filters.category || localParsed.detectedCategory;
           const catDef = CATEGORIES.find(c => c.name === catName);
@@ -893,8 +896,14 @@ function HomeContent() {
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSmartSearch(searchQuery); }}
                   onFocus={() => setShowSearchHints(true)}
                   onBlur={() => setTimeout(() => setShowSearchHints(false), 150)}
-                  className="relative z-10 w-full bg-[var(--c-input)] border border-[var(--c-border)] rounded-[14px] py-3 pl-11 pr-4 text-[14px] focus:ring-2 focus:ring-[var(--c-accent)] focus:border-[var(--c-accent)] outline-none text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] transition-all duration-150 shadow-subtle caret-[var(--c-text)]"
+                  className={`relative z-10 w-full bg-[var(--c-input)] border rounded-[14px] py-3 pl-11 pr-4 text-[14px] focus:ring-2 focus:ring-[var(--c-accent)] focus:border-[var(--c-accent)] outline-none text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] transition-all duration-150 shadow-subtle caret-[var(--c-text)] ${isAiSearching ? 'border-[var(--c-accent)] ring-2 ring-[var(--c-accent)]/30 animate-pulse' : 'border-[var(--c-border)]'}`}
                 />
+                {/* AI loading bar */}
+                {isAiSearching && (
+                  <div className="absolute bottom-0 left-4 right-4 h-[2px] rounded-full overflow-hidden z-20">
+                    <div className="h-full bg-[var(--c-accent)] rounded-full animate-[shimmer_1.2s_ease-in-out_infinite]" style={{ width: '40%', animation: 'shimmer 1.2s ease-in-out infinite' }} />
+                  </div>
+                )}
 
                 {/* LIVE AUTOCOMPLETE — shows product/category suggestions while typing */}
                 {showSearchHints && searchQuery && !isAiSearching && (
