@@ -113,7 +113,15 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           <div className="hidden xl:flex items-center gap-1.5 ml-1">
             <div className="w-[1px] h-6 bg-[var(--c-border)] mr-1"></div>
             <button
-              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+              onClick={() => {
+                window.dispatchEvent(new Event('scrollToFooterStart'));
+                const footer = document.getElementById('site-footer');
+                if (footer) {
+                  footer.scrollIntoView({ behavior: 'smooth' });
+                  // Resume infinite scroll after smooth scroll completes
+                  setTimeout(() => window.dispatchEvent(new Event('scrollToFooterEnd')), 1500);
+                }
+              }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[12px] font-semibold text-[var(--c-text3)] hover:text-[var(--c-accent)] hover:bg-[var(--c-accent-light)] border border-transparent hover:border-[var(--c-accent)]/20 transition-all duration-150"
             >
               <i className="fa-solid fa-circle-info text-[11px]"></i>
@@ -247,7 +255,15 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           <div className="w-[1px] h-8 bg-[var(--c-border)] mx-1 hidden sm:block"></div>
 
           {/* Profile Avatar / Guest Button — responsive */}
-          {isAuthenticated && user ? (
+          {authLoading ? (
+            <div className="flex items-center gap-2 md:gap-3 pl-1 pr-1 md:pr-4 py-1">
+              <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-[var(--c-border)] animate-pulse" />
+              <div className="hidden md:block space-y-1.5">
+                <div className="w-16 h-3 rounded bg-[var(--c-border)] animate-pulse" />
+                <div className="w-12 h-2.5 rounded bg-[var(--c-border)] animate-pulse" />
+              </div>
+            </div>
+          ) : isAuthenticated && user ? (
             <Link
               href="/profile"
               className={`relative group flex items-center gap-2 md:gap-3 pl-1 pr-1 md:pr-4 py-1 rounded-[6px] transition-all duration-150 border ${

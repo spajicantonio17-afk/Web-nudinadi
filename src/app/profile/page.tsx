@@ -85,6 +85,7 @@ function ProfileContent() {
   }, [activeTab]);
 
   const [userProducts, setUserProducts] = useState<ProductWithSeller[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [reviews, setReviews] = useState<ReviewWithReviewer[]>([]);
   const [reviewsPage, setReviewsPage] = useState(1);
   const [hasMoreReviews, setHasMoreReviews] = useState(true);
@@ -248,7 +249,11 @@ function ProfileContent() {
   // Fetch products
   useEffect(() => {
     if (!user?.id) return;
-    getUserProducts(user.id).then(setUserProducts).catch(console.error);
+    setIsLoadingProducts(true);
+    getUserProducts(user.id)
+      .then(setUserProducts)
+      .catch(console.error)
+      .finally(() => setIsLoadingProducts(false));
   }, [user?.id]);
 
   // Fetch favorites when Markirani tab is active
@@ -1229,7 +1234,19 @@ function ProfileContent() {
         {/* AKTIVNI TAB */}
         {activeTab === 'Aktivni' && (
             <div className="space-y-2 animate-[fadeIn_0.2s_ease-out]">
-                {activeProducts.length === 0 ? (
+                {isLoadingProducts ? (
+                    <div className="space-y-2">
+                      {[1,2,3].map(i => (
+                        <div key={i} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 animate-pulse">
+                          <div className="w-16 h-16 rounded-[12px] bg-[var(--c-border)] shrink-0" />
+                          <div className="flex-1 space-y-2 py-1">
+                            <div className="h-3 bg-[var(--c-border)] rounded w-3/4" />
+                            <div className="h-2.5 bg-[var(--c-border)] rounded w-1/2" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                ) : activeProducts.length === 0 ? (
                     <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-6 flex flex-col items-center text-center min-h-[200px] justify-center relative overflow-hidden group">
                         <div className="absolute inset-0 bg-[linear-gradient(var(--c-grid-line)_1px,transparent_1px),linear-gradient(90deg,var(--c-grid-line)_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)]"></div>
                         <div className="relative z-10 flex flex-col items-center">
