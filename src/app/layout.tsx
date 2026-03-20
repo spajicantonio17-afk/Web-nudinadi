@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -15,17 +16,17 @@ export const metadata: Metadata = {
     template: "%s | NudiNađi",
   },
   description: "NudiNađi je vodeći marketplace za kupoprodaju rabljenih i novih artikala u regiji. AI-potpomognuto oglašavanje, sigurna komunikacija i brza prodaja.",
-  metadataBase: new URL("https://nudinadi.ba"),
+  metadataBase: new URL("https://nudinadi.com"),
   openGraph: {
     type: "website",
     locale: "bs_BA",
-    url: "https://nudinadi.ba",
+    url: "https://nudinadi.com",
     siteName: "NudiNađi",
     title: "NudiNađi – Kupuj i Prodaj Brzo i Sigurno",
     description: "Vodeći marketplace za kupoprodaju rabljenih i novih artikala u regiji.",
     images: [
       {
-        url: "/og-default.jpg",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "NudiNađi Marketplace",
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "NudiNađi – Kupuj i Prodaj Brzo i Sigurno",
     description: "Vodeći marketplace za kupoprodaju rabljenih i novih artikala u regiji.",
-    images: ["/og-default.jpg"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -48,6 +49,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/emblem.png", type: "image/png" },
     ],
     apple: "/emblem.png",
@@ -76,6 +78,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased w-full min-w-0 overflow-x-hidden">
+        <GoogleAnalytics />
         <Providers>{children}</Providers>
       </body>
     </html>

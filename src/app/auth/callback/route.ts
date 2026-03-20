@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 
+function getSafeRedirect(raw: string | null): string {
+  const path = raw || '/'
+  try {
+    const url = new URL(path, 'http://n')
+    if (url.host !== 'n') return '/'
+    return url.pathname + url.search
+  } catch {
+    return '/'
+  }
+}
+
 // Handles OAuth callback (Google, Facebook) and email confirmation
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const rawRedirect = searchParams.get('redirect') || '/'
-  const redirect = rawRedirect.startsWith('/') && !rawRedirect.includes('//') ? rawRedirect : '/'
+  const redirect = getSafeRedirect(searchParams.get('redirect'))
 
   // Detect email confirmation via token_hash + type
   const tokenHash = searchParams.get('token_hash')

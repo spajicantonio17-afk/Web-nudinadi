@@ -92,9 +92,9 @@ export async function POST(req: NextRequest) {
             <tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">Email</td><td style="padding:8px 12px;border:1px solid #e5e7eb"><a href="mailto:${email.trim()}">${email.trim()}</a></td></tr>
             <tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">Predmet</td><td style="padding:8px 12px;border:1px solid #e5e7eb">${subject.trim()}</td></tr>
             <tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold;vertical-align:top">Poruka</td><td style="padding:8px 12px;border:1px solid #e5e7eb;white-space:pre-wrap">${message.trim()}</td></tr>
-            ${userId ? `<tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">User ID</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-family:monospace;font-size:12px">${userId}</td></tr>` : '<tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">User</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#999">Gast (nicht eingeloggt)</td></tr>'}
+            ${userId ? `<tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">User ID</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-family:monospace;font-size:12px">${userId}</td></tr>` : '<tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:bold">User</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#999">Gost (nije prijavljen/a)</td></tr>'}
           </table>
-          <p style="margin-top:16px;font-size:12px;color:#888">Gesendet über NudiNađi Kontaktformular</p>
+          <p style="margin-top:16px;font-size:12px;color:#888">Poslano putem NudiNađi kontakt forme</p>
         `,
       });
     } catch (emailErr) {

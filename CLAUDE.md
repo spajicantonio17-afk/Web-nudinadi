@@ -42,7 +42,7 @@ git checkout e980bd9 -- src/app/page.tsx src/app/messages/page.tsx src/app/profi
 
 ## Project Info
 - **Stack:** Next.js 16 (App Router), Tailwind CSS, shadcn/ui, TypeScript
-- **Theme:** Permanent dark mode (`bg-[#060E14]`)
+- **Theme:** Light mode (`bg-[#FAFBFD]`)
 - **Icons:** Font Awesome 6 Free (CDN)
 - **Design Source:** `C:\Users\spaji\Desktop\copy-of-nudinadji1` (Vite+React prototype from AI Studio)
 - **Languages:** Bosnian/Croatian/Serbian (primary), German, English
