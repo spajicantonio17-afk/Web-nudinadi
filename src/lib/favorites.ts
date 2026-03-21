@@ -10,6 +10,7 @@ import {
   addFavorite,
   removeFavorite as removeFavoriteDB,
 } from '@/services/favoriteService';
+import { logger } from '@/lib/logger';
 
 const STORAGE_KEY = 'nudinadi_favorites';
 
@@ -88,7 +89,7 @@ export function useFavorites() {
         setFavoriteIds(prev =>
           isFav ? [...prev, productId] : prev.filter(id => id !== productId)
         );
-        console.error('Favorite toggle failed:', err);
+        logger.error('Favorite toggle failed:', err);
       }
     } else {
       setFavoriteIds(prev => {
@@ -112,7 +113,7 @@ export function useFavorites() {
       return next;
     });
     if (userId) {
-      await removeFavoriteDB(userId, productId).catch(console.error);
+      await removeFavoriteDB(userId, productId).catch(logger.error);
     }
   }, [userId]);
 

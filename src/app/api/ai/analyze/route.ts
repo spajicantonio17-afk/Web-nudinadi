@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeImageWithGemini, parseJsonResponse } from '@/lib/gemini';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
@@ -61,7 +62,7 @@ Odgovori SAMO JSON.`;
 
     return NextResponse.json({ error: 'Nepoznata akcija' }, { status: 400 });
   } catch (err) {
-    console.error('[/api/ai/analyze]', err);
+    logger.error('[/api/ai/analyze]', err);
     return NextResponse.json(
       { error: 'Greška pri analizi slike', details: err instanceof Error ? err.message : String(err) },
       { status: 500 }

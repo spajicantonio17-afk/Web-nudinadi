@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { sendNewMessageEmail, sendProductSoldEmail, sendNewReviewEmail } from '@/lib/email'
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 export async function POST(req: NextRequest) {
   const rl = rateLimit(`email-notify:${getIp(req)}`, RATE_LIMITS.support)
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (err) {
-    console.error('[notifications/email] Error:', err)
+    logger.error('[notifications/email] Error:', err)
     return NextResponse.json({ error: 'Greška pri slanju obavijesti.' }, { status: 500 })
   }
 }

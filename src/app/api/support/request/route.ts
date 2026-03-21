@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY || '');
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
       });
 
     if (error) {
-      console.error('[support/request] DB insert error:', error);
+      logger.error('[support/request] DB insert error:', error);
       return NextResponse.json({ error: 'Greška pri slanju. Pokušajte ponovo.' }, { status: 500 });
     }
 
@@ -99,12 +100,12 @@ export async function POST(req: NextRequest) {
       });
     } catch (emailErr) {
       // Email failed but DB insert succeeded — log but don't fail the request
-      console.error('[support/request] Email send error:', emailErr);
+      logger.error('[support/request] Email send error:', emailErr);
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('[support/request] Unexpected error:', err);
+    logger.error('[support/request] Unexpected error:', err);
     return NextResponse.json({ error: 'Interna greška servera.' }, { status: 500 });
   }
 }

@@ -18,6 +18,7 @@ import BusinessProfileEditor from '@/components/BusinessProfileEditor';
 import TeamManager from '@/components/TeamManager';
 import { isPro, isBusiness } from '@/lib/plans';
 import VerificationProgress from '@/components/VerificationProgress';
+import { logger } from '@/lib/logger';
 
 type ReviewWithReviewer = Review & {
   reviewer: { username: string; avatar_url: string | null } | null;
@@ -220,7 +221,7 @@ function ProfileContent() {
       setSaveToast(true);
       setTimeout(() => setSaveToast(false), 2500);
     } catch (err) {
-      console.error('Profile save error:', err);
+      logger.error('Profile save error:', err);
       setUsernameError('Greška pri čuvanju. Pokušaj ponovo.');
     } finally {
       setSaving(false);
@@ -287,7 +288,7 @@ function ProfileContent() {
       }
       setHasMoreReviews(fetched.length === REVIEWS_PER_PAGE);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     } finally {
       setLoadingMoreReviews(false);
     }
@@ -312,7 +313,7 @@ function ProfileContent() {
       await deleteProduct(draftId);
       setUserProducts(prev => prev.filter(p => p.id !== draftId));
     } catch (err) {
-      console.error('Draft deletion failed:', err);
+      logger.error('Draft deletion failed:', err);
     } finally {
       setDeletingDraftId(null);
     }
@@ -326,7 +327,7 @@ function ProfileContent() {
       await archiveProduct(productId);
       setUserProducts(prev => prev.map(p => p.id === productId ? { ...p, status: 'archived' as const } : p));
     } catch (err) {
-      console.error('Archive failed:', err);
+      logger.error('Archive failed:', err);
     } finally {
       setArchivingId(null);
     }
@@ -339,7 +340,7 @@ function ProfileContent() {
       await unarchiveProduct(productId);
       setUserProducts(prev => prev.map(p => p.id === productId ? { ...p, status: 'active' as const } : p));
     } catch (err) {
-      console.error('Unarchive failed:', err);
+      logger.error('Unarchive failed:', err);
     } finally {
       setArchivingId(null);
     }

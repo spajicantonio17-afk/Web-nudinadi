@@ -15,6 +15,7 @@ import {
   OBAVIJESTI_ICON_MAP,
   OBAVIJESTI_COLOR_MAP,
 } from '@/services/obavjestiService';
+import { logger } from '@/lib/logger';
 
 interface ObavjestiChatProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: 
       setUnreadCount(count);
       onUnreadCountChange?.(count);
     } catch (err) {
-      console.error('Failed to load obavijesti:', err);
+      logger.error('Failed to load obavijesti:', err);
     } finally {
       setLoading(false);
     }

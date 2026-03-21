@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/ai/resolve-item
@@ -60,7 +61,7 @@ Odgovori SAMO JSON: {"item_index": BROJ}`;
 
     return NextResponse.json({ success: false, error: 'AI could not determine item' });
   } catch (err) {
-    console.error('[/api/ai/resolve-item] Error:', err);
+    logger.error('[/api/ai/resolve-item] Error:', err);
     return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
   }
 }

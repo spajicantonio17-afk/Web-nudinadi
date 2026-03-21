@@ -24,6 +24,7 @@ import PendingSaleBanner from '@/components/PendingSaleBanner';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import { getCountryPreference } from '@/lib/country';
 import CategoryFilterBar, { type AttributeFilters } from '@/components/CategoryFilterBar';
+import { logger } from '@/lib/logger';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
 
@@ -200,7 +201,7 @@ function HomeContent() {
           }
         }
       } catch (err) {
-        console.error('[NudiNadi] Category filter failed:', err);
+        logger.error('[NudiNadi] Category filter failed:', err);
         // Fallback: try direct Supabase query for category resolution
         try {
           const { getSupabase } = await import('@/lib/supabase');
@@ -230,7 +231,7 @@ function HomeContent() {
             }
           }
         } catch (fallbackErr) {
-          console.error('[NudiNadi] Category fallback also failed:', fallbackErr);
+          logger.error('[NudiNadi] Category fallback also failed:', fallbackErr);
         }
       }
     }
@@ -316,7 +317,7 @@ function HomeContent() {
       })
       .catch(err => {
         if (err?.name === 'AbortError') return; // React Strict Mode cancels in-flight fetches
-        if (version === filterVersion.current) console.error('Failed to load products:', err);
+        if (version === filterVersion.current) logger.error('Failed to load products:', err);
       })
       .finally(() => {
         if (version === filterVersion.current) setIsLoadingProducts(false);
@@ -340,7 +341,7 @@ function HomeContent() {
       setTotalCount(count);
       setHasMore(dbProducts.length + newProducts.length < count);
     } catch (err) {
-      console.error('Failed to load more products:', err);
+      logger.error('Failed to load more products:', err);
     } finally {
       setIsLoadingMore(false);
     }
@@ -538,7 +539,7 @@ function HomeContent() {
         if (d.searchVariants?.length) setAiSearchVariants(d.searchVariants);
         else setAiSearchVariants([]);
       }
-    } catch (err) { console.error('[AI Search] FAILED:', err); }
+    } catch (err) { logger.error('[AI Search] FAILED:', err); }
     setIsAiSearching(false);
     setShowSearchHints(false);
   };

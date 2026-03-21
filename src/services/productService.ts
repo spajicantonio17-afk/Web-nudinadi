@@ -6,6 +6,7 @@ import type {
 import { CITIES } from '@/lib/location'
 import type { CountryPreference } from '@/lib/country'
 import { getPlanLimits } from '@/lib/plans'
+import { logger } from '@/lib/logger'
 
 const supabase = getSupabase()
 
@@ -220,7 +221,7 @@ export async function unarchiveProduct(id: string): Promise<Product> {
 export async function incrementViews(id: string): Promise<void> {
   const { error } = await supabase.rpc('increment_views', { p_product_id: id })
   if (error) {
-    console.warn('increment_views RPC failed:', error.message)
+    logger.warn('increment_views RPC failed:', error.message)
   }
 }
 
@@ -266,7 +267,7 @@ export async function getSearchSuggestions(query: string, limit = 5): Promise<Se
   })
 
   if (error) {
-    console.warn('search_suggestions RPC failed:', error.message)
+    logger.warn('search_suggestions RPC failed:', error.message)
     return []
   }
 
@@ -368,7 +369,7 @@ export async function getSimilarProducts(
   })
 
   if (error) {
-    console.warn('get_similar_products RPC failed:', error.message)
+    logger.warn('get_similar_products RPC failed:', error.message)
     return []
   }
 

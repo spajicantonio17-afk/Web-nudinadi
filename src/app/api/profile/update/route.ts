@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 export async function POST(req: NextRequest) {
   const rl = rateLimit(`profile:${getIp(req)}`, RATE_LIMITS.profile_update)
@@ -73,13 +74,13 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Profile update DB error:', error)
+      logger.error('Profile update DB error:', error)
       return NextResponse.json({ error: error.message || 'Greška pri ažuriranju.' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, profile: data })
   } catch (err) {
-    console.error('Profile update route error:', err)
+    logger.error('Profile update route error:', err)
     return NextResponse.json({ error: 'Interna greška servera.' }, { status: 500 })
   }
 }

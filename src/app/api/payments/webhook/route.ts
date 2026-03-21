@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import type Stripe from 'stripe';
+import { logger } from '@/lib/logger';
 
 // Disable body parsing — Stripe needs the raw body for signature verification
 export const dynamic = 'force-dynamic';
@@ -38,7 +39,7 @@ async function updateUserPlan(userId: string, plan: string, expiresAt: Date | nu
     .eq('id', userId);
 
   if (error) {
-    console.error('[webhook] Failed to update user plan:', error);
+    logger.error('[webhook] Failed to update user plan:', error);
     throw error;
   }
 }
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error('[webhook] STRIPE_WEBHOOK_SECRET not set');
+    logger.error('[webhook] STRIPE_WEBHOOK_SECRET not set');
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
-    console.error('[webhook] Signature verification failed:', err);
+    logger.error('[webhook] Signature verification failed:', err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -128,7 +129,7 @@ export async function POST(req: NextRequest) {
       }
     }
   } catch (err) {
-    console.error('[webhook] Error processing event:', event.type, err);
+    logger.error('[webhook] Error processing event:', event.type, err);
     return NextResponse.json({ error: 'Webhook handler error' }, { status: 500 });
   }
 

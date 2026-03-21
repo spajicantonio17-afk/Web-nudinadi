@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server';
 import { getStripe } from '@/lib/stripe';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   const rl = rateLimit(`profile:${getIp(req)}`, RATE_LIMITS.profile_update);
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    console.error('[payments/portal]', err);
+    logger.error('[payments/portal]', err);
     return NextResponse.json(
       { error: 'Greška pri otvaranju portala.' },
       { status: 500 }

@@ -782,7 +782,7 @@ export default function CategoryFilterBar({
   return (
     <div className="flex flex-col items-center gap-1 w-full">
       {/* ── Row 1: Category chip + subcategories ── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1 max-w-5xl w-full">
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-subtle pb-1 px-1 max-w-5xl w-full">
         {/* Category chip — always first */}
         <button
           onClick={onClearCategory}
@@ -807,7 +807,7 @@ export default function CategoryFilterBar({
 
       {/* ── Row 2: Attribute filter chips (all categories with filters) ── */}
       {hasQuickFilters && config && (
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1 max-w-5xl w-full">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-subtle pb-1 px-1 max-w-5xl w-full">
           {config.quickFilters.map((filter) => {
             const value = attributeFilters[filter.key];
             const hasValue = value !== undefined;

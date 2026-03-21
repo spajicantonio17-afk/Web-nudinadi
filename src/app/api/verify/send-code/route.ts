@@ -3,6 +3,7 @@ import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server
 import { Resend } from 'resend'
 import crypto from 'crypto'
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY || '')
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
       })
 
     if (insertError) {
-      console.error('[verify/send-code] DB insert error:', insertError)
+      logger.error('[verify/send-code] DB insert error:', insertError)
       return NextResponse.json({ error: 'Greška pri slanju koda.' }, { status: 500 })
     }
 
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
           `,
         })
       } catch (emailErr) {
-        console.error('[verify/send-code] Email send error:', emailErr)
+        logger.error('[verify/send-code] Email send error:', emailErr)
         return NextResponse.json({ error: 'Greška pri slanju emaila.' }, { status: 500 })
       }
     } else {
@@ -99,14 +100,14 @@ export async function POST(req: NextRequest) {
         const { sendSMS } = await import('@/lib/sms')
         await sendSMS(profile.phone, `NudiNađi verifikacijski kod: ${code}. Ističe za 10 minuta.`)
       } catch (smsErr) {
-        console.error('[verify/send-code] SMS send error:', smsErr)
+        logger.error('[verify/send-code] SMS send error:', smsErr)
         return NextResponse.json({ error: 'Greška pri slanju SMS-a.' }, { status: 500 })
       }
     }
 
     return NextResponse.json({ success: true, message: 'Kod je poslan.' })
   } catch (err) {
-    console.error('[verify/send-code] Unexpected error:', err)
+    logger.error('[verify/send-code] Unexpected error:', err)
     return NextResponse.json({ error: 'Interna greška servera.' }, { status: 500 })
   }
 }

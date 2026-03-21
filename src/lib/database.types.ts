@@ -529,6 +529,7 @@ export interface ProductQuestion {
   user_id: string
   question: string
   answer: string | null
+  answered_by: string | null
   answered_at: string | null
   created_at: string
 }

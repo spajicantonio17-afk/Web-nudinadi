@@ -10,6 +10,7 @@ import type {
 import {
   USE_MOCK, MOCK_REPORTS, MOCK_WARNINGS, MOCK_BANS,
   MOCK_AI_LOGS, MOCK_ACTIONS, MOCK_USERS, MOCK_STATS,
+  REASON_LABELS,
 } from '@/lib/mock-moderation-data'
 
 const supabase = getSupabase()
@@ -339,6 +340,43 @@ export async function getModerationStats() {
     .select('*', { count: 'exact', head: true })
     .gte('resolved_at', todayStart)
 
+  // Aggregate reportsByReason from DB
+  const REASON_COLORS: Record<string, string> = {
+    spam: '#6366f1', scam: '#ef4444', duplicate: '#f59e0b',
+    prohibited_content: '#dc2626', inappropriate: '#f97316',
+    fake_listing: '#8b5cf6', personal_info: '#06b6d4', other: '#94a3b8',
+  }
+  const { data: reasonData } = await supabase
+    .from('moderation_reports')
+    .select('reason')
+  const reasonCounts: Record<string, number> = {}
+  ;(reasonData ?? []).forEach((r: { reason: string }) => {
+    reasonCounts[r.reason] = (reasonCounts[r.reason] || 0) + 1
+  })
+  const reportsByReason = Object.entries(reasonCounts).map(([reason, count]) => ({
+    reason,
+    label: REASON_LABELS[reason] || reason,
+    count,
+    color: REASON_COLORS[reason] || '#94a3b8',
+  }))
+
+  // Aggregate reportsOverTime (last 7 days) from DB
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const { data: timeData } = await supabase
+    .from('moderation_reports')
+    .select('created_at')
+    .gte('created_at', sevenDaysAgo.toISOString())
+  const dayCounts: Record<string, number> = {}
+  ;(timeData ?? []).forEach((r: { created_at: string }) => {
+    const d = new Date(r.created_at)
+    const key = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.`
+    dayCounts[key] = (dayCounts[key] || 0) + 1
+  })
+  const reportsOverTime = Object.entries(dayCounts)
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+
   return {
     pendingReports: pendingCount ?? 0,
     resolvedToday: resolvedTodayCount ?? 0,
@@ -346,7 +384,7 @@ export async function getModerationStats() {
     aiFlagsToday: aiTodayData?.length ?? 0,
     totalReports: totalCount ?? 0,
     avgResolutionMinutes: 0,
-    reportsByReason: MOCK_STATS.reportsByReason, // TODO: aggregate from DB
-    reportsOverTime: MOCK_STATS.reportsOverTime, // TODO: aggregate from DB
+    reportsByReason,
+    reportsOverTime,
   }
 }

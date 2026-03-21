@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest } from 'next/server';
+import { logger } from '@/lib/logger';
 
 /**
  * Server-side admin verification for API routes.
@@ -13,7 +14,7 @@ export async function verifyAdmin(req: NextRequest) {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
-    console.error('[admin-auth] Missing SUPABASE_URL or SERVICE_ROLE_KEY');
+    logger.error('[admin-auth] Missing SUPABASE_URL or SERVICE_ROLE_KEY');
     return null;
   }
 

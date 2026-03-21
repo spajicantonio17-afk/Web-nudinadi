@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin } from '@/lib/admin-auth';
 import { createClient } from '@supabase/supabase-js';
 import { sendAccountWarningEmail } from '@/lib/email';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await verifyAdmin(req);
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       await sendAccountWarningEmail(userData.user.email, reason);
     }
   } catch (emailErr) {
-    console.error('[admin/warn] Email notification failed:', emailErr);
+    logger.error('[admin/warn] Email notification failed:', emailErr);
   }
 
   return NextResponse.json({ data });

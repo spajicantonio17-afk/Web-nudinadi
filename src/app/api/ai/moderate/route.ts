@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { createClient } from '@supabase/supabase-js';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 // Auto-log AI results + auto-flag to moderation_reports if needed
 async function logAiResult(action: string, inputData: Record<string, unknown>, resultData: Record<string, unknown>, startTime: number) {
@@ -90,7 +91,7 @@ Vrati SAMO JSON:
       const data = parseJsonResponse(raw) as Record<string, unknown>;
 
       // Auto-log
-      logAiResult('duplicate', { title, category, description, productId, userId }, data, startTime).catch(console.error);
+      logAiResult('duplicate', { title, category, description, productId, userId }, data, startTime).catch(logger.error);
 
       return NextResponse.json({ success: true, data });
     }
@@ -130,7 +131,7 @@ Vrati SAMO JSON:
       const data = parseJsonResponse(raw) as Record<string, unknown>;
 
       // Auto-log
-      logAiResult('moderate', { title, description, price, category, images, productId, userId }, data, startTime).catch(console.error);
+      logAiResult('moderate', { title, description, price, category, images, productId, userId }, data, startTime).catch(logger.error);
 
       return NextResponse.json({ success: true, data });
     }
@@ -180,14 +181,14 @@ Vrati SAMO JSON:
       const data = parseJsonResponse(raw) as Record<string, unknown>;
 
       // Auto-log
-      logAiResult('trust', { totalListings, successfulSales, rating, reviewCount, accountAgeDays, hasAvatar, hasPhone, hasEmail, userId }, data, startTime).catch(console.error);
+      logAiResult('trust', { totalListings, successfulSales, rating, reviewCount, accountAgeDays, hasAvatar, hasPhone, hasEmail, userId }, data, startTime).catch(logger.error);
 
       return NextResponse.json({ success: true, data });
     }
 
     return NextResponse.json({ error: 'Nepoznata akcija' }, { status: 400 });
   } catch (err) {
-    console.error('[/api/ai/moderate]', err);
+    logger.error('[/api/ai/moderate]', err);
     return NextResponse.json(
       { error: 'Greška pri moderaciji', details: err instanceof Error ? err.message : String(err) },
       { status: 500 }

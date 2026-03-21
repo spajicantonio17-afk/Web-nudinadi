@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    console.error('[auto-confirm] Missing env vars:', {
+    logger.error('[auto-confirm] Missing env vars:', {
       hasUrl: !!url,
       hasServiceKey: !!key,
     });
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
     const { userId } = body;
 
     if (!userId) {
-      console.error('[auto-confirm] Missing userId in request body');
+      logger.error('[auto-confirm] Missing userId in request body');
       return NextResponse.json({ error: 'userId required' }, { status: 400 });
     }
 
@@ -48,13 +49,13 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error('[auto-confirm] Admin API error:', error.message, error);
+      logger.error('[auto-confirm] Admin API error:', error.message, error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('[auto-confirm] Unexpected error:', err);
+    logger.error('[auto-confirm] Unexpected error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

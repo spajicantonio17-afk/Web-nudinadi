@@ -9,6 +9,7 @@ import { getSupabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 import type { Profile } from '@/lib/database.types';
 import { logDailyLogin, logVerificationXp } from '@/services/levelService';
+import { logger } from '@/lib/logger';
 
 // Translate Supabase auth error messages to Bosnian
 function translateAuthError(message: string): string {
@@ -68,7 +69,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   lastError: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: true } | { success: false; error: string }>;
   register: (email: string, password: string, username: string, phone?: string) => Promise<RegisterResult>;
   loginWithOAuth: (provider: 'google' | 'facebook') => Promise<void>;
   logout: () => Promise<void>;
@@ -188,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ─── Login with Email/Password ────────────────────────
 
-  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string): Promise<{ success: true } | { success: false; error: string }> => {
     setLastError(null);
     // Timeout after 15s — prevents hanging if Supabase auth API is unreachable
     const { data, error } = await Promise.race([
@@ -199,8 +200,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ]);
 
     if (error) {
-      setLastError(translateAuthError(error.message));
-      return false;
+      const msg = translateAuthError(error.message);
+      setLastError(msg);
+      return { success: false, error: msg };
     }
 
     if (data.session) {
@@ -209,10 +211,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.session.user?.id) {
         logDailyLogin(data.session.user.id).catch(() => {/* non-critical */});
       }
-      return true;
+      return { success: true };
     }
 
-    return false;
+    return { success: false, error: 'Pogrešan email ili lozinka' };
   }, [supabase, setUserFromSession]);
 
   // ─── Register ─────────────────────────────────────────
@@ -233,7 +235,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   if (error) {
-    console.error('[register] signUp error:', error.message, error);
+    logger.error('[register] signUp error:', error.message, error);
     const msg = translateAuthError(error.message);
     setLastError(msg);
     return 'error';
@@ -242,7 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Duplicate email detection: Supabase returns a user with empty identities
   // instead of an error (security measure to prevent email enumeration)
   if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
-    console.warn('[register] Duplicate email detected — user has no identities');
+    logger.warn('[register] Duplicate email detected — user has no identities');
     setLastError('Račun sa ovim emailom već postoji. Prijavi se ili resetuj lozinku.');
     return 'error';
   }
@@ -270,10 +272,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         autoConfirmOk = !!json.success;
       } else {
         const errorBody = await res.text();
-        console.error('[register] Auto-confirm failed:', res.status, errorBody);
+        logger.error('[register] Auto-confirm failed:', res.status, errorBody);
       }
     } catch (err) {
-      console.error('[register] Auto-confirm network error:', err);
+      logger.error('[register] Auto-confirm network error:', err);
     }
 
     if (autoConfirmOk) {
@@ -293,7 +295,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (loginError) {
-      console.error('[register] Login attempt 1 failed:', loginError.message);
+      logger.error('[register] Login attempt 1 failed:', loginError.message);
     }
 
     // If auto-confirm reported success but login failed, retry with longer delay
@@ -308,7 +310,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return 'success';
       }
       if (retryError) {
-        console.error('[register] Login attempt 2 failed:', retryError.message);
+        logger.error('[register] Login attempt 2 failed:', retryError.message);
       }
     }
 
@@ -339,7 +341,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     if (error) {
-      console.error('OAuth error:', error.message);
+      logger.error('OAuth error:', error.message);
     }
   }, [supabase]);
 
@@ -358,7 +360,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
-      console.error('Reset password error:', error.message);
+      logger.error('Reset password error:', error.message);
       return false;
     }
 

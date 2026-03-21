@@ -20,6 +20,7 @@ import SimilarProducts from '@/components/SimilarProducts';
 import ProductAttributes from '@/components/ProductAttributes';
 import BuyerPickerModal from '@/components/BuyerPickerModal';
 import { addRecentlyViewed } from '@/lib/recently-viewed';
+import JsonLd, { buildProductSchema, buildBreadcrumbSchema } from '@/components/JsonLd';
 
 function formatTimeLabel(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
@@ -288,6 +289,14 @@ export default function ProductDetailPage() {
 
   return (
     <MainLayout title="Detalji Artikla" showSigurnost={false}>
+
+      {/* JSON-LD Structured Data */}
+      <JsonLd data={buildProductSchema(product)} />
+      <JsonLd data={buildBreadcrumbSchema([
+        { name: 'NudiNađi', url: 'https://nudinadi.com' },
+        ...(product.category ? [{ name: product.category.name, url: `https://nudinadi.com/?category=${product.category_id}` }] : []),
+        { name: product.title, url: `https://nudinadi.com/product/${product.id}` },
+      ])} />
 
       {/* FULL SCREEN GALLERY */}
       {isGalleryOpen && (

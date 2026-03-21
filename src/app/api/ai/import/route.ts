@@ -3,6 +3,7 @@ import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemi
 import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import { CATEGORIES } from '@/lib/constants';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 // ── URL normalization ────────────────────────────────────
 function normalizeUrl(raw: string): string {
@@ -1446,7 +1447,7 @@ async function fetchWithRetry(url: string): Promise<{ html: string; finalUrl: st
     try {
       return await fetchViaScraper(url);
     } catch (scraperErr) {
-      console.warn('[import] Scraper failed, falling back to direct fetch:', scraperErr instanceof Error ? scraperErr.message : scraperErr);
+      logger.warn('[import] Scraper failed, falling back to direct fetch:', scraperErr instanceof Error ? scraperErr.message : scraperErr);
     }
   }
 
@@ -1945,7 +1946,7 @@ export async function POST(req: NextRequest) {
       const raw = await textWithGemini(prompt);
       data = parseJsonResponse(raw) as Record<string, unknown>;
     } catch (geminiErr) {
-      console.warn('[/api/ai/import] Gemini failed, using meta-tag fallback:', geminiErr);
+      logger.warn('[/api/ai/import] Gemini failed, using meta-tag fallback:', geminiErr);
       if (metaFallback.title) {
         data = {
           title: metaFallback.title,
@@ -2032,7 +2033,7 @@ export async function POST(req: NextRequest) {
         const aiCat = (data.category as string).toLowerCase();
         const kwCat = keywordCat.toLowerCase();
         if (aiCat !== kwCat && !aiCat.includes(kwCat) && !kwCat.includes(aiCat)) {
-          console.warn(`[import] AI category "${data.category}" overridden by keywords → "${keywordCat}" (title: ${data.title})`);
+          logger.warn(`[import] AI category "${data.category}" overridden by keywords → "${keywordCat}" (title: ${data.title})`);
           data.category = keywordCat;
           data.subcategory = null;
         }
@@ -2120,7 +2121,7 @@ Odgovori SAMO JSON: {"category": "naziv", "subcategory": "potkategorija ili null
 
     return NextResponse.json({ success: true, data });
   } catch (err) {
-    console.error('[/api/ai/import]', err);
+    logger.error('[/api/ai/import]', err);
     return NextResponse.json(
       { success: false, error: 'Greška pri importu oglasa.', hint: 'Pokušaj ponovo. Ako se problem ponavlja, kopiraj oglas ručno.', details: err instanceof Error ? err.message : String(err) },
       { status: 500 }

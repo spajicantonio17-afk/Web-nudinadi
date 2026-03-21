@@ -16,7 +16,7 @@ function LoginContent() {
       return url.pathname + url.search;
     } catch { return '/'; }
   })();
-  const { login, loginWithOAuth, resetPassword, lastError } = useAuth();
+  const { login, loginWithOAuth, resetPassword } = useAuth();
   const { showToast } = useToast();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
@@ -41,14 +41,14 @@ function LoginContent() {
       setIsLoading(true);
       setErrors({});
       try {
-        const success = await login(formData.email, formData.password);
-        if (success) {
+        const result = await login(formData.email, formData.password);
+        if (result.success) {
           showToast('Uspješna prijava!');
           setIsLoading(false);
           router.push(redirectTo);
         } else {
           setIsLoading(false);
-          setErrors({ auth: lastError || 'Pogrešan email ili lozinka' });
+          setErrors({ auth: result.error });
         }
       } catch (err) {
         setIsLoading(false);

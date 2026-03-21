@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server';
 import { getStripe, getPriceId, type PlanId } from '@/lib/stripe';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   const rl = rateLimit(`profile:${getIp(req)}`, RATE_LIMITS.profile_update);
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    console.error('[payments/create-checkout]', err);
+    logger.error('[payments/create-checkout]', err);
     return NextResponse.json(
       { error: 'Greška pri kreiranju plaćanja.' },
       { status: 500 }

@@ -16,6 +16,7 @@ import { BAM_RATE, BUSINESS_DAY_KEYS } from '@/lib/constants';
 import ProBadge from '@/components/ProBadge';
 import { getCurrencyMode, eurToKm } from '@/lib/currency';
 import { isBusiness } from '@/lib/plans';
+import JsonLd, { buildPersonSchema } from '@/components/JsonLd';
 
 function formatTimeLabel(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
@@ -232,6 +233,10 @@ function UserProfileContent() {
 
   return (
     <MainLayout title={`@${profile.username}`} showSigurnost={false}>
+
+      {/* JSON-LD Structured Data */}
+      <JsonLd data={buildPersonSchema(profile)} />
+
       <div className="max-w-2xl mx-auto mt-1 pb-32 space-y-3">
 
         {/* Share Toast */}

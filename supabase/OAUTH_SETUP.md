@@ -55,7 +55,7 @@ https://ivdxafuxpigleqmyhpcd.supabase.co/auth/v1/callback
 
 Die App leitet nach Auth weiter zu:
 ```
-https://deine-domain.com/auth/callback
+https://nudinadi.com/auth/callback
 ```
 
 ### Für lokale Entwicklung
@@ -64,5 +64,5 @@ Supabase Redirect URL bleibt gleich. In **Supabase Dashboard** → **Auth** → 
 - Redirect URLs: `http://localhost:3000/auth/callback`
 
 ### Für Produktion
-- Site URL: `https://nudinadi.ba`
-- Redirect URLs: `https://nudinadi.ba/auth/callback`
+- Site URL: `https://nudinadi.com`
+- Redirect URLs: `https://nudinadi.com/auth/callback`

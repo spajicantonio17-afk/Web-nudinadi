@@ -1,5 +1,6 @@
 import { getSupabase } from '@/lib/supabase'
 import type { Category } from '@/lib/database.types'
+import { logger } from '@/lib/logger'
 
 const supabase = getSupabase()
 
@@ -19,7 +20,7 @@ export async function getAllCategories(): Promise<Category[]> {
     .order('name')
 
   if (error) {
-    console.error('[NudiNadi] getAllCategories Supabase error:', error);
+    logger.error('[NudiNadi] getAllCategories Supabase error:', error);
     throw error
   }
   allCategoryCache = data ?? []

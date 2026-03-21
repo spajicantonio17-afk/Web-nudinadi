@@ -4,6 +4,7 @@ import { sanitizeTags } from '@/lib/ai-utils';
 import { createClient } from '@supabase/supabase-js';
 import { isPro } from '@/lib/plans';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 // Check user's account type from the auth cookie
 async function getUserAccountType(req: NextRequest): Promise<string> {
@@ -428,7 +429,7 @@ Ako nešto ne možeš pouzdano odrediti, stavi null.`;
 
     return NextResponse.json({ error: 'Nepoznata akcija' }, { status: 400 });
   } catch (err) {
-    console.error('[/api/ai/enhance]', err);
+    logger.error('[/api/ai/enhance]', err);
     return NextResponse.json(
       { error: 'Greška pri AI obradi', details: err instanceof Error ? err.message : String(err) },
       { status: 500 }

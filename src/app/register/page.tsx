@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
+import { logger } from '@/lib/logger';
 
 // ─── OTP Code Input Component ────────────────────────────────
 function OtpInput({ length = 6, onComplete }: { length?: number; onComplete: (code: string) => void }) {
@@ -68,6 +69,8 @@ export default function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; auth?: string }>({});
 
   // Verification state
@@ -197,7 +200,7 @@ export default function RegisterPage() {
           }, 100);
         }
       } catch (err) {
-        console.error('[register] Unexpected error:', err);
+        logger.error('[register] Unexpected error:', err);
         setErrors({ auth: err instanceof Error ? err.message : 'Greška pri registraciji. Pokušajte ponovo.' });
       } finally {
         setIsLoading(false);
@@ -458,13 +461,47 @@ export default function RegisterPage() {
                 </div>
             </div>
 
+            {/* Age & Terms Confirmation */}
+            <div className="space-y-2.5 pt-1">
+              <label
+                onClick={() => setAgeConfirmed(!ageConfirmed)}
+                className="flex items-start gap-3 cursor-pointer group"
+              >
+                <div className={`w-5 h-5 mt-0.5 rounded-[6px] border flex items-center justify-center shrink-0 transition-all ${ageConfirmed ? 'bg-blue-500 border-blue-500 text-white' : 'border-[var(--c-border2)] bg-[var(--c-card)] group-hover:border-blue-500/50'}`}>
+                  {ageConfirmed && <i className="fa-solid fa-check text-[10px]"></i>}
+                </div>
+                <span className="text-[11px] text-[var(--c-text2)] leading-relaxed">
+                  Potvrđujem da imam najmanje <strong className="text-[var(--c-text)]">18 godina</strong>
+                </span>
+              </label>
+
+              <label
+                onClick={() => setTermsAccepted(!termsAccepted)}
+                className="flex items-start gap-3 cursor-pointer group"
+              >
+                <div className={`w-5 h-5 mt-0.5 rounded-[6px] border flex items-center justify-center shrink-0 transition-all ${termsAccepted ? 'bg-blue-500 border-blue-500 text-white' : 'border-[var(--c-border2)] bg-[var(--c-card)] group-hover:border-blue-500/50'}`}>
+                  {termsAccepted && <i className="fa-solid fa-check text-[10px]"></i>}
+                </div>
+                <span className="text-[11px] text-[var(--c-text2)] leading-relaxed">
+                  Prihvatam{' '}
+                  <a href="/uvjeti" target="_blank" className="text-blue-500 underline underline-offset-2 hover:text-blue-400">
+                    Uvjete korištenja
+                  </a>{' '}
+                  i{' '}
+                  <a href="/privatnost" target="_blank" className="text-blue-500 underline underline-offset-2 hover:text-blue-400">
+                    Politiku privatnosti
+                  </a>
+                </span>
+              </label>
+            </div>
+
             {errors.auth && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-[14px] px-4 py-3 text-xs text-red-400">
                     <i className="fa-solid fa-circle-exclamation mr-2"></i>{errors.auth}
                 </div>
             )}
 
-            <button type="submit" disabled={isLoading} className="w-full py-4 rounded-[20px] blue-gradient text-white font-black text-xs uppercase tracking-[2px] shadow-xl shadow-blue-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2">
+            <button type="submit" disabled={isLoading || !ageConfirmed || !termsAccepted} className="w-full py-4 rounded-[20px] blue-gradient text-white font-black text-xs uppercase tracking-[2px] shadow-xl shadow-blue-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
                 {isLoading ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-user-plus"></i> Registriraj se</>}
             </button>
 

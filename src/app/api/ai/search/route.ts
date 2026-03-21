@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
@@ -165,7 +166,7 @@ Vrati SAMO JSON:
     const data = parseJsonResponse(raw);
     return NextResponse.json({ success: true, data });
   } catch (err) {
-    console.error('[/api/ai/search]', err);
+    logger.error('[/api/ai/search]', err);
     return NextResponse.json(
       { error: 'Greška pri pretrazi', details: err instanceof Error ? err.message : String(err) },
       { status: 500 }
