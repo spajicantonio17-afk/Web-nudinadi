@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import CookieConsent from "@/components/CookieConsent";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -80,6 +81,7 @@ export default function RootLayout({
       <body className="antialiased w-full min-w-0 overflow-x-hidden">
         <GoogleAnalytics />
         <Providers>{children}</Providers>
+        <CookieConsent />
       </body>
     </html>
   );
