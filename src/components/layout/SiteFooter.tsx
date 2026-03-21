@@ -4,7 +4,7 @@ export default function SiteFooter() {
   const linkClass = "text-[13px] text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors duration-150";
 
   return (
-    <footer className="border-t border-[var(--c-border)] bg-[var(--c-bg)] px-4 md:px-8 pt-10 pb-40 md:pb-16 mt-8">
+    <footer id="site-footer" className="border-t border-[var(--c-border)] bg-[var(--c-bg)] px-4 md:px-8 pt-10 pb-40 md:pb-16 mt-8">
       <div className="max-w-5xl mx-auto">
 
         {/* TOP SECTION */}
@@ -47,7 +47,6 @@ export default function SiteFooter() {
               <li><Link href="/partneri" className={linkClass}>Partneri</Link></li>
               <li><Link href="/planovi" className={linkClass}>Planovi</Link></li>
               <li><Link href="/kako-funkcionira" className={linkClass}>Kako funkcionira</Link></li>
-              <li><Link href="/aukcije" className={linkClass}>Aukcije</Link></li>
             </ul>
           </div>
 

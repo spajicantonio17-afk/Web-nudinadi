@@ -47,7 +47,7 @@ export default function ImpressumPage() {
               <div className="flex items-start gap-3">
                 <i className="fa-solid fa-globe text-[var(--c-text3)] text-xs mt-0.5 w-4 text-center"></i>
                 <div>
-                  <p className="font-bold text-[var(--c-text)]">nudinadi.ba</p>
+                  <p className="font-bold text-[var(--c-text)]">nudinadi.com</p>
                 </div>
               </div>
             </div>

@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = profile.bio
     ? profile.bio.slice(0, 160)
     : `Pogledaj profil korisnika ${displayName} na NudiNađi – ${profile.total_sales ?? 0} prodanih artikala.`;
-  const image = profile.avatar_url ?? 'https://nudinadi.ba/og-default.jpg';
+  const image = profile.avatar_url ?? 'https://nudinadi.com/opengraph-image';
 
   return {
     title,

@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = product.description
     ? product.description.slice(0, 160)
     : `Kupite "${product.title}" za samo €${product.price}${product.location ? ` u ${product.location}` : ''} na NudiNađi.`;
-  const image = product.images?.[0] ?? 'https://nudinadi.ba/og-default.jpg';
+  const image = product.images?.[0] ?? 'https://nudinadi.com/opengraph-image';
 
   return {
     title,
