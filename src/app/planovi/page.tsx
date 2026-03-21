@@ -1,5 +1,10 @@
+'use client'
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
+import { useAuth } from '@/lib/auth';
 
 const FEATURES = [
   { name: 'Objavljivanje oglasa', free: '10 aktivnih', pro: '30 aktivnih', business: 'Neograničeno' },
@@ -39,6 +44,35 @@ function Cell({ value }: { value: boolean | string }) {
 }
 
 export default function PlansPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState<'pro' | 'business' | null>(null);
+
+  async function handleCheckout(plan: 'pro' | 'business') {
+    if (!user) {
+      router.push('/login?redirect=/planovi');
+      return;
+    }
+    setLoading(plan);
+    try {
+      const res = await fetch('/api/payments/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Greška pri kreiranju plaćanja.');
+        setLoading(null);
+      }
+    } catch {
+      alert('Greška pri povezivanju sa serverom.');
+      setLoading(null);
+    }
+  }
+
   return (
     <MainLayout title="Planovi">
       <div className="max-w-4xl mx-auto py-6">
@@ -122,9 +156,17 @@ export default function PlansPage() {
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Statistike i analitika</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Pro značka + prioritet u pretrazi</li>
               </ul>
-              <div className="block text-center py-2.5 bg-blue-500/20 border border-blue-500/30 rounded-[4px] text-[10px] font-black text-blue-400 uppercase tracking-wider cursor-default">
-                <i className="fa-solid fa-clock mr-1"></i> Uskoro dostupno
-              </div>
+              <button
+                onClick={() => handleCheckout('pro')}
+                disabled={loading === 'pro'}
+                className="w-full text-center py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {loading === 'pro' ? (
+                  <><i className="fa-solid fa-spinner fa-spin mr-1"></i> Učitavanje...</>
+                ) : (
+                  <><i className="fa-solid fa-bolt mr-1"></i> Nadogradi na Pro</>
+                )}
+              </button>
             </div>
 
             {/* BUSINESS */}
@@ -147,9 +189,17 @@ export default function PlansPage() {
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Bulk Upload + Analitički dashboard</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Timski računi + prioritetna podrška</li>
               </ul>
-              <div className="block text-center py-2.5 bg-purple-500/20 border border-purple-500/30 rounded-[4px] text-[10px] font-black text-purple-400 uppercase tracking-wider cursor-default">
-                <i className="fa-solid fa-clock mr-1"></i> Uskoro dostupno
-              </div>
+              <button
+                onClick={() => handleCheckout('business')}
+                disabled={loading === 'business'}
+                className="w-full text-center py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 rounded-[4px] text-[10px] font-black text-white uppercase tracking-wider cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {loading === 'business' ? (
+                  <><i className="fa-solid fa-spinner fa-spin mr-1"></i> Učitavanje...</>
+                ) : (
+                  <><i className="fa-solid fa-building mr-1"></i> Nadogradi na Business</>
+                )}
+              </button>
             </div>
 
           </div>
