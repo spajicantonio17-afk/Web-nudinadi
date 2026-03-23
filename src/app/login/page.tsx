@@ -4,6 +4,7 @@ import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
+import { useI18n } from '@/lib/i18n';
 
 function LoginContent() {
   const router = useRouter();
@@ -18,6 +19,7 @@ function LoginContent() {
   })();
   const { login, loginWithOAuth, resetPassword } = useAuth();
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; auth?: string }>({});
@@ -28,10 +30,10 @@ function LoginContent() {
 
   const validate = () => {
     const e: typeof errors = {};
-    if (!formData.email.trim()) e.email = 'Email je obavezan';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = 'Neispravan email format';
-    if (!formData.password) e.password = 'Lozinka je obavezna';
-    else if (formData.password.length < 6) e.password = 'Minimalno 6 znakova';
+    if (!formData.email.trim()) e.email = t('auth.emailRequired');
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = t('auth.emailInvalid');
+    if (!formData.password) e.password = t('auth.passwordRequired');
+    else if (formData.password.length < 6) e.password = t('auth.passwordMin');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -43,7 +45,7 @@ function LoginContent() {
       try {
         const result = await login(formData.email, formData.password);
         if (result.success) {
-          showToast('Uspješna prijava!');
+          showToast(t('auth.loginSuccess'));
           setIsLoading(false);
           router.push(redirectTo);
         } else {
@@ -52,22 +54,22 @@ function LoginContent() {
         }
       } catch (err) {
         setIsLoading(false);
-        setErrors({ auth: err instanceof Error ? err.message : 'Greška pri prijavi. Pokušajte ponovo.' });
+        setErrors({ auth: err instanceof Error ? err.message : t('auth.loginError') });
       }
   };
 
   const handleResetPassword = async () => {
     if (!resetEmail.trim() || !/\S+@\S+\.\S+/.test(resetEmail)) {
-      showToast('Unesite ispravan email', 'error');
+      showToast(t('auth.invalidEmail'), 'error');
       return;
     }
     setIsResetting(true);
     try {
       await resetPassword(resetEmail);
       setResetSent(true);
-      showToast('Link za novu lozinku poslan na tvoj email!');
+      showToast(t('auth.resetLinkSent'));
     } catch {
-      showToast('Greška pri slanju. Pokušajte ponovo.', 'error');
+      showToast(t('auth.resetError'), 'error');
     } finally {
       setIsResetting(false);
     }
@@ -87,8 +89,8 @@ function LoginContent() {
             <div className="text-center mb-8">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img onClick={() => router.push('/')} src="/emblem.png" alt="NudiNađi" className="w-16 h-16 rounded-[20px] shadow-lg shadow-blue-500/20 mx-auto mb-6 cursor-pointer object-contain" />
-                <h2 className="text-2xl font-black text-[var(--c-text)] mb-2">Dobrodošli nazad</h2>
-                <p className="text-xs text-[var(--c-text3)]">Unesite podatke za pristup računu.</p>
+                <h2 className="text-2xl font-black text-[var(--c-text)] mb-2">{t('auth.welcome')}</h2>
+                <p className="text-xs text-[var(--c-text3)]">{t('auth.enterDetails')}</p>
             </div>
 
             <div className="space-y-3">
@@ -98,7 +100,7 @@ function LoginContent() {
                         <i className="fa-solid fa-envelope"></i>
                     </div>
                     <div className="flex-1">
-                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">Email</label>
+                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">{t('auth.email')}</label>
                         <input
                             type="email"
                             name="email"
@@ -120,7 +122,7 @@ function LoginContent() {
                         <i className="fa-solid fa-lock"></i>
                     </div>
                     <div className="flex-1">
-                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">Lozinka</label>
+                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">{t('auth.password')}</label>
                         <input
                             type="password"
                             name="password"
@@ -142,7 +144,7 @@ function LoginContent() {
                     onClick={() => { setShowResetPassword(true); setResetEmail(formData.email); }}
                     className="text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors"
                   >
-                    Zaboravio/la lozinku?
+                    {t('auth.forgotPassword')}
                   </button>
                 </div>
             </div>
@@ -155,23 +157,23 @@ function LoginContent() {
                     <div className="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center mx-auto">
                       <i className="fa-solid fa-envelope-circle-check text-green-500"></i>
                     </div>
-                    <p className="text-[11px] font-bold text-[var(--c-text)]">Link poslan!</p>
-                    <p className="text-[10px] text-[var(--c-text3)]">Provjeri inbox na <span className="font-bold text-[var(--c-text)]">{resetEmail}</span></p>
+                    <p className="text-[11px] font-bold text-[var(--c-text)]">{t('auth.resetSent')}</p>
+                    <p className="text-[10px] text-[var(--c-text3)]">{t('auth.resetCheckInbox')} <span className="font-bold text-[var(--c-text)]">{resetEmail}</span></p>
                     <button
                       type="button"
                       onClick={() => { setShowResetPassword(false); setResetSent(false); }}
                       className="text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors"
                     >
-                      Nazad na prijavu
+                      {t('auth.backToLogin')}
                     </button>
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center gap-2 mb-1">
                       <i className="fa-solid fa-key text-blue-500 text-xs"></i>
-                      <p className="text-[11px] font-bold text-[var(--c-text)]">Resetuj lozinku</p>
+                      <p className="text-[11px] font-bold text-[var(--c-text)]">{t('auth.resetPassword')}</p>
                     </div>
-                    <p className="text-[10px] text-[var(--c-text3)]">Unesite email i poslat ćemo vam link za novu lozinku.</p>
+                    <p className="text-[10px] text-[var(--c-text3)]">{t('auth.resetPasswordDesc')}</p>
                     <input
                       type="email"
                       value={resetEmail}
@@ -185,7 +187,7 @@ function LoginContent() {
                         onClick={() => setShowResetPassword(false)}
                         className="flex-1 py-2.5 rounded-[14px] bg-[var(--c-hover)] border border-[var(--c-border2)] text-[10px] font-bold text-[var(--c-text3)] hover:bg-[var(--c-active)] transition-colors uppercase tracking-wider"
                       >
-                        Odustani
+                        {t('common.cancel')}
                       </button>
                       <button
                         type="button"
@@ -193,7 +195,7 @@ function LoginContent() {
                         disabled={isResetting}
                         className="flex-1 py-2.5 rounded-[14px] blue-gradient text-white text-[10px] font-black uppercase tracking-wider shadow-md shadow-blue-500/20 active:scale-95 transition-transform flex items-center justify-center gap-1.5"
                       >
-                        {isResetting ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-paper-plane"></i> Pošalji</>}
+                        {isResetting ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-paper-plane"></i> {t('auth.send')}</>}
                       </button>
                     </div>
                   </>
@@ -208,13 +210,13 @@ function LoginContent() {
             )}
 
             <button type="submit" disabled={isLoading} className="w-full py-4 rounded-[20px] blue-gradient text-white font-black text-xs uppercase tracking-[2px] shadow-xl shadow-blue-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2">
-                {isLoading ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-arrow-right-to-bracket"></i> Prijavi se</>}
+                {isLoading ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-arrow-right-to-bracket"></i> {t('auth.login')}</>}
             </button>
 
             {/* OAuth Divider */}
             <div className="flex items-center gap-3 py-1">
               <div className="flex-1 h-px bg-[var(--c-border2)]"></div>
-              <span className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">ili</span>
+              <span className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('auth.or')}</span>
               <div className="flex-1 h-px bg-[var(--c-border2)]"></div>
             </div>
 
@@ -228,24 +230,16 @@ function LoginContent() {
                 <i className="fa-brands fa-google text-sm"></i>
                 Google
               </button>
-              <button
-                type="button"
-                onClick={() => loginWithOAuth('facebook')}
-                className="flex-1 py-3.5 rounded-[18px] bg-[#1877F2] border border-[#1877F2] text-white font-bold text-[11px] hover:bg-[#166FE5] active:scale-95 transition-all flex items-center justify-center gap-2"
-              >
-                <i className="fa-brands fa-facebook-f text-sm"></i>
-                Facebook
-              </button>
             </div>
 
             <div className="text-center mt-6">
-                <p className="text-[10px] text-[var(--c-text3)] font-bold uppercase tracking-widest mb-3">Nemaš račun?</p>
+                <p className="text-[10px] text-[var(--c-text3)] font-bold uppercase tracking-widest mb-3">{t('auth.noAccount')}</p>
                 <button
                     type="button"
                     onClick={() => router.push('/register')}
                     className="px-6 py-3 rounded-full border border-[var(--c-border2)] text-[10px] font-bold text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-colors uppercase tracking-wider"
                 >
-                    Registriraj se
+                    {t('auth.register')}
                 </button>
             </div>
              <button
@@ -253,7 +247,7 @@ function LoginContent() {
                 onClick={() => router.push('/')}
                 className="w-full text-center py-4 text-[10px] text-[var(--c-text-muted)] hover:text-[var(--c-text)] transition-colors uppercase tracking-widest"
             >
-                Nastavi kao Gost
+                {t('auth.continueAsGuest')}
             </button>
         </form>
     </div>

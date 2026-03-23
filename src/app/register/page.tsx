@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
+import { useI18n } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 
 // ─── OTP Code Input Component ────────────────────────────────
@@ -59,8 +60,9 @@ function OtpInput({ length = 6, onComplete }: { length?: number; onComplete: (co
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, loginWithOAuth, lastError, user, refreshProfile } = useAuth();
+  const { register, loginWithOAuth, lastError, refreshProfile } = useAuth();
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [formData, setFormData] = useState({
       email: '',
       password: '',
@@ -128,7 +130,7 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setVerifyError(data.error || 'Greška pri slanju koda.');
+        setVerifyError(data.error || t('auth.sendCodeError'));
         return;
       }
       if (type === 'email') {
@@ -139,12 +141,12 @@ export default function RegisterPage() {
         setPhoneResendCooldown(60);
       }
     } catch {
-      setVerifyError('Greška pri slanju koda.');
+      setVerifyError(t('auth.sendCodeError'));
     } finally {
       if (type === 'email') setEmailSending(false);
       else setPhoneSending(false);
     }
-  }, [emailSending, phoneSending]);
+  }, [emailSending, phoneSending, t]);
 
   const confirmCode = useCallback(async (type: 'email' | 'phone', code: string) => {
     setVerifyError(null);
@@ -156,26 +158,26 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setVerifyError(data.error || 'Pogrešan kod.');
+        setVerifyError(data.error || t('auth.wrongCode'));
         return;
       }
       if (type === 'email') setEmailVerified(true);
       else setPhoneVerified(true);
-      showToast('Uspješno verificirano!');
+      showToast(t('auth.verifySuccess'));
       refreshProfile();
     } catch {
-      setVerifyError('Greška pri verifikaciji.');
+      setVerifyError(t('auth.verifyError'));
     }
-  }, [showToast, refreshProfile]);
+  }, [showToast, refreshProfile, t]);
 
   const validate = () => {
     const e: typeof errors = {};
-    if (!formData.email.trim()) e.email = 'Email je obavezan';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = 'Neispravan email format';
-    if (!formData.password) e.password = 'Lozinka je obavezna';
-    else if (formData.password.length < 6) e.password = 'Minimalno 6 znakova';
-    if (!formData.confirmPassword) e.confirmPassword = 'Potvrda lozinke je obavezna';
-    else if (formData.password !== formData.confirmPassword) e.confirmPassword = 'Lozinke se ne podudaraju';
+    if (!formData.email.trim()) e.email = t('auth.emailRequired');
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = t('auth.emailInvalid');
+    if (!formData.password) e.password = t('auth.passwordRequired');
+    else if (formData.password.length < 6) e.password = t('auth.passwordMin');
+    if (!formData.confirmPassword) e.confirmPassword = t('auth.confirmPasswordRequired');
+    else if (formData.password !== formData.confirmPassword) e.confirmPassword = t('auth.passwordsMismatch');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -189,19 +191,19 @@ export default function RegisterPage() {
         const result = await register(formData.email, formData.password, username, formData.phone || undefined);
 
         if (result === 'success') {
-          showToast('Račun uspješno kreiran!');
+          showToast(t('auth.registerSuccess'));
           setVerifyPhone(formData.phone);
           setShowVerification(true);
         } else if (result === 'needs_confirmation') {
           setShowVerification(true);
         } else {
           setTimeout(() => {
-            setErrors(prev => prev.auth ? prev : { auth: 'Greška pri registraciji. Pokušajte ponovo.' });
+            setErrors(prev => prev.auth ? prev : { auth: t('auth.registerError') });
           }, 100);
         }
       } catch (err) {
         logger.error('[register] Unexpected error:', err);
-        setErrors({ auth: err instanceof Error ? err.message : 'Greška pri registraciji. Pokušajte ponovo.' });
+        setErrors({ auth: err instanceof Error ? err.message : t('auth.registerError') });
       } finally {
         setIsLoading(false);
       }
@@ -225,9 +227,9 @@ export default function RegisterPage() {
             <div className="w-16 h-16 bg-blue-600 rounded-[20px] flex items-center justify-center text-white text-2xl mx-auto mb-4">
               <i className="fa-solid fa-shield-check"></i>
             </div>
-            <h2 className="text-xl font-black">Verificiraj svoj račun</h2>
+            <h2 className="text-xl font-black">{t('auth.verifyAccount')}</h2>
             <p className="text-[10px] text-[var(--c-text3)] font-bold uppercase tracking-widest mt-2">
-              {verifiedCount}/{totalVerify} verificirano
+              {verifiedCount}/{totalVerify} {t('auth.verified')}
             </p>
           </div>
 
@@ -238,9 +240,9 @@ export default function RegisterPage() {
                 <i className={`fa-solid ${emailVerified ? 'fa-check' : 'fa-envelope'}`}></i>
               </div>
               <div className="flex-1">
-                <p className="text-xs font-black text-[var(--c-text)]">Email</p>
+                <p className="text-xs font-black text-[var(--c-text)]">{t('auth.email')}</p>
                 <p className="text-[10px] text-[var(--c-text2)]">
-                  {emailVerified ? 'Verificirano' : `Poslali smo kod na ${formData.email}`}
+                  {emailVerified ? t('auth.codeVerified') : `${t('auth.codeSentTo')} ${formData.email}`}
                 </p>
               </div>
               {emailVerified && (
@@ -255,14 +257,14 @@ export default function RegisterPage() {
                 <OtpInput onComplete={(code) => confirmCode('email', code)} />
                 <div className="text-center">
                   {resendCooldown > 0 ? (
-                    <p className="text-[10px] text-[var(--c-text3)]">Pošalji ponovo za {resendCooldown}s</p>
+                    <p className="text-[10px] text-[var(--c-text3)]">{t('auth.resendIn')} {resendCooldown}s</p>
                   ) : (
                     <button
                       onClick={() => sendCode('email')}
                       disabled={emailSending}
                       className="text-[10px] text-blue-400 font-bold hover:text-blue-300 transition-colors"
                     >
-                      {emailSending ? 'Šaljem...' : 'Pošalji ponovo'}
+                      {emailSending ? t('auth.sending') : t('auth.resend')}
                     </button>
                   )}
                 </div>
@@ -277,13 +279,13 @@ export default function RegisterPage() {
                 <i className={`fa-solid ${phoneVerified ? 'fa-check' : 'fa-phone'}`}></i>
               </div>
               <div className="flex-1">
-                <p className="text-xs font-black text-[var(--c-text)]">Telefon</p>
+                <p className="text-xs font-black text-[var(--c-text)]">{t('auth.phone')}</p>
                 <p className="text-[10px] text-[var(--c-text2)]">
                   {phoneVerified
-                    ? 'Verificirano'
+                    ? t('auth.codeVerified')
                     : verifyPhone
-                      ? 'Verificiraj broj telefona za pouzdaniji profil'
-                      : 'Dodaj broj telefona za verificiran profil'
+                      ? t('auth.verifyPhone')
+                      : t('auth.addPhone')
                   }
                 </p>
               </div>
@@ -317,24 +319,24 @@ export default function RegisterPage() {
                     disabled={phoneSending || (!verifyPhone)}
                     className="w-full py-3 rounded-[14px] bg-purple-600/10 text-purple-500 text-[11px] font-black uppercase tracking-widest hover:bg-purple-600/20 transition-colors disabled:opacity-50"
                   >
-                    {phoneSending ? <i className="fa-solid fa-spinner animate-spin"></i> : 'Pošalji kod'}
+                    {phoneSending ? <i className="fa-solid fa-spinner animate-spin"></i> : t('auth.sendCode')}
                   </button>
                 ) : (
                   <>
                     <p className="text-[10px] text-[var(--c-text2)] text-center">
-                      Kod je poslan na {verifyPhone}
+                      {t('auth.codeSentToPhone')} {verifyPhone}
                     </p>
                     <OtpInput onComplete={(code) => confirmCode('phone', code)} />
                     <div className="text-center">
                       {phoneResendCooldown > 0 ? (
-                        <p className="text-[10px] text-[var(--c-text3)]">Pošalji ponovo za {phoneResendCooldown}s</p>
+                        <p className="text-[10px] text-[var(--c-text3)]">{t('auth.resendIn')} {phoneResendCooldown}s</p>
                       ) : (
                         <button
                           onClick={() => sendCode('phone')}
                           disabled={phoneSending}
                           className="text-[10px] text-purple-400 font-bold hover:text-purple-300 transition-colors"
                         >
-                          {phoneSending ? 'Šaljem...' : 'Pošalji ponovo'}
+                          {phoneSending ? t('auth.sending') : t('auth.resend')}
                         </button>
                       )}
                     </div>
@@ -356,7 +358,7 @@ export default function RegisterPage() {
             onClick={() => router.push('/')}
             className="w-full py-3 text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest hover:text-[var(--c-text)] transition-colors"
           >
-            Preskoči
+            {t('auth.skip')}
           </button>
         </div>
       </div>
@@ -372,8 +374,8 @@ export default function RegisterPage() {
             <div className="text-center mb-6">
                  {/* eslint-disable-next-line @next/next/no-img-element */}
                  <img onClick={() => router.push('/')} src="/emblem.png" alt="NudiNađi" className="w-16 h-16 rounded-[20px] shadow-lg shadow-purple-500/20 mx-auto mb-6 cursor-pointer object-contain" />
-                 <h2 className="text-2xl font-black text-[var(--c-text)] mb-1">Registracija</h2>
-                 <p className="text-xs text-[var(--c-text3)]">Novi profil, nove mogućnosti.</p>
+                 <h2 className="text-2xl font-black text-[var(--c-text)] mb-1">{t('auth.registration')}</h2>
+                 <p className="text-xs text-[var(--c-text3)]">{t('auth.newProfile')}</p>
             </div>
 
             <div className="space-y-2">
@@ -383,7 +385,7 @@ export default function RegisterPage() {
                           <i className="fa-solid fa-envelope"></i>
                     </div>
                     <div className="flex-1">
-                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">Email</label>
+                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">{t('auth.email')}</label>
                         <input
                             type="email"
                             name="email"
@@ -405,7 +407,7 @@ export default function RegisterPage() {
                           <i className="fa-solid fa-lock"></i>
                     </div>
                     <div className="flex-1">
-                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">Lozinka</label>
+                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">{t('auth.password')}</label>
                         <input
                             type="password"
                             name="password"
@@ -426,7 +428,7 @@ export default function RegisterPage() {
                           <i className="fa-solid fa-shield-halved"></i>
                     </div>
                     <div className="flex-1">
-                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">Ponovi Lozinku</label>
+                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">{t('auth.confirmPassword')}</label>
                         <input
                             type="password"
                             name="confirmPassword"
@@ -446,7 +448,7 @@ export default function RegisterPage() {
                           <i className="fa-solid fa-phone"></i>
                     </div>
                     <div className="flex-1">
-                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">Telefon <span className="opacity-50 lowercase">(opcionalno)</span></label>
+                        <label className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-0.5">{t('auth.phone')} <span className="opacity-50 lowercase">({t('auth.phoneOptional')})</span></label>
                         <input
                             type="tel"
                             name="phone"
@@ -471,7 +473,7 @@ export default function RegisterPage() {
                   {ageConfirmed && <i className="fa-solid fa-check text-[10px]"></i>}
                 </div>
                 <span className="text-[11px] text-[var(--c-text2)] leading-relaxed">
-                  Potvrđujem da imam najmanje <strong className="text-[var(--c-text)]">18 godina</strong>
+                  {t('auth.confirmAge')} <strong className="text-[var(--c-text)]">{t('auth.yearsOld')}</strong>
                 </span>
               </label>
 
@@ -483,13 +485,13 @@ export default function RegisterPage() {
                   {termsAccepted && <i className="fa-solid fa-check text-[10px]"></i>}
                 </div>
                 <span className="text-[11px] text-[var(--c-text2)] leading-relaxed">
-                  Prihvatam{' '}
+                  {t('auth.acceptTerms')}{' '}
                   <a href="/uvjeti" target="_blank" className="text-blue-500 underline underline-offset-2 hover:text-blue-400">
-                    Uvjete korištenja
+                    {t('auth.termsOfUse')}
                   </a>{' '}
-                  i{' '}
+                  {t('auth.and')}{' '}
                   <a href="/privatnost" target="_blank" className="text-blue-500 underline underline-offset-2 hover:text-blue-400">
-                    Politiku privatnosti
+                    {t('auth.privacyPolicy')}
                   </a>
                 </span>
               </label>
@@ -502,13 +504,13 @@ export default function RegisterPage() {
             )}
 
             <button type="submit" disabled={isLoading || !ageConfirmed || !termsAccepted} className="w-full py-4 rounded-[20px] blue-gradient text-white font-black text-xs uppercase tracking-[2px] shadow-xl shadow-blue-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
-                {isLoading ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-user-plus"></i> Registriraj se</>}
+                {isLoading ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-user-plus"></i> {t('auth.register')}</>}
             </button>
 
             {/* OAuth Divider */}
             <div className="flex items-center gap-3 py-1">
               <div className="flex-1 h-px bg-[var(--c-border2)]"></div>
-              <span className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">ili</span>
+              <span className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('auth.or')}</span>
               <div className="flex-1 h-px bg-[var(--c-border2)]"></div>
             </div>
 
@@ -522,24 +524,16 @@ export default function RegisterPage() {
                 <i className="fa-brands fa-google text-sm"></i>
                 Google
               </button>
-              <button
-                type="button"
-                onClick={() => loginWithOAuth('facebook')}
-                className="flex-1 py-3.5 rounded-[18px] bg-[#1877F2] border border-[#1877F2] text-white font-bold text-[11px] hover:bg-[#166FE5] active:scale-95 transition-all flex items-center justify-center gap-2"
-              >
-                <i className="fa-brands fa-facebook-f text-sm"></i>
-                Facebook
-              </button>
             </div>
 
             <div className="text-center mt-4">
-                 <p className="text-[10px] text-[var(--c-text3)] font-bold uppercase tracking-widest mb-3">Već imaš račun?</p>
+                 <p className="text-[10px] text-[var(--c-text3)] font-bold uppercase tracking-widest mb-3">{t('auth.alreadyHaveAccount')}</p>
                  <button
                     type="button"
                     onClick={() => router.push('/login')}
                     className="px-6 py-3 rounded-full border border-[var(--c-border2)] text-[10px] font-bold text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-colors uppercase tracking-wider"
                 >
-                    Prijavi se
+                    {t('auth.login')}
                 </button>
             </div>
         </form>
