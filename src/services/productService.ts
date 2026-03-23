@@ -1,7 +1,7 @@
 import { getSupabase } from '@/lib/supabase'
 import type {
   Product, ProductInsert, ProductUpdate,
-  ProductWithSeller, ProductFull, ProductStatus,
+  ProductWithSeller, ProductFull, ProductStatus, ListingType,
 } from '@/lib/database.types'
 import { CITIES } from '@/lib/location'
 import type { CountryPreference } from '@/lib/country'
@@ -22,6 +22,7 @@ export interface ProductFilters {
   status?: ProductStatus
   seller_id?: string
   condition?: string
+  listing_type?: ListingType
   minPrice?: number
   maxPrice?: number
   location?: string
@@ -37,8 +38,39 @@ export interface ProductFilters {
   attributes?: Record<string, string | number | boolean | [number, number]>
 }
 
-// Lightweight select for list views (avoids fetching all profile/category columns)
-const LIST_SELECT = 'id,title,price,images,condition,location,views_count,favorites_count,created_at,status,seller_id,category_id,attributes,promoted_until,seller:profiles!seller_id(id,username,avatar_url,rating_average,account_type),category:categories!category_id(id,name,slug,icon)'
+// List views: NO PostgREST embeds — seller/category fetched separately.
+// PostgREST embeds silently filter products in list queries (works fine with .single()).
+const LIST_SELECT = 'id,title,description,price,condition,listing_type,location,images,status,views_count,favorites_count,promoted_until,created_at,updated_at,tags,attributes,seller_id,category_id'
+
+// ─── Enrich products with seller + category (batch) ──
+
+async function enrichProducts(products: Record<string, unknown>[]): Promise<ProductFull[]> {
+  if (!products.length) return []
+
+  const sellerIds = [...new Set(products.map(p => p.seller_id as string).filter(Boolean))]
+  const categoryIds = [...new Set(products.map(p => p.category_id as string).filter(Boolean))]
+
+  const [sellersRes, categoriesRes] = await Promise.all([
+    sellerIds.length > 0
+      ? supabase.from('profiles').select('*').in('id', sellerIds)
+      : { data: [], error: null },
+    categoryIds.length > 0
+      ? supabase.from('categories').select('*').in('id', categoryIds)
+      : { data: [], error: null },
+  ])
+
+  if (sellersRes.error) logger.warn('enrichProducts profiles fetch failed:', sellersRes.error.message)
+  if (categoriesRes.error) logger.warn('enrichProducts categories fetch failed:', categoriesRes.error.message)
+
+  const sellerMap = new Map((sellersRes.data ?? []).map((s: { id: string }) => [s.id, s]))
+  const categoryMap = new Map((categoriesRes.data ?? []).map((c: { id: string }) => [c.id, c]))
+
+  return products.map(p => ({
+    ...p,
+    seller: sellerMap.get(p.seller_id as string) ?? null,
+    category: categoryMap.get(p.category_id as string) ?? null,
+  })) as unknown as ProductFull[]
+}
 
 // ─── Get All Products (with filters) ──────────────────
 
@@ -56,11 +88,16 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   }
   if (filters.seller_id) query = query.eq('seller_id', filters.seller_id)
   if (filters.condition) query = query.eq('condition', filters.condition)
+  if (filters.listing_type) query = query.eq('listing_type', filters.listing_type)
   if (filters.minPrice !== undefined) query = query.gte('price', filters.minPrice)
   if (filters.maxPrice !== undefined) query = query.lte('price', filters.maxPrice)
   if (filters.location) query = query.ilike('location', `%${filters.location}%`)
-  if (filters.country === 'ba') query = query.in('location', BIH_CITIES)
-  if (filters.country === 'hr') query = query.in('location', HR_CITIES)
+  if (filters.country === 'ba' && HR_CITIES.length > 0) {
+    query = query.not('location', 'in', `(${HR_CITIES.join(',')})`)
+  }
+  if (filters.country === 'hr' && BIH_CITIES.length > 0) {
+    query = query.not('location', 'in', `(${BIH_CITIES.join(',')})`)
+  }
   if (filters.search) {
     // Use flexible_search RPC for AND→OR fallback with synonym support
     const hasExtraKeywords = filters.searchKeywords && filters.searchKeywords.length > 0
@@ -90,15 +127,12 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
     for (const [key, value] of Object.entries(filters.attributes)) {
       if (value === undefined || value === null) continue
       if (typeof value === 'boolean') {
-        // Boolean: (attributes->>'key')::boolean = true
         query = query.eq(`attributes->>${key}`, String(value))
       } else if (Array.isArray(value)) {
-        // Range: [min, max]
         const [min, max] = value
         if (min) query = query.gte(`attributes->>${key}`, min)
         if (max) query = query.lte(`attributes->>${key}`, max)
       } else {
-        // String or number exact match
         query = query.eq(`attributes->>${key}`, String(value))
       }
     }
@@ -108,7 +142,6 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   const sortBy = filters.sortBy || 'created_at'
   const sortOrder = filters.sortOrder || 'desc'
   if (sortBy === 'created_at') {
-    // Promoted first, then by date
     query = query.order('promoted_until', { ascending: false, nullsFirst: false })
   }
   query = query.order(sortBy, { ascending: sortOrder === 'asc' })
@@ -121,7 +154,27 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   const { data, error, count } = await query
 
   if (error) throw error
-  return { data: (data ?? []) as unknown as ProductFull[], count: count ?? 0 }
+
+  const enriched = await enrichProducts((data ?? []) as Record<string, unknown>[])
+
+  // Apply search boost: Pro/Business sellers' products rank higher in default sort
+  if (!filters.sortBy || filters.sortBy === 'created_at') {
+    const now = new Date()
+    enriched.sort((a, b) => {
+      const aPromoted = a.promoted_until && new Date(a.promoted_until) > now ? 1 : 0
+      const bPromoted = b.promoted_until && new Date(b.promoted_until) > now ? 1 : 0
+      if (aPromoted !== bPromoted) return bPromoted - aPromoted
+
+      const aType = (a.seller as unknown as Record<string, unknown> | null)?.account_type as string | undefined
+      const bType = (b.seller as unknown as Record<string, unknown> | null)?.account_type as string | undefined
+      const boostMap: Record<string, number> = { business: 2, pro: 1 }
+      const aBoost = boostMap[aType || ''] || 0
+      const bBoost = boostMap[bType || ''] || 0
+      return bBoost - aBoost
+    })
+  }
+
+  return { data: enriched, count: count ?? 0 }
 }
 
 // ─── Get Single Product ───────────────────────────────
@@ -286,9 +339,11 @@ export async function getProductsByIds(ids: string[]): Promise<ProductFull[]> {
 
   if (error) throw error
 
+  const enriched = await enrichProducts((data ?? []) as Record<string, unknown>[])
+
   // Return in same order as input IDs
-  const map = new Map((data ?? []).map((p: { id: string }) => [p.id, p]))
-  return ids.map(id => map.get(id)).filter(Boolean) as unknown as ProductFull[]
+  const map = new Map(enriched.map(p => [(p as unknown as { id: string }).id, p]))
+  return ids.map(id => map.get(id)).filter(Boolean) as ProductFull[]
 }
 
 // ─── Similar Products (tag overlap + category) ───────

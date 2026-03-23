@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
-import { getUserProducts, deleteProduct, archiveProduct, unarchiveProduct } from '@/services/productService';
+import { getUserProducts, deleteProduct, archiveProduct, unarchiveProduct, promoteProduct, isPromoted } from '@/services/productService';
 import { isUsernameAvailable } from '@/services/profileService';
 import { getFavorites } from '@/services/favoriteService';
 import { uploadAvatar } from '@/services/uploadService';
@@ -16,9 +16,14 @@ import { xpForNextLevel } from '@/lib/database.types';
 import ProBadge from '@/components/ProBadge';
 import BusinessProfileEditor from '@/components/BusinessProfileEditor';
 import TeamManager from '@/components/TeamManager';
+import TeamInvitations from '@/components/TeamInvitations';
 import { isPro, isBusiness } from '@/lib/plans';
+import { useToast } from '@/components/Toast';
 import VerificationProgress from '@/components/VerificationProgress';
 import { logger } from '@/lib/logger';
+import { useI18n } from '@/lib/i18n';
+
+type TranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
 type ReviewWithReviewer = Review & {
   reviewer: { username: string; avatar_url: string | null } | null;
@@ -26,24 +31,21 @@ type ReviewWithReviewer = Review & {
 
 const REVIEWS_PER_PAGE = 10;
 
-function formatTimeLabel(createdAt: string): string {
+function formatTimeLabel(createdAt: string, t: TranslateFn): string {
   const diff = Date.now() - new Date(createdAt).getTime();
   const d = Math.floor(diff / 86400000);
-  if (d === 0) return 'Danas';
-  if (d === 1) return 'Jučer';
-  if (d < 7) return `Prije ${d} dana`;
-  if (d < 30) return `Prije ${Math.floor(d / 7)} sedmica`;
-  return `Prije ${Math.floor(d / 30)} mjeseci`;
+  if (d === 0) return t('profile.time.today');
+  if (d === 1) return t('profile.time.yesterday');
+  if (d < 7) return t('profile.time.daysAgo', { count: d });
+  if (d < 30) return t('profile.time.weeksAgo', { count: Math.floor(d / 7) });
+  return t('profile.time.monthsAgo', { count: Math.floor(d / 30) });
 }
 
-function formatMemberSince(dateStr?: string): string {
-  if (!dateStr) return 'Nepoznato';
+function formatMemberSince(dateStr: string | undefined, t: TranslateFn): string {
+  if (!dateStr) return t('profile.info.unknown');
   const date = new Date(dateStr);
-  const months = [
-    'Januar', 'Februar', 'Mart', 'April', 'Maj', 'Juni',
-    'Juli', 'August', 'Septembar', 'Oktobar', 'Novembar', 'Decembar',
-  ];
-  return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  const monthKey = `month.${date.getMonth() + 1}`;
+  return `${t(monthKey)} ${date.getFullYear()}`;
 }
 
 function calcDraftCompletion(draft: ProductWithSeller): number {
@@ -77,6 +79,8 @@ function ProfileContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading, logout, refreshProfile, resendVerificationEmail } = useAuth();
+  const { t } = useI18n();
+  const { showToast } = useToast();
   const initialTab = searchParams.get('tab') || 'Aktivni';
   const [activeTab, setActiveTab] = useState(initialTab);
 
@@ -93,6 +97,7 @@ function ProfileContent() {
   const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [promotingId, setPromotingId] = useState<string | null>(null);
   const [shareToast, setShareToast] = useState(false);
 
   // ── Markirani (Favorites) ───────────────────────────────
@@ -153,8 +158,8 @@ function ProfileContent() {
     setUsernameChecking(false);
     if (usernameTimer.current) clearTimeout(usernameTimer.current);
     if (!val || val === user?.username) return;
-    if (val.length < 3) { setUsernameError('Minimum 3 znaka'); return; }
-    if (!/^[a-zA-Z0-9_]+$/.test(val)) { setUsernameError('Samo slova, brojevi i _'); return; }
+    if (val.length < 3) { setUsernameError(t('profile.edit.usernameMin')); return; }
+    if (!/^[a-zA-Z0-9_]+$/.test(val)) { setUsernameError(t('profile.edit.usernameCharsOnly')); return; }
     setUsernameChecking(true);
     usernameTimer.current = setTimeout(async () => {
       try {
@@ -163,7 +168,7 @@ function ProfileContent() {
           new Promise<boolean>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
         ]);
         setUsernameChecking(false);
-        if (!available) setUsernameError('Username je zauzet');
+        if (!available) setUsernameError(t('profile.edit.usernameTakenShort'));
       } catch {
         setUsernameChecking(false);
       }
@@ -207,11 +212,11 @@ function ProfileContent() {
 
       if (!res.ok) {
         if (res.status === 409) {
-          setUsernameError('Username je zauzet. Pokušaj drugi.');
+          setUsernameError(t('profile.edit.usernameTakenLong'));
         } else if (res.status === 401) {
-          setUsernameError('Sesija je istekla. Prijavi se ponovo.');
+          setUsernameError(t('profile.edit.sessionExpired'));
         } else {
-          setUsernameError(json.error || 'Greška pri čuvanju. Pokušaj ponovo.');
+          setUsernameError(json.error || t('profile.edit.saveError'));
         }
         return;
       }
@@ -222,7 +227,7 @@ function ProfileContent() {
       setTimeout(() => setSaveToast(false), 2500);
     } catch (err) {
       logger.error('Profile save error:', err);
-      setUsernameError('Greška pri čuvanju. Pokušaj ponovo.');
+      setUsernameError(t('profile.edit.saveError'));
     } finally {
       setSaving(false);
     }
@@ -346,6 +351,29 @@ function ProfileContent() {
     }
   };
 
+  // Promote product
+  const handlePromote = async (productId: string) => {
+    if (!user || promotingId) return;
+    if ((user.promotedCredits ?? 0) < 1) {
+      showToast('Nemate dostupnih kredita za promociju.', 'error');
+      return;
+    }
+    setPromotingId(productId);
+    try {
+      await promoteProduct(productId, user.id);
+      const until = new Date();
+      until.setDate(until.getDate() + 3);
+      setUserProducts(prev => prev.map(p => p.id === productId ? { ...p, promoted_until: until.toISOString() } : p));
+      showToast('Oglas promoviran na 3 dana!');
+      refreshProfile();
+    } catch (err) {
+      const msg = err instanceof Error && err.message === 'NO_CREDITS' ? 'Nemate dostupnih kredita.' : 'Greška pri promociji';
+      showToast(msg, 'error');
+    } finally {
+      setPromotingId(null);
+    }
+  };
+
   // Share profile
   const handleShareProfile = async () => {
     const profileUrl = `${window.location.origin}/user/${user?.username}`;
@@ -370,7 +398,7 @@ function ProfileContent() {
 
   if (isLoading) {
     return (
-      <MainLayout title="Moj Profil" showSigurnost={false}>
+      <MainLayout title={t('profile.title')} showSigurnost={false}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
         </div>
@@ -380,8 +408,8 @@ function ProfileContent() {
 
   if (!isAuthenticated) return null;
 
-  const displayName = user?.username || 'Gost';
-  const displayLocation = user?.location || 'Nepoznato';
+  const displayName = user?.username || t('profile.guest');
+  const displayLocation = user?.location || t('profile.unknownLocation');
   const displayAvatar = user?.avatarUrl || 'https://picsum.photos/seed/guest/200/200';
 
   // Computed from real data
@@ -414,21 +442,30 @@ function ProfileContent() {
     Markirani: markedProducts.length,
   };
 
+  // Tab display labels (tab IDs remain as internal keys)
+  const tabLabels: Record<string, string> = {
+    Aktivni: t('profile.tab.active'),
+    'Završeni': t('profile.tab.finished'),
+    Dojmovi: t('profile.tab.reviews'),
+    Markirani: t('profile.tab.marked'),
+    Info: t('profile.tab.info'),
+  };
+
   return (
-    <MainLayout title="Moj Profil" showSigurnost={false}>
+    <MainLayout title={t('profile.title')} showSigurnost={false}>
       <div className="max-w-2xl mx-auto mt-1 pb-32 space-y-3">
 
         {/* Share Toast */}
         {shareToast && (
           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg animate-[fadeIn_0.2s_ease-out]">
-            <i className="fa-solid fa-check mr-1.5"></i> Link kopiran!
+            <i className="fa-solid fa-check mr-1.5"></i> {t('profile.linkCopied')}
           </div>
         )}
 
         {/* Save Toast */}
         {saveToast && (
           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg animate-[fadeIn_0.2s_ease-out]">
-            <i className="fa-solid fa-check mr-1.5"></i> Profil sačuvan!
+            <i className="fa-solid fa-check mr-1.5"></i> {t('profile.saved')}
           </div>
         )}
 
@@ -440,14 +477,13 @@ function ProfileContent() {
               <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-[16px] flex items-center justify-center text-orange-400 text-xl mx-auto">
                 <i className="fa-solid fa-envelope-circle-check"></i>
               </div>
-              <h3 className="text-base font-black text-[var(--c-text)]">Email verificirati</h3>
+              <h3 className="text-base font-black text-[var(--c-text)]">{t('profile.verify.title')}</h3>
               <p className="text-[11px] text-[var(--c-text2)] leading-relaxed">
-                Tvoj email <span className="font-bold text-[var(--c-text)]">{user?.email}</span> još nije verificiran.
-                Klikni na dugme ispod da dobiješ novi link za verifikaciju.
+                <span className="font-bold text-[var(--c-text)]">{user?.email}</span> — {t('profile.verify.notVerifiedMsg')}
               </p>
               {verifySent ? (
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-[12px] px-4 py-3 text-[11px] font-bold text-emerald-400">
-                  <i className="fa-solid fa-check mr-1.5"></i> Link poslan! Provjeri email.
+                  <i className="fa-solid fa-check mr-1.5"></i> {t('profile.verify.linkSent')}
                 </div>
               ) : (
                 <button
@@ -461,9 +497,9 @@ function ProfileContent() {
                   className="w-full py-3 rounded-[14px] blue-gradient text-white font-black text-[10px] uppercase tracking-[2px] shadow-lg shadow-blue-500/20 active:scale-95 transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {verifySending ? (
-                    <><i className="fa-solid fa-spinner animate-spin"></i> Šaljem...</>
+                    <><i className="fa-solid fa-spinner animate-spin"></i> {t('profile.verify.sending')}</>
                   ) : (
-                    <><i className="fa-solid fa-paper-plane"></i> Pošalji verifikacijski link</>
+                    <><i className="fa-solid fa-paper-plane"></i> {t('profile.verify.sendLink')}</>
                   )}
                 </button>
               )}
@@ -471,7 +507,7 @@ function ProfileContent() {
                 onClick={() => setVerifyPopup(false)}
                 className="text-[10px] font-bold text-[var(--c-text3)] hover:text-[var(--c-text)] uppercase tracking-wider transition-colors"
               >
-                Zatvori
+                {t('profile.verify.close')}
               </button>
             </div>
           </div>
@@ -490,11 +526,11 @@ function ProfileContent() {
                     <i className="fa-solid fa-user-pen text-white text-sm"></i>
                   </div>
                   <div>
-                    <p className="text-[13px] font-black text-[var(--c-text)] tracking-tight leading-none">UREDI PROFIL</p>
-                    <p className="text-[8px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-0.5">Postavke Računa</p>
+                    <p className="text-[13px] font-black text-[var(--c-text)] tracking-tight leading-none">{t('profile.edit.modalTitle')}</p>
+                    <p className="text-[8px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-0.5">{t('profile.edit.accountSettings')}</p>
                   </div>
                 </div>
-                <button onClick={() => !saving && setEditOpen(false)} aria-label="Zatvori" className="w-8 h-8 rounded-[4px] bg-[var(--c-hover)] hover:bg-[var(--c-active)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-all">
+                <button onClick={() => !saving && setEditOpen(false)} aria-label={t('profile.edit.close')} className="w-8 h-8 rounded-[4px] bg-[var(--c-hover)] hover:bg-[var(--c-active)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-all">
                   <i className="fa-solid fa-xmark text-sm"></i>
                 </button>
               </div>
@@ -528,8 +564,8 @@ function ProfileContent() {
                     />
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-[var(--c-text)]">Profilna slika</p>
-                    <p className="text-[9px] text-[var(--c-text3)]">JPG, PNG ili WebP. Max 5MB.</p>
+                    <p className="text-[11px] font-bold text-[var(--c-text)]">{t('profile.edit.profilePhoto')}</p>
+                    <p className="text-[9px] text-[var(--c-text3)]">{t('profile.edit.photoFormats')}</p>
                   </div>
                 </div>
 
@@ -537,7 +573,7 @@ function ProfileContent() {
                 <div className="space-y-4">
                   {/* Username */}
                   <div>
-                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Username</label>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">{t('profile.edit.usernameLabel')}</label>
                     <div className="relative">
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[11px] text-[var(--c-text3)]">@</span>
                       <input
@@ -545,7 +581,7 @@ function ProfileContent() {
                         value={editForm.username}
                         onChange={e => handleUsernameChange(e.target.value)}
                         maxLength={30}
-                        placeholder="korisnicko_ime"
+                        placeholder={t('profile.edit.usernamePlaceholder')}
                         className={`w-full bg-[var(--c-hover)] border rounded-[4px] pl-8 pr-9 py-2.5 text-[12px] font-bold text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none transition-colors ${
                           usernameError ? 'border-red-500/50 focus:border-red-500' : 'border-[var(--c-border)] focus:border-blue-500/50'
                         }`}
@@ -566,20 +602,20 @@ function ProfileContent() {
 
                   {/* Full Name */}
                   <div>
-                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Ime i prezime</label>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">{t('profile.edit.fullNameLabel')}</label>
                     <input
                       type="text"
                       value={editForm.fullName}
                       onChange={e => setEditForm(f => ({ ...f, fullName: e.target.value }))}
                       maxLength={60}
-                      placeholder="Ime Prezime"
+                      placeholder={t('profile.edit.fullNamePlaceholder')}
                       className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] px-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-blue-500/50 transition-colors"
                     />
                   </div>
 
                   {/* Location — Country + Region + City dropdowns */}
                   <div>
-                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Lokacija</label>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">{t('profile.edit.locationLabel')}</label>
 
                     {/* Country toggle */}
                     <div className="flex gap-1.5 mb-2">
@@ -594,7 +630,7 @@ function ProfileContent() {
                               : 'bg-[var(--c-hover)] text-[var(--c-text3)] border border-[var(--c-border)] hover:text-[var(--c-text)]'
                           }`}
                         >
-                          {c === 'BiH' ? 'Bosna i Hercegovina' : 'Hrvatska'}
+                          {c === 'BiH' ? t('profile.edit.countryBiH') : t('profile.edit.countryHR')}
                         </button>
                       ))}
                     </div>
@@ -607,7 +643,7 @@ function ProfileContent() {
                         onChange={e => { setSelectedRegion(e.target.value); setSelectedCity(''); }}
                         className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] pl-9 pr-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] focus:outline-none focus:border-blue-500/50 transition-colors appearance-none cursor-pointer"
                       >
-                        <option value="">{locationCountry === 'BiH' ? 'Odaberi kanton / entitet...' : 'Odaberi županiju...'}</option>
+                        <option value="">{locationCountry === 'BiH' ? t('profile.edit.selectCantonBiH') : t('profile.edit.selectCountyHR')}</option>
                         {getRegionsForCountry(locationCountry).map(r => (
                           <option key={r} value={r}>{r}</option>
                         ))}
@@ -624,7 +660,7 @@ function ProfileContent() {
                           onChange={e => setSelectedCity(e.target.value)}
                           className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] pl-9 pr-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] focus:outline-none focus:border-blue-500/50 transition-colors appearance-none cursor-pointer"
                         >
-                          <option value="">Odaberi grad...</option>
+                          <option value="">{t('profile.edit.selectCity')}</option>
                           {getCitiesByRegion(selectedRegion).map(c => (
                             <option key={c.name} value={c.name}>{c.name}</option>
                           ))}
@@ -643,24 +679,24 @@ function ProfileContent() {
 
                   {/* Bio */}
                   <div>
-                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Bio</label>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">{t('profile.edit.bioLabel')}</label>
                     <textarea
                       value={editForm.bio}
                       onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))}
                       maxLength={200}
                       rows={3}
-                      placeholder="Kratko o sebi..."
+                      placeholder={t('profile.edit.bioPlaceholder')}
                       className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] px-3.5 py-2.5 text-[12px] text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-blue-500/50 transition-colors resize-none"
                     />
                     <div className="flex justify-between mt-1">
-                      <p className="text-[8px] text-[var(--c-text3)]">Kratki opis koji drugi korisnici vide</p>
+                      <p className="text-[8px] text-[var(--c-text3)]">{t('profile.edit.bioHint')}</p>
                       <p className={`text-[8px] font-bold ${editForm.bio.length > 180 ? 'text-orange-400' : 'text-[var(--c-text3)]'}`}>{editForm.bio.length}/200</p>
                     </div>
                   </div>
 
                   {/* Phone */}
                   <div>
-                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Telefon <span className="opacity-50 lowercase">(opcionalno)</span></label>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">{t('profile.edit.phoneLabel')} <span className="opacity-50 lowercase">({t('profile.edit.optional')})</span></label>
                     <div className="relative">
                       <i className="fa-solid fa-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-[10px] text-blue-400 pointer-events-none"></i>
                       <input
@@ -673,12 +709,12 @@ function ProfileContent() {
                         className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] pl-9 pr-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-blue-500/50 transition-colors"
                       />
                     </div>
-                    <p className="text-[8px] text-[var(--c-text3)] mt-1">Vidljiv kupcima ako ga uneseš</p>
+                    <p className="text-[8px] text-[var(--c-text3)] mt-1">{t('profile.edit.phoneHint')}</p>
                   </div>
 
                   {/* Instagram */}
                   <div>
-                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Instagram <span className="opacity-50 lowercase">(opcionalno)</span></label>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">{t('profile.edit.instagramLabel')} <span className="opacity-50 lowercase">({t('profile.edit.optional')})</span></label>
                     <div className="relative">
                       <i className="fa-brands fa-instagram absolute left-3.5 top-1/2 -translate-y-1/2 text-[10px] text-pink-400 pointer-events-none"></i>
                       <input
@@ -686,16 +722,16 @@ function ProfileContent() {
                         value={editForm.instagram}
                         onChange={e => setEditForm(f => ({ ...f, instagram: e.target.value }))}
                         maxLength={50}
-                        placeholder="korisnicko_ime"
+                        placeholder={t('profile.edit.instagramPlaceholder')}
                         className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] pl-9 pr-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-pink-500/50 transition-colors"
                       />
                     </div>
-                    <p className="text-[8px] text-[var(--c-text3)] mt-1">Samo korisničko ime, bez @</p>
+                    <p className="text-[8px] text-[var(--c-text3)] mt-1">{t('profile.edit.instagramHint')}</p>
                   </div>
 
                   {/* Facebook */}
                   <div>
-                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">Facebook <span className="opacity-50 lowercase">(opcionalno)</span></label>
+                    <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">{t('profile.edit.facebookLabel')} <span className="opacity-50 lowercase">({t('profile.edit.optional')})</span></label>
                     <div className="relative">
                       <i className="fa-brands fa-facebook absolute left-3.5 top-1/2 -translate-y-1/2 text-[10px] text-blue-500 pointer-events-none"></i>
                       <input
@@ -703,11 +739,11 @@ function ProfileContent() {
                         value={editForm.facebook}
                         onChange={e => setEditForm(f => ({ ...f, facebook: e.target.value }))}
                         maxLength={100}
-                        placeholder="korisnicko_ime ili profil link"
+                        placeholder={t('profile.edit.facebookPlaceholder')}
                         className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] pl-9 pr-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-blue-500/50 transition-colors"
                       />
                     </div>
-                    <p className="text-[8px] text-[var(--c-text3)] mt-1">Korisničko ime ili puni link profila</p>
+                    <p className="text-[8px] text-[var(--c-text3)] mt-1">{t('profile.edit.facebookHint')}</p>
                   </div>
                 </div>
               </div>
@@ -719,7 +755,7 @@ function ProfileContent() {
                   disabled={saving}
                   className="flex-1 py-2.5 rounded-[4px] bg-[var(--c-hover)] border border-[var(--c-border)] text-[10px] font-bold text-[var(--c-text2)] uppercase tracking-widest hover:text-[var(--c-text)] hover:bg-[var(--c-active)] transition-all disabled:opacity-50"
                 >
-                  Odustani
+                  {t('profile.edit.cancel')}
                 </button>
                 <button
                   onClick={handleSaveProfile}
@@ -727,9 +763,9 @@ function ProfileContent() {
                   className="flex-1 py-2.5 rounded-[4px] blue-gradient text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {saving ? (
-                    <><i className="fa-solid fa-spinner animate-spin text-xs"></i> Čuvam...</>
+                    <><i className="fa-solid fa-spinner animate-spin text-xs"></i> {t('profile.edit.savingBtn')}</>
                   ) : (
-                    <><i className="fa-solid fa-check text-xs"></i> Sačuvaj Promjene</>
+                    <><i className="fa-solid fa-check text-xs"></i> {t('profile.edit.saveChanges')}</>
                   )}
                 </button>
               </div>
@@ -774,37 +810,37 @@ function ProfileContent() {
                               <>
                                 {user?.emailVerified ? (
                                   <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                      <i className="fa-solid fa-check-circle text-[9px]"></i> Email verificiran
+                                      <i className="fa-solid fa-check-circle text-[9px]"></i> {t('profile.badge.emailVerified')}
                                   </span>
                                 ) : (
                                   <button
                                     onClick={() => router.push('/menu?step=verification')}
                                     className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 hover:bg-orange-500/20 transition-colors cursor-pointer"
                                   >
-                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> Email nije verificiran
+                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> {t('profile.badge.emailNotVerified')}
                                   </button>
                                 )}
                                 {user?.phoneVerified ? (
                                   <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                      <i className="fa-solid fa-phone text-[8px]"></i> Telefon verificiran
+                                      <i className="fa-solid fa-phone text-[8px]"></i> {t('profile.badge.phoneVerified')}
                                   </span>
                                 ) : (
                                   <button
                                     onClick={() => router.push('/menu?step=verification')}
                                     className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 hover:bg-orange-500/20 transition-colors cursor-pointer"
                                   >
-                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> Telefon nije verificiran
+                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> {t('profile.badge.phoneNotVerified')}
                                   </button>
                                 )}
                                 {userLevel >= 5 && (
                                   <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                      <i className="fa-solid fa-star text-[9px]"></i> Premium
+                                      <i className="fa-solid fa-star text-[9px]"></i> {t('profile.badge.premium')}
                                   </span>
                                 )}
                               </>
                             ) : (
                               <button onClick={() => router.push('/login')} className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 hover:bg-blue-500/20 transition-colors">
-                                  <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i> Prijavi se
+                                  <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i> {t('profile.badge.login')}
                               </button>
                             )}
                         </div>
@@ -853,35 +889,35 @@ function ProfileContent() {
                         className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full hover:bg-blue-500/20 hover:border-blue-500/50 transition-all active:scale-95 group shadow-lg"
                     >
                         <i className="fa-solid fa-pen text-[9px] md:text-[10px] text-blue-500"></i>
-                        <span className="text-[8px] md:text-[9px] font-bold text-blue-500 uppercase tracking-wide">Uredi</span>
+                        <span className="text-[8px] md:text-[9px] font-bold text-blue-500 uppercase tracking-wide">{t('profile.action.edit')}</span>
                     </button>
                     <button
                         onClick={() => router.push('/menu')}
                         className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-[var(--c-bg)] border border-[var(--c-border2)] rounded-full hover:bg-[var(--c-hover)] transition-all active:scale-95 group shadow-lg"
                     >
                         <i className="fa-solid fa-gear text-[9px] md:text-[10px] text-[var(--c-text2)] group-hover:text-[var(--c-text)] group-hover:rotate-90 transition-transform duration-500"></i>
-                        <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">Postavke</span>
+                        <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">{t('profile.action.settings')}</span>
                     </button>
                     <button
                         onClick={handleShareProfile}
                         className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-[var(--c-bg)] border border-[var(--c-border2)] rounded-full hover:border-blue-500/40 hover:bg-blue-500/5 transition-all active:scale-95 group shadow-lg"
                     >
                         <i className="fa-solid fa-share-nodes text-[9px] md:text-[10px] text-[var(--c-text2)] group-hover:text-blue-500 transition-colors"></i>
-                        <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">Podijeli</span>
+                        <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">{t('profile.action.share')}</span>
                     </button>
                     <button
                         onClick={() => router.push('/profile/level')}
                         className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-[var(--c-bg)] border border-[var(--c-border2)] rounded-full hover:border-blue-500/50 hover:bg-blue-500/5 transition-all active:scale-95 group shadow-lg"
                     >
                         <i className="fa-solid fa-trophy text-[9px] md:text-[10px] text-yellow-500 group-hover:scale-110 transition-transform"></i>
-                        <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">Level</span>
+                        <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">{t('profile.action.level')}</span>
                     </button>
                     <button
                         onClick={handleLogout}
                         className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-[var(--c-bg)] border border-[var(--c-border2)] rounded-full hover:border-red-500/40 hover:bg-red-500/5 transition-all active:scale-95 group shadow-lg"
                     >
                         <i className="fa-solid fa-arrow-right-from-bracket text-[9px] md:text-[10px] text-[var(--c-text2)] group-hover:text-red-500 transition-colors"></i>
-                        <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-red-500 uppercase tracking-wide">Odjava</span>
+                        <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-red-500 uppercase tracking-wide">{t('profile.action.logout')}</span>
                     </button>
                 </div>
             </div>
@@ -899,17 +935,24 @@ function ProfileContent() {
 
         {/* PRO STATS SUMMARY */}
         {isPro(user?.accountType) && activeProducts.length > 0 && (
-          <div className="bg-[var(--c-card)] border border-blue-500/20 rounded-[14px] p-4 flex items-center gap-6">
+          <div className="bg-[var(--c-card)] border border-blue-500/20 rounded-[14px] p-4 flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2 text-[11px] text-[var(--c-text3)]">
               <i className="fa-solid fa-eye text-blue-400 text-xs"></i>
-              <span>Pregleda ovog mjeseca: <span className="font-bold text-[var(--c-text)]">{activeProducts.reduce((s, p) => s + (p.views_count || 0), 0)}</span></span>
+              <span>{t('profile.stats.monthlyViews')} <span className="font-bold text-[var(--c-text)]">{activeProducts.reduce((s, p) => s + (p.views_count || 0), 0)}</span></span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-[var(--c-text3)]">
               <i className="fa-solid fa-heart text-red-400 text-xs"></i>
-              <span>Omiljeno ukupno: <span className="font-bold text-[var(--c-text)]">{activeProducts.reduce((s, p) => s + (p.favorites_count || 0), 0)}</span></span>
+              <span>{t('profile.stats.totalFavorites')} <span className="font-bold text-[var(--c-text)]">{activeProducts.reduce((s, p) => s + (p.favorites_count || 0), 0)}</span></span>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-[var(--c-text3)]">
+              <i className="fa-solid fa-rocket text-amber-400 text-xs"></i>
+              <span>Krediti: <span className="font-bold text-[var(--c-text)]">{user?.promotedCredits ?? 0}</span></span>
             </div>
           </div>
         )}
+
+        {/* TEAM INVITATIONS (any user can be invited) */}
+        {user && <TeamInvitations userId={user.id} />}
 
         {/* BUSINESS PROFILE EDITOR + TEAM (only for business users) */}
         {user && isBusiness(user.accountType) && (
@@ -935,7 +978,7 @@ function ProfileContent() {
                         {tab === 'Markirani' && (
                             <i className="fa-solid fa-heart text-[9px]"></i>
                         )}
-                        {tab}
+                        {tabLabels[tab] || tab}
                         {tabCounts[tab] !== undefined && tabCounts[tab] > 0 && (
                           <span className={`ml-0.5 min-w-[16px] h-4 px-1 rounded-full text-[8px] font-black flex items-center justify-center ${
                             activeTab === tab
@@ -962,10 +1005,10 @@ function ProfileContent() {
                 ) : markedProducts.length === 0 ? (
                   <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-8 text-center">
                     <i className="fa-regular fa-heart text-2xl text-[var(--c-text3)] mb-3 block"></i>
-                    <p className="text-[11px] font-bold text-[var(--c-text2)] mb-1">Još niste označili nijedan artikal</p>
-                    <p className="text-[9px] text-[var(--c-text3)] mb-4">Klikni na <i className="fa-solid fa-heart text-[8px] text-red-400"></i> da sačuvaš artikle</p>
+                    <p className="text-[11px] font-bold text-[var(--c-text2)] mb-1">{t('profile.marked.empty')}</p>
+                    <p className="text-[9px] text-[var(--c-text3)] mb-4">{t('profile.marked.clickHeart').split('<heart/>')[0]}<i className="fa-solid fa-heart text-[8px] text-red-400"></i>{t('profile.marked.clickHeart').split('<heart/>')[1]}</p>
                     <button onClick={() => router.push('/')} className="px-4 py-2 rounded-full blue-gradient text-white text-[10px] font-black uppercase tracking-widest">
-                      <i className="fa-solid fa-compass mr-1.5"></i>Istraži
+                      <i className="fa-solid fa-compass mr-1.5"></i>{t('profile.marked.explore')}
                     </button>
                   </div>
                 ) : (
@@ -993,7 +1036,7 @@ function ProfileContent() {
                             />
                             {p.status === 'sold' && (
                               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <span className="text-white text-[9px] font-black uppercase tracking-widest bg-red-500 px-2 py-0.5 rounded-full">Prodano</span>
+                                <span className="text-white text-[9px] font-black uppercase tracking-widest bg-red-500 px-2 py-0.5 rounded-full">{t('profile.marked.sold')}</span>
                               </div>
                             )}
                             <button
@@ -1029,7 +1072,7 @@ function ProfileContent() {
                         <div className="my-2">
                             <StarRating rating={averageRating} />
                         </div>
-                        <span className="text-[9px] text-[var(--c-text3)] uppercase tracking-widest">{totalReviews} Dojmova</span>
+                        <span className="text-[9px] text-[var(--c-text3)] uppercase tracking-widest">{totalReviews} {t('profile.reviews.count')}</span>
                     </div>
 
                     <div className="flex-1 space-y-2 border-l border-[var(--c-border)] pl-5">
@@ -1051,14 +1094,14 @@ function ProfileContent() {
                 {/* Reviews List */}
                 <div>
                     <div className="flex justify-between items-end mb-3 px-1">
-                        <h3 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Zadnji Dojmovi</h3>
+                        <h3 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('profile.reviews.latest')}</h3>
                     </div>
 
                     <div className="space-y-2">
                         {reviews.length === 0 ? (
                             <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-6 text-center">
                                 <i className="fa-solid fa-comments text-xl text-[var(--c-text-muted)] mb-2"></i>
-                                <p className="text-[11px] text-[var(--c-text3)]">Još nema dojmova.</p>
+                                <p className="text-[11px] text-[var(--c-text3)]">{t('profile.reviews.empty')}</p>
                             </div>
                         ) : reviews.map(review => (
                             <div key={review.id} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 hover:border-[var(--c-border2)] transition-colors">
@@ -1069,7 +1112,7 @@ function ProfileContent() {
                                             <img src={review.reviewer?.avatar_url || `https://picsum.photos/seed/${review.reviewer_id}/100/100`} alt="" className="w-full h-full object-cover" />
                                         </div>
                                         <div>
-                                            <h4 className="text-xs font-bold text-[var(--c-text)]">{review.reviewer?.username || 'Korisnik'}</h4>
+                                            <h4 className="text-xs font-bold text-[var(--c-text)]">{review.reviewer?.username || t('profile.reviews.defaultUser')}</h4>
                                             <div className="flex text-yellow-500 text-[8px] gap-0.5 mt-0.5">
                                                 {[...Array(5)].map((_, i) => (
                                                     <i key={i} className={`fa-solid fa-star ${i < review.rating ? '' : 'text-[var(--c-star-off)]'}`}></i>
@@ -1077,7 +1120,7 @@ function ProfileContent() {
                                             </div>
                                         </div>
                                     </div>
-                                    <span className="text-[9px] text-[var(--c-text-muted)]">{formatTimeLabel(review.created_at)}</span>
+                                    <span className="text-[9px] text-[var(--c-text-muted)]">{formatTimeLabel(review.created_at, t)}</span>
                                 </div>
                                 {review.comment && (
                                   <p className="text-xs text-[var(--c-text2)] leading-relaxed pl-11">{review.comment}</p>
@@ -1094,9 +1137,9 @@ function ProfileContent() {
                     className="w-full py-3.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] text-[10px] font-bold text-[var(--c-text2)] hover:text-[var(--c-text)] transition-colors uppercase tracking-widest hover:bg-[var(--c-hover)] disabled:opacity-50"
                   >
                     {loadingMoreReviews ? (
-                      <><i className="fa-solid fa-spinner animate-spin mr-1.5"></i> Učitavanje...</>
+                      <><i className="fa-solid fa-spinner animate-spin mr-1.5"></i> {t('profile.reviews.loading')}</>
                     ) : (
-                      'Učitaj više'
+                      t('profile.reviews.loadMore')
                     )}
                   </button>
                 )}
@@ -1117,15 +1160,15 @@ function ProfileContent() {
                 </div>
 
                 {/* Stats Grid */}
-                <h4 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest px-1">Statistika</h4>
+                <h4 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest px-1">{t('profile.info.statistics')}</h4>
                 <div className="grid grid-cols-2 gap-2">
                     <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-blue-500/30 transition-colors">
                         <div className="w-8 h-8 rounded-[10px] bg-blue-500/10 flex items-center justify-center text-blue-500">
                             <i className="fa-regular fa-calendar"></i>
                         </div>
                         <div>
-                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Član od</h5>
-                            <p className="text-xs font-bold text-[var(--c-text)]">{formatMemberSince(user?.createdAt)}</p>
+                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('profile.info.memberSince')}</h5>
+                            <p className="text-xs font-bold text-[var(--c-text)]">{formatMemberSince(user?.createdAt, t)}</p>
                         </div>
                     </div>
                     <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-blue-500/30 transition-colors">
@@ -1133,7 +1176,7 @@ function ProfileContent() {
                             <i className="fa-solid fa-location-dot"></i>
                         </div>
                         <div>
-                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Lokacija</h5>
+                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('profile.info.location')}</h5>
                             <p className="text-xs font-bold text-[var(--c-text)]">{displayLocation}</p>
                         </div>
                     </div>
@@ -1142,8 +1185,8 @@ function ProfileContent() {
                             <i className="fa-solid fa-bag-shopping"></i>
                         </div>
                         <div>
-                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Prodaja</h5>
-                            <p className="text-xs font-bold text-[var(--c-text)]">{user?.totalSales || soldProducts.length} prodano</p>
+                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('profile.info.sales')}</h5>
+                            <p className="text-xs font-bold text-[var(--c-text)]">{user?.totalSales || soldProducts.length} {t('profile.info.sold')}</p>
                         </div>
                     </div>
                     <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-blue-500/30 transition-colors">
@@ -1151,8 +1194,8 @@ function ProfileContent() {
                             <i className="fa-solid fa-tags"></i>
                         </div>
                         <div>
-                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Aktivni oglasi</h5>
-                            <p className="text-xs font-bold text-[var(--c-text)]">{activeProducts.length} aktivnih</p>
+                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('profile.info.activeListings')}</h5>
+                            <p className="text-xs font-bold text-[var(--c-text)]">{activeProducts.length} {t('profile.info.activeCount')}</p>
                         </div>
                     </div>
                     <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-blue-500/30 transition-colors">
@@ -1160,8 +1203,8 @@ function ProfileContent() {
                             <i className="fa-solid fa-star"></i>
                         </div>
                         <div>
-                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Ocjena</h5>
-                            <p className="text-xs font-bold text-[var(--c-text)]">{averageRating > 0 ? `${averageRating} / 5` : 'Nema ocjena'}</p>
+                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('profile.info.rating')}</h5>
+                            <p className="text-xs font-bold text-[var(--c-text)]">{averageRating > 0 ? `${averageRating} / 5` : t('profile.info.noRating')}</p>
                         </div>
                     </div>
                     <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-emerald-500/30 transition-colors">
@@ -1169,14 +1212,14 @@ function ProfileContent() {
                             <i className="fa-solid fa-shield-halved"></i>
                         </div>
                         <div>
-                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Verifikacija</h5>
-                            <p className={`text-xs font-bold ${user?.emailVerified ? 'text-emerald-400' : 'text-orange-400'}`}>{user?.emailVerified ? 'Email potvrđen' : 'Nije verificiran'}</p>
+                            <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('profile.info.verification')}</h5>
+                            <p className={`text-xs font-bold ${user?.emailVerified ? 'text-emerald-400' : 'text-orange-400'}`}>{user?.emailVerified ? t('profile.info.emailConfirmed') : t('profile.info.notVerified')}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Social Links */}
-                <h4 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest px-1">Social & Links</h4>
+                <h4 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest px-1">{t('profile.info.socialLinks')}</h4>
                 <div className="space-y-2">
                     {user?.instagramUrl ? (
                       <a
@@ -1198,7 +1241,7 @@ function ProfileContent() {
                       >
                         <div className="flex items-center gap-2.5">
                           <i className="fa-brands fa-instagram text-[var(--c-text-muted)] text-xs group-hover:text-pink-400 transition-colors"></i>
-                          <span className="text-[10px] font-bold text-[var(--c-text-muted)] group-hover:text-[var(--c-text3)] transition-colors">Dodaj Instagram</span>
+                          <span className="text-[10px] font-bold text-[var(--c-text-muted)] group-hover:text-[var(--c-text3)] transition-colors">{t('profile.info.addInstagram')}</span>
                         </div>
                         <i className="fa-solid fa-plus text-[var(--c-text-muted)] text-[9px] group-hover:text-pink-400 transition-colors"></i>
                       </div>
@@ -1223,7 +1266,7 @@ function ProfileContent() {
                       >
                         <div className="flex items-center gap-2.5">
                           <i className="fa-brands fa-facebook text-[var(--c-text-muted)] text-xs group-hover:text-blue-500 transition-colors"></i>
-                          <span className="text-[10px] font-bold text-[var(--c-text-muted)] group-hover:text-[var(--c-text3)] transition-colors">Dodaj Facebook</span>
+                          <span className="text-[10px] font-bold text-[var(--c-text-muted)] group-hover:text-[var(--c-text3)] transition-colors">{t('profile.info.addFacebook')}</span>
                         </div>
                         <i className="fa-solid fa-plus text-[var(--c-text-muted)] text-[9px] group-hover:text-blue-500 transition-colors"></i>
                       </div>
@@ -1254,11 +1297,11 @@ function ProfileContent() {
                             <div className="w-12 h-12 rounded-[16px] bg-[var(--c-overlay)] border border-[var(--c-border)] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500">
                                 <i className="fa-solid fa-ghost text-xl text-[var(--c-text-muted)] group-hover:text-[var(--c-text)] transition-colors"></i>
                             </div>
-                            <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">Nema Aktivnih Oglasa</h3>
-                            <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed mb-4">Objavi oglas i pojavi se na tržištu.</p>
+                            <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">{t('profile.active.empty')}</h3>
+                            <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed mb-4">{t('profile.active.emptyHint')}</p>
                             <button onClick={() => router.push('/upload')} className="blue-gradient px-4 py-2.5 rounded-[12px] text-white font-bold text-[9px] uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2">
                                 <i className="fa-solid fa-plus"></i>
-                                Objavi Oglas
+                                {t('profile.active.publish')}
                             </button>
                         </div>
                     </div>
@@ -1273,25 +1316,40 @@ function ProfileContent() {
                             <div>
                                 <div className="flex justify-between items-start">
                                     <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleArchive(p.id); }}
-                                        disabled={archivingId === p.id}
-                                        title="Arhiviraj oglas"
-                                        className="text-[var(--c-text-muted)] hover:text-orange-400 p-1 -mr-2 -mt-1 transition-colors disabled:opacity-50 shrink-0"
-                                    >
-                                        <i className={`text-[10px] ${archivingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-box-archive'}`}></i>
-                                    </button>
+                                    <div className="flex items-center gap-0.5 shrink-0 -mr-2 -mt-1">
+                                      {isPro(user?.accountType) && !isPromoted(p) && (
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); handlePromote(p.id); }}
+                                          disabled={promotingId === p.id}
+                                          title="Promoviraj (3 dana)"
+                                          className="text-[var(--c-text-muted)] hover:text-amber-400 p-1 transition-colors disabled:opacity-50"
+                                        >
+                                          <i className={`text-[10px] ${promotingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-rocket'}`}></i>
+                                        </button>
+                                      )}
+                                      {isPromoted(p) && (
+                                        <span className="text-[7px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1 py-0.5 rounded-[3px] uppercase">Promo</span>
+                                      )}
+                                      <button
+                                          onClick={(e) => { e.stopPropagation(); handleArchive(p.id); }}
+                                          disabled={archivingId === p.id}
+                                          title={t('profile.active.archive')}
+                                          className="text-[var(--c-text-muted)] hover:text-orange-400 p-1 transition-colors disabled:opacity-50"
+                                      >
+                                          <i className={`text-[10px] ${archivingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-box-archive'}`}></i>
+                                      </button>
+                                    </div>
                                 </div>
                                 <span className="text-[11px] font-black text-blue-500 mt-0.5 block">{Number(p.price).toLocaleString()} &euro;</span>
                             </div>
                             <div className="flex items-center gap-2 text-[9px] text-[var(--c-text3)]">
                                 <i className="fa-solid fa-eye text-[8px]"></i>
-                                <span>{p.views_count} pregleda</span>
+                                <span>{p.views_count} {t('profile.active.views')}</span>
                                 <span>·</span>
                                 <i className="fa-solid fa-heart text-[8px]"></i>
                                 <span>{p.favorites_count}</span>
                                 <span>·</span>
-                                <span>{formatTimeLabel(p.created_at)}</span>
+                                <span>{formatTimeLabel(p.created_at, t)}</span>
                             </div>
                         </div>
                     </div>
@@ -1305,8 +1363,8 @@ function ProfileContent() {
                 {soldProducts.length === 0 ? (
                     <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-6 flex flex-col items-center text-center min-h-[200px] justify-center">
                         <i className="fa-solid fa-check-circle text-2xl text-[var(--c-text-muted)] mb-3"></i>
-                        <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">Nema Prodanih Oglasa</h3>
-                        <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed">Ovdje će se pojaviti tvoji završeni oglasi.</p>
+                        <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">{t('profile.finished.empty')}</h3>
+                        <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed">{t('profile.finished.emptyHint')}</p>
                     </div>
                 ) : soldProducts.map(p => (
                     <div key={p.id} onClick={() => router.push(`/product/${p.id}`)} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)] cursor-pointer opacity-70">
@@ -1314,7 +1372,7 @@ function ProfileContent() {
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={p.images?.[0] || `https://picsum.photos/seed/${p.id}/200/200`} alt={p.title} className="w-full h-full object-cover grayscale" />
                             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                <span className="text-[8px] font-black text-white bg-emerald-500 px-1.5 py-0.5 rounded-full uppercase">Prodano</span>
+                                <span className="text-[8px] font-black text-white bg-emerald-500 px-1.5 py-0.5 rounded-full uppercase">{t('profile.finished.sold')}</span>
                             </div>
                             <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[7px] font-black px-1 py-0.5 rounded-[4px] leading-none backdrop-blur-sm z-10">#{productNumberMap.get(p.id)}</span>
                         </div>
@@ -1323,7 +1381,7 @@ function ProfileContent() {
                                 <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
                                 <span className="text-[11px] font-black text-emerald-500 mt-0.5 block">{Number(p.price).toLocaleString()} &euro;</span>
                             </div>
-                            <span className="text-[9px] text-[var(--c-text3)]">{formatTimeLabel(p.created_at)}</span>
+                            <span className="text-[9px] text-[var(--c-text3)]">{formatTimeLabel(p.created_at, t)}</span>
                         </div>
                     </div>
                 ))}

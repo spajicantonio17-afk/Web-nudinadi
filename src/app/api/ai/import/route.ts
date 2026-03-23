@@ -1766,7 +1766,7 @@ Za VOZILA (automobili, motocikli):
   marka (npr. "BMW"), model (npr. "Serija 3"), godiste (broj, npr. 2008), km (broj kilometara, npr. 250000),
   gorivo (TAČNO: "Dizel" | "Benzin" | "Benzin + LPG" | "Hibrid" | "Plug-in hibrid" | "Električni" | "CNG"),
   mjenjac (TAČNO: "Ručni" | "Automatik" | "Poluautomatik" | "DSG / DCT"),
-  karoserija (TAČNO: "Sedan" | "Karavan" | "Hatchback" | "Coupe" | "Kabriolet" | "SUV" | "Crossover" | "Pickup" | "Van"),
+  karoserija (TAČNO: "Sedan" | "Karavan" | "Hatchback" | "Coupe" | "Kabriolet" | "SUV" | "Crossover" | "Pickup" | "Van" | "Minivan" | "Limuzina"),
   boja (npr. "Crna"), konjskeSile (broj, npr. 150), registracija (npr. "06/2026"),
   kubikaza (za motocikle, ccm), motor (npr. "2.0 TDI 110 kW"),
   pogon (TAČNO: "Prednji" | "Zadnji" | "4x4 (stalni)" | "4x4 (povremeni)")

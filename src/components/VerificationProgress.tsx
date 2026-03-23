@@ -11,12 +11,10 @@ interface VerificationProgressProps {
   compact?: boolean;
 }
 
-function authUserToProfileFields(u: AuthUser): Pick<Profile, 'email_verified' | 'phone_verified' | 'location' | 'bio'> {
+function authUserToProfileFields(u: AuthUser): Pick<Profile, 'email_verified' | 'phone_verified'> {
   return {
     email_verified: u.emailVerified,
     phone_verified: u.phoneVerified,
-    location: u.location || null,
-    bio: u.bio || null,
   };
 }
 
@@ -48,7 +46,7 @@ function VerificationCompact({ status, isFullyVerified }: { status: Verification
     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--c-card)] border border-[var(--c-border)]">
       <i className="fa-solid fa-shield-halved text-[var(--c-text3)] text-[10px]"></i>
       <span className="text-[10px] font-bold text-[var(--c-text2)]">
-        Verifikacija: {status.currentStep}/5
+        Verifikacija: {status.currentStep}/3
       </span>
     </div>
   );

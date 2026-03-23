@@ -83,8 +83,7 @@ export default function RootLayout({
       <body className="antialiased w-full min-w-0 overflow-x-hidden">
         <JsonLd data={organizationSchema} />
         <GoogleAnalytics />
-        <Providers>{children}</Providers>
-        <CookieConsent />
+        <Providers>{children}<CookieConsent /></Providers>
       </body>
     </html>
   );

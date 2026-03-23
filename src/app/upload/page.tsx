@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
@@ -1728,6 +1728,32 @@ function UploadPageInner() {
   const [popupSelectedSub, setPopupSelectedSub] = useState<{ name: string; items?: string[] } | null>(null);
   const [popupCatSearch, setPopupCatSearch] = useState('');
 
+  // ── AI Category Confirmation ──
+  const [showAiConfirm, setShowAiConfirm] = useState(false);
+  const [aiConfirmData, setAiConfirmData] = useState<{ category: string; subcategory?: string } | null>(null);
+  const aiConfirmActionRef = useRef<(() => void) | null>(null);
+
+  const showAiCategoryConfirm = (category: string, subcategory: string | undefined, action: () => void) => {
+    aiConfirmActionRef.current = action;
+    setAiConfirmData({ category, subcategory });
+    setShowAiConfirm(true);
+  };
+
+  const confirmAiCategory = () => {
+    aiConfirmActionRef.current?.();
+    aiConfirmActionRef.current = null;
+    setShowAiConfirm(false);
+    setAiConfirmData(null);
+  };
+
+  const rejectAiCategory = () => {
+    aiConfirmActionRef.current = null;
+    setShowAiConfirm(false);
+    setAiConfirmData(null);
+    // Navigate to full category list for manual selection
+    setStep('all-categories');
+  };
+
   // ── Car flow sub-steps state ──
   const [carFlowStep, setCarFlowStep] = useState<'brand' | 'model' | 'variant'>('brand');
   const [vehicleModel, setVehicleModel] = useState<string>('');
@@ -1780,6 +1806,12 @@ function UploadPageInner() {
     if (!editProductId || isLoading || !isAuthenticated) return;
     getProductById(editProductId)
       .then(product => {
+        // Restore priceType from attributes.price_type
+        const attrs = (product.attributes && typeof product.attributes === 'object') ? product.attributes as Record<string, unknown> : {};
+        let priceType: 'fixed' | 'negotiable' | 'mk' = 'fixed';
+        if (attrs.price_type === 'MK') priceType = 'mk';
+        else if (attrs.price_type === 'Po dogovoru') priceType = 'negotiable';
+
         setFormData(prev => ({
           ...prev,
           title: product.title,
@@ -1788,9 +1820,14 @@ function UploadPageInner() {
           description: product.description || '',
           condition: product.condition === 'new' ? 'Novo' : product.condition === 'like_new' ? 'Kao novo' : 'Korišteno',
           location: product.location || '',
+          priceType,
         }));
-        if (product.attributes && typeof product.attributes === 'object') {
-          setAttributes(product.attributes as AttributeValues);
+        if (attrs) {
+          setAttributes(attrs as AttributeValues);
+        }
+        // Restore existing tags
+        if (Array.isArray((product as Record<string, unknown>).tags)) {
+          setGeneratedTags((product as Record<string, unknown>).tags as string[]);
         }
         setExistingImages(product.images || []);
         setStep('form');
@@ -1926,7 +1963,15 @@ function UploadPageInner() {
         setCurrency('EUR');
       }
 
-      setStep('form');
+      // Show category confirmation before going to form
+      if (fullCategory) {
+        const parts = fullCategory.split(' - ');
+        showAiCategoryConfirm(parts[0], parts.slice(1).join(' - ') || undefined, () => {
+          setStep('form');
+        });
+      } else {
+        setStep('form');
+      }
 
       // Download imported images via proxy for reliable cross-origin support
       const imageUrls = Array.isArray(d.images) ? (d.images as string[]).filter(u => typeof u === 'string' && u.startsWith('http')) : [];
@@ -1957,8 +2002,14 @@ function UploadPageInner() {
             }
           }
           if (files.length > 0) {
-            setImages(prev => [...prev, ...files]);
-            showToast(`${files.length} slika importirano`);
+            const maxImg = getPlanLimits(user?.accountType).maxImagesPerListing;
+            const trimmed = files.slice(0, maxImg);
+            setImages(prev => [...prev, ...trimmed].slice(0, maxImg));
+            if (files.length > maxImg) {
+              showToast(`Importirano ${trimmed.length} od ${files.length} slika (max ${maxImg})`, 'error');
+            } else {
+              showToast(`${trimmed.length} slika importirano`);
+            }
           }
         };
         downloadImages();
@@ -2289,36 +2340,27 @@ function UploadPageInner() {
       // ── Fast path: chassis code / model shortcut lookup (no AI call) ──
       const chassisHits = lookupChassis(magicSearchInput.trim());
       if (chassisHits.length > 0) {
-        const hit = chassisHits[0]; // take first (highest confidence) match
-        const userInput = magicSearchInput.trim(); // keep original input as title base
-        // Set brand — title keeps user's original input (e.g., "e90 330d")
-        setFormData(prev => ({
-          ...prev,
-          brand: hit.brand,
-          title: userInput,
-          category: 'Vozila',
-        }));
-        setAttributes(prev => ({ ...prev, marka: hit.brand }));
-        // Set fuel if detected
-        if (hit.fuel) setVehicleFuel(hit.fuel);
-        // Pre-fill model + variant so they auto-select on the model step
-        setVehicleModel(hit.model);
-        if (hit.variant) setVehicleVariant(hit.variant);
-        // Save chassis match for tag generation during publish
-        setChassisMatchResult(hit);
-        setChassisUserInput(userInput);
-        setModelSearchLocal(hit.model);
-        setMagicSearchInput('');
-        // Set vehicle type to car (magic search is in vehicle context)
-        setVehicleType('car');
-        // Navigate to model step (user picks year, then clicks pre-filtered model)
-        setStep('car-method');
-        setBreadcrumb([
-          { label: 'Vozila', step: 'vehicle-sub' as UploadStep },
-          { label: hit.brand, step: 'car-method' as UploadStep },
-        ]);
-        setCarFlowStep('model');
-        showToast(`${hit.generation || hit.model} → ${hit.brand} ${hit.model}${hit.fuel ? ' (' + hit.fuel + ')' : ''}`);
+        const hit = chassisHits[0];
+        const userInput = magicSearchInput.trim();
+        showAiCategoryConfirm('Vozila', hit.brand, () => {
+          setFormData(prev => ({ ...prev, brand: hit.brand, title: userInput, category: 'Vozila' }));
+          setAttributes(prev => ({ ...prev, marka: hit.brand }));
+          if (hit.fuel) setVehicleFuel(hit.fuel);
+          setVehicleModel(hit.model);
+          if (hit.variant) setVehicleVariant(hit.variant);
+          setChassisMatchResult(hit);
+          setChassisUserInput(userInput);
+          setModelSearchLocal(hit.model);
+          setMagicSearchInput('');
+          setVehicleType('car');
+          setStep('car-method');
+          setBreadcrumb([
+            { label: 'Vozila', step: 'vehicle-sub' as UploadStep },
+            { label: hit.brand, step: 'car-method' as UploadStep },
+          ]);
+          setCarFlowStep('model');
+          showToast(`${hit.generation || hit.model} → ${hit.brand} ${hit.model}${hit.fuel ? ' (' + hit.fuel + ')' : ''}`);
+        });
         return;
       }
 
@@ -2334,108 +2376,123 @@ function UploadPageInner() {
 
         if ((catLower.includes('vozila') && catLower !== 'dijelovi za vozila') || catLower === 'automobili') {
           const matchedBrand = findMatch(CAR_BRANDS, sub);
-          if (matchedBrand) {
-            setAttributes(prev => ({ ...prev, marka: matchedBrand.name }));
-            setFormData(prev => ({ ...prev, title: result.title, category: 'Vozila', brand: matchedBrand.name, description: result.description || prev.description }));
-            setVehicleType('car');
-            setStep('car-method');
-            setCarFlowStep('model');
-            setBreadcrumb([
-              { label: 'Vozila', step: 'vehicle-sub' as UploadStep },
-              { label: matchedBrand.name, step: 'car-method' as UploadStep },
-            ]);
-            showToast(`AI: Vozila → ${matchedBrand.name}`);
-          } else {
-            setFormData(prev => ({ ...prev, title: result.title, category: 'Vozila', description: result.description || prev.description }));
-            setStep('car-method');
-            showToast('AI: Vozila');
-          }
+          showAiCategoryConfirm('Vozila', matchedBrand?.name || sub, () => {
+            if (matchedBrand) {
+              setAttributes(prev => ({ ...prev, marka: matchedBrand.name }));
+              setFormData(prev => ({ ...prev, title: result.title, category: 'Vozila', brand: matchedBrand.name, description: result.description || prev.description }));
+              setVehicleType('car');
+              setStep('car-method');
+              setCarFlowStep('model');
+              setBreadcrumb([
+                { label: 'Vozila', step: 'vehicle-sub' as UploadStep },
+                { label: matchedBrand.name, step: 'car-method' as UploadStep },
+              ]);
+              showToast(`AI: Vozila → ${matchedBrand.name}`);
+            } else {
+              setFormData(prev => ({ ...prev, title: result.title, category: 'Vozila', description: result.description || prev.description }));
+              setStep('car-method');
+              showToast('AI: Vozila');
+            }
+          });
         } else if (catLower === 'nekretnine') {
           const matchedSub = findMatch(NEKRETNINE_TYPES, sub);
-          if (matchedSub) {
-            setAttributes({});
-            setFormData(prev => ({ ...prev, title: result.title, category: `Nekretnine - ${matchedSub.name}`, description: result.description || prev.description }));
-            setStep('form');
-            showToast(`AI: Nekretnine → ${matchedSub.name}`);
-          } else {
-            setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
-            setStep('nekretnine-sub');
-            showToast('AI: Nekretnine');
-          }
+          showAiCategoryConfirm('Nekretnine', matchedSub?.name || sub, () => {
+            if (matchedSub) {
+              setAttributes({});
+              setFormData(prev => ({ ...prev, title: result.title, category: `Nekretnine - ${matchedSub.name}`, description: result.description || prev.description }));
+              setStep('form');
+              showToast(`AI: Nekretnine → ${matchedSub.name}`);
+            } else {
+              setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
+              setStep('nekretnine-sub');
+              showToast('AI: Nekretnine');
+            }
+          });
         } else if (catLower.includes('mobilni') || catLower.includes('mobiteli')) {
           const matchedBrand = findMatch(MOBILE_BRANDS, sub);
-          if (matchedBrand) {
-            setAttributes({});
-            setFormData(prev => ({ ...prev, title: result.title, category: 'Mobilni uređaji', brand: matchedBrand.name, description: result.description || prev.description }));
-            setStep('form');
-            showToast(`AI: Mobilni → ${matchedBrand.name}`);
-          } else {
-            setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
-            setStep('mobile-sub');
-            showToast('AI: Mobilni uređaji');
-          }
+          showAiCategoryConfirm('Mobiteli i oprema', matchedBrand?.name || sub, () => {
+            if (matchedBrand) {
+              setAttributes({});
+              setFormData(prev => ({ ...prev, title: result.title, category: 'Mobilni uređaji', brand: matchedBrand.name, description: result.description || prev.description }));
+              setStep('form');
+              showToast(`AI: Mobilni → ${matchedBrand.name}`);
+            } else {
+              setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
+              setStep('mobile-sub');
+              showToast('AI: Mobilni uređaji');
+            }
+          });
         } else if (catLower.includes('odjeća') || catLower.includes('obuća') || catLower.includes('moda')) {
           const matchedSub = findMatch(MODA_TYPES, sub);
-          if (matchedSub) {
-            const artikli = MODA_ARTIKLI[matchedSub.name];
-            if (artikli && artikli.length > 0) {
-              setAttributes({});
-              setModaSubCategory(matchedSub.name);
-              setFormData(prev => ({ ...prev, title: result.title, category: `Moda - ${matchedSub.name}`, description: result.description || prev.description }));
-              setStep('moda-artikl');
+          showAiCategoryConfirm('Moda', matchedSub?.name || sub, () => {
+            if (matchedSub) {
+              const artikli = MODA_ARTIKLI[matchedSub.name];
+              if (artikli && artikli.length > 0) {
+                setAttributes({});
+                setModaSubCategory(matchedSub.name);
+                setFormData(prev => ({ ...prev, title: result.title, category: `Moda - ${matchedSub.name}`, description: result.description || prev.description }));
+                setStep('moda-artikl');
+              } else {
+                setAttributes({});
+                setFormData(prev => ({ ...prev, title: result.title, category: `Moda - ${matchedSub.name}`, description: result.description || prev.description }));
+                setStep('form');
+              }
               showToast(`AI: Moda → ${matchedSub.name}`);
             } else {
-              setAttributes({});
-              setFormData(prev => ({ ...prev, title: result.title, category: `Moda - ${matchedSub.name}`, description: result.description || prev.description }));
-              setStep('form');
-              showToast(`AI: Moda → ${matchedSub.name}`);
+              setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
+              setStep('moda-sub');
+              showToast('AI: Odjeća i obuća');
             }
-          } else {
-            setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
-            setStep('moda-sub');
-            showToast('AI: Odjeća i obuća');
-          }
+          });
         } else if (catLower.includes('elektronika') || catLower.includes('tehnika') || catLower.includes('računal') || catLower.includes('racunal')) {
           const matchedSub = findMatch(TEHNIKA_TYPES, sub);
-          if (matchedSub) {
-            setAttributes({});
-            setFormData(prev => ({ ...prev, title: result.title, category: `Elektronika - ${matchedSub.name}`, description: result.description || prev.description }));
-            setStep('form');
-            showToast(`AI: Elektronika → ${matchedSub.name}`);
-          } else {
-            setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
-            setStep('tehnika-sub');
-            showToast('AI: Elektronika');
-          }
+          showAiCategoryConfirm('Elektronika', matchedSub?.name || sub, () => {
+            if (matchedSub) {
+              setAttributes({});
+              setFormData(prev => ({ ...prev, title: result.title, category: `Elektronika - ${matchedSub.name}`, description: result.description || prev.description }));
+              setStep('form');
+              showToast(`AI: Elektronika → ${matchedSub.name}`);
+            } else {
+              setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
+              setStep('tehnika-sub');
+              showToast('AI: Elektronika');
+            }
+          });
         } else if (catLower.includes('usluge') || catLower.includes('servisi')) {
           const matchedSub = findMatch(SERVICES_TYPES, sub);
-          if (matchedSub) {
-            setAttributes({});
-            setFormData(prev => ({ ...prev, title: result.title, category: `Usluge - ${matchedSub.name}`, description: result.description || prev.description }));
-            setStep('form');
-            showToast(`AI: Usluge → ${matchedSub.name}`);
-          } else {
-            setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
-            setStep('services-sub');
-            showToast('AI: Usluge');
-          }
+          showAiCategoryConfirm('Usluge', matchedSub?.name || sub, () => {
+            if (matchedSub) {
+              setAttributes({});
+              setFormData(prev => ({ ...prev, title: result.title, category: `Usluge - ${matchedSub.name}`, description: result.description || prev.description }));
+              setStep('form');
+              showToast(`AI: Usluge → ${matchedSub.name}`);
+            } else {
+              setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
+              setStep('services-sub');
+              showToast('AI: Usluge');
+            }
+          });
         } else if (catLower.includes('poslovi')) {
           const matchedSub = findMatch(POSLOVI_TYPES, sub);
-          if (matchedSub) {
-            setAttributes({});
-            setFormData(prev => ({ ...prev, title: result.title, category: `Poslovi - ${matchedSub.name}`, description: result.description || prev.description }));
-            setStep('form');
-            showToast(`AI: Poslovi → ${matchedSub.name}`);
-          } else {
-            setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
-            setStep('poslovi-sub');
-            showToast('AI: Poslovi');
-          }
+          showAiCategoryConfirm('Poslovi', matchedSub?.name || sub, () => {
+            if (matchedSub) {
+              setAttributes({});
+              setFormData(prev => ({ ...prev, title: result.title, category: `Poslovi - ${matchedSub.name}`, description: result.description || prev.description }));
+              setStep('form');
+              showToast(`AI: Poslovi → ${matchedSub.name}`);
+            } else {
+              setFormData(prev => ({ ...prev, title: result.title, description: result.description || prev.description }));
+              setStep('poslovi-sub');
+              showToast('AI: Poslovi');
+            }
+          });
         } else {
-          setAttributes({});
-          setFormData(prev => ({ ...prev, title: result.title, category: cat, description: result.description || prev.description, price: result.price ? result.price.toString() : prev.price }));
-          setStep('form');
-          showToast(`AI: ${cat}`);
+          showAiCategoryConfirm(cat, sub, () => {
+            setAttributes({});
+            setFormData(prev => ({ ...prev, title: result.title, category: cat, description: result.description || prev.description, price: result.price ? result.price.toString() : prev.price }));
+            setStep('form');
+            showToast(`AI: ${cat}`);
+          });
         }
 
         if (result.confidence !== undefined && result.confidence < 40) {
@@ -2591,6 +2648,9 @@ function UploadPageInner() {
       else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) e.price = 'Unesite ispravnu cijenu';
     }
     if (images.length === 0 && existingImages.length === 0) e.images = 'Dodajte barem jednu sliku';
+    const maxImg = getPlanLimits(user?.accountType).maxImagesPerListing;
+    const totalImages = images.length + existingImages.length;
+    if (totalImages > maxImg) e.images = `Maksimalno ${maxImg} slika po oglasu. Imate ${totalImages}.`;
     if (!formData.category.trim()) e.category = 'Odaberite kategoriju';
     setFormErrors(e);
     return Object.keys(e).length === 0;
@@ -2722,7 +2782,16 @@ function UploadPageInner() {
         return; // Don't clear isPublishing — overlay is shown
       }
     } catch (err) {
-      showToast('Greška pri objavljivanju. Pokušajte ponovo.', 'error');
+      console.error('[Upload] Publish failed:', err);
+
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'LIMIT_REACHED') {
+        showToast('Dostigli ste maksimalan broj aktivnih oglasa.', 'error');
+      } else if (msg === 'IMAGE_LIMIT_REACHED') {
+        showToast('Previše slika. Smanjite broj slika.', 'error');
+      } else {
+        showToast('Greška pri objavljivanju. Pokušajte ponovo.', 'error');
+      }
     } finally {
       setIsPublishing(false);
     }
@@ -2966,6 +3035,57 @@ function UploadPageInner() {
     );
   };
 
+  // ── AI Category Confirmation Popup ──
+  const renderAiConfirmPopup = () => {
+    if (!showAiConfirm || !aiConfirmData) return null;
+    return (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center" onClick={rejectAiCategory}>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div
+          className="relative bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] w-[90%] max-w-sm shadow-2xl animate-fadeIn p-6"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="text-center mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-3">
+              <i className="fa-solid fa-wand-magic-sparkles text-blue-500 text-xl"></i>
+            </div>
+            <h3 className="text-[14px] font-black text-[var(--c-text)] mb-1">AI predlaže kategoriju</h3>
+            <p className="text-[11px] text-[var(--c-text2)]">Potvrdite ili promijenite</p>
+          </div>
+
+          <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 mb-5">
+            <div className="flex items-center gap-2 justify-center">
+              <span className="text-[13px] font-black text-blue-500">{aiConfirmData.category}</span>
+              {aiConfirmData.subcategory && (
+                <>
+                  <i className="fa-solid fa-chevron-right text-[8px] text-blue-400/60"></i>
+                  <span className="text-[12px] font-bold text-[var(--c-text)]">{aiConfirmData.subcategory}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={rejectAiCategory}
+              className="flex-1 py-3 rounded-xl border border-[var(--c-border)] text-[11px] font-bold text-[var(--c-text2)] hover:bg-[var(--c-hover)] transition-all"
+            >
+              <i className="fa-solid fa-pen text-[9px] mr-1.5"></i>
+              Promijeni
+            </button>
+            <button
+              onClick={confirmAiCategory}
+              className="flex-1 py-3 rounded-xl bg-blue-500 text-white text-[11px] font-bold hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20"
+            >
+              <i className="fa-solid fa-check text-[9px] mr-1.5"></i>
+              Potvrdi
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // 1. Selection (Main categories) - CENTERED BENTO STYLE
   if (step === 'selection') {
     return (
@@ -3186,6 +3306,7 @@ function UploadPageInner() {
               </div>
           </button>
         </div>
+        {renderAiConfirmPopup()}
       </MainLayout>
     );
   }
@@ -3669,7 +3790,10 @@ function UploadPageInner() {
               <button
                 key={sub.name}
                 onClick={() => {
-                  if (sub.items && sub.items.length > 0) {
+                  // Vozila → Osobni automobili: skip items (body types covered by karoserija attribute)
+                  const isVozila = popupSelectedCat.id === 'vozila' || popupSelectedCat.name.toLowerCase().includes('vozila');
+                  const skipItems = isVozila && sub.name === 'Osobni automobili';
+                  if (sub.items && sub.items.length > 0 && !skipItems) {
                     setPopupSelectedSub(sub);
                     setPopupCatLevel('item');
                   } else {
@@ -3788,6 +3912,7 @@ function UploadPageInner() {
               </p>
           </div>
       </div>
+      {renderAiConfirmPopup()}
     </MainLayout>
   );
 
@@ -3930,6 +4055,7 @@ function UploadPageInner() {
             </div>
           </div>
         )}
+        {renderAiConfirmPopup()}
       </MainLayout>
     );
   }
@@ -4658,6 +4784,7 @@ function UploadPageInner() {
               )}
             </div>
           </div>
+          {renderAiConfirmPopup()}
         </MainLayout>
       );
     }
@@ -5034,8 +5161,11 @@ function UploadPageInner() {
             );
           })()}
 
+          {formErrors.category && <p className="text-[10px] text-red-400 -mt-2 ml-3">{formErrors.category}</p>}
+
           {/* Category Picker Popup */}
           {renderCategoryPopup()}
+          {renderAiConfirmPopup()}
 
           {/* Step progress indicator */}
           {totalPages > 1 && (

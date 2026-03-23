@@ -35,6 +35,12 @@ Kategorije i potkategorije (koristi TAČNO ova imena za subcategory):
 - Životinje: Psi, Mačke, Ptice i papige, Ribe i akvaristika
 - Strojevi i alati: Ručni alati, Električni alati, Građevinski strojevi, Poljoprivredni strojevi, Vrtni strojevi
 
+LISTING TYPE (samo za Nekretnine):
+- Ako korisnik traži "prodaja", "kupiti", "kupovina" → listing_type: "prodaja"
+- Ako korisnik traži "najam", "iznajmiti", "zakup", "kirija" → listing_type: "najam"
+- Ako korisnik traži "stan na dan", "kratkoročni najam", "dnevni najam" → listing_type: "najam_kratkorocni"
+- Ako NE pominje prodaju/najam → listing_type: null (ne pogađaj!)
+
 Zadaci:
 1. Ispravi tipfelere i normaliziraj upit
 2. Prepoznaj namjeru (kupnja, najam, usluga itd.)
@@ -85,6 +91,8 @@ Primjeri (KOMPLETNI — category + subcategory + location + attributes + price):
 - "gaming pc" → category: "Računala i IT", subcategory: "Desktop računala"
 - "traktor" → category: "Strojevi i alati", subcategory: "Poljoprivredni strojevi"
 - "gitara" → category: "Glazba i glazbeni instrumenti", subcategory: "Gitare"
+- "stan za najam sarajevo" → category: "Nekretnine", subcategory: "Stanovi", location: "Sarajevo", listing_type: "najam"
+- "stan na dan mostar" → category: "Nekretnine", subcategory: "Stanovi", location: "Mostar", listing_type: "najam_kratkorocni"
 
 6. Izvuci kategorie-specifične atribute iz upita (ako su prepoznatljivi)
 
@@ -127,6 +135,7 @@ Ovo je KLJUČNO za pronalaženje proizvoda! Korisnici pretražuju različito od 
 
 PRAVILA za searchVariants:
 - Za vozila: dodaj varijante modela (320→3er, serija 3, serie 3, 3 series), tip karoserije na više jezika (Limousine→sedan, limuzina, berlina)
+- OBAVEZNO za karoseriju: uvijek dodaj SVE sinonime! Limuzina=Sedan=Limousine=Berlina, Karavan=Kombi=Touring=Estate=Avant, SUV=Crossover=Geländewagen, Hatchback=Kompaktwagen
 - Za marke: dodaj alternativne nazive (VW→Volkswagen, Merc→Mercedes, MB→Mercedes-Benz)
 - Za kategorije: dodaj sinonime (mobitel→telefon→smartphone→handy, stan→apartman→wohnung)
 - Za stanje: dodaj varijante (novo→new→neu, korišteno→used→gebraucht→polovno→rabljeno)
@@ -151,6 +160,7 @@ Vrati SAMO JSON:
     "priceMin": broj_ili_null,
     "priceMax": broj_ili_null,
     "condition": "Novo | Kao novo | Korišteno | null",
+    "listing_type": "prodaja | najam | najam_kratkorocni | null (SAMO za Nekretnine!)",
     "location": "naziv grada/regije ili null",
     "radius": broj_km_ili_null_SAMO_AKO_EKSPLICITNO_POMENUTO
   },

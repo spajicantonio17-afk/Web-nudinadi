@@ -6,13 +6,13 @@ const supabase = getSupabase()
 // ─── Business Profile ────────────────────────────────────
 
 export async function updateBusinessProfile(userId: string, data: {
-  company_name?: string;
-  company_logo?: string;
-  banner_image?: string;
-  business_address?: string;
-  business_hours?: Record<string, string>;
-  business_category?: string;
-  website_url?: string;
+  company_name?: string | null;
+  company_logo?: string | null;
+  banner_image?: string | null;
+  business_address?: string | null;
+  business_hours?: Record<string, string> | null;
+  business_category?: string | null;
+  website_url?: string | null;
 }): Promise<void> {
   const { error } = await supabase
     .from('profiles')
@@ -100,6 +100,40 @@ export async function findUserByEmail(emailOrUsername: string): Promise<Profile 
     .maybeSingle();
 
   return (byUsername as Profile) ?? null;
+}
+
+// ─── My Invitations (for invited users) ─────────────────
+
+export async function getMyInvitations(userId: string): Promise<Array<BusinessTeamMemberWithProfile & { business?: Profile }>> {
+  const { data, error } = await supabase
+    .from('business_team_members')
+    .select('*, business:profiles!business_user_id(*)')
+    .eq('member_user_id', userId)
+    .is('accepted_at', null)
+    .order('invited_at', { ascending: false })
+
+  if (error) throw error
+  return (data ?? []) as unknown as Array<BusinessTeamMemberWithProfile & { business?: Profile }>
+}
+
+export async function acceptInvitation(invitationId: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('business_team_members')
+    .update({ accepted_at: new Date().toISOString() })
+    .eq('id', invitationId)
+    .eq('member_user_id', userId)
+
+  if (error) throw error
+}
+
+export async function rejectInvitation(invitationId: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('business_team_members')
+    .delete()
+    .eq('id', invitationId)
+    .eq('member_user_id', userId)
+
+  if (error) throw error
 }
 
 // ─── Analytics ───────────────────────────────────────────

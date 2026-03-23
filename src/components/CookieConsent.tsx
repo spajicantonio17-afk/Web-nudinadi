@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useI18n } from '@/lib/i18n'
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false)
@@ -33,11 +34,13 @@ export default function CookieConsent() {
     setTimeout(() => setMounted(false), 300)
   }
 
+  const { t } = useI18n()
+
   if (!mounted) return null
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ease-out ${
+      className={`fixed bottom-[72px] sm:bottom-0 left-0 right-0 z-[95] transition-transform duration-300 ease-out ${
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
@@ -48,13 +51,12 @@ export default function CookieConsent() {
             <div className="flex items-start gap-2.5 flex-1 min-w-0">
               <i className="fa-solid fa-cookie-bite text-[14px] text-blue-500 mt-0.5 shrink-0" />
               <p className="text-[11px] text-[var(--c-text)] leading-relaxed">
-                Koristimo kolačiće za poboljšanje vašeg iskustva i analitiku.
-                Možete prihvatiti sve kolačiće ili koristiti samo neophodne.{' '}
+                {t('cookie.message')}{' '}
                 <Link
                   href="/kolacici"
                   className="text-blue-500 font-bold hover:underline"
                 >
-                  Saznaj više
+                  {t('cookie.learnMore')}
                 </Link>
               </p>
             </div>
@@ -65,13 +67,13 @@ export default function CookieConsent() {
                 onClick={handleAcceptAll}
                 className="px-4 py-2 text-[11px] font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-[4px] hover:opacity-90 transition-opacity cursor-pointer"
               >
-                Prihvati sve
+                {t('cookie.acceptAll')}
               </button>
               <button
                 onClick={handleEssentialOnly}
                 className="px-4 py-2 text-[11px] font-bold text-[var(--c-text3)] border border-[var(--c-border)] rounded-[4px] hover:bg-[var(--c-hover)] transition-colors cursor-pointer"
               >
-                Samo neophodni
+                {t('cookie.essentialOnly')}
               </button>
             </div>
           </div>

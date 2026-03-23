@@ -10,6 +10,8 @@ export type ProductStatus = 'active' | 'sold' | 'draft' | 'archived' | 'pending_
 
 export type ProductCondition = 'new' | 'like_new' | 'used'
 
+export type ListingType = 'prodaja' | 'najam' | 'najam_kratkorocni'
+
 export type ActivityType = 'upload' | 'sale' | 'review' | 'login' | 'verification'
 
 export type TransactionStatus = 'pending' | 'confirmed' | 'denied' | 'expired'
@@ -73,6 +75,7 @@ export interface Product {
   created_at: string
   updated_at: string
   attributes?: Record<string, string | number | boolean | string[]> | null
+  listing_type: ListingType
   tags: string[]
   promoted_until: string | null
 }
@@ -175,6 +178,7 @@ export interface ProductInsert {
   images?: string[]
   status?: ProductStatus
   location?: string | null
+  listing_type?: ListingType
   attributes?: Record<string, string | number | boolean | string[]> | null
   tags?: string[]
 }
@@ -263,6 +267,7 @@ export interface ProductUpdate {
   price?: number
   category_id?: string | null
   condition?: ProductCondition
+  listing_type?: ListingType
   images?: string[]
   status?: ProductStatus
   location?: string | null

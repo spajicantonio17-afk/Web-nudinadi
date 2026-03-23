@@ -38,15 +38,14 @@ const VEHICLE_FIELDS: CategoryField[] = [
   { key: 'tezina',         label: 'Masa/Težina (KG)',  type: 'number', formPage: 2, placeholder: 'npr. 1450', unit: 'kg' },
   { key: 'registriran',    label: 'Registriran?',      type: 'boolean', formPage: 2 },
   { key: 'registracija',   label: 'Registracija do',   type: 'text',   formPage: 2, placeholder: 'MM/GGGG', dependsOn: 'registriran' },
-  // Row 1: Servisna knjiga | Jel auto udareno bilo?
+  // Row 1: Servisna knjiga | Auto udareno
   { key: 'servisnaKnjiga', label: 'Servisna knjiga',           type: 'boolean', formPage: 2 },
-  { key: 'udareno',        label: 'Jel auto udareno bilo?',    type: 'boolean', formPage: 2 },
-  // Row 2: ABS | Jel auto u voznom stanju?
+  { key: 'udareno',        label: 'Auto udareno',              type: 'boolean', formPage: 2 },
+  // Row 2: ABS | Auto u voznom stanju
   { key: 'abs',            label: 'ABS',                       type: 'boolean', formPage: 2 },
-  { key: 'voznoStanje',    label: 'Jel auto u voznom stanju?', type: 'boolean', formPage: 2 },
-  // Row 3: ESP / ASR | Jel auto u kompletu?
+  { key: 'voznoStanje',    label: 'Auto u voznom stanju',      type: 'boolean', formPage: 2 },
+  // Row 3: ESP / ASR
   { key: 'esp',            label: 'ESP / ASR',                 type: 'boolean', formPage: 2 },
-  { key: 'uKompletu',      label: 'Jel auto u kompletu?',      type: 'boolean', formPage: 2 },
   // Page 3 — equipment (Comfort)
   { key: 'klima',              label: 'Klima',                  type: 'boolean', formPage: 3 },
   { key: 'autoKlima',          label: 'Automatska klima',       type: 'boolean', formPage: 3 },
@@ -706,6 +705,14 @@ export function getNekretnineFields(subType: string): CategoryField[] {
   const fields: CategoryField[] = [];
 
   // === Page 1: Hauptfelder ===
+
+  // listing_type — Prodaja/Najam/Kratkoročni najam (alle Nekretnine außer Turistički smještaj)
+  if (!s.includes('turist') && !s.includes('apartman')) {
+    fields.push({
+      key: 'listing_type', label: 'Tip oglasa', type: 'button-select',
+      formPage: 1, options: ['Prodaja', 'Najam', 'Kratkoročni najam'],
+    });
+  }
 
   // Kvadratura m² (alle Typen)
   fields.push({

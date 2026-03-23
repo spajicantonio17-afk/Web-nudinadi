@@ -17,6 +17,7 @@ import ProBadge from '@/components/ProBadge';
 import { getCurrencyMode, eurToKm } from '@/lib/currency';
 import { isBusiness } from '@/lib/plans';
 import JsonLd, { buildPersonSchema } from '@/components/JsonLd';
+import { useI18n } from '@/lib/i18n';
 
 function formatTimeLabel(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
@@ -50,6 +51,7 @@ function UserProfileContent() {
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { t } = useI18n();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [products, setProducts] = useState<ProductWithSeller[]>([]);
@@ -132,7 +134,7 @@ function UserProfileContent() {
         setFollowerCount(c => c + 1);
       }
     } catch {
-      showToast('Greška', 'error');
+      showToast(t('userProfile.error'), 'error');
     } finally {
       setFollowLoading(false);
     }
@@ -141,13 +143,13 @@ function UserProfileContent() {
   const handleContact = async () => {
     if (!user) { router.push('/login'); return; }
     if (!profile) return;
-    if (profile.id === user.id) { showToast('Ovo je vaš profil', 'info'); return; }
+    if (profile.id === user.id) { showToast(t('userProfile.ownProfileToast'), 'info'); return; }
     setContacting(true);
     try {
       const convo = await getOrCreateConversation(user.id, profile.id);
       router.push(`/messages?conversation=${convo.id}`);
     } catch {
-      showToast('Greška pri otvaranju poruke', 'error');
+      showToast(t('userProfile.messageError'), 'error');
     } finally {
       setContacting(false);
     }
@@ -176,14 +178,14 @@ function UserProfileContent() {
       if (blocked) {
         await unblockUser(user.id, profile.id);
         setBlocked(false);
-        showToast('Korisnik je odblokiran');
+        showToast(t('userProfile.userUnblocked'));
       } else {
         await blockUser(user.id, profile.id);
         setBlocked(true);
-        showToast('Korisnik je blokiran');
+        showToast(t('userProfile.userBlockedToast'));
       }
     } catch {
-      showToast('Greška', 'error');
+      showToast(t('userProfile.error'), 'error');
     } finally {
       setBlockLoading(false);
       setShowMoreMenu(false);
@@ -192,7 +194,7 @@ function UserProfileContent() {
 
   if (loading) {
     return (
-      <MainLayout title="Profil" showSigurnost={false}>
+      <MainLayout title={t('userProfile.title')} showSigurnost={false}>
         <div className="max-w-2xl mx-auto mt-4 pb-24 space-y-3 animate-pulse">
           <div className="h-32 bg-[var(--c-card)] rounded-[24px]" />
           <div className="h-10 bg-[var(--c-card)] rounded-[14px]" />
@@ -206,13 +208,13 @@ function UserProfileContent() {
 
   if (notFound || !profile) {
     return (
-      <MainLayout title="Profil" showSigurnost={false}>
+      <MainLayout title={t('userProfile.title')} showSigurnost={false}>
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <i className="fa-solid fa-user-slash text-4xl text-[var(--c-text3)] mb-4"></i>
-          <h2 className="text-lg font-black text-[var(--c-text)] mb-2">Korisnik nije pronađen</h2>
-          <p className="text-sm text-[var(--c-text3)] mb-6">Profil @{params.username} ne postoji.</p>
+          <h2 className="text-lg font-black text-[var(--c-text)] mb-2">{t('userProfile.notFoundTitle')}</h2>
+          <p className="text-sm text-[var(--c-text3)] mb-6">{t('userProfile.notFoundDesc', { username: params.username })}</p>
           <button onClick={() => router.push('/')} className="blue-gradient text-white px-6 py-3 rounded-[14px] font-bold text-xs uppercase tracking-widest">
-            Nazad na početnu
+            {t('userProfile.backToHome')}
           </button>
         </div>
       </MainLayout>
@@ -242,7 +244,7 @@ function UserProfileContent() {
         {/* Share Toast */}
         {shareToast && (
           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg animate-[fadeIn_0.2s_ease-out]">
-            <i className="fa-solid fa-check mr-1.5"></i> Link kopiran!
+            <i className="fa-solid fa-check mr-1.5"></i> {t('userProfile.linkCopied')}
           </div>
         )}
 
@@ -282,7 +284,7 @@ function UserProfileContent() {
               </div>
               {profile.business_verified && (
                 <div className="flex items-center gap-1.5 text-emerald-500 text-[10px] font-bold mt-2">
-                  <i className="fa-solid fa-circle-check"></i> Zvanična radnja
+                  <i className="fa-solid fa-circle-check"></i> {t('userProfile.verifiedBusiness')}
                 </div>
               )}
             </div>
@@ -299,9 +301,9 @@ function UserProfileContent() {
                 <div className="flex items-center gap-2 text-[10px] text-[var(--c-text2)]">
                   <i className="fa-solid fa-clock text-[var(--c-text-muted)] w-3 text-center"></i>
                   <span>
-                    Danas: {' '}
+                    {t('userProfile.todayHours')}{' '}
                     <span className={(profile.business_hours as Record<string, string>)[todayDayKey] === 'Zatvoreno' ? 'text-red-400 font-bold' : 'font-bold text-[var(--c-text)]'}>
-                      {(profile.business_hours as Record<string, string>)[todayDayKey] || 'Nepoznato'}
+                      {(profile.business_hours as Record<string, string>)[todayDayKey] || t('userProfile.unknown')}
                     </span>
                   </span>
                 </div>
@@ -361,10 +363,10 @@ function UserProfileContent() {
                 {/* Follower/Following Counts */}
                 <div className="flex items-center gap-3 mt-2">
                   <span className="text-[10px] text-[var(--c-text2)]">
-                    <span className="font-black text-[var(--c-text)]">{followerCount}</span> pratitelja
+                    <span className="font-black text-[var(--c-text)]">{followerCount}</span> {t('userProfile.followers')}
                   </span>
                   <span className="text-[10px] text-[var(--c-text2)]">
-                    <span className="font-black text-[var(--c-text)]">{followingCount}</span> prati
+                    <span className="font-black text-[var(--c-text)]">{followingCount}</span> {t('userProfile.followingCount')}
                   </span>
                 </div>
 
@@ -372,30 +374,30 @@ function UserProfileContent() {
                 <div className="flex flex-wrap gap-1.5 mt-2.5">
                   {profile.email_verified ? (
                     <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <i className="fa-solid fa-check-circle text-[9px]"></i> Verificiran
+                      <i className="fa-solid fa-check-circle text-[9px]"></i> {t('userProfile.verified')}
                     </span>
                   ) : (
                     <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> Nije verificiran
+                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> {t('userProfile.notVerified')}
                     </span>
                   )}
                   {avgRating >= 4.5 && reviews.length >= 5 && (
                     <span className="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <i className="fa-solid fa-star text-[8px]"></i> Top Prodavač
+                      <i className="fa-solid fa-star text-[8px]"></i> {t('userProfile.topSeller')}
                     </span>
                   )}
                   {userLevel >= 5 && (
                     <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <i className="fa-solid fa-shield text-[8px]"></i> Premium
+                      <i className="fa-solid fa-shield text-[8px]"></i> {t('userProfile.premium')}
                     </span>
                   )}
                   {profile.phone_verified ? (
                     <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <i className="fa-solid fa-phone text-[8px]"></i> Telefon verificiran
+                      <i className="fa-solid fa-phone text-[8px]"></i> {t('userProfile.phoneVerified')}
                     </span>
                   ) : profile.phone ? (
                     <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <i className="fa-solid fa-phone text-[8px]"></i> Telefon
+                      <i className="fa-solid fa-phone text-[8px]"></i> {t('userProfile.phoneLabel')}
                     </span>
                   ) : null}
                 </div>
@@ -434,7 +436,7 @@ function UserProfileContent() {
                       className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--c-hover)] border border-dashed border-[var(--c-border2)] text-[10px] font-bold text-[var(--c-text-muted)] hover:text-[var(--c-text3)] transition-all"
                     >
                       <i className="fa-solid fa-plus text-[8px]"></i>
-                      Poveži društvene mreže
+                      {t('userProfile.connectSocial')}
                     </button>
                   </div>
                 )}
@@ -442,7 +444,7 @@ function UserProfileContent() {
 
               {/* Level (number only, no XP bar) */}
               <div className="shrink-0 flex flex-col items-center pl-2">
-                <span className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Level</span>
+                <span className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">{t('userProfile.level')}</span>
                 <span className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-indigo-500 italic drop-shadow-[0_0_15px_rgba(59,130,246,0.2)] leading-none mt-0.5">{userLevel}</span>
               </div>
             </div>
@@ -455,18 +457,18 @@ function UserProfileContent() {
                   className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full hover:bg-blue-500/20 hover:border-blue-500/50 transition-all active:scale-95 shadow-lg"
                 >
                   <i className="fa-solid fa-pen text-[9px] md:text-[10px] text-blue-500"></i>
-                  <span className="text-[8px] md:text-[9px] font-bold text-blue-500 uppercase tracking-wide">Uredi profil</span>
+                  <span className="text-[8px] md:text-[9px] font-bold text-blue-500 uppercase tracking-wide">{t('userProfile.editProfile')}</span>
                 </button>
               ) : (
                 <>
                   <button
                     onClick={handleContact}
                     disabled={contacting || blocked}
-                    title={blocked ? 'Korisnik je blokiran' : undefined}
+                    title={blocked ? t('userProfile.userBlocked') : undefined}
                     className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-blue-500/20"
                   >
                     {contacting ? <i className="fa-solid fa-spinner animate-spin text-[9px]"></i> : <i className="fa-regular fa-comment text-[9px]"></i>}
-                    <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-wide">Pošalji Poruku</span>
+                    <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-wide">{t('userProfile.sendMessage')}</span>
                   </button>
                   <button
                     onClick={handleFollow}
@@ -489,7 +491,7 @@ function UserProfileContent() {
                       <i className="fa-solid fa-user-plus text-[9px]"></i>
                     )}
                     <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-wide">
-                      {following ? (followHover ? 'Otprati' : 'Pratiš') : 'Prati'}
+                      {following ? (followHover ? t('userProfile.unfollow') : t('userProfile.following')) : t('userProfile.follow')}
                     </span>
                   </button>
                 </>
@@ -499,7 +501,7 @@ function UserProfileContent() {
                 className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-[var(--c-bg)] border border-[var(--c-border2)] rounded-full hover:border-blue-500/40 hover:bg-blue-500/5 transition-all active:scale-95 group shadow-lg"
               >
                 <i className="fa-solid fa-share-nodes text-[9px] md:text-[10px] text-[var(--c-text2)] group-hover:text-blue-500 transition-colors"></i>
-                <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">Podijeli</span>
+                <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] uppercase tracking-wide">{t('userProfile.share')}</span>
               </button>
               {!isOwnProfile && (
                 <div className="relative" ref={moreMenuRef}>
@@ -517,14 +519,14 @@ function UserProfileContent() {
                         className={`w-full px-4 py-3 text-left text-[12px] font-bold flex items-center gap-2.5 transition-colors hover:bg-[var(--c-hover)] ${blocked ? 'text-emerald-500' : 'text-red-400'}`}
                       >
                         <i className="fa-solid fa-ban text-xs"></i>
-                        {blocked ? 'Odblokiraj korisnika' : 'Blokiraj korisnika'}
+                        {blocked ? t('userProfile.unblockUser') : t('userProfile.blockUser')}
                       </button>
                       <button
                         onClick={() => setShowMoreMenu(false)}
                         className="w-full px-4 py-3 text-left text-[12px] font-bold text-orange-400 hover:bg-[var(--c-hover)] flex items-center gap-2.5 transition-colors border-t border-[var(--c-border)]"
                       >
                         <i className="fa-solid fa-flag text-xs"></i>
-                        Prijavi korisnika
+                        {t('userProfile.reportUser')}
                       </button>
                     </div>
                   )}
@@ -544,10 +546,10 @@ function UserProfileContent() {
         {/* ── STATS GRID ── */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: 'Oglasi', value: products.length, icon: 'fa-tags', iconColor: 'text-blue-400' },
-            { label: 'Prodano', value: profile.total_sales, icon: 'fa-bag-shopping', iconColor: 'text-emerald-400' },
-            { label: 'Ocjena', value: avgRating > 0 ? avgRating.toFixed(1) : '\u2014', icon: 'fa-star', iconColor: 'text-yellow-400' },
-            { label: 'Dojmovi', value: reviews.length, icon: 'fa-comments', iconColor: 'text-purple-400' },
+            { label: t('userProfile.listings'), value: products.length, icon: 'fa-tags', iconColor: 'text-blue-400' },
+            { label: t('userProfile.sold'), value: profile.total_sales, icon: 'fa-bag-shopping', iconColor: 'text-emerald-400' },
+            { label: t('userProfile.rating'), value: avgRating > 0 ? avgRating.toFixed(1) : '\u2014', icon: 'fa-star', iconColor: 'text-yellow-400' },
+            { label: t('userProfile.reviews'), value: reviews.length, icon: 'fa-comments', iconColor: 'text-purple-400' },
           ].map(stat => (
             <div key={stat.label} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-3 flex flex-col items-center gap-1 text-center">
               <i className={`fa-solid ${stat.icon} ${stat.iconColor} text-xs`}></i>
@@ -560,9 +562,9 @@ function UserProfileContent() {
         {/* ── TABS ── */}
         <div className="flex p-0.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px]">
           {([
-            { key: 'oglasi' as const, label: 'Oglasi', count: products.length },
-            { key: 'dojmovi' as const, label: 'Dojmovi', count: reviews.length },
-            { key: 'info' as const, label: 'Info', count: undefined },
+            { key: 'oglasi' as const, label: t('userProfile.listings'), count: products.length },
+            { key: 'dojmovi' as const, label: t('userProfile.reviews'), count: reviews.length },
+            { key: 'info' as const, label: t('userProfile.info'), count: undefined },
           ]).map(tab => (
             <button
               key={tab.key}
@@ -597,8 +599,8 @@ function UserProfileContent() {
                   <div className="w-12 h-12 rounded-[16px] bg-[var(--c-overlay)] border border-[var(--c-border)] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500">
                     <i className="fa-solid fa-ghost text-xl text-[var(--c-text-muted)] group-hover:text-[var(--c-text)] transition-colors"></i>
                   </div>
-                  <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">Nema Aktivnih Oglasa</h3>
-                  <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed">Ovaj korisnik trenutno nema aktivnih oglasa.</p>
+                  <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">{t('userProfile.noActiveListings')}</h3>
+                  <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed">{t('userProfile.noActiveListingsDesc')}</p>
                 </div>
               </div>
             ) : (
@@ -645,7 +647,7 @@ function UserProfileContent() {
                 <div className="flex flex-col items-center justify-center min-w-[80px]">
                   <span className="text-4xl font-black text-[var(--c-text)] leading-none">{avgRating}</span>
                   <div className="my-2"><StarRating rating={avgRating} /></div>
-                  <span className="text-[9px] text-[var(--c-text3)] uppercase tracking-widest">{reviews.length} Dojmova</span>
+                  <span className="text-[9px] text-[var(--c-text3)] uppercase tracking-widest">{t('userProfile.reviewsCount', { count: reviews.length })}</span>
                 </div>
                 <div className="flex-1 space-y-2 border-l border-[var(--c-border)] pl-5">
                   {[5, 4, 3, 2, 1].map(star => {
@@ -670,7 +672,7 @@ function UserProfileContent() {
             {reviews.length === 0 ? (
               <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-10 text-center">
                 <i className="fa-solid fa-comments text-2xl text-[var(--c-text3)] mb-3"></i>
-                <p className="text-sm font-bold text-[var(--c-text)]">Još nema dojmova</p>
+                <p className="text-sm font-bold text-[var(--c-text)]">{t('userProfile.noReviews')}</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -683,7 +685,7 @@ function UserProfileContent() {
                           <img src={review.reviewer?.avatar_url || `https://picsum.photos/seed/${review.reviewer_id}/100/100`} alt="" className="w-full h-full object-cover" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-[var(--c-text)]">{review.reviewer?.username || 'Korisnik'}</p>
+                          <p className="text-xs font-bold text-[var(--c-text)]">{review.reviewer?.username || t('common.user')}</p>
                           <div className="flex text-yellow-500 text-[8px] gap-0.5 mt-0.5">
                             {[...Array(5)].map((_, i) => (
                               <i key={i} className={`fa-solid fa-star ${i < review.rating ? '' : 'text-[var(--c-text-muted)]'}`} />
@@ -712,7 +714,7 @@ function UserProfileContent() {
                   <i className="fa-regular fa-calendar text-blue-500"></i>
                 </div>
                 <div>
-                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Član od</h5>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('userProfile.memberSince')}</h5>
                   <p className="text-xs font-bold text-[var(--c-text)]">{formatMemberSince(profile.created_at)}</p>
                 </div>
               </div>
@@ -721,8 +723,8 @@ function UserProfileContent() {
                   <i className="fa-solid fa-location-dot text-blue-500"></i>
                 </div>
                 <div>
-                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Lokacija</h5>
-                  <p className="text-xs font-bold text-[var(--c-text)]">{profile.location || 'Nepoznato'}</p>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('userProfile.location')}</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{profile.location || t('userProfile.unknown')}</p>
                 </div>
               </div>
               <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-emerald-500/30 transition-colors">
@@ -730,8 +732,8 @@ function UserProfileContent() {
                   <i className="fa-solid fa-bag-shopping text-emerald-500"></i>
                 </div>
                 <div>
-                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Prodaja</h5>
-                  <p className="text-xs font-bold text-[var(--c-text)]">{profile.total_sales || 0} prodano</p>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('userProfile.sales')}</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{t('userProfile.soldCount', { count: profile.total_sales || 0 })}</p>
                 </div>
               </div>
               <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-blue-500/30 transition-colors">
@@ -739,8 +741,8 @@ function UserProfileContent() {
                   <i className="fa-solid fa-tags text-blue-500"></i>
                 </div>
                 <div>
-                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Aktivni oglasi</h5>
-                  <p className="text-xs font-bold text-[var(--c-text)]">{products.length} aktivnih</p>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('userProfile.activeListings')}</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{t('userProfile.activeCount', { count: products.length })}</p>
                 </div>
               </div>
               <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-yellow-500/30 transition-colors">
@@ -748,8 +750,8 @@ function UserProfileContent() {
                   <i className="fa-solid fa-star text-yellow-500"></i>
                 </div>
                 <div>
-                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Ocjena</h5>
-                  <p className="text-xs font-bold text-[var(--c-text)]">{avgRating > 0 ? `${avgRating} / 5` : 'Nema ocjena'}</p>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('userProfile.rating')}</h5>
+                  <p className="text-xs font-bold text-[var(--c-text)]">{avgRating > 0 ? t('userProfile.ratingValue', { value: avgRating }) : t('userProfile.noRatings')}</p>
                 </div>
               </div>
               <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 flex flex-col items-start gap-2 hover:border-emerald-500/30 transition-colors">
@@ -757,16 +759,16 @@ function UserProfileContent() {
                   <i className="fa-solid fa-shield-halved text-emerald-500"></i>
                 </div>
                 <div>
-                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Verifikacija</h5>
+                  <h5 className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('userProfile.verification')}</h5>
                   <p className={`text-xs font-bold ${profile.email_verified ? 'text-emerald-400' : 'text-orange-400'}`}>
-                    {profile.email_verified ? 'Email potvrđen' : 'Nije verificiran'}
+                    {profile.email_verified ? t('userProfile.emailConfirmed') : t('userProfile.notVerified')}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Social Links — always show both, with fallback text */}
-            <h4 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest px-1">Social</h4>
+            <h4 className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest px-1">{t('userProfile.social')}</h4>
             <div className="space-y-2">
               {profile.instagram_url ? (
                 <a
@@ -785,7 +787,7 @@ function UserProfileContent() {
                 <div className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 opacity-50">
                   <div className="flex items-center gap-3">
                     <i className="fa-brands fa-instagram text-[var(--c-text-muted)]"></i>
-                    <span className="text-[10px] font-bold text-[var(--c-text3)]">Korisnik nije dodao Instagram</span>
+                    <span className="text-[10px] font-bold text-[var(--c-text3)]">{t('userProfile.noInstagram')}</span>
                   </div>
                 </div>
               )}
@@ -806,7 +808,7 @@ function UserProfileContent() {
                 <div className="flex items-center justify-between bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 opacity-50">
                   <div className="flex items-center gap-3">
                     <i className="fa-brands fa-facebook text-[var(--c-text-muted)]"></i>
-                    <span className="text-[10px] font-bold text-[var(--c-text3)]">Korisnik nije dodao Facebook</span>
+                    <span className="text-[10px] font-bold text-[var(--c-text3)]">{t('userProfile.noFacebook')}</span>
                   </div>
                 </div>
               )}
@@ -818,7 +820,7 @@ function UserProfileContent() {
         <div className="text-center py-4">
           <p className="text-[10px] text-[var(--c-text-muted)]">
             <i className="fa-regular fa-calendar mr-1.5"></i>
-            Član od {formatMemberSince(profile.created_at)}
+            {t('userProfile.memberSince')} {formatMemberSince(profile.created_at)}
           </p>
         </div>
       </div>

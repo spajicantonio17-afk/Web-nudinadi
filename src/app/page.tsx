@@ -12,7 +12,7 @@ import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/components/icons/CategoryIcon
 import { parseAiQuery, type SearchCurrency } from '@/lib/utils';
 import { getProducts, type ProductFilters } from '@/services/productService';
 import { getAllCategories } from '@/services/categoryService';
-import type { ProductFull } from '@/lib/database.types';
+import type { ProductFull, ListingType } from '@/lib/database.types';
 import type { Product } from '@/lib/types';
 import { getSelectedLocation, detectGPSLocation, findNearestCity, setSelectedLocation as saveLocation, distanceToCity, searchCities, type City } from '@/lib/location';
 import { useFavorites } from '@/lib/favorites';
@@ -25,6 +25,7 @@ import RecentlyViewed from '@/components/RecentlyViewed';
 import { getCountryPreference } from '@/lib/country';
 import CategoryFilterBar, { type AttributeFilters } from '@/components/CategoryFilterBar';
 import { logger } from '@/lib/logger';
+import { useI18n } from '@/lib/i18n';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
 
@@ -80,7 +81,7 @@ function matchesTimeFilter(timeLabel: string, filter: string): boolean {
 }
 
 function HomeContent() {
-
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'Sve';
 
@@ -101,7 +102,8 @@ function HomeContent() {
   const [aiCategory, setAiCategory] = useState<string | null>(null);
   const [isAiSearching, setIsAiSearching] = useState(false);
   const [aiSearchSuggestions, setAiSearchSuggestions] = useState<string[]>([]);
-  const [aiCorrectedQuery, setAiCorrectedQuery] = useState<string | null>(null);
+  const [aiCorrectedQuery, setAiCorrectedQuery] = useState<string | null>(null); // typo suggestion (clickable, not auto-applied)
+  const [aiCleanQuery, setAiCleanQuery] = useState<string | null>(null); // internal DB search text
   const [aiCondition, setAiCondition] = useState<string | null>(null); // Bosnian label: "Korišteno" etc.
   const [aiCurrency, setAiCurrency] = useState<SearchCurrency>('EUR');
   const [aiSearchVariants, setAiSearchVariants] = useState<string[]>([]);
@@ -111,6 +113,7 @@ function HomeContent() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [isDetectingGPS, setIsDetectingGPS] = useState(false);
   const [attributeFilters, setAttributeFilters] = useState<AttributeFilters>({});
+  const [listingType, setListingType] = useState<ListingType | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [selectedSubItem, setSelectedSubItem] = useState<string | null>(null);
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
@@ -192,9 +195,12 @@ function HomeContent() {
         } else {
           const parent = allCats.find(c => c.name === activeCategory);
           if (parent) {
+            // Include ALL descendants (Level 2 + Level 3), not just direct children
             const subs = allCats.filter(c => c.parent_category_id === parent.id);
-            if (subs.length > 0) {
-              serverFilters.category_ids = [parent.id, ...subs.map(s => s.id)];
+            const grandchildren = subs.flatMap(s => allCats.filter(c => c.parent_category_id === s.id));
+            const allDescendants = [...subs, ...grandchildren];
+            if (allDescendants.length > 0) {
+              serverFilters.category_ids = [parent.id, ...allDescendants.map(d => d.id)];
             } else {
               serverFilters.category_id = parent.id;
             }
@@ -218,12 +224,14 @@ function HomeContent() {
                 serverFilters.category_id = match.id;
               }
             } else if (activeCategory !== targetName) {
-              // Try parent category
+              // Try parent category — include all descendants
               const parent = fallbackCats.find((c: { name: string }) => c.name === activeCategory);
               if (parent) {
                 const subs = fallbackCats.filter((c: { parent_category_id: string | null }) => c.parent_category_id === parent.id);
-                if (subs.length > 0) {
-                  serverFilters.category_ids = [parent.id, ...subs.map((s: { id: string }) => s.id)];
+                const grandchildren = subs.flatMap((s: { id: string }) => fallbackCats.filter((c: { parent_category_id: string | null }) => c.parent_category_id === s.id));
+                const allDesc = [...subs, ...grandchildren];
+                if (allDesc.length > 0) {
+                  serverFilters.category_ids = [parent.id, ...allDesc.map((d: { id: string }) => d.id)];
                 } else {
                   serverFilters.category_id = parent.id;
                 }
@@ -255,10 +263,10 @@ function HomeContent() {
       serverFilters.condition = filters.condition;
     }
 
-    // Search
+    // Search — use AI cleanQuery for DB (filters already extracted), fallback to local parse
     if (searchQuery.trim()) {
       const parsed = parseAiQuery(searchQuery);
-      serverFilters.search = parsed.cleanQuery || searchQuery.trim();
+      serverFilters.search = aiCleanQuery || parsed.cleanQuery || searchQuery.trim();
       // Pass AI-generated synonyms/variants for broader matching
       if (aiSearchVariants.length > 0) {
         serverFilters.searchKeywords = aiSearchVariants;
@@ -273,6 +281,9 @@ function HomeContent() {
     const countryPref = getCountryPreference();
     if (countryPref !== 'all') serverFilters.country = countryPref;
 
+    // listing_type filter (Nekretnine: prodaja/najam/najam_kratkorocni)
+    if (listingType) serverFilters.listing_type = listingType;
+
     // Category-specific attribute filters
     if (Object.keys(attributeFilters).length > 0) {
       serverFilters.attributes = attributeFilters;
@@ -285,7 +296,7 @@ function HomeContent() {
     else { serverFilters.sortBy = 'created_at'; serverFilters.sortOrder = 'desc'; }
 
     return serverFilters;
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants, aiCleanQuery, listingType]);
 
   // Load products from Supabase (re-fetches when filters change)
   const filterVersion = useRef(0);
@@ -376,6 +387,7 @@ function HomeContent() {
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
     setAttributeFilters({}); // Reset attribute filters on category change
+    setListingType(null);    // Reset listing_type filter on category change
     setSelectedSubCategory(null);
     setSelectedSubItem(null);
     const url = cat === 'Sve' ? '/' : `/?category=${encodeURIComponent(cat)}`;
@@ -392,9 +404,9 @@ function HomeContent() {
       const nearest = findNearestCity(coords.lat, coords.lng);
       saveLocation(nearest);
       setSelectedLocation(nearest);
-      showToast(`Lokacija: ${nearest.name}, ${nearest.country}`);
+      showToast(`${t('home.hintLocation')}: ${nearest.name}, ${nearest.country}`);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'GPS greška', 'error');
+      showToast(err instanceof Error ? err.message : t('home.gpsError'), 'error');
     } finally {
       setIsDetectingGPS(false);
     }
@@ -403,7 +415,8 @@ function HomeContent() {
   // AI search handler — parses natural language query
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setAiCorrectedQuery(null); // clear correction banner on manual edit
+    setAiCorrectedQuery(null); // clear typo suggestion on manual edit
+    setAiCleanQuery(null); // reset internal search text
     if (!value.trim()) {
       setAiPriceMin(undefined);
       setAiPriceMax(undefined);
@@ -467,11 +480,15 @@ function HomeContent() {
         // Save locally-parsed prices as fallback (in case Gemini doesn't return them)
         const localParsed = parseAiQuery(originalQuery);
 
-        // Corrected query — show "Prikazujemo rezultate za" banner if AI fixed a typo
+        // Save cleanQuery for internal DB search (don't replace UI search field)
         if (d.cleanQuery) {
-          setSearchQuery(d.cleanQuery);
-          if (d.cleanQuery.toLowerCase() !== originalQuery.toLowerCase()) {
-            setAiCorrectedQuery(originalQuery);
+          setAiCleanQuery(d.cleanQuery);
+          // Detect typo: if cleanQuery has similar length but different spelling → show suggestion
+          const clean = d.cleanQuery.toLowerCase().trim();
+          const orig = originalQuery.toLowerCase().trim();
+          if (clean !== orig && clean.split(/\s+/).length >= orig.split(/\s+/).length) {
+            // Likely a typo correction (not just filter words removed)
+            setAiCorrectedQuery(d.cleanQuery);
           }
         }
 
@@ -518,6 +535,13 @@ function HomeContent() {
           setFilters(prev => ({ ...prev, condition: AI_CONDITION_MAP[d.filters.condition] }));
           setAiCondition(d.filters.condition);
         }
+        // Apply AI listing_type filter (Nekretnine: prodaja/najam)
+        if (d.filters?.listing_type) {
+          const lt = d.filters.listing_type as ListingType;
+          if (['prodaja', 'najam', 'najam_kratkorocni'].includes(lt)) {
+            setListingType(lt);
+          }
+        }
         // Apply AI location filter
         if (d.filters?.location) {
           const cityResults = searchCities(d.filters.location);
@@ -531,12 +555,26 @@ function HomeContent() {
           setFilters(prev => ({ ...prev, radiusKm: d.filters.radius }));
         }
         // Apply AI-extracted category-specific attributes
+        // Only 'marka' is reliable enough for strict DB filtering.
+        // Other attributes (model, karoserija, gorivo, etc.) are too often
+        // mismatched between what AI returns and what's stored in product JSONB,
+        // so we funnel them into searchVariants for flexible text matching instead.
+        const extraVariants: string[] = [];
         if (d.attributes && typeof d.attributes === 'object' && Object.keys(d.attributes).length > 0) {
-          setAttributeFilters(d.attributes);
+          const safeAttrs: Record<string, string | number | boolean | string[]> = {};
+          for (const [key, val] of Object.entries(d.attributes)) {
+            if (key === 'marka' && typeof val === 'string') {
+              safeAttrs[key] = val;
+            } else if (typeof val === 'string' && val.trim()) {
+              extraVariants.push(val);
+            }
+          }
+          setAttributeFilters(safeAttrs);
         }
         if (d.suggestions?.length) setAiSearchSuggestions(d.suggestions);
-        // Capture search variants (synonyms/model variants from AI)
-        if (d.searchVariants?.length) setAiSearchVariants(d.searchVariants);
+        // Capture search variants (synonyms/model variants from AI) + attribute overflow
+        const aiVariants = d.searchVariants?.length ? [...d.searchVariants, ...extraVariants] : extraVariants;
+        if (aiVariants.length > 0) setAiSearchVariants(aiVariants);
         else setAiSearchVariants([]);
       }
     } catch (err) { logger.error('[AI Search] FAILED:', err); }
@@ -563,7 +601,7 @@ function HomeContent() {
       if (typeof val === 'string') return val !== '' && val !== 'all' && val !== 'newest';
       return false;
     }).length;
-    if (count > 0) showToast(`${count} filter${count > 1 ? 'a' : ''} primijenjeno`);
+    if (count > 0) showToast(count > 1 ? t('home.filtersApplied', { count }) : t('home.filterApplied', { count }));
   };
 
   const activeFilterCount = useMemo(() => {
@@ -626,8 +664,8 @@ function HomeContent() {
                     <i className="fa-solid fa-wand-magic-sparkles text-white text-xs md:text-sm"></i>
                   </div>
                   <div>
-                    <p className="text-[12px] md:text-[13px] font-black text-[var(--c-text)] tracking-tight leading-none">AI PRETRAGA</p>
-                    <p className="text-[7px] md:text-[8px] font-bold text-purple-400 uppercase tracking-[0.2em] mt-0.5">NudiNađi Smart Engine</p>
+                    <p className="text-[12px] md:text-[13px] font-black text-[var(--c-text)] tracking-tight leading-none">{t('home.aiSearchLabel')}</p>
+                    <p className="text-[7px] md:text-[8px] font-bold text-purple-400 uppercase tracking-[0.2em] mt-0.5">NudiNađi {t('home.aiSubtitle')}</p>
                   </div>
                 </div>
                 <button onClick={() => setShowAiInfo(false)} aria-label="Zatvori" className="w-8 h-8 rounded-[4px] bg-[var(--c-hover)] hover:bg-[var(--c-active)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-all">
@@ -642,24 +680,24 @@ function HomeContent() {
                 <div className="flex flex-col md:flex-row gap-4 md:gap-6 shrink-0">
                   <div className="flex-1">
                     <h2 id="ai-modal-title" className="text-2xl md:text-5xl font-black text-[var(--c-text)] uppercase leading-none tracking-tighter mb-2 md:mb-3">
-                      PRETRAGA<br />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-600">BEZ LIMITA.</span>
+                      {t('home.aiSearchLabel')}<br />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-600">{t('home.searchNoLimits')}</span>
                     </h2>
                     <div className="w-10 h-[3px] bg-purple-500 mb-3"></div>
                     <p className="text-[12px] text-[var(--c-text2)] leading-relaxed max-w-[380px]">
-                      Napiši prirodno šta tražiš — AI automatski razumije kategoriju, cijenu, lokaciju i stanje. Nema filtera, nema klikanja.
+                      {t('home.aiSearchDesc')}
                     </p>
                   </div>
                   <div className="hidden md:flex gap-3 shrink-0">
                     <div className="w-36 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-4">
                       <i className="fa-solid fa-brain text-[var(--c-text3)] text-xl mb-3 block"></i>
                       <p className="text-3xl font-black text-[var(--c-text)] leading-none mb-1">NLP</p>
-                      <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Prirodni Jezik</p>
+                      <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('home.naturalLanguage')}</p>
                     </div>
                     <div className="w-36 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-4">
                       <i className="fa-solid fa-spell-check text-[var(--c-text3)] text-xl mb-3 block"></i>
                       <p className="text-3xl font-black text-[var(--c-text)] leading-none mb-1">Auto</p>
-                      <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest">Ispravka Grešaka</p>
+                      <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-widest">{t('home.autoCorrect')}</p>
                     </div>
                   </div>
                 </div>
@@ -667,7 +705,7 @@ function HomeContent() {
                 {/* SECTION LABEL */}
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="w-8 h-[2px] bg-purple-500"></div>
-                  <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Šta AI pretraga razumije?</p>
+                  <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">{t('home.whatAiUnderstands')}</p>
                 </div>
 
                 {/* FEATURE CARDS */}
@@ -677,9 +715,9 @@ function HomeContent() {
                     <div className="w-10 h-10 rounded-[4px] bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mb-4 shrink-0">
                       <i className="fa-solid fa-tags text-blue-400 text-sm"></i>
                     </div>
-                    <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">Automatska<br />Kategorija</h3>
+                    <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">{t('home.autoCategory')}</h3>
                     <p className="text-[10px] text-[var(--c-text3)] leading-relaxed">
-                      Napiši <span className="text-[var(--c-text)] font-bold">&ldquo;laptop&rdquo;</span> ili <span className="text-[var(--c-text)] font-bold">&ldquo;mercedes&rdquo;</span> — AI automatski prebaci na pravu kategoriju bez ručnog biranja.
+                      {t('home.autoCategoryDesc')}
                     </p>
                   </div>
 
@@ -688,9 +726,9 @@ function HomeContent() {
                     <div className="w-10 h-10 rounded-[4px] bg-green-500/20 border border-green-500/30 flex items-center justify-center mb-4 shrink-0">
                       <i className="fa-solid fa-euro-sign text-green-400 text-sm"></i>
                     </div>
-                    <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">Prirodni<br />Raspon Cijena</h3>
+                    <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">{t('home.priceRange')}</h3>
                     <p className="text-[10px] text-[var(--c-text3)] leading-relaxed">
-                      Piši <span className="text-[var(--c-text)] font-bold">&ldquo;10.000 do 20.000&rdquo;</span>, <span className="text-[var(--c-text)] font-bold">&ldquo;ispod 5000&rdquo;</span> ili kratko <span className="text-[var(--c-text)] font-bold">&ldquo;10k do 20k&rdquo;</span> — sve radi automatski.
+                      {t('home.priceRangeDesc')}
                     </p>
                   </div>
 
@@ -699,9 +737,9 @@ function HomeContent() {
                     <div className="w-10 h-10 rounded-[4px] bg-orange-500/20 border border-orange-500/30 flex items-center justify-center mb-4 shrink-0">
                       <i className="fa-solid fa-spell-check text-orange-400 text-sm"></i>
                     </div>
-                    <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">Greške &amp;<br />Dijakritika</h3>
+                    <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">{t('home.typosAndDiacritics')}</h3>
                     <p className="text-[10px] text-[var(--c-text3)] leading-relaxed">
-                      Ne moraš pisati savršeno. <span className="text-[var(--c-text)] font-bold">&ldquo;iphone&rdquo;</span>, <span className="text-[var(--c-text)] font-bold">&ldquo;bmv 3&rdquo;</span>, <span className="text-[var(--c-text)] font-bold">&ldquo;racunar&rdquo;</span> — AI to ispravlja i nalazi tačne rezultate.
+                      {t('home.typosDesc')}
                     </p>
                   </div>
 
@@ -710,9 +748,9 @@ function HomeContent() {
                     <div className="w-10 h-10 rounded-[4px] bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mb-4 shrink-0">
                       <i className="fa-solid fa-layer-group text-purple-400 text-sm"></i>
                     </div>
-                    <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">Kombinovana<br />Pretraga</h3>
+                    <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">{t('home.combinedSearch')}</h3>
                     <p className="text-[10px] text-[var(--c-text3)] leading-relaxed">
-                      Sve odjednom: <span className="text-[var(--c-text)] font-bold">&ldquo;BMW 320 Karavan 2020 do 18.000&rdquo;</span> → model + vrsta + godina + max cijena u jednom koraku.
+                      {t('home.combinedSearchDesc')}
                     </p>
                   </div>
                 </div>
@@ -721,7 +759,7 @@ function HomeContent() {
                 <div className="shrink-0">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-8 h-[2px] bg-purple-500"></div>
-                    <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Probaj odmah — klikni primjer</p>
+                    <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">{t('home.tryNow')}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[
@@ -729,7 +767,7 @@ function HomeContent() {
                       'od 10.000 do 25.000',
                       'iPhone 15 Pro ispod 1200',
                       'Stan Sarajevo 3 sobe',
-                      'Laptop ispod 800',
+                      'Laptop do 800',
                       'Sofa kao nova',
                     ].map((ex) => (
                       <button
@@ -746,7 +784,7 @@ function HomeContent() {
                 {/* BOTTOM QUOTE */}
                 <div className="shrink-0 text-center pt-4 border-t border-[var(--c-border)]">
                   <p className="text-lg font-black text-[var(--c-text)] uppercase tracking-tight mb-1">
-                    &ldquo;Piši prirodno. AI razumije.&rdquo;
+                    &ldquo;{t('home.writeNaturally')}&rdquo;
                   </p>
                   <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-[0.3em]">Powered by NudiNađi AI Core</p>
                 </div>
@@ -768,8 +806,8 @@ function HomeContent() {
                     <i className="fa-solid fa-shield-halved text-white text-xs md:text-sm"></i>
                   </div>
                   <div>
-                    <p className="text-[12px] md:text-[13px] font-black text-[var(--c-text)] tracking-tight leading-none">AI ZAŠTITA</p>
-                    <p className="text-[10px] md:text-[11px] font-semibold text-blue-400 uppercase tracking-wider mt-0.5">Sigurnost na prvom mjestu</p>
+                    <p className="text-[12px] md:text-[13px] font-black text-[var(--c-text)] tracking-tight leading-none">{t('home.securityTitle')}</p>
+                    <p className="text-[10px] md:text-[11px] font-semibold text-blue-400 uppercase tracking-wider mt-0.5">{t('home.safetyFirst')}</p>
                   </div>
                 </div>
                 <button onClick={() => setShowLocalSecurity(false)} aria-label="Zatvori" className="w-8 h-8 rounded-[4px] bg-[var(--c-hover)] hover:bg-[var(--c-active)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-all">
@@ -784,12 +822,12 @@ function HomeContent() {
                 <div className="flex flex-col md:flex-row gap-4 md:gap-6 shrink-0">
                   <div className="flex-1">
                     <h2 id="security-modal-title" className="text-2xl md:text-5xl font-black text-[var(--c-text)] uppercase leading-none tracking-tighter mb-2 md:mb-3">
-                      SIGURNO<br />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-500">KUPUJ &amp; PRODAJ.</span>
+                      {t('home.safeTitle')}<br />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-500">{t('home.safeBuySell')}</span>
                     </h2>
                     <div className="w-10 h-[3px] bg-emerald-500 mb-3"></div>
                     <p className="text-[12px] text-[var(--c-text2)] leading-relaxed max-w-[380px]">
-                      Naš AI sistem štiti svaku transakciju. Prepoznajemo prevare, lažne oglase i sumnjive korisnike — prije nego što ti moraš.
+                      {t('home.securityDesc')}
                     </p>
                   </div>
                   <div className="hidden md:flex gap-3 shrink-0">
@@ -809,7 +847,7 @@ function HomeContent() {
                 {/* SECTION LABEL */}
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="w-8 h-[2px] bg-emerald-500"></div>
-                  <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">Kako te štitimo?</p>
+                  <p className="text-[11px] font-bold text-[var(--c-text3)] uppercase tracking-wider">{t('home.howWeProtect')}</p>
                 </div>
 
                 {/* FEATURE CARDS — responsive grid */}
@@ -819,9 +857,9 @@ function HomeContent() {
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-[4px] bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mb-3 md:mb-4 shrink-0">
                       <i className="fa-solid fa-user-shield text-blue-400 text-xs md:text-sm"></i>
                     </div>
-                    <h3 className="text-[10px] md:text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1.5 md:mb-2">Anti-Scam Detekcija</h3>
+                    <h3 className="text-[10px] md:text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1.5 md:mb-2">{t('home.antiScamTitle')}</h3>
                     <p className="text-[9px] md:text-[10px] text-[var(--c-text3)] leading-relaxed">
-                      AI skenira svaki oglas i poruku u realnom vremenu. <span className="text-[var(--c-text)] font-bold">Sumnjive aktivnosti</span> se automatski označavaju i blokiraju.
+                      {t('home.antiScamFull')}
                     </p>
                   </div>
 
@@ -830,9 +868,9 @@ function HomeContent() {
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-[4px] bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-3 md:mb-4 shrink-0">
                       <i className="fa-solid fa-fingerprint text-emerald-400 text-xs md:text-sm"></i>
                     </div>
-                    <h3 className="text-[10px] md:text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1.5 md:mb-2">Verifikacija Identiteta</h3>
+                    <h3 className="text-[10px] md:text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1.5 md:mb-2">{t('home.identityVerification')}</h3>
                     <p className="text-[9px] md:text-[10px] text-[var(--c-text3)] leading-relaxed">
-                      Sistem verificira korisnike kroz više nivoa provjere. <span className="text-[var(--c-text)] font-bold">Trust Score</span> ocjenjuje pouzdanost svakog prodavca.
+                      {t('home.identityVerificationDesc')}
                     </p>
                   </div>
 
@@ -841,9 +879,9 @@ function HomeContent() {
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-[4px] bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mb-3 md:mb-4 shrink-0">
                       <i className="fa-solid fa-comment-slash text-purple-400 text-xs md:text-sm"></i>
                     </div>
-                    <h3 className="text-[10px] md:text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1.5 md:mb-2">Smart Chat Filter</h3>
+                    <h3 className="text-[10px] md:text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-1.5 md:mb-2">{t('home.smartChatFilter')}</h3>
                     <p className="text-[9px] md:text-[10px] text-[var(--c-text3)] leading-relaxed">
-                      AI analizira poruke i detektuje <span className="text-[var(--c-text)] font-bold">phishing linkove</span>, lažne ponude i pokušaje preusmjeravanja van platforme.
+                      {t('home.smartChatFilterDesc')}
                     </p>
                   </div>
                 </div>
@@ -851,7 +889,7 @@ function HomeContent() {
                 {/* BOTTOM QUOTE */}
                 <div className="shrink-0 text-center pt-3 md:pt-4 border-t border-[var(--c-border)]">
                   <p className="text-sm md:text-lg font-black text-[var(--c-text)] uppercase tracking-tight mb-1">
-                    &ldquo;Tvoja sigurnost je naš prioritet.&rdquo;
+                    &ldquo;{t('home.securityQuote')}&rdquo;
                   </p>
                   <p className="text-[10px] md:text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider">Powered by NudiNađi AI Security</p>
                 </div>
@@ -872,7 +910,7 @@ function HomeContent() {
               className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--c-text3)] hover:text-[var(--c-accent)] transition-all duration-150"
             >
               <i className="fa-solid fa-shield-halved text-[11px]" aria-hidden="true"></i>
-              <span className="hidden sm:inline">Sigurnost</span>
+              <span className="hidden sm:inline">{t('home.security')}</span>
             </button>
           </div>
 
@@ -897,10 +935,10 @@ function HomeContent() {
                 <input
                   type="text"
                   role="combobox"
-                  aria-label="Pretraži oglase"
+                  aria-label={t('home.searchPlaceholderFull')}
                   aria-expanded={showSearchHints}
                   aria-autocomplete="list"
-                  placeholder="Pretraži oglase..."
+                  placeholder={t('home.searchPlaceholderFull')}
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSmartSearch(searchQuery); }}
@@ -935,20 +973,20 @@ function HomeContent() {
                         <i className="fa-solid fa-wand-magic-sparkles text-purple-500 text-[11px]"></i>
                       </div>
                       <div>
-                        <p className="text-[13px] font-extrabold text-[var(--c-text)] uppercase tracking-wide">NudiNađi AI Pretraga</p>
-                        <p className="text-[11px] text-purple-500 font-semibold uppercase tracking-wider">Napiši prirodno — AI razumije</p>
+                        <p className="text-[13px] font-extrabold text-[var(--c-text)] uppercase tracking-wide">{t('home.aiSearchHintTitle')}</p>
+                        <p className="text-[11px] text-purple-500 font-semibold uppercase tracking-wider">{t('home.aiSearchHintSub')}</p>
                       </div>
                     </div>
 
                     {/* Example chips */}
                     <div className="px-4 py-3 border-b border-[var(--c-border)]">
-                      <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-2">Probaj ovako →</p>
+                      <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-2">{t('home.tryLikeThis')}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {[
                           'BMW 320 Limousine',
                           'Stan Sarajevo 80m²',
                           'iPhone 15 Pro Max',
-                          'Laptop ispod 800',
+                          'Laptop do 800',
                           'od 10.000 do 25.000',
                           'Sofa kao nova',
                         ].map((ex) => (
@@ -966,10 +1004,10 @@ function HomeContent() {
                     {/* AI capabilities */}
                     <div className="px-4 py-3 space-y-2.5">
                       {[
-                        { icon: 'fa-tags', color: 'text-blue-500', bg: 'bg-blue-50', label: 'Auto-kategorija', desc: '"bmw 320" → automatski na Vozila' },
-                        { icon: 'fa-euro-sign', color: 'text-green-500', bg: 'bg-green-50', label: 'Raspon cijena', desc: '"10.000 do 25.000" ili "ispod 5000"' },
-                        { icon: 'fa-spell-check', color: 'text-orange-500', bg: 'bg-orange-50', label: 'Greške OK', desc: '"iphone" = "iPhone", "bmv" ≈ "BMW"' },
-                        { icon: 'fa-location-dot', color: 'text-red-500', bg: 'bg-red-50', label: 'Lokacija', desc: '"stan Sarajevo" → grad automatski' },
+                        { icon: 'fa-tags', color: 'text-blue-500', bg: 'bg-blue-50', label: t('home.hintAutoCategory'), desc: t('home.hintAutoCategoryDesc') },
+                        { icon: 'fa-euro-sign', color: 'text-green-500', bg: 'bg-green-50', label: t('home.hintPriceRange'), desc: t('home.hintPriceRangeDesc') },
+                        { icon: 'fa-spell-check', color: 'text-orange-500', bg: 'bg-orange-50', label: t('home.hintTypos'), desc: t('home.hintTyposDesc') },
+                        { icon: 'fa-location-dot', color: 'text-red-500', bg: 'bg-red-50', label: t('home.hintLocation'), desc: t('home.hintLocationDesc') },
                       ].map((feat) => (
                         <div key={feat.label} className="flex items-start gap-2.5">
                           <div className={`w-6 h-6 rounded-[4px] ${feat.bg} flex items-center justify-center shrink-0 mt-0.5`}>
@@ -1001,15 +1039,17 @@ function HomeContent() {
           {/* AI-parsed indicators — shown between search bar and location bar */}
           {searchQuery && (aiPriceMin || aiPriceMax || aiCategory || aiCondition || aiCorrectedQuery) && (
             <div className="flex flex-col items-center gap-1 mb-1.5">
-              {/* Typo correction banner */}
+              {/* Typo suggestion — clickable, not auto-applied */}
               {aiCorrectedQuery && (
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-200 rounded-[10px] max-w-[480px] w-fit">
+                <button
+                  onClick={() => { setSearchQuery(aiCorrectedQuery); setAiCorrectedQuery(null); }}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-200 rounded-[10px] max-w-[480px] w-fit hover:bg-purple-100 transition-colors cursor-pointer"
+                >
                   <i className="fa-solid fa-wand-magic-sparkles text-purple-500 text-[10px]"></i>
-                  <span className="text-[11px] text-purple-500">Tražili ste: </span>
-                  <span className="text-[11px] font-bold text-purple-400 line-through">{aiCorrectedQuery}</span>
-                  <i className="fa-solid fa-arrow-right text-purple-400 text-[9px]"></i>
-                  <span className="text-[11px] font-bold text-purple-700">{searchQuery}</span>
-                </div>
+                  <span className="text-[11px] text-purple-500">Mislili ste: </span>
+                  <span className="text-[11px] font-bold text-purple-700 underline">{aiCorrectedQuery}</span>
+                  <span className="text-[11px] text-purple-400">?</span>
+                </button>
               )}
               {/* Filter chips */}
               <div className="flex flex-wrap gap-1.5 px-1 max-w-[480px] w-full">
@@ -1050,6 +1090,7 @@ function HomeContent() {
                     setAiCondition(null);
                     setAiCorrectedQuery(null);
                     setAttributeFilters({});
+                    setListingType(null);
                     setFilters(prev => ({ ...prev, condition: 'all' }));
                     handleCategoryChange('Sve');
                   }}
@@ -1069,7 +1110,7 @@ function HomeContent() {
               className="flex items-center gap-2 px-4 py-1.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[12px] text-[12px] font-semibold text-[var(--c-text2)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 shadow-subtle"
             >
               <i className="fa-solid fa-location-dot text-[var(--c-accent)] text-[11px]"></i>
-              <span>{selectedLocation ? selectedLocation.name : 'Sve Lokacije'}</span>
+              <span>{selectedLocation ? selectedLocation.name : t('home.allLocations')}</span>
               {selectedLocation && (
                 <span
                   role="button"
@@ -1130,7 +1171,7 @@ function HomeContent() {
                         {SveIcon && <SveIcon />}
                       </div>
                       <span className={`text-[11px] font-semibold uppercase leading-[1.1] tracking-[0.3px] ${sveActive ? 'text-[var(--c-accent)]' : 'text-[var(--c-text2)]'}`}>
-                        Sve
+                        {t('home.all')}
                       </span>
                       {sveActive && (
                         <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-[var(--c-accent)] rounded-full"></div>
@@ -1154,7 +1195,7 @@ function HomeContent() {
               aria-label={showSecondaryCats ? 'Sakrij dodatne kategorije' : 'Prikaži više kategorija'}
               className="flex items-center gap-2 px-6 py-1.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[12px] text-[12px] font-semibold text-[var(--c-text2)] hover:text-[var(--c-text)] hover:bg-[var(--c-hover)] transition-all duration-150 active:scale-95 shadow-subtle"
             >
-              <span>{showSecondaryCats ? 'Manje' : 'Više kategorija'}</span>
+              <span>{showSecondaryCats ? t('home.lessCategories') : t('home.moreCategories')}</span>
               <i className={`fa-solid fa-chevron-down transition-transform ${showSecondaryCats ? 'rotate-180' : ''}`} aria-hidden="true"></i>
             </button>
           </div>
@@ -1224,12 +1265,12 @@ function HomeContent() {
                     )}
                     <div>
                       <h3 className="text-lg font-black text-[var(--c-text)] leading-none">
-                        {showThirdLevel ? selectedSubGroup : 'Kategorije'}
+                        {showThirdLevel ? selectedSubGroup : t('home.categories')}
                       </h3>
                       <p className="text-[11px] text-[var(--c-text3)] uppercase tracking-wider mt-0.5">
                         {showThirdLevel
                           ? `${selectedCategory.name} › ${selectedSubGroup}`
-                          : `${CATEGORIES.length} kategorija`}
+                          : t('home.categoryCount', { count: CATEGORIES.length })}
                       </p>
                     </div>
                   </div>
@@ -1282,7 +1323,7 @@ function HomeContent() {
                         </div>
                         <div>
                           <h1 className="text-xl font-black text-[var(--c-text)] uppercase tracking-tight leading-none mb-0.5">{selectedCategory.name}</h1>
-                          <p className="text-[12px] text-[var(--c-accent)] font-semibold uppercase tracking-wider">{selectedCategory.subCategories.length} Potkategorija</p>
+                          <p className="text-[12px] text-[var(--c-accent)] font-semibold uppercase tracking-wider">{t('home.subcategoriesCount', { count: selectedCategory.subCategories.length })}</p>
                         </div>
                       </div>
 
@@ -1293,7 +1334,7 @@ function HomeContent() {
                           onClick={() => { handleCategoryChange(selectedCategory.name); setShowAllCatsPopup(false); setSelectedSubGroup(null); }}
                           className="col-span-full text-left blue-gradient text-white p-3.5 rounded-[6px] flex justify-between items-center shadow-accent mb-1 hover:brightness-110 active:scale-[0.99] transition-all duration-150 group"
                         >
-                          <span className="text-[12px] font-bold uppercase tracking-wider">Prikaži sve u {selectedCategory.name}</span>
+                          <span className="text-[12px] font-bold uppercase tracking-wider">{t('home.showAllIn', { name: selectedCategory.name })}</span>
                           <div className="w-6 h-6 bg-white/20 rounded-[4px] flex items-center justify-center">
                             <i className="fa-solid fa-arrow-right text-[10px]"></i>
                           </div>
@@ -1316,7 +1357,7 @@ function HomeContent() {
                             <div className="flex flex-col gap-0.5">
                               <span className="text-[12px] font-bold text-[var(--c-text2)] group-hover:text-[var(--c-text)] transition-colors">{sub.name}</span>
                               {sub.items?.length && (
-                                <span className="text-[11px] text-[var(--c-text3)]">{sub.items.length} stavki</span>
+                                <span className="text-[11px] text-[var(--c-text3)]">{t('home.itemsCount', { count: sub.items.length })}</span>
                               )}
                             </div>
                             <i className={`fa-solid ${sub.items?.length ? 'fa-chevron-right' : 'fa-arrow-right'} text-[10px] text-[var(--c-text-muted)] group-hover:text-[var(--c-accent)] transition-colors`}></i>
@@ -1338,7 +1379,7 @@ function HomeContent() {
                           <span className="text-[11px] font-semibold text-[var(--c-accent)] uppercase tracking-wider">{selectedSubGroup}</span>
                         </div>
                         <h2 className="text-xl font-black text-[var(--c-text)]">{selectedSubGroup}</h2>
-                        <p className="text-[12px] text-[var(--c-text3)] mt-0.5">{selectedSubGroupData.items!.length} kategorija</p>
+                        <p className="text-[12px] text-[var(--c-text3)] mt-0.5">{t('home.categoryCount', { count: selectedSubGroupData.items!.length })}</p>
                       </div>
 
                       {/* "Show all in sub-group" button */}
@@ -1346,7 +1387,7 @@ function HomeContent() {
                         onClick={() => { handleCategoryChange(selectedCategory.name); setShowAllCatsPopup(false); setSelectedSubGroup(null); }}
                         className="w-full text-left blue-gradient text-white p-3.5 rounded-[6px] flex justify-between items-center shadow-accent mb-3 hover:brightness-110 active:scale-[0.99] transition-all duration-150 group"
                       >
-                        <span className="text-[12px] font-bold uppercase tracking-wider">Prikaži sve u {selectedSubGroup}</span>
+                        <span className="text-[12px] font-bold uppercase tracking-wider">{t('home.showAllIn', { name: selectedSubGroup || '' })}</span>
                         <div className="w-6 h-6 bg-white/20 rounded-[4px] flex items-center justify-center">
                           <i className="fa-solid fa-arrow-right text-[10px]"></i>
                         </div>
@@ -1378,14 +1419,14 @@ function HomeContent() {
           <div className="pt-6 pl-1 md:pl-0">
             <div className="flex justify-between items-end mb-3 pr-2">
               <div>
-                <h2 className="text-lg font-extrabold text-[var(--c-text)] leading-none tracking-tight">Vozila</h2>
-                <p className="text-[12px] text-[var(--c-text3)] mt-1 font-medium">Izdvojeno iz ponude</p>
+                <h2 className="text-lg font-extrabold text-[var(--c-text)] leading-none tracking-tight">{t('home.vehicles')}</h2>
+                <p className="text-[12px] text-[var(--c-text3)] mt-1 font-medium">{t('home.featuredVehicles')}</p>
               </div>
               <button
                 onClick={() => handleCategoryChange('Vozila')}
                 className="text-[12px] font-semibold text-[var(--c-accent)] hover:text-[var(--c-accent-hover)] transition-colors duration-150"
               >
-                Vidi sve
+                {t('home.viewAll')}
               </button>
             </div>
             <div className="flex overflow-x-auto no-scrollbar gap-3 pb-4 pr-4">
@@ -1408,6 +1449,7 @@ function HomeContent() {
               onClearCategory={() => {
                 setAiCategory(null);
                 setAttributeFilters({});
+                setListingType(null);
                 handleCategoryChange('Sve');
               }}
               selectedSubCategory={selectedSubCategory}
@@ -1416,6 +1458,8 @@ function HomeContent() {
                 setSelectedSubCategory(sub);
                 setSelectedSubItem(item);
               }}
+              listingType={listingType}
+              onListingTypeChange={setListingType}
             />
           </div>
         )}
@@ -1427,9 +1471,9 @@ function HomeContent() {
         <div className="pt-2">
           <div className="flex justify-between items-end mb-4 px-1">
             <div>
-              <h2 className="text-lg font-extrabold text-[var(--c-text)] leading-none tracking-tight">Istraži</h2>
+              <h2 className="text-lg font-extrabold text-[var(--c-text)] leading-none tracking-tight">{t('home.explore')}</h2>
               <p className="text-[12px] text-[var(--c-text3)] mt-1 font-medium">
-                {totalCount > 0 ? `${displayedProducts.length} od ${totalCount} oglasa` : 'Najnovije iz ponude'}
+                {totalCount > 0 ? t('home.listingCount', { shown: displayedProducts.length, total: totalCount }) : t('home.latestListings')}
               </p>
             </div>
             <button
@@ -1437,7 +1481,7 @@ function HomeContent() {
               className="relative text-[12px] font-semibold text-[var(--c-accent)] hover:text-[var(--c-accent-hover)] transition-all duration-150 bg-[var(--c-accent-light)] px-3 py-1 rounded-[12px] border border-[var(--c-accent)]/20 flex items-center gap-1.5"
             >
               <i className="fa-solid fa-sliders text-[11px]"></i>
-              Filteri
+              {t('home.filters')}
               {activeFilterCount > 0 && (
                 <span className="w-4 h-4 rounded-full bg-[var(--c-accent)] text-white text-[9px] font-bold flex items-center justify-center -mr-0.5">
                   {activeFilterCount}
@@ -1471,7 +1515,7 @@ function HomeContent() {
               {isLoadingMore && (
                 <div className="flex items-center gap-2 text-[var(--c-text3)]">
                   <i className="fa-solid fa-spinner animate-spin text-blue-500"></i>
-                  <span className="text-[12px] font-semibold uppercase tracking-wider">Učitavanje...</span>
+                  <span className="text-[12px] font-semibold uppercase tracking-wider">{t('home.loading')}</span>
                 </div>
               )}
             </div>
@@ -1479,7 +1523,7 @@ function HomeContent() {
 
           {!isLoadingProducts && !hasMore && displayedProducts.length > PRODUCTS_PER_PAGE && (
             <div className="flex justify-center py-6">
-              <p className="text-[12px] text-[var(--c-text3)] font-semibold uppercase tracking-wider">Prikazani svi oglasi</p>
+              <p className="text-[12px] text-[var(--c-text3)] font-semibold uppercase tracking-wider">{t('home.allListingsShown')}</p>
             </div>
           )}
 
@@ -1488,14 +1532,14 @@ function HomeContent() {
               <div className="w-16 h-16 rounded-[14px] bg-[var(--c-card-alt)] border border-[var(--c-border)] flex items-center justify-center mb-4">
                 <i className="fa-solid fa-ghost text-2xl text-[var(--c-text-muted)]"></i>
               </div>
-              <h3 className="text-sm font-bold text-[var(--c-text)] mb-1">Nema rezultata</h3>
-              <p className="text-[12px] text-[var(--c-text3)] max-w-[200px]">Pokušaj promijeniti filtere ili kategoriju.</p>
+              <h3 className="text-sm font-bold text-[var(--c-text)] mb-1">{t('home.noResults')}</h3>
+              <p className="text-[12px] text-[var(--c-text3)] max-w-[200px]">{t('home.noResultsHint')}</p>
               {activeFilterCount > 0 && (
                 <button
                   onClick={() => setFilters(DEFAULT_FILTERS)}
                   className="mt-4 px-4 py-2 bg-[var(--c-accent-light)] border border-[var(--c-accent)]/20 rounded-[6px] text-[12px] font-semibold text-[var(--c-accent)] hover:bg-[var(--c-accent)]/10 transition-all duration-150"
                 >
-                  <i className="fa-solid fa-rotate-left mr-1.5"></i> Resetuj filtere
+                  <i className="fa-solid fa-rotate-left mr-1.5"></i> {t('home.resetFilters')}
                 </button>
               )}
             </div>

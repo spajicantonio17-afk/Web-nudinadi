@@ -2,14 +2,17 @@
 
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
+import { I18nProvider, useI18n } from '@/lib/i18n';
 
-export default function Error({
+function ErrorContent({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useI18n();
+
   useEffect(() => {
     logger.error('NudiNađi Error:', error);
   }, [error]);
@@ -27,9 +30,9 @@ export default function Error({
 
         {/* Title */}
         <div>
-          <h2 className="text-xl font-black text-[var(--c-text)] mb-2">Nešto je pošlo po krivu</h2>
+          <h2 className="text-xl font-black text-[var(--c-text)] mb-2">{t('error.title')}</h2>
           <p className="text-sm text-[var(--c-text3)] max-w-xs mx-auto">
-            Došlo je do greške. Pokušaj ponovo ili se vrati na početnu stranicu.
+            {t('error.description')}
           </p>
         </div>
 
@@ -40,17 +43,28 @@ export default function Error({
             className="px-6 py-3.5 rounded-[20px] blue-gradient text-white font-black text-xs uppercase tracking-[2px] shadow-xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
           >
             <i className="fa-solid fa-rotate-right"></i>
-            Pokušaj ponovo
+            {t('error.tryAgain')}
           </button>
           <a
             href="/"
             className="px-6 py-3.5 rounded-[20px] bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-text)] font-bold text-xs uppercase tracking-wider hover:bg-[var(--c-hover)] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm"
           >
             <i className="fa-solid fa-house"></i>
-            Početna
+            {t('error.home')}
           </a>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Error(props: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <I18nProvider>
+      <ErrorContent {...props} />
+    </I18nProvider>
   );
 }

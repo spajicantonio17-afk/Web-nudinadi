@@ -72,15 +72,23 @@ export async function resolveCategoryId(displayName: string): Promise<string | n
     if (aliased) return aliased.id
   }
 
-  // 3. Composite names like "Nekretnine - Stanovi" or "Elektronika - Laptopi"
+  // 3. Composite names like "Nekretnine - Stanovi - Prodaja stanova"
   if (displayName.includes(' - ')) {
-    const parts = displayName.split(' - ')
-    const subName = parts.slice(1).join(' - ').trim()
-    const sub = categories.find(c => c.name === subName)
-    if (sub) return sub.id
+    const parts = displayName.split(' - ').map(p => p.trim())
+
+    // Try the LAST part first (deepest leaf, e.g. "Prodaja stanova")
+    const leafName = parts[parts.length - 1]
+    const leaf = categories.find(c => c.name === leafName)
+    if (leaf) return leaf.id
+
+    // Try middle parts (e.g. "Stanovi" in a 3-level path)
+    for (let i = parts.length - 2; i >= 1; i--) {
+      const mid = categories.find(c => c.name === parts[i])
+      if (mid) return mid.id
+    }
 
     // Try alias for parent part
-    const parentName = parts[0].trim()
+    const parentName = parts[0]
     const parentAlias = CATEGORY_ALIASES[parentName.toLowerCase()]
     if (parentAlias) {
       const aliasedParent = categories.find(c => c.name === parentAlias)

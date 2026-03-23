@@ -26,7 +26,7 @@ export default function TeamManager({ userId }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, showToast]);
 
   useEffect(() => {
     loadMembers();

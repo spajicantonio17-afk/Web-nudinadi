@@ -33,7 +33,7 @@ export const CATEGORIES: Category[] = [
   {
     id: 'vozila', name: 'Vozila', icon: 'fa-car',
     subCategories: [
-      { name: 'Osobni automobili', items: ['Automobili s garancijom', 'Električni automobili', 'Hibridni automobili', 'Karambolirani i neispravni automobili', 'Novi automobili (od autokuće)', 'Oldtimeri', 'Polovni automobili'] },
+      { name: 'Osobni automobili', items: ['Sedan', 'Karavan', 'Hatchback', 'SUV / Crossover', 'Coupe / Cabrio', 'Pickup', 'Van / Minivan', 'Oldtimeri'] },
       { name: 'Motocikli i skuteri', items: ['Cruiser / chopper', 'Električni motocikli i skuteri', 'Enduro i cross', 'Naked / streetfighter', 'Skuteri i mopedi', 'Sport motocikli', 'Tricikli i quadricikli'] },
       { name: 'Teretna vozila', items: ['Cisterne', 'Hladnjače', 'Kamioni (3.5t – 7.5t)', 'Kiperi i kiper prikolice', 'Kombiji i dostavna vozila (do 3.5t)', 'Tegljači i vučna vozila', 'Teški kamioni (7.5t+)'] },
       { name: 'Autobusi i minibusi', items: ['Gradski autobusi', 'Minibusi (do 20 mjesta)', 'Školski autobusi', 'Turistički autobusi'] },
@@ -82,11 +82,11 @@ export const CATEGORIES: Category[] = [
   {
     id: 'nekretnine', name: 'Nekretnine', icon: 'fa-building',
     subCategories: [
-      { name: 'Stanovi', items: ['Luksuzni stanovi', 'Najam stanova (dugoročni)', 'Prodaja stanova', 'Stan na dan (kratkoročni)', 'Stanovi – novogradnja'] },
-      { name: 'Kuće', items: ['Montažne kuće i objekti', 'Najam kuća', 'Prodaja kuća', 'Vikendice i seoske kuće'] },
+      { name: 'Stanovi', items: ['Garsonjere', 'Luksuzni stanovi', 'Stanovi – novogradnja'] },
+      { name: 'Kuće', items: ['Montažne kuće i objekti', 'Vikendice i seoske kuće', 'Vile'] },
       { name: 'Zemljišta', items: ['Građevinsko zemljište', 'Ostalo zemljište', 'Poljoprivredno zemljište', 'Šumsko zemljište'] },
-      { name: 'Poslovni prostori', items: ['Industrijski objekti', 'Najam poslovnih prostora', 'Prodaja poslovnih prostora', 'Skladišta i hale', 'Ugostiteljski prostori', 'Uredi'] },
-      { name: 'Garaže i parkirna mjesta', items: ['Najam garaža', 'Parkirna mjesta', 'Prodaja garaža'] },
+      { name: 'Poslovni prostori', items: ['Industrijski objekti', 'Skladišta i hale', 'Ugostiteljski prostori', 'Uredi'] },
+      { name: 'Garaže i parkirna mjesta', items: ['Garaže', 'Parkirna mjesta'] },
       { name: 'Turistički smještaj', items: ['Apartmani na dan', 'Hosteli', 'Kuće za odmor', 'Sobe na dan'] },
       { name: 'Luksuzne nekretnine' },
       { name: 'Ostale nekretnine' },

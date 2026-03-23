@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { getCategoryFilters, getAutoCompleteOptions, type QuickFilter } from '@/lib/category-filters';
 import { CATEGORIES } from '@/lib/constants';
+import type { ListingType } from '@/lib/database.types';
 import BottomSheet from '@/components/BottomSheet';
 
 // ── Types ───────────────────────────────────────────────────────
@@ -20,6 +21,9 @@ interface CategoryFilterBarProps {
   selectedSubItem: string | null;
   /** Called when subcategory/item selection changes */
   onSubCategoryChange: (sub: string | null, item: string | null) => void;
+  /** listing_type filter for Nekretnine (prodaja/najam/najam_kratkorocni) */
+  listingType?: ListingType | null;
+  onListingTypeChange?: (lt: ListingType | null) => void;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────
@@ -734,6 +738,14 @@ function SubCategoryDrilldown({
 
 // ── Main Component ──────────────────────────────────────────────
 
+const LISTING_TYPE_LABELS: Record<ListingType, string> = {
+  prodaja: 'Prodaja',
+  najam: 'Najam',
+  najam_kratkorocni: 'Kratkoročni najam',
+};
+
+const NEKRETNINE_LISTING_TYPES: ListingType[] = ['prodaja', 'najam', 'najam_kratkorocni'];
+
 export default function CategoryFilterBar({
   activeCategory,
   attributeFilters,
@@ -742,6 +754,8 @@ export default function CategoryFilterBar({
   selectedSubCategory,
   selectedSubItem,
   onSubCategoryChange,
+  listingType,
+  onListingTypeChange,
 }: CategoryFilterBarProps) {
   const config = useMemo(
     () => getCategoryFilters(activeCategory, selectedSubCategory ?? undefined),
@@ -792,6 +806,30 @@ export default function CategoryFilterBar({
           <span className="text-[11px] font-bold text-[var(--c-accent)] group-hover:text-red-600 whitespace-nowrap">{activeCategory}</span>
           <i className="fa-solid fa-xmark text-[var(--c-accent)] text-[9px] ml-0.5 opacity-60 group-hover:text-red-500 group-hover:opacity-100"></i>
         </button>
+
+        {/* listing_type chips for Nekretnine */}
+        {activeCategory === 'Nekretnine' && onListingTypeChange && (
+          <>
+            {/* Separator dot */}
+            <span className="text-[var(--c-text-muted)] text-[6px] shrink-0">●</span>
+            {NEKRETNINE_LISTING_TYPES.map((lt) => (
+              <button
+                key={lt}
+                onClick={() => onListingTypeChange(listingType === lt ? null : lt)}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] border transition-all duration-150 shrink-0 ${
+                  listingType === lt
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600'
+                    : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:border-emerald-400 hover:text-emerald-600'
+                }`}
+              >
+                <span className="text-[11px] font-semibold whitespace-nowrap">{LISTING_TYPE_LABELS[lt]}</span>
+                {listingType === lt && (
+                  <i className="fa-solid fa-xmark text-emerald-500 text-[9px] ml-0.5 opacity-60"></i>
+                )}
+              </button>
+            ))}
+          </>
+        )}
 
         {/* Subcategory drilldown */}
         {hasSubCategories && (

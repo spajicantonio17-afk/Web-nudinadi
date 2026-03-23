@@ -16,6 +16,7 @@ import {
   OBAVIJESTI_COLOR_MAP,
 } from '@/services/obavjestiService';
 import { logger } from '@/lib/logger';
+import { useI18n } from '@/lib/i18n';
 
 interface ObavjestiChatProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface ObavjestiChatProps {
 export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: ObavjestiChatProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useI18n();
   const [notifications, setNotifications] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -123,9 +125,9 @@ export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: 
               <i className="fa-solid fa-bell text-red-400 text-sm"></i>
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[var(--c-text)]">Obavijesti</h3>
+              <h3 className="text-sm font-bold text-[var(--c-text)]">{t('notif.title')}</h3>
               <p className="text-[9px] text-[var(--c-text3)] uppercase tracking-widest">
-                {unreadCount > 0 ? `${unreadCount} neprocitanih` : 'Sve procitano'}
+                {unreadCount > 0 ? t('notif.unreadCount', { count: unreadCount }) : t('notif.allReadStatus')}
               </p>
             </div>
           </div>
@@ -135,7 +137,7 @@ export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: 
             onClick={handleMarkAllRead}
             className="text-[9px] text-blue-400 font-bold uppercase tracking-widest hover:text-[var(--c-text)] transition-colors"
           >
-            Oznaci sve
+            {t('notif.markAllBtn')}
           </button>
         )}
       </div>
@@ -152,8 +154,8 @@ export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: 
             <div className="w-16 h-16 rounded-full bg-[var(--c-card)] border border-[var(--c-border)] flex items-center justify-center mb-4">
               <i className="fa-regular fa-bell text-2xl text-[var(--c-text3)]"></i>
             </div>
-            <p className="text-xs font-bold text-[var(--c-text2)]">Nema obavijesti</p>
-            <p className="text-[10px] text-[var(--c-text3)] mt-1">Ovdje ce se pojaviti tvoje obavijesti</p>
+            <p className="text-xs font-bold text-[var(--c-text2)]">{t('notif.noNotifications')}</p>
+            <p className="text-[10px] text-[var(--c-text3)] mt-1">{t('notif.notifWillAppear')}</p>
           </div>
         ) : (
           <div className="space-y-1">
@@ -199,7 +201,7 @@ export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: 
                     {link && (
                       <div className="flex items-center gap-1 mt-1 text-[9px] text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
                         <i className="fa-solid fa-arrow-right text-[8px]"></i>
-                        <span>Pogledaj</span>
+                        <span>{t('notif.view')}</span>
                       </div>
                     )}
                   </div>
@@ -219,7 +221,7 @@ export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: 
       <div className="px-4 py-3 border-t border-[var(--c-border)] bg-[var(--c-card)]">
         <p className="text-[10px] text-[var(--c-text3)] text-center">
           <i className="fa-solid fa-lock text-[8px] mr-1"></i>
-          Kanal samo za citanje
+          {t('notif.readOnly')}
         </p>
       </div>
     </div>

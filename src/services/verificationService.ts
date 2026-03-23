@@ -4,15 +4,13 @@ import type { Profile } from '@/lib/database.types'
 const supabase = getSupabase()
 
 // ─── Verification Steps ──────────────────────────────────
-// 1/5: Account created (automatic on registration)
-// 2/5: Email verified
-// 3/5: Phone verified
-// 4/5: Location added to profile
-// 5/5: Bio written → FULLY VERIFIED (+500 XP)
+// 1/3: Account created (automatic on registration)
+// 2/3: Email verified
+// 3/3: Phone verified → FULLY VERIFIED (+500 XP)
 
 export interface VerificationStatus {
   currentStep: number
-  totalSteps: 5
+  totalSteps: 3
   steps: VerificationStep[]
   isFullyVerified: boolean
 }
@@ -50,28 +48,14 @@ export function getVerificationStatus(profile: Profile): VerificationStatus {
       completed: !!profile.phone_verified,
       icon: 'fa-phone',
     },
-    {
-      step: 4,
-      label: 'Lokacija',
-      description: 'Dodaj lokaciju u profil',
-      completed: !!profile.location && profile.location.trim().length > 0,
-      icon: 'fa-location-dot',
-    },
-    {
-      step: 5,
-      label: 'Bio',
-      description: 'Napisi bio',
-      completed: !!profile.bio && profile.bio.trim().length > 0,
-      icon: 'fa-pen',
-    },
   ]
 
   const currentStep = steps.filter(s => s.completed).length
-  const isFullyVerified = currentStep === 5
+  const isFullyVerified = currentStep === 3
 
   return {
     currentStep,
-    totalSteps: 5,
+    totalSteps: 3,
     steps,
     isFullyVerified,
   }
@@ -84,10 +68,8 @@ export async function sendVerificationStepNotification(
   step: number
 ): Promise<void> {
   const messages: Record<number, { title: string; body: string }> = {
-    2: { title: 'Email potvrdjen!', body: 'Email potvrdjen! Verifikacija 2/5' },
-    3: { title: 'Telefon potvrdjen!', body: 'Telefon potvrdjen! Verifikacija 3/5' },
-    4: { title: 'Lokacija dodana!', body: 'Lokacija dodana! Verifikacija 4/5' },
-    5: { title: 'Bio dodan!', body: 'Bio dodan! Verifikacija 5/5' },
+    2: { title: 'Email potvrdjen!', body: 'Email potvrdjen! Verifikacija 2/3' },
+    3: { title: 'Telefon potvrdjen!', body: 'Telefon potvrdjen! Verifikacija 3/3' },
   }
 
   const msg = messages[step]
@@ -98,7 +80,7 @@ export async function sendVerificationStepNotification(
     type: 'verification_step',
     title: msg.title,
     body: msg.body,
-    data: { step, total: 5 },
+    data: { step, total: 3 },
   })
 }
 

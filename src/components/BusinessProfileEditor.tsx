@@ -97,13 +97,13 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
       }
 
       await updateBusinessProfile(user.id, {
-        company_name: companyName.trim() || undefined,
-        company_logo: companyLogo || undefined,
-        banner_image: bannerImage || undefined,
-        business_address: address.trim() || undefined,
-        business_hours: Object.keys(hours).length > 0 ? hours : undefined,
-        business_category: category || undefined,
-        website_url: url || undefined,
+        company_name: companyName.trim() || null,
+        company_logo: companyLogo || null,
+        banner_image: bannerImage || null,
+        business_address: address.trim() || null,
+        business_hours: Object.keys(hours).length > 0 ? hours : null,
+        business_category: category || null,
+        website_url: url || null,
       });
       showToast('Poslovni profil ažuriran!');
       onUpdate();
