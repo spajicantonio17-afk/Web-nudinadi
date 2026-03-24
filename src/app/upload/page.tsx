@@ -1826,8 +1826,8 @@ function UploadPageInner() {
           setAttributes(attrs as AttributeValues);
         }
         // Restore existing tags
-        if (Array.isArray((product as Record<string, unknown>).tags)) {
-          setGeneratedTags((product as Record<string, unknown>).tags as string[]);
+        if (Array.isArray((product as unknown as Record<string, unknown>).tags)) {
+          setGeneratedTags((product as unknown as Record<string, unknown>).tags as string[]);
         }
         setExistingImages(product.images || []);
         setStep('form');

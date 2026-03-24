@@ -561,7 +561,7 @@ function HomeContent() {
         // so we funnel them into searchVariants for flexible text matching instead.
         const extraVariants: string[] = [];
         if (d.attributes && typeof d.attributes === 'object' && Object.keys(d.attributes).length > 0) {
-          const safeAttrs: Record<string, string | number | boolean | string[]> = {};
+          const safeAttrs: AttributeFilters = {};
           for (const [key, val] of Object.entries(d.attributes)) {
             if (key === 'marka' && typeof val === 'string') {
               safeAttrs[key] = val;
