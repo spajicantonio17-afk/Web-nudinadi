@@ -10,6 +10,7 @@ import { getProductById, incrementViews, deleteProduct, promoteProduct, isPromot
 import { getOrCreateConversation } from '@/services/messageService';
 import { isPro, getPlanLimits } from '@/lib/plans';
 import ProBadge from '@/components/ProBadge';
+import SellerVerificationBadges from '@/components/SellerVerificationBadges';
 import { getProductQuestions, askQuestion, answerQuestion, type QuestionWithUser } from '@/services/questionService';
 import { createReview, hasUserReviewed } from '@/services/reviewService';
 import { useAuth } from '@/lib/auth';
@@ -671,9 +672,10 @@ export default function ProductDetailPage() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold text-[var(--c-text)] uppercase tracking-wider flex items-center gap-1.5">@{sellerName} <ProBadge accountType={(product.seller as unknown as Record<string, unknown>)?.account_type as string} /></p>
-                                <p className="text-[10px] text-[var(--c-text3)]">
-                                    {product.seller?.rating_average ? `★ ${product.seller.rating_average} · ` : ''}{t('product.verifiedSeller')}
-                                </p>
+                                {product.seller?.rating_average && (
+                                  <p className="text-[10px] text-[var(--c-text3)] mb-0.5">★ {product.seller.rating_average}</p>
+                                )}
+                                <SellerVerificationBadges seller={product.seller as unknown as Record<string, unknown>} />
                             </div>
                         </div>
                         <button onClick={() => router.push(`/user/${sellerName}`)} aria-label={t('product.viewSellerProfile', { name: sellerName })} className="text-[10px] font-bold text-[var(--c-text2)] uppercase tracking-widest hover:text-[var(--c-text)] transition-colors flex items-center gap-1">
