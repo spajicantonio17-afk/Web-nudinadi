@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getSearchSuggestions, type SearchSuggestion } from '@/services/productService'
 import { getAllCategories } from '@/services/categoryService'
@@ -134,9 +135,11 @@ export default function SearchSuggestions({
                 className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-[10px] hover:bg-[var(--c-accent-light)] transition-all duration-150 shrink-0 min-w-[72px]"
               >
                 {p.avatar_url ? (
-                  <img
+                  <Image
                     src={p.avatar_url}
                     alt={p.username}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-full object-cover bg-[var(--c-card-alt)]"
                   />
                 ) : (
@@ -221,9 +224,11 @@ export default function SearchSuggestions({
               >
                 {/* Product thumbnail */}
                 {p.images?.[0] ? (
-                  <img
+                  <Image
                     src={p.images[0]}
                     alt=""
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-[6px] object-cover bg-[var(--c-card-alt)] shrink-0"
                   />
                 ) : (

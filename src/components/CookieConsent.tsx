@@ -44,7 +44,7 @@ export default function CookieConsent() {
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
-      <div className="border-t border-[var(--c-border)] bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.08)]">
+      <div className="border-t border-[var(--c-border)] bg-[var(--c-card)] shadow-[0_-2px_10px_rgba(0,0,0,0.08)]">
         <div className="mx-auto max-w-screen-lg px-4 py-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             {/* Text */}

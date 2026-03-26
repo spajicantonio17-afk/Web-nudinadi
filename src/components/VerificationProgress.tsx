@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { getVerificationStatus, type VerificationStatus } from '@/services/verificationService';
 import type { Profile } from '@/lib/database.types';
 import type { AuthUser } from '@/lib/auth';
@@ -55,6 +56,7 @@ function VerificationCompact({ status, isFullyVerified }: { status: Verification
 // ─── Full Progress Card (for profile page) ──────────────────
 
 function VerificationFull({ status }: { status: VerificationStatus }) {
+  const router = useRouter();
   const progress = (status.currentStep / status.totalSteps) * 100;
 
   return (
@@ -106,10 +108,13 @@ function VerificationFull({ status }: { status: VerificationStatus }) {
         {status.steps.map((step) => (
           <div
             key={step.step}
+            onClick={!step.completed && step.step > 1 ? () => router.push('/menu?step=verification') : undefined}
             className={`flex items-center gap-3 px-3 py-2 rounded-[10px] transition-colors ${
               step.completed
                 ? 'bg-emerald-500/5 border border-emerald-500/10'
-                : 'bg-[var(--c-hover)] border border-transparent'
+                : step.step > 1
+                  ? 'bg-[var(--c-hover)] border border-transparent hover:border-orange-500/30 hover:bg-orange-500/5 cursor-pointer group'
+                  : 'bg-[var(--c-hover)] border border-transparent'
             }`}
           >
             <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
@@ -131,9 +136,13 @@ function VerificationFull({ status }: { status: VerificationStatus }) {
                 <p className="text-[9px] text-[var(--c-text3)]">{step.description}</p>
               )}
             </div>
-            <i className={`fa-solid ${step.icon} text-[10px] ${
-              step.completed ? 'text-emerald-400' : 'text-[var(--c-text3)]'
-            }`}></i>
+            {!step.completed && step.step > 1 ? (
+              <i className="fa-solid fa-chevron-right text-[9px] text-[var(--c-text3)] group-hover:text-orange-400 transition-colors"></i>
+            ) : (
+              <i className={`fa-solid ${step.icon} text-[10px] ${
+                step.completed ? 'text-emerald-400' : 'text-[var(--c-text3)]'
+              }`}></i>
+            )}
           </div>
         ))}
       </div>
