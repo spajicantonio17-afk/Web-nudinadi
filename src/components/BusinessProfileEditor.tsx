@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { updateBusinessProfile } from '@/services/businessService';
 import { uploadProductImage } from '@/services/uploadService';
 import { useToast } from '@/components/Toast';
@@ -15,6 +16,7 @@ interface Props {
 
 export default function BusinessProfileEditor({ user, onUpdate }: Props) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
@@ -107,6 +109,7 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
       });
       showToast('Poslovni profil ažuriran!');
       onUpdate();
+      router.push('/user/' + user.username);
     } catch {
       showToast('Greška pri snimanju', 'error');
     } finally {

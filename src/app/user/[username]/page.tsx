@@ -251,6 +251,16 @@ function UserProfileContent() {
         {/* ── BUSINESS BANNER (only for business accounts) ── */}
         {isBiz && (
           <div className="relative bg-[var(--c-card)] rounded-[24px] overflow-hidden border border-purple-500/30">
+            {/* Edit button for owner */}
+            {isOwnProfile && (
+              <button
+                onClick={() => router.push('/profile')}
+                className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-2.5 py-1.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white text-[10px] font-bold hover:bg-black/60 transition-all active:scale-95"
+              >
+                <i className="fa-solid fa-pen text-[9px]"></i>
+                Uredi
+              </button>
+            )}
             {/* Banner Image */}
             <div className="h-40 w-full overflow-hidden">
               {profile.banner_image ? (
