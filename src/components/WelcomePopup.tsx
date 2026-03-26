@@ -84,37 +84,7 @@ export default function WelcomePopup() {
 
           <div className="space-y-4">
 
-            {/* ── Section 1: Price Explanation (FIRST — so everyone sees it) ── */}
-            <section>
-              <h2 className={`text-[10px] font-black uppercase tracking-[2px] mb-2 px-1 ${isDark ? 'text-white/30' : 'text-gray-400'}`}>
-                Kako funkcionišu cijene?
-              </h2>
-              <div className={`
-                rounded-[14px] p-3 border
-                ${isDark ? 'border-white/[0.06] bg-white/[0.03]' : 'border-gray-100 bg-gray-50/50'}
-              `}>
-                <div className="grid grid-cols-2 gap-2">
-                  <PricePreviewCard
-                    flag="🇧🇦" country="BiH" name="Zimska jakna"
-                    primaryPrice="49 KM" secondaryPrice="≈ €25"
-                    isDark={isDark}
-                  />
-                  <PricePreviewCard
-                    flag="🇭🇷" country="HR" name="Vintage jakna"
-                    primaryPrice="€25" secondaryPrice="≈ 49 KM"
-                    isDark={isDark}
-                  />
-                </div>
-                <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg mt-2.5 ${isDark ? 'bg-blue-500/10' : 'bg-blue-50'}`}>
-                  <i className={`fa-solid fa-circle-info text-[9px] flex-shrink-0 ${isDark ? 'text-blue-400/60' : 'text-blue-400'}`} />
-                  <p className={`text-[10px] font-medium ${isDark ? 'text-blue-300/70' : 'text-blue-600/70'}`}>
-                    Gornja cijena je u valuti zemlje oglasa. Ispod je preračunato u drugu valutu.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* ── Section 2: Country Selection ── */}
+            {/* ── Section 1: Country Selection ── */}
             <section>
               <h2 className={`text-[10px] font-black uppercase tracking-[2px] mb-2 px-1 ${isDark ? 'text-white/30' : 'text-gray-400'}`}>
                 Gdje želiš da ti radi NudiNađi?
@@ -250,26 +220,3 @@ function ThemePreviewCard({ mode, label, selected, onClick, isDark }: {
   );
 }
 
-function PricePreviewCard({ flag, country, name, primaryPrice, secondaryPrice, isDark }: {
-  flag: string; country: string; name: string;
-  primaryPrice: string; secondaryPrice: string; isDark: boolean;
-}) {
-  return (
-    <div className={`
-      rounded-[10px] overflow-hidden border
-      ${isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-200/80 bg-white'}
-    `}>
-      <div className={`h-16 bg-gradient-to-br ${isDark ? 'from-indigo-500/20 to-violet-500/10' : 'from-indigo-50 to-violet-50'} flex items-center justify-center relative`}>
-        <i className={`fa-solid fa-image text-sm ${isDark ? 'text-white/15' : 'text-gray-300/60'}`} />
-        <span className={`absolute top-1.5 right-1.5 text-[7px] font-bold px-1.5 py-0.5 rounded ${isDark ? 'bg-black/30 text-white/70' : 'bg-white/80 text-gray-500'}`}>
-          {flag} {country}
-        </span>
-      </div>
-      <div className="px-2.5 py-2">
-        <p className={`text-[9px] font-semibold mb-0.5 ${isDark ? 'text-white/70' : 'text-gray-600'}`}>{name}</p>
-        <span className="text-blue-500 font-black text-[13px] block">{primaryPrice}</span>
-        <span className={`text-[9px] block ${isDark ? 'text-white/30' : 'text-gray-400'}`}>{secondaryPrice}</span>
-      </div>
-    </div>
-  );
-}
