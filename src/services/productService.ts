@@ -10,6 +10,29 @@ import { logger } from '@/lib/logger'
 
 const supabase = getSupabase()
 
+// ─── Product query cache (30s TTL, max 20 entries) ───
+const _queryCache = new Map<string, { data: ProductFull[]; count: number; ts: number }>()
+const QUERY_CACHE_TTL = 30_000
+
+function _cacheKey(filters: ProductFilters): string {
+  return JSON.stringify(Object.fromEntries(Object.entries(filters).sort()))
+}
+
+function _getCached(filters: ProductFilters) {
+  // Only cache plain browse queries — search & seller pages always fetch fresh
+  if (filters.search || filters.searchKeywords?.length || filters.seller_id) return null
+  const entry = _queryCache.get(_cacheKey(filters))
+  return entry && Date.now() - entry.ts < QUERY_CACHE_TTL ? entry : null
+}
+
+function _setCached(filters: ProductFilters, data: ProductFull[], count: number) {
+  if (filters.search || filters.searchKeywords?.length || filters.seller_id) return
+  if (_queryCache.size >= 20) _queryCache.delete(_queryCache.keys().next().value!)
+  _queryCache.set(_cacheKey(filters), { data, count, ts: Date.now() })
+}
+
+export function clearProductCache() { _queryCache.clear() }
+
 // ─── City→Country lookup for filtering ───────────────
 const BIH_CITIES = CITIES.filter(c => c.country === 'BiH').map(c => c.name)
 const HR_CITIES = CITIES.filter(c => c.country === 'HR').map(c => c.name)
@@ -75,6 +98,9 @@ async function enrichProducts(products: Record<string, unknown>[]): Promise<Prod
 // ─── Get All Products (with filters) ──────────────────
 
 export async function getProducts(filters: ProductFilters = {}): Promise<{ data: ProductFull[]; count: number }> {
+  const cached = _getCached(filters)
+  if (cached) return { data: cached.data, count: cached.count }
+
   let query = supabase
     .from('products')
     .select(LIST_SELECT, { count: 'exact' })
@@ -174,6 +200,7 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
     })
   }
 
+  _setCached(filters, enriched, count ?? 0)
   return { data: enriched, count: count ?? 0 }
 }
 
@@ -225,6 +252,7 @@ export async function createProduct(product: ProductInsert): Promise<Product> {
     .single()
 
   if (error) throw error
+  clearProductCache()
   return data
 }
 
@@ -239,6 +267,7 @@ export async function updateProduct(id: string, updates: ProductUpdate): Promise
     .single()
 
   if (error) throw error
+  clearProductCache()
   return data
 }
 
