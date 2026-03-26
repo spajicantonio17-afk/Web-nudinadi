@@ -151,8 +151,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ]);
       setUser(toAuthUser(session.user, profile));
 
-      // Check verification XP (email + phone both confirmed → 500 XP one-time)
-      if (profile?.email_verified && profile?.phone) {
+      // Check verification XP (email + phone both verified → 500 XP one-time)
+      if (profile?.email_verified && profile?.phone_verified) {
         logVerificationXp(session.user.id).catch(() => {/* non-critical */});
       }
     } catch {

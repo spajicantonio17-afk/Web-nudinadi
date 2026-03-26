@@ -45,7 +45,7 @@ export async function updateProfile(userId: string, updates: ProfileUpdate): Pro
   ])
 
   if (result.error) throw result.error
-  if (!result.data) throw new Error('Keine Daten zurückgegeben. Profil konnte nicht aktualisiert werden.')
+  if (!result.data) throw new Error('Profil se nije mogao ažurirati. Pokušajte ponovo.')
   return result.data
 }
 
