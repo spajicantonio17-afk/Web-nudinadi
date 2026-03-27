@@ -20,7 +20,7 @@ interface MainLayoutProps {
   onBack?: (() => void) | null;
 }
 
-const MAIN_ROUTES = ['/', '/messages', '/upload', '/profile', '/menu'];
+const MAIN_ROUTES = ['/', '/messages', '/upload', '/profile', '/menu', '/user'];
 
 function getParentRoute(pathname: string): string {
   // Find the matching main route prefix (e.g. /profile/level → /profile)
@@ -265,14 +265,14 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             </div>
           ) : isAuthenticated && user ? (
             <Link
-              href="/profile"
+              href={`/user/${user.username}`}
               className={`relative group flex items-center gap-2 md:gap-3 pl-1 pr-1 md:pr-4 py-1 rounded-[6px] transition-all duration-150 border ${
-                pathname === '/profile'
+                pathname === `/user/${user.username}`
                   ? 'bg-[var(--c-card-alt)] border-[var(--c-accent)]/50'
                   : 'border-transparent hover:bg-[var(--c-card-alt)]'
               }`}
             >
-              <div className={`w-7 h-7 md:w-9 md:h-9 rounded-full p-[2px] ${pathname === '/profile' ? 'blue-gradient' : 'bg-[var(--c-border)] group-hover:bg-[var(--c-active)]'}`}>
+              <div className={`w-7 h-7 md:w-9 md:h-9 rounded-full p-[2px] ${pathname === `/user/${user.username}` ? 'blue-gradient' : 'bg-[var(--c-border)] group-hover:bg-[var(--c-active)]'}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={user.avatarUrl || 'https://picsum.photos/seed/me/200/200'}
@@ -281,7 +281,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
                 />
               </div>
               <div className="hidden md:block text-left">
-                <p className={`text-[13px] font-semibold leading-none ${pathname === '/profile' ? 'text-[var(--c-text)]' : 'text-[var(--c-text2)]'}`}>{user.username}</p>
+                <p className={`text-[13px] font-semibold leading-none ${pathname === `/user/${user.username}` ? 'text-[var(--c-text)]' : 'text-[var(--c-text2)]'}`}>{user.username}</p>
                 <p className="text-[11px] text-[var(--c-accent)] font-semibold uppercase tracking-wider mt-0.5">Moj Profil</p>
               </div>
             </Link>
@@ -520,7 +520,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             </div>
           </Link>
 
-          <Link href={isAuthenticated ? '/profile' : '/login'} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} aria-current={pathname === '/profile' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/profile' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+          <Link href={isAuthenticated && user ? `/user/${user.username}` : '/login'} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} aria-current={user && pathname === `/user/${user.username}` ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${user && pathname === `/user/${user.username}` ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className={`fa-solid ${isAuthenticated ? 'fa-user' : 'fa-right-to-bracket'} text-[17px]`} aria-hidden="true"></i>
             <span className="text-[9px] sm:text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Prijava'}</span>
           </Link>
