@@ -109,6 +109,7 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
       });
       showToast('Poslovni profil ažuriran!');
       onUpdate();
+      router.refresh();
       router.push('/user/' + user.username);
     } catch {
       showToast('Greška pri snimanju', 'error');

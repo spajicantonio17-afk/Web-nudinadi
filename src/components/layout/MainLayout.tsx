@@ -264,8 +264,8 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
               </div>
             </div>
           ) : isAuthenticated && user ? (
-            <Link
-              href={`/user/${user.username}`}
+            <button
+              onClick={() => { router.refresh(); router.push(`/user/${user.username}`); }}
               className={`relative group flex items-center gap-2 md:gap-3 pl-1 pr-1 md:pr-4 py-1 rounded-[6px] transition-all duration-150 border ${
                 pathname === `/user/${user.username}`
                   ? 'bg-[var(--c-card-alt)] border-[var(--c-accent)]/50'
@@ -284,7 +284,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
                 <p className={`text-[13px] font-semibold leading-none ${pathname === `/user/${user.username}` ? 'text-[var(--c-text)]' : 'text-[var(--c-text2)]'}`}>{user.username}</p>
                 <p className="text-[11px] text-[var(--c-accent)] font-semibold uppercase tracking-wider mt-0.5">Moj Profil</p>
               </div>
-            </Link>
+            </button>
           ) : (
             <Link
               href="/login"
@@ -520,10 +520,10 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             </div>
           </Link>
 
-          <Link href={isAuthenticated && user ? `/user/${user.username}` : '/login'} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} aria-current={user && pathname === `/user/${user.username}` ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${user && pathname === `/user/${user.username}` ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+          <button onClick={() => { if (isAuthenticated && user) { router.refresh(); router.push(`/user/${user.username}`); } else { router.push('/login'); } }} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${user && pathname === `/user/${user.username}` ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className={`fa-solid ${isAuthenticated ? 'fa-user' : 'fa-right-to-bracket'} text-[17px]`} aria-hidden="true"></i>
             <span className="text-[9px] sm:text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Prijava'}</span>
-          </Link>
+          </button>
 
           {isAuthenticated && (
           <Link href="/menu" aria-label="Meni" aria-current={pathname === '/menu' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/menu' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
