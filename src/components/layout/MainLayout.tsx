@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { getUnreadCount } from '@/services/messageService';
 import NotificationPanel from '@/components/NotificationPanel';
 import SiteFooter from '@/components/layout/SiteFooter';
+import { isBusiness } from '@/lib/plans';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -265,14 +266,14 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             </div>
           ) : isAuthenticated && user ? (
             <button
-              onClick={() => { router.refresh(); router.push(`/user/${user.username}`); }}
+              onClick={() => { if (isBusiness(user.accountType)) { router.refresh(); router.push(`/user/${user.username}`); } else { router.push('/profile'); } }}
               className={`relative group flex items-center gap-2 md:gap-3 pl-1 pr-1 md:pr-4 py-1 rounded-[6px] transition-all duration-150 border ${
-                pathname === `/user/${user.username}`
+                (isBusiness(user.accountType) ? pathname === `/user/${user.username}` : pathname === '/profile')
                   ? 'bg-[var(--c-card-alt)] border-[var(--c-accent)]/50'
                   : 'border-transparent hover:bg-[var(--c-card-alt)]'
               }`}
             >
-              <div className={`w-7 h-7 md:w-9 md:h-9 rounded-full p-[2px] ${pathname === `/user/${user.username}` ? 'blue-gradient' : 'bg-[var(--c-border)] group-hover:bg-[var(--c-active)]'}`}>
+              <div className={`w-7 h-7 md:w-9 md:h-9 rounded-full p-[2px] ${(isBusiness(user.accountType) ? pathname === `/user/${user.username}` : pathname === '/profile') ? 'blue-gradient' : 'bg-[var(--c-border)] group-hover:bg-[var(--c-active)]'}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={user.avatarUrl || 'https://picsum.photos/seed/me/200/200'}
@@ -520,7 +521,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             </div>
           </Link>
 
-          <button onClick={() => { if (isAuthenticated && user) { router.refresh(); router.push(`/user/${user.username}`); } else { router.push('/login'); } }} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${user && pathname === `/user/${user.username}` ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+          <button onClick={() => { if (isAuthenticated && user) { if (isBusiness(user.accountType)) { router.refresh(); router.push(`/user/${user.username}`); } else { router.push('/profile'); } } else { router.push('/login'); } }} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${user && (isBusiness(user.accountType) ? pathname === `/user/${user.username}` : pathname === '/profile') ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className={`fa-solid ${isAuthenticated ? 'fa-user' : 'fa-right-to-bracket'} text-[17px]`} aria-hidden="true"></i>
             <span className="text-[9px] sm:text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Prijava'}</span>
           </button>
