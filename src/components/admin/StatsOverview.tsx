@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getModerationStats } from '@/services/moderationService';
-import { MOCK_ACTIONS } from '@/lib/mock-moderation-data';
+import { getModerationStats, getActions } from '@/services/moderationService';
+import type { ModerationAction } from '@/lib/database.types';
 import { ACTION_LABELS } from '@/lib/mock-moderation-data';
 
 interface Stats {
@@ -17,9 +17,11 @@ interface Stats {
 
 export default function StatsOverview() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [actions, setActions] = useState<ModerationAction[]>([]);
 
   useEffect(() => {
     getModerationStats().then(setStats);
+    getActions(5).then(setActions);
   }, []);
 
   if (!stats) {
@@ -110,7 +112,7 @@ export default function StatsOverview() {
           Posljednje akcije
         </h3>
         <div className="space-y-3">
-          {MOCK_ACTIONS.slice(0, 5).map(action => {
+          {actions.map(action => {
             const time = new Date(action.created_at);
             const timeStr = `${time.getDate()}.${time.getMonth() + 1}. ${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
             const actionLabel = ACTION_LABELS[action.action_type] || action.action_type;

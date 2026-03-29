@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { getReports, updateReportStatus, logAction, type ReportFilters } from '@/services/moderationService';
+import { useAuth } from '@/lib/auth';
 import { REASON_LABELS, STATUS_LABELS } from '@/lib/mock-moderation-data';
 import type { ModerationStatus, ReportReason, ModerationReport } from '@/lib/database.types';
 import ReportDetailDialog from './ReportDetailDialog';
@@ -33,6 +34,8 @@ type ExtendedReport = ModerationReport & {
 };
 
 export default function ReportQueue() {
+  const { user } = useAuth();
+  const adminId = user?.id ?? 'unknown';
   const [reports, setReports] = useState<ExtendedReport[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -54,9 +57,9 @@ export default function ReportQueue() {
   useEffect(() => { fetchReports(); }, [fetchReports]);
 
   const handleAction = async (reportId: string, action: 'approved' | 'rejected' | 'escalated', note?: string) => {
-    await updateReportStatus(reportId, action, 'admin_01', note);
+    await updateReportStatus(reportId, action, adminId, note);
     await logAction({
-      admin_id: 'admin_01',
+      admin_id: adminId,
       report_id: reportId,
       action_type: action === 'approved' ? 'approve' : action === 'rejected' ? 'reject' : 'escalate',
       reason: note,
@@ -83,9 +86,9 @@ export default function ReportQueue() {
 
   const bulkAction = async (action: 'approved' | 'rejected') => {
     for (const id of selectedIds) {
-      await updateReportStatus(id, action, 'admin_01');
+      await updateReportStatus(id, action, adminId);
       await logAction({
-        admin_id: 'admin_01',
+        admin_id: adminId,
         report_id: id,
         action_type: action === 'approved' ? 'approve' : 'reject',
       });

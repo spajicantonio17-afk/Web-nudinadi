@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAllUsers, getUserWarnings, getUserBans, isUserBannedMock } from '@/services/moderationService';
+import { getAllUsers, getUserWarnings, getUserBans, getActiveBannedUserIds } from '@/services/moderationService';
 import type { Profile } from '@/lib/database.types';
 import UserDetailDialog from './UserDetailDialog';
 
@@ -12,13 +12,18 @@ export default function UserManagement() {
   const [search, setSearch] = useState('');
   const [bannedOnly, setBannedOnly] = useState(false);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  const [bannedIds, setBannedIds] = useState<Set<string>>(new Set());
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, count } = await getAllUsers({ search: search || undefined, bannedOnly });
+      const [{ data, count }, bannedSet] = await Promise.all([
+        getAllUsers({ search: search || undefined, bannedOnly }),
+        getActiveBannedUserIds(),
+      ]);
       setUsers(data);
       setTotal(count);
+      setBannedIds(bannedSet);
     } finally {
       setLoading(false);
     }
@@ -83,7 +88,7 @@ export default function UserManagement() {
               </thead>
               <tbody>
                 {users.map(user => {
-                  const isBanned = isUserBannedMock(user.id);
+                  const isBanned = bannedIds.has(user.id);
                   return (
                     <tr
                       key={user.id}

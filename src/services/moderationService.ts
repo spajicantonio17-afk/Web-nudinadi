@@ -291,6 +291,18 @@ export function isUserBannedMock(userId: string): boolean {
   return MOCK_BANS.some(b => b.user_id === userId && b.is_active)
 }
 
+export async function getActiveBannedUserIds(): Promise<Set<string>> {
+  if (USE_MOCK) {
+    return new Set(MOCK_BANS.filter(b => b.is_active).map(b => b.user_id))
+  }
+  const { data, error } = await supabase
+    .from('user_bans')
+    .select('user_id')
+    .eq('is_active', true)
+  if (error) throw error
+  return new Set((data ?? []).map((b: { user_id: string }) => b.user_id))
+}
+
 // ─── AI Moderation Logs ─────────────────────────────
 
 export async function getAiLogs(filters: { flaggedOnly?: boolean; limit?: number } = {}) {

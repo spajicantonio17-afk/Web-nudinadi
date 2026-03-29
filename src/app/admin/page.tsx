@@ -7,11 +7,13 @@ import StatsOverview from '@/components/admin/StatsOverview';
 import ReportQueue from '@/components/admin/ReportQueue';
 import UserManagement from '@/components/admin/UserManagement';
 import AiModerationTab from '@/components/admin/AiModerationTab';
+import ProductManagement from '@/components/admin/ProductManagement';
 
 const TABS = [
   { key: 'stats', label: 'Pregled', icon: 'fa-chart-line' },
   { key: 'queue', label: 'Red za pregled', icon: 'fa-shield-halved' },
   { key: 'users', label: 'Korisnici', icon: 'fa-users' },
+  { key: 'products', label: 'Oglasi', icon: 'fa-box-open' },
   { key: 'ai', label: 'AI Moderacija', icon: 'fa-robot' },
 ] as const;
 
@@ -86,6 +88,7 @@ function AdminDashboardContent() {
         {activeTab === 'stats' && <StatsOverview />}
         {activeTab === 'queue' && <ReportQueue />}
         {activeTab === 'users' && <UserManagement />}
+        {activeTab === 'products' && <ProductManagement />}
         {activeTab === 'ai' && <AiModerationTab />}
       </div>
     </MainLayout>

@@ -146,7 +146,7 @@ export default function PlansPage() {
               </div>
               <div className="mb-4">
                 <p className="text-2xl font-black text-blue-400">5 €<span className="text-sm font-bold text-[var(--c-text3)]">/mjesečno</span></p>
-                <p className="text-[9px] text-[var(--c-text3)]">~9,78 KM · bez ugovora</p>
+                <p className="text-[9px] text-[var(--c-text3)]">bez ugovora</p>
               </div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 30 aktivnih oglasa</li>
@@ -171,6 +171,9 @@ export default function PlansPage() {
 
             {/* BUSINESS */}
             <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-bl-[8px]">
+                <span className="text-[8px] font-black text-white uppercase tracking-wider">Angebot</span>
+              </div>
               <div className="mb-4">
                 <div className="w-10 h-10 rounded-[4px] bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mb-3">
                   <i className="fa-solid fa-building text-purple-400 text-sm"></i>
@@ -179,8 +182,11 @@ export default function PlansPage() {
                 <p className="text-[10px] text-[var(--c-text3)] mt-1">Za firme, agencije i profesionalne prodavače</p>
               </div>
               <div className="mb-4">
-                <p className="text-2xl font-black text-purple-400">30 €<span className="text-sm font-bold text-[var(--c-text3)]">/mjesečno</span></p>
-                <p className="text-[9px] text-[var(--c-text3)]">~58,67 KM · bez ugovora</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-2xl font-black text-purple-400">30 €<span className="text-sm font-bold text-[var(--c-text3)]">/mjesečno</span></p>
+                  <p className="text-sm font-bold text-[var(--c-text3)] line-through opacity-60">50 €</p>
+                </div>
+                <p className="text-[9px] text-[var(--c-text3)]">bez ugovora</p>
               </div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Neograničeno oglasa</li>
