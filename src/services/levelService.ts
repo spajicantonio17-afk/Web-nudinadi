@@ -33,10 +33,7 @@ function getXpForActivity(type: ActivityType, metadata?: { rating?: number }): n
   switch (type) {
     case 'upload': return XP_REWARDS.upload
     case 'sale': return XP_REWARDS.sale
-    case 'review': {
-      const stars = metadata?.rating || 5
-      return XP_REWARDS.review_by_stars[stars] ?? 15
-    }
+    case 'review': return XP_REWARDS.review
     case 'login': return XP_REWARDS.daily_login
     case 'verification': return XP_REWARDS.verification
     default: return 0

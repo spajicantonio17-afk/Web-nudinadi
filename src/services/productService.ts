@@ -285,7 +285,27 @@ export async function deleteProduct(id: string): Promise<void> {
 // ─── Mark as Sold ─────────────────────────────────────
 
 export async function markProductAsSold(id: string): Promise<Product> {
-  return updateProduct(id, { status: 'sold' })
+  const supabase = getSupabase()
+
+  // Fetch product owner before updating (needed for email notification)
+  const { data: product } = await supabase
+    .from('products')
+    .select('user_id')
+    .eq('id', id)
+    .single()
+
+  const result = await updateProduct(id, { status: 'sold' })
+
+  // Fire & forget email notification to seller
+  if (product?.user_id) {
+    fetch('/api/notifications/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'product_sold', recipientId: product.user_id, productId: id }),
+    }).catch(() => {/* non-critical */})
+  }
+
+  return result
 }
 
 // ─── Archive / Unarchive ──────────────────────────────

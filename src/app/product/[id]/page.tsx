@@ -12,7 +12,7 @@ import { isPro, getPlanLimits } from '@/lib/plans';
 import ProBadge from '@/components/ProBadge';
 import SellerVerificationBadges from '@/components/SellerVerificationBadges';
 import { getProductQuestions, askQuestion, answerQuestion, type QuestionWithUser } from '@/services/questionService';
-import { createReview, hasUserReviewed } from '@/services/reviewService';
+import { createReview, hasUserReviewed, hasConfirmedTransaction } from '@/services/reviewService';
 import { useAuth } from '@/lib/auth';
 import type { ProductFull } from '@/lib/database.types';
 import { BAM_RATE } from '@/lib/constants';
@@ -80,6 +80,7 @@ export default function ProductDetailPage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+  const [canReview, setCanReview] = useState(false);
 
   useEffect(() => {
     if (!params.id) return;
@@ -99,9 +100,13 @@ export default function ProductDetailPage() {
       .catch(() => {});
   }, [params.id]);
 
-  // Prüfen ob User schon bewertet hat (wenn User geladen und nicht Verkäufer)
+  // Check confirmed transaction + already reviewed
   useEffect(() => {
-    if (!user?.id || !product?.seller_id || user.id === product.seller_id) return;
+    if (!user?.id || !product?.seller_id || !product?.id) return;
+    hasConfirmedTransaction(user.id, product.id)
+      .then(setCanReview)
+      .catch(() => {});
+    if (user.id === product.seller_id) return;
     hasUserReviewed(user.id, product.seller_id, product.id)
       .then(setAlreadyReviewed)
       .catch(() => {});
@@ -704,8 +709,8 @@ export default function ProductDetailPage() {
           </div>
         )}
 
-        {/* REVIEW SECTION — nur für eingeloggte Nicht-Verkäufer */}
-        {user && product.seller_id !== user.id && (
+        {/* REVIEW SECTION — samo za učesnike potvrđene transakcije */}
+        {user && canReview && (
           <div className="mt-8">
             <div className="bg-[var(--c-card-alt)] border border-[var(--c-border2)] p-4 sm:p-6 md:p-8 rounded-sm">
               <h3 className="text-sm font-bold text-[var(--c-text)] uppercase tracking-widest mb-6 flex items-center gap-2">

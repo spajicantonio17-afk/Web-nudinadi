@@ -17,6 +17,7 @@ import ProBadge from '@/components/ProBadge';
 import BusinessProfileEditor from '@/components/BusinessProfileEditor';
 import TeamManager from '@/components/TeamManager';
 import TeamInvitations from '@/components/TeamInvitations';
+import EmailNotificationSettings from '@/components/EmailNotificationSettings';
 import { isPro, isBusiness } from '@/lib/plans';
 import { useToast } from '@/components/Toast';
 import VerificationProgress from '@/components/VerificationProgress';
@@ -967,6 +968,9 @@ function ProfileContent() {
             <TeamManager userId={user.id} />
           </>
         )}
+
+        {/* EMAIL NOTIFICATION SETTINGS */}
+        {user && <EmailNotificationSettings user={user} />}
 
         {/* COMPACT TABS WITH COUNTS */}
         <div>

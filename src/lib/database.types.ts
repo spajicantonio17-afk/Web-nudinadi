@@ -56,6 +56,10 @@ export interface Profile {
   business_categories: string[] | null
   business_verified: boolean
   website_url: string | null
+  email_notif_messages: boolean | null
+  email_notif_sold: boolean | null
+  email_notif_follower: boolean | null
+  email_notif_favorite: boolean | null
   created_at: string
   updated_at: string
 }
@@ -703,7 +707,7 @@ export interface Database {
 export const XP_REWARDS = {
   upload: 10,
   sale: 50,
-  review_by_stars: { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 } as Record<number, number>,
+  review: 30,
   daily_login: 5,
   verification: 500,
 } as const

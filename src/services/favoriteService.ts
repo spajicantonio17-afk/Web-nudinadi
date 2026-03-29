@@ -26,6 +26,24 @@ export async function addFavorite(userId: string, productId: string): Promise<Fa
     .single()
 
   if (error) throw error
+
+  // Fire & forget email notification
+  supabase
+    .from('products')
+    .select('user_id')
+    .eq('id', productId)
+    .single()
+    .then(({ data: product }) => {
+      if (product?.user_id && product.user_id !== userId) {
+        fetch('/api/notifications/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'new_favorite', recipientId: product.user_id, productId }),
+        }).catch(() => {/* non-critical */})
+      }
+    })
+    .catch(() => {/* non-critical */})
+
   return data
 }
 

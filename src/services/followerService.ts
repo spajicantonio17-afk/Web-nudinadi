@@ -11,6 +11,13 @@ export async function followUser(followerId: string, followedId: string): Promis
     .insert({ follower_id: followerId, followed_id: followedId })
 
   if (error) throw error
+
+  // Fire & forget email notification
+  fetch('/api/notifications/email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'new_follower', recipientId: followedId }),
+  }).catch(() => {/* non-critical */})
 }
 
 // ─── Unfollow a User ─────────────────────────────────────

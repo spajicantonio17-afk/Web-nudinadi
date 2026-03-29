@@ -118,3 +118,29 @@ export async function sendAccountBanEmail(to: string, reason: string, expiresAt?
     `),
   })
 }
+
+export async function sendNewFavoriteEmail(to: string, likerName: string, productTitle: string): Promise<void> {
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: `${likerName} je lajkovao/la vaš oglas`,
+    html: wrapTemplate(`
+      <h2 style="margin:0 0 12px;color:#1a1a2e">Novi lajk!</h2>
+      <p style="color:#444;font-size:14px"><strong>${likerName}</strong> je dodao/la vaš oglas <strong>${productTitle}</strong> u omiljene.</p>
+      <a href="${APP_URL}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:14px;margin-top:12px">Pogledaj oglas</a>
+    `),
+  })
+}
+
+export async function sendNewFollowerEmail(to: string, followerName: string): Promise<void> {
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: `${followerName} vas prati`,
+    html: wrapTemplate(`
+      <h2 style="margin:0 0 12px;color:#1a1a2e">Novi pratilac!</h2>
+      <p style="color:#444;font-size:14px"><strong>${followerName}</strong> vas sada prati na NudiNađi.</p>
+      <a href="${APP_URL}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:14px;margin-top:12px">Pogledaj profil</a>
+    `),
+  })
+}

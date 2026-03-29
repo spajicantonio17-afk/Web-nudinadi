@@ -43,7 +43,7 @@ export async function createReview(review: ReviewInsert): Promise<Review> {
 
   // Award XP based on rating (non-critical — don't fail the review)
   try {
-    await logActivity(review.reviewer_id, 'review', { rating: review.rating })
+    await logActivity(review.reviewer_id, 'review')
   } catch {
     // XP award failed silently
   }
@@ -74,6 +74,19 @@ export async function deleteReview(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) throw error
+}
+
+// ─── Check if User Has a Confirmed Transaction for Product ───────────────
+
+export async function hasConfirmedTransaction(userId: string, productId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('transactions')
+    .select('id')
+    .eq('product_id', productId)
+    .eq('status', 'confirmed')
+    .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+    .maybeSingle()
+  return !!data
 }
 
 // ─── Check if User Already Reviewed ───────────────────
