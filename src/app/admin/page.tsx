@@ -45,9 +45,15 @@ function AdminDashboardContent() {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
+          <div className="text-center max-w-sm mx-auto">
             <i className="fa-solid fa-lock text-4xl text-[var(--c-text-muted)] mb-3 block" />
-            <p className="text-[var(--c-text2)]">Nemate pristup ovoj stranici.</p>
+            <p className="text-[var(--c-text2)] mb-4">Nemate pristup ovoj stranici.</p>
+            <div className="text-left bg-gray-100 rounded-lg p-3 text-xs font-mono space-y-1">
+              <div>user: {user ? user.username : 'null'}</div>
+              <div>email: {user ? user.email : '—'}</div>
+              <div>isAdmin: {String(isAdmin)}</div>
+              <div>isAuth: {String(!!user)}</div>
+            </div>
           </div>
         </div>
       </MainLayout>
