@@ -84,7 +84,7 @@ export const CATEGORIES: Category[] = [
   {
     id: 'vozila', name: 'Vozila', icon: 'fa-car',
     subCategories: [
-      { name: 'Osobni automobili', items: ['Sedan', 'Karavan', 'Hatchback', 'SUV / Crossover', 'Coupe / Cabrio', 'Pickup', 'Van / Minivan', 'Oldtimeri'] },
+      { name: 'Osobni automobili' },
       { name: 'Motocikli i skuteri', items: ['Cruiser / chopper', 'Električni motocikli i skuteri', 'Enduro i cross', 'Naked / streetfighter', 'Skuteri i mopedi', 'Sport motocikli', 'Tricikli i quadricikli'] },
       { name: 'Teretna vozila', items: ['Cisterne', 'Hladnjače', 'Kamioni (3.5t – 7.5t)', 'Kiperi i kiper prikolice', 'Kombiji i dostavna vozila (do 3.5t)', 'Tegljači i vučna vozila', 'Teški kamioni (7.5t+)'] },
       { name: 'Autobusi i minibusi', items: ['Gradski autobusi', 'Minibusi (do 20 mjesta)', 'Školski autobusi', 'Turistički autobusi'] },

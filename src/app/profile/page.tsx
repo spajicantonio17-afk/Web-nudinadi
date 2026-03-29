@@ -252,6 +252,12 @@ function ProfileContent() {
     }
   }, [isLoading, isAuthenticated, router]);
 
+  // Always re-fetch profile data on mount to bust Next.js router cache
+  useEffect(() => {
+    refreshProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Fetch products
   useEffect(() => {
     if (!user?.id) return;

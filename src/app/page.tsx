@@ -978,27 +978,9 @@ function HomeContent() {
                       </div>
                     </div>
 
-                    {/* Example chips */}
-                    <div className="px-4 py-3 border-b border-[var(--c-border)]">
-                      <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-2">{t('home.tryLikeThis')}</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {[
-                          'BMW 320 Limousine',
-                          'Stan Sarajevo 80m²',
-                          'iPhone 15 Pro Max',
-                          'Laptop do 800',
-                          'od 10.000 do 25.000',
-                          'Sofa kao nova',
-                        ].map((ex) => (
-                          <button
-                            key={ex}
-                            onMouseDown={() => { handleSearchChange(ex); setShowSearchHints(false); }}
-                            className="px-2.5 py-1 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[4px] text-[12px] font-semibold text-[var(--c-text2)] hover:bg-[var(--c-accent-light)] hover:border-[var(--c-accent)]/20 hover:text-[var(--c-accent)] transition-all duration-150"
-                          >
-                            {ex}
-                          </button>
-                        ))}
-                      </div>
+                    {/* Enter hint */}
+                    <div className="px-4 py-2.5 border-b border-[var(--c-border)] flex items-center gap-1.5">
+                      <p className="text-[12px] text-[var(--c-text3)]">Pritisni <kbd className="px-1.5 py-0.5 bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-[4px] text-[11px] font-bold text-[var(--c-text2)]">Enter</kbd> za aktivaciju AI pretrage</p>
                     </div>
 
                     {/* AI capabilities */}
@@ -1348,6 +1330,7 @@ function HomeContent() {
                                 setSelectedSubGroup(sub.name);
                               } else {
                                 handleCategoryChange(selectedCategory.name);
+                                setSelectedSubCategory(sub.name);
                                 setShowAllCatsPopup(false);
                                 setSelectedSubGroup(null);
                               }
@@ -1384,7 +1367,7 @@ function HomeContent() {
 
                       {/* "Show all in sub-group" button */}
                       <button
-                        onClick={() => { handleCategoryChange(selectedCategory.name); setShowAllCatsPopup(false); setSelectedSubGroup(null); }}
+                        onClick={() => { handleCategoryChange(selectedCategory.name); setSelectedSubCategory(selectedSubGroup); setShowAllCatsPopup(false); setSelectedSubGroup(null); }}
                         className="w-full text-left blue-gradient text-white p-3.5 rounded-[6px] flex justify-between items-center shadow-accent mb-3 hover:brightness-110 active:scale-[0.99] transition-all duration-150 group"
                       >
                         <span className="text-[12px] font-bold uppercase tracking-wider">{t('home.showAllIn', { name: selectedSubGroup || '' })}</span>
@@ -1398,7 +1381,7 @@ function HomeContent() {
                         {selectedSubGroupData.items!.map((item, idx) => (
                           <button
                             key={idx}
-                            onClick={() => { handleCategoryChange(selectedCategory.name); setShowAllCatsPopup(false); setSelectedSubGroup(null); }}
+                            onClick={() => { handleCategoryChange(selectedCategory.name); setSelectedSubCategory(selectedSubGroup); setSelectedSubItem(item); setShowAllCatsPopup(false); setSelectedSubGroup(null); }}
                             className="text-left bg-[var(--c-card-alt)] border border-[var(--c-border)] px-4 py-3 rounded-[6px] flex justify-between items-center hover:bg-[var(--c-hover)] hover:border-[var(--c-accent)]/30 hover:shadow-subtle transition-all duration-150 group active:scale-[0.99]"
                           >
                             <span className="text-[12px] font-semibold text-[var(--c-text3)] group-hover:text-[var(--c-text)] transition-colors">{item}</span>
