@@ -7,7 +7,7 @@ import { uploadProductImage } from '@/services/uploadService';
 import { useToast } from '@/components/Toast';
 import type { AuthUser } from '@/lib/auth';
 import { getSupabase } from '@/lib/supabase';
-import { BUSINESS_DAYS, CATEGORIES } from '@/lib/constants';
+import { BUSINESS_DAYS, BUSINESS_TYPES } from '@/lib/constants';
 
 interface Props {
   user: AuthUser;
@@ -27,7 +27,8 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
   const [bannerImage, setBannerImage] = useState('');
   const [address, setAddress] = useState('');
   const [website, setWebsite] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [category, setCategory] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('');
   const [hours, setHours] = useState<Record<string, string>>({});
 
   // Load existing data
@@ -35,7 +36,7 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
     const supabase = getSupabase();
     supabase
       .from('profiles')
-      .select('company_name, company_logo, banner_image, business_address, business_hours, business_categories, website_url')
+      .select('company_name, company_logo, banner_image, business_address, business_hours, business_category, website_url')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
@@ -45,7 +46,12 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
           setBannerImage(data.banner_image || '');
           setAddress(data.business_address || '');
           setWebsite(data.website_url || '');
-          setSelectedCategories((data.business_categories as string[]) || []);
+          const loadedCat = data.business_category || '';
+          setCategory(loadedCat);
+          if (loadedCat) {
+            const group = BUSINESS_TYPES.find(g => g.subcategories.includes(loadedCat as never));
+            if (group) setSelectedGroup(group.id);
+          }
           setHours(data.business_hours as Record<string, string> || {});
         }
       });
@@ -104,7 +110,7 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
         banner_image: bannerImage || null,
         business_address: address.trim() || null,
         business_hours: Object.keys(hours).length > 0 ? hours : null,
-        business_categories: selectedCategories.length > 0 ? selectedCategories : null,
+        business_category: category || null,
         website_url: url || null,
       });
       showToast('Poslovni profil ažuriran!');
@@ -203,34 +209,59 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
         />
       </div>
 
-      {/* Categories — Multi-Select */}
+      {/* Category — Two-step selection */}
       <div>
-        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">
-          Kategorija djelatnosti <span className="text-[var(--c-text-muted)] font-normal normal-case">(odaberi sve koje vrijede)</span>
-        </label>
+        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">Kategorija djelatnosti</label>
+
+        {/* Step 1: Main group */}
         <div className="grid grid-cols-2 gap-1.5">
-          {CATEGORIES.map(cat => {
-            const isSelected = selectedCategories.includes(cat.id);
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategories(prev =>
-                  isSelected ? prev.filter(id => id !== cat.id) : [...prev, cat.id]
-                )}
-                className={`flex items-center gap-2 px-3 py-2 rounded-[8px] border text-[11px] font-semibold text-left transition-all ${
-                  isSelected
-                    ? 'bg-purple-500/10 border-purple-500/40 text-purple-600'
-                    : 'bg-[var(--c-bg)] border-[var(--c-border)] text-[var(--c-text3)] hover:border-purple-500/30'
-                }`}
-              >
-                <i className={`fa-solid ${cat.icon} text-[10px] shrink-0 ${isSelected ? 'text-purple-500' : 'text-[var(--c-text-muted)]'}`}></i>
-                <span className="truncate">{cat.name}</span>
-                {isSelected && <i className="fa-solid fa-check text-[8px] ml-auto text-purple-500 shrink-0"></i>}
-              </button>
-            );
-          })}
+          {BUSINESS_TYPES.map(group => (
+            <button
+              key={group.id}
+              type="button"
+              onClick={() => { setSelectedGroup(group.id); setCategory(''); }}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-[10px] border text-[11px] font-bold text-left transition-all ${
+                selectedGroup === group.id
+                  ? 'bg-purple-500/10 border-purple-500/50 text-purple-600'
+                  : 'bg-[var(--c-bg)] border-[var(--c-border)] text-[var(--c-text3)] hover:border-purple-400/40'
+              }`}
+            >
+              <i className={`fa-solid ${group.icon} text-[10px] shrink-0 ${selectedGroup === group.id ? 'text-purple-500' : 'text-[var(--c-text-muted)]'}`}></i>
+              <span className="truncate leading-tight">{group.name}</span>
+            </button>
+          ))}
         </div>
+
+        {/* Step 2: Subcategory pills */}
+        {selectedGroup && (
+          <div className="mt-3">
+            <p className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-wider mb-2">Odaberi vrstu djelatnosti:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {BUSINESS_TYPES.find(g => g.id === selectedGroup)?.subcategories.map(sub => (
+                <button
+                  key={sub}
+                  type="button"
+                  onClick={() => setCategory(sub)}
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
+                    category === sub
+                      ? 'bg-purple-500 border-purple-500 text-white shadow-sm shadow-purple-500/30'
+                      : 'bg-[var(--c-bg)] border-[var(--c-border)] text-[var(--c-text3)] hover:border-purple-400/50'
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Current selection display */}
+        {category && (
+          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-600 font-semibold">
+            <i className="fa-solid fa-check-circle text-[9px]"></i>
+            Odabrano: <span className="font-black">{category}</span>
+          </div>
+        )}
       </div>
 
       {/* Business Hours */}

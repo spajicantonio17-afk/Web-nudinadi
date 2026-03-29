@@ -17,9 +17,9 @@ export default function ProBadge({ accountType }: ProBadgeProps) {
 
   if (accountType === 'business') {
     return (
-      <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-[3px] border border-amber-400/60 text-amber-600 bg-amber-50 leading-none tracking-wide">
-        <i className="fa-solid fa-building text-[7px]"></i>
-        BIZ
+      <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase px-2 py-[3px] rounded-full bg-gradient-to-r from-amber-500 to-orange-400 text-white leading-none tracking-widest shadow-sm shadow-amber-500/40">
+        <i className="fa-solid fa-crown text-[6px]"></i>
+        BUSINESS
       </span>
     );
   }

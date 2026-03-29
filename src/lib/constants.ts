@@ -28,6 +28,57 @@ export const BUSINESS_CATEGORIES = [
   'Općenito',
 ] as const;
 
+export const BUSINESS_TYPES = [
+  {
+    id: 'vozila',
+    name: 'Vozila & Transport',
+    icon: 'fa-car',
+    subcategories: ['Auto salon', 'Auto servis i mehanika', 'Prodaja auto dijelova', 'Vulkanizer', 'Autopraonanica', 'Prevoz i logistika'],
+  },
+  {
+    id: 'moda',
+    name: 'Moda & Ljepota',
+    icon: 'fa-shirt',
+    subcategories: ['Odjeća i obuća', 'Obuća i torbe', 'Frizerski salon', 'Kozmetički salon', 'Salon za nokte', 'Tattoo studio'],
+  },
+  {
+    id: 'dom',
+    name: 'Dom & Interijer',
+    icon: 'fa-couch',
+    subcategories: ['Namještaj', 'Bijela tehnika', 'Građevinski materijal', 'Uređenje doma', 'Vrtlarstvo'],
+  },
+  {
+    id: 'hrana',
+    name: 'Hrana & Piće',
+    icon: 'fa-utensils',
+    subcategories: ['Restoran / Kafić', 'Pekara i slastičarna', 'Dostava hrane', 'Catering'],
+  },
+  {
+    id: 'tehnologija',
+    name: 'Tehnologija',
+    icon: 'fa-laptop',
+    subcategories: ['Prodavnica elektronike', 'Servis računara i mobitela', 'IT usluge', 'Foto i video oprema'],
+  },
+  {
+    id: 'zdravlje',
+    name: 'Zdravlje & Sport',
+    icon: 'fa-heart-pulse',
+    subcategories: ['Gym / Fitness centar', 'Sportska oprema', 'Apoteka', 'Medicinska ordinacija', 'Veterinarska ordinacija'],
+  },
+  {
+    id: 'nekretnine',
+    name: 'Nekretnine & Gradnja',
+    icon: 'fa-building',
+    subcategories: ['Agencija za nekretnine', 'Građevinska firma', 'Unutarnje uređenje', 'Arhitektura i dizajn'],
+  },
+  {
+    id: 'ostalo',
+    name: 'Ostalo',
+    icon: 'fa-store',
+    subcategories: ['Opća trgovina', 'Zabava i događaji', 'Fotografija i video', 'Pravne usluge', 'Računovodstvo', 'Obrazovanje i kursevi'],
+  },
+] as const;
+
 export const CATEGORIES: Category[] = [
   // ─── 1. VOZILA ────────────────────────────────────────────
   {

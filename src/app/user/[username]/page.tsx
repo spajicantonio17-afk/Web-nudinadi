@@ -12,7 +12,7 @@ import { getOrCreateConversation } from '@/services/messageService';
 import { isFollowing as checkIsFollowing, followUser, unfollowUser } from '@/services/followerService';
 import { blockUser, unblockUser, isBlocked as checkIsBlocked } from '@/services/blockService';
 import type { Profile, ProductWithSeller, ReviewWithUsers } from '@/lib/database.types';
-import { BAM_RATE, BUSINESS_DAY_KEYS, CATEGORIES } from '@/lib/constants';
+import { BAM_RATE, BUSINESS_DAY_KEYS } from '@/lib/constants';
 import ProBadge from '@/components/ProBadge';
 import { getCurrencyMode, eurToKm } from '@/lib/currency';
 import { isBusiness } from '@/lib/plans';
@@ -250,7 +250,7 @@ function UserProfileContent() {
 
         {/* ── BUSINESS BANNER (only for business accounts) ── */}
         {isBiz && (
-          <div className="relative bg-[var(--c-card)] rounded-[24px] overflow-hidden border border-purple-500/30">
+          <div className="relative bg-[var(--c-card)] rounded-[24px] overflow-hidden border border-amber-400/20 shadow-sm">
             {/* Edit button for owner */}
             {isOwnProfile && (
               <button
@@ -261,83 +261,87 @@ function UserProfileContent() {
                 Uredi
               </button>
             )}
+
             {/* Banner Image */}
-            <div className="h-40 w-full overflow-hidden">
+            <div className="h-44 w-full overflow-hidden">
               {profile.banner_image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={profile.banner_image} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-r from-amber-500/20 to-purple-500/20" />
+                <div className="w-full h-full bg-gradient-to-br from-amber-400/30 via-orange-300/20 to-purple-500/20" />
               )}
             </div>
 
-            {/* Logo + Company Name overlay */}
-            <div className="px-5 pb-4 -mt-7 relative z-10">
-              <div className="flex items-end gap-3">
-                <div className="w-[60px] h-[60px] rounded-[8px] border-2 border-white shadow-lg overflow-hidden shrink-0 bg-[var(--c-card)]">
+            {/* Logo + Company Name */}
+            <div className="px-5 pb-4 -mt-8 relative z-10">
+              <div className="flex items-end gap-4">
+                <div className="w-[68px] h-[68px] rounded-[14px] border-[3px] border-white shadow-xl overflow-hidden shrink-0 bg-[var(--c-card)]">
                   {profile.company_logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={profile.company_logo} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[var(--c-hover)]">
-                      <i className="fa-solid fa-building text-[var(--c-text-muted)] text-xl"></i>
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
+                      <i className="fa-solid fa-building text-amber-400 text-2xl"></i>
                     </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0 pb-1">
-                  <div className="flex items-center gap-1.5">
-                    <h2 className="text-lg font-black text-[var(--c-text)] truncate">{profile.company_name || profile.username}</h2>
+                <div className="flex-1 min-w-0 pb-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-xl font-black text-[var(--c-text)] truncate leading-tight">{profile.company_name || profile.username}</h2>
                     <ProBadge accountType={profile.account_type} />
+                    {profile.business_verified && (
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                        <i className="fa-solid fa-circle-check text-[8px]"></i>
+                        {t('userProfile.verifiedBusiness')}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-[11px] text-[var(--c-text3)]">@{profile.username}</p>
+                  <p className="text-[11px] text-[var(--c-text3)] mt-0.5">@{profile.username}</p>
                 </div>
               </div>
-              {profile.business_verified && (
-                <div className="flex items-center gap-1.5 text-emerald-500 text-[10px] font-bold mt-2">
-                  <i className="fa-solid fa-circle-check"></i> {t('userProfile.verifiedBusiness')}
-                </div>
-              )}
             </div>
 
             {/* Business Info */}
-            <div className="px-5 pb-5 space-y-1.5">
-              {profile.business_address && (
-                <div className="flex items-center gap-2 text-[10px] text-[var(--c-text2)]">
-                  <i className="fa-solid fa-location-dot text-[var(--c-text-muted)] w-3 text-center"></i>
-                  <span>{profile.business_address}</span>
-                </div>
-              )}
-              {profile.business_hours && (
-                <div className="flex items-center gap-2 text-[10px] text-[var(--c-text2)]">
-                  <i className="fa-solid fa-clock text-[var(--c-text-muted)] w-3 text-center"></i>
-                  <span>
-                    {t('userProfile.todayHours')}{' '}
-                    <span className={(profile.business_hours as Record<string, string>)[todayDayKey] === 'Zatvoreno' ? 'text-red-400 font-bold' : 'font-bold text-[var(--c-text)]'}>
-                      {(profile.business_hours as Record<string, string>)[todayDayKey] || t('userProfile.unknown')}
-                    </span>
-                  </span>
-                </div>
-              )}
-              {profile.website_url && (
-                <div className="flex items-center gap-2 text-[10px]">
-                  <i className="fa-solid fa-globe text-[var(--c-text-muted)] w-3 text-center"></i>
-                  <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline truncate">
-                    {profile.website_url.replace(/^https?:\/\//, '')}
-                  </a>
-                </div>
-              )}
-              {profile.business_categories && profile.business_categories.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-0.5">
-                  {profile.business_categories.map(catId => {
-                    const cat = CATEGORIES.find(c => c.id === catId);
-                    if (!cat) return null;
-                    return (
-                      <span key={catId} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--c-hover)] border border-[var(--c-border)] text-[9px] font-semibold text-[var(--c-text2)]">
-                        <i className={`fa-solid ${cat.icon} text-[8px] text-[var(--c-text-muted)]`}></i>
-                        {cat.name}
+            <div className="px-5 pb-5 space-y-2 border-t border-[var(--c-border)] pt-3 mx-5 -mx-0">
+              <div className="space-y-1.5">
+                {profile.business_address && (
+                  <div className="flex items-center gap-2.5 text-[11px] text-[var(--c-text2)]">
+                    <div className="w-5 h-5 rounded-[6px] bg-[var(--c-hover)] flex items-center justify-center shrink-0">
+                      <i className="fa-solid fa-location-dot text-[9px] text-amber-500"></i>
+                    </div>
+                    <span>{profile.business_address}</span>
+                  </div>
+                )}
+                {profile.business_hours && (
+                  <div className="flex items-center gap-2.5 text-[11px] text-[var(--c-text2)]">
+                    <div className="w-5 h-5 rounded-[6px] bg-[var(--c-hover)] flex items-center justify-center shrink-0">
+                      <i className="fa-solid fa-clock text-[9px] text-blue-400"></i>
+                    </div>
+                    <span>
+                      {t('userProfile.todayHours')}{' '}
+                      <span className={(profile.business_hours as Record<string, string>)[todayDayKey] === 'Zatvoreno' ? 'text-red-400 font-bold' : 'font-bold text-[var(--c-text)]'}>
+                        {(profile.business_hours as Record<string, string>)[todayDayKey] || t('userProfile.unknown')}
                       </span>
-                    );
-                  })}
+                    </span>
+                  </div>
+                )}
+                {profile.website_url && (
+                  <div className="flex items-center gap-2.5 text-[11px]">
+                    <div className="w-5 h-5 rounded-[6px] bg-[var(--c-hover)] flex items-center justify-center shrink-0">
+                      <i className="fa-solid fa-globe text-[9px] text-purple-400"></i>
+                    </div>
+                    <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline truncate font-medium">
+                      {profile.website_url.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                )}
+              </div>
+              {profile.business_category && (
+                <div className="pt-1">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-bold text-amber-700">
+                    <i className="fa-solid fa-tag text-[8px]"></i>
+                    {profile.business_category}
+                  </span>
                 </div>
               )}
             </div>
