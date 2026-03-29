@@ -7,24 +7,24 @@ import type { ProductFull, ProductStatus } from '@/lib/database.types';
 const STATUS_LABELS: Record<ProductStatus, string> = {
   active: 'Aktivan',
   sold: 'Prodan',
-  pending: 'Na čekanju',
-  blocked: 'Blokiran',
+  pending_sale: 'Na čekanju',
+  archived: 'Arhiviran',
   draft: 'Nacrt',
 };
 
 const STATUS_COLORS: Record<ProductStatus, string> = {
   active: 'bg-green-100 text-green-700',
   sold: 'bg-blue-100 text-blue-700',
-  pending: 'bg-amber-100 text-amber-700',
-  blocked: 'bg-red-100 text-red-700',
+  pending_sale: 'bg-amber-100 text-amber-700',
+  archived: 'bg-red-100 text-red-700',
   draft: 'bg-gray-100 text-gray-600',
 };
 
 const STATUS_FILTERS: { value: ProductStatus | ''; label: string }[] = [
   { value: '', label: 'Svi statusi' },
   { value: 'active', label: 'Aktivni' },
-  { value: 'pending', label: 'Na čekanju' },
-  { value: 'blocked', label: 'Blokirani' },
+  { value: 'pending_sale', label: 'Na čekanju' },
+  { value: 'archived', label: 'Arhivirani' },
   { value: 'sold', label: 'Prodani' },
 ];
 
