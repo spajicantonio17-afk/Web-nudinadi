@@ -53,6 +53,7 @@ export interface Profile {
   business_address: string | null
   business_hours: Record<string, string> | null
   business_category: string | null
+  business_categories: string[] | null
   business_verified: boolean
   website_url: string | null
   created_at: string

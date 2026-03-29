@@ -12,7 +12,7 @@ import { getOrCreateConversation } from '@/services/messageService';
 import { isFollowing as checkIsFollowing, followUser, unfollowUser } from '@/services/followerService';
 import { blockUser, unblockUser, isBlocked as checkIsBlocked } from '@/services/blockService';
 import type { Profile, ProductWithSeller, ReviewWithUsers } from '@/lib/database.types';
-import { BAM_RATE, BUSINESS_DAY_KEYS } from '@/lib/constants';
+import { BAM_RATE, BUSINESS_DAY_KEYS, CATEGORIES } from '@/lib/constants';
 import ProBadge from '@/components/ProBadge';
 import { getCurrencyMode, eurToKm } from '@/lib/currency';
 import { isBusiness } from '@/lib/plans';
@@ -326,10 +326,18 @@ function UserProfileContent() {
                   </a>
                 </div>
               )}
-              {profile.business_category && (
-                <div className="flex items-center gap-2 text-[10px] text-[var(--c-text2)]">
-                  <i className="fa-solid fa-tag text-[var(--c-text-muted)] w-3 text-center"></i>
-                  <span>{profile.business_category}</span>
+              {profile.business_categories && profile.business_categories.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-0.5">
+                  {profile.business_categories.map(catId => {
+                    const cat = CATEGORIES.find(c => c.id === catId);
+                    if (!cat) return null;
+                    return (
+                      <span key={catId} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--c-hover)] border border-[var(--c-border)] text-[9px] font-semibold text-[var(--c-text2)]">
+                        <i className={`fa-solid ${cat.icon} text-[8px] text-[var(--c-text-muted)]`}></i>
+                        {cat.name}
+                      </span>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -359,11 +367,17 @@ function UserProfileContent() {
 
               {/* Name + Location + Badges */}
               <div className="flex-1 min-w-0 pt-0.5">
-                <h2 className="text-base md:text-lg font-black text-[var(--c-text)] tracking-tight leading-none truncate flex items-center gap-1.5">{profile.username} <ProBadge accountType={profile.account_type} /></h2>
-                {profile.full_name && (
-                  <p className="text-xs text-[var(--c-text3)] mt-0.5 truncate">{profile.full_name}</p>
+                {isBiz ? (
+                  <p className="text-[11px] text-[var(--c-text3)] font-medium leading-none">@{profile.username}</p>
+                ) : (
+                  <>
+                    <h2 className="text-base md:text-lg font-black text-[var(--c-text)] tracking-tight leading-none truncate flex items-center gap-1.5">{profile.username} <ProBadge accountType={profile.account_type} /></h2>
+                    {profile.full_name && (
+                      <p className="text-xs text-[var(--c-text3)] mt-0.5 truncate">{profile.full_name}</p>
+                    )}
+                  </>
                 )}
-                {profile.location && (
+                {profile.location && !(isBiz && profile.business_address) && (
                   <div className="flex items-center gap-1.5 text-[var(--c-text2)] mt-1.5">
                     <i className="fa-solid fa-location-dot text-[10px] text-blue-400"></i>
                     <span className="text-[11px] font-medium truncate">{profile.location}</span>

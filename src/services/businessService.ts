@@ -12,6 +12,7 @@ export async function updateBusinessProfile(userId: string, data: {
   business_address?: string | null;
   business_hours?: Record<string, string> | null;
   business_category?: string | null;
+  business_categories?: string[] | null;
   website_url?: string | null;
 }): Promise<void> {
   const { error } = await supabase

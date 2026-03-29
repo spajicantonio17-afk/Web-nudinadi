@@ -36,7 +36,7 @@ export const MOCK_ADMIN_PROFILE: Profile = {
   account_type: 'free',
   plan_expires_at: null,
   promoted_credits: 0,
-  company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_verified: false, website_url: null,
+  company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
   created_at: '2025-01-01T00:00:00Z',
   updated_at: '2025-01-01T00:00:00Z',
 };
@@ -47,7 +47,7 @@ export const MOCK_USERS: Profile[] = [
     bio: 'Prodajem rabljenu elektroniku', phone: '+387 61 123 456', email_verified: true, phone_verified: true, level: 3, xp: 350, total_sales: 12, total_purchases: 5,
     rating_average: 4.2, location: 'Banja Luka', instagram_url: null, facebook_url: null, is_admin: false, followers_count: 0, following_count: 0,
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
-    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_verified: false, website_url: null,
+    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     created_at: '2025-06-15T10:00:00Z', updated_at: '2026-02-20T10:00:00Z',
   },
   {
@@ -55,7 +55,7 @@ export const MOCK_USERS: Profile[] = [
     bio: 'Dizajnerska odjeća i aksesori', phone: null, email_verified: true, phone_verified: false, level: 5, xp: 1200, total_sales: 38, total_purchases: 15,
     rating_average: 4.8, location: 'Sarajevo', instagram_url: null, facebook_url: null, is_admin: false, followers_count: 0, following_count: 0,
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
-    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_verified: false, website_url: null,
+    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     created_at: '2025-03-10T08:00:00Z', updated_at: '2026-02-22T14:00:00Z',
   },
   {
@@ -63,7 +63,7 @@ export const MOCK_USERS: Profile[] = [
     bio: null, phone: null, email_verified: false, phone_verified: false, level: 1, xp: 20, total_sales: 1, total_purchases: 0,
     rating_average: 2.0, location: 'Mostar', instagram_url: null, facebook_url: null, is_admin: false, followers_count: 0, following_count: 0,
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
-    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_verified: false, website_url: null,
+    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     created_at: '2026-02-01T12:00:00Z', updated_at: '2026-02-23T09:00:00Z',
   },
   {
@@ -71,7 +71,7 @@ export const MOCK_USERS: Profile[] = [
     bio: 'Knjige i vintage stvari', phone: '+387 62 789 012', email_verified: true, phone_verified: true, level: 4, xp: 700, total_sales: 22, total_purchases: 30,
     rating_average: 4.9, location: 'Tuzla', instagram_url: null, facebook_url: null, is_admin: false, followers_count: 0, following_count: 0,
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
-    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_verified: false, website_url: null,
+    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     created_at: '2025-05-20T14:00:00Z', updated_at: '2026-02-24T08:00:00Z',
   },
   {
@@ -79,7 +79,7 @@ export const MOCK_USERS: Profile[] = [
     bio: 'BUY NOW CHEAP!!!', phone: null, email_verified: false, phone_verified: false, level: 1, xp: 0, total_sales: 0, total_purchases: 0,
     rating_average: null, location: null, instagram_url: null, facebook_url: null, is_admin: false, followers_count: 0, following_count: 0,
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
-    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_verified: false, website_url: null,
+    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     created_at: '2026-02-23T22:00:00Z', updated_at: '2026-02-23T22:00:00Z',
   },
   {
@@ -87,7 +87,7 @@ export const MOCK_USERS: Profile[] = [
     bio: 'Auto dijelovi originalni', phone: null, email_verified: false, phone_verified: false, level: 2, xp: 150, total_sales: 6, total_purchases: 2,
     rating_average: 3.5, location: 'Zenica', instagram_url: null, facebook_url: null, is_admin: false, followers_count: 0, following_count: 0,
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
-    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_verified: false, website_url: null,
+    company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     created_at: '2025-09-01T10:00:00Z', updated_at: '2026-02-21T16:00:00Z',
   },
 ];
