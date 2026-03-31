@@ -75,7 +75,7 @@ interface AuthState {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
   resendVerificationEmail: () => Promise<boolean>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (knownProfile?: Profile) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -398,11 +398,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ─── Refresh Profile (re-fetch from DB) ────────────
 
-  const refreshProfile = useCallback(async () => {
+  const refreshProfile = useCallback(async (knownProfile?: Profile) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
     try {
-      const profile = await Promise.race([
+      const profile = knownProfile ?? await Promise.race([
         fetchProfile(session.user.id),
         new Promise<null>(resolve => setTimeout(() => resolve(null), 6000)),
       ]);

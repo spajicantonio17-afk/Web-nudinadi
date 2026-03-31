@@ -11,7 +11,7 @@ import { uploadAvatar } from '@/services/uploadService';
 import { getSupabase } from '@/lib/supabase';
 import { CITIES, getRegionsForCountry, getCitiesByRegion } from '@/lib/location';
 import { getCurrencyMode, eurToKm } from '@/lib/currency';
-import type { ProductWithSeller, Review, FavoriteWithProduct } from '@/lib/database.types';
+import type { Profile, ProductWithSeller, Review, FavoriteWithProduct } from '@/lib/database.types';
 import { xpForNextLevel } from '@/lib/database.types';
 import ProBadge from '@/components/ProBadge';
 import BusinessProfileEditor from '@/components/BusinessProfileEditor';
@@ -221,7 +221,7 @@ function ProfileContent() {
         return;
       }
 
-      await refreshProfile();
+      await refreshProfile(json.profile as Profile);
       setEditOpen(false);
       setSaveToast(true);
       setTimeout(() => setSaveToast(false), 2500);
