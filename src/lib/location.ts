@@ -4,7 +4,7 @@
 export interface City {
   name: string;
   region: string;
-  country: 'BiH' | 'HR';
+  country: 'BiH' | 'HR' | 'DE' | 'AT';
   lat: number;
   lng: number;
 }
@@ -195,6 +195,103 @@ export const CITIES: City[] = [
   { name: 'Vukovar', region: 'Vukovarsko-srijemska', country: 'HR', lat: 45.3517, lng: 18.9986 },
   { name: 'Vinkovci', region: 'Vukovarsko-srijemska', country: 'HR', lat: 45.2883, lng: 18.8044 },
   { name: 'Gospić', region: 'Ličko-senjska', country: 'HR', lat: 44.5461, lng: 15.3744 },
+
+  // ═══════════════════════════════════════════════════════════════
+  // DEUTSCHLAND (po saveznim zemljama)
+  // ═══════════════════════════════════════════════════════════════
+
+  // ── Bayern ──
+  { name: 'München', region: 'Bayern', country: 'DE', lat: 48.1351, lng: 11.5820 },
+  { name: 'Nürnberg', region: 'Bayern', country: 'DE', lat: 49.4521, lng: 11.0767 },
+  { name: 'Augsburg', region: 'Bayern', country: 'DE', lat: 48.3705, lng: 10.8978 },
+  { name: 'Ingolstadt', region: 'Bayern', country: 'DE', lat: 48.7631, lng: 11.4250 },
+  { name: 'Regensburg', region: 'Bayern', country: 'DE', lat: 49.0134, lng: 12.1016 },
+
+  // ── Baden-Württemberg ──
+  { name: 'Stuttgart', region: 'Baden-Württemberg', country: 'DE', lat: 48.7758, lng: 9.1829 },
+  { name: 'Mannheim', region: 'Baden-Württemberg', country: 'DE', lat: 49.4875, lng: 8.4660 },
+  { name: 'Karlsruhe', region: 'Baden-Württemberg', country: 'DE', lat: 49.0069, lng: 8.4037 },
+  { name: 'Freiburg', region: 'Baden-Württemberg', country: 'DE', lat: 47.9990, lng: 7.8421 },
+  { name: 'Ulm', region: 'Baden-Württemberg', country: 'DE', lat: 48.4011, lng: 9.9876 },
+  { name: 'Heidelberg', region: 'Baden-Württemberg', country: 'DE', lat: 49.3988, lng: 8.6724 },
+
+  // ── Nordrhein-Westfalen ──
+  { name: 'Köln', region: 'Nordrhein-Westfalen', country: 'DE', lat: 50.9333, lng: 6.9500 },
+  { name: 'Düsseldorf', region: 'Nordrhein-Westfalen', country: 'DE', lat: 51.2217, lng: 6.7762 },
+  { name: 'Dortmund', region: 'Nordrhein-Westfalen', country: 'DE', lat: 51.5136, lng: 7.4653 },
+  { name: 'Essen', region: 'Nordrhein-Westfalen', country: 'DE', lat: 51.4556, lng: 7.0116 },
+  { name: 'Duisburg', region: 'Nordrhein-Westfalen', country: 'DE', lat: 51.4344, lng: 6.7623 },
+  { name: 'Bochum', region: 'Nordrhein-Westfalen', country: 'DE', lat: 51.4819, lng: 7.2162 },
+  { name: 'Wuppertal', region: 'Nordrhein-Westfalen', country: 'DE', lat: 51.2562, lng: 7.1508 },
+  { name: 'Bielefeld', region: 'Nordrhein-Westfalen', country: 'DE', lat: 51.9906, lng: 8.5318 },
+  { name: 'Münster', region: 'Nordrhein-Westfalen', country: 'DE', lat: 51.9607, lng: 7.6261 },
+  { name: 'Aachen', region: 'Nordrhein-Westfalen', country: 'DE', lat: 50.7753, lng: 6.0839 },
+
+  // ── Hessen ──
+  { name: 'Frankfurt', region: 'Hessen', country: 'DE', lat: 50.1109, lng: 8.6821 },
+  { name: 'Wiesbaden', region: 'Hessen', country: 'DE', lat: 50.0782, lng: 8.2397 },
+  { name: 'Kassel', region: 'Hessen', country: 'DE', lat: 51.3127, lng: 9.4797 },
+  { name: 'Darmstadt', region: 'Hessen', country: 'DE', lat: 49.8728, lng: 8.6512 },
+
+  // ── Hamburg ──
+  { name: 'Hamburg', region: 'Hamburg', country: 'DE', lat: 53.5753, lng: 10.0153 },
+
+  // ── Berlin ──
+  { name: 'Berlin', region: 'Berlin', country: 'DE', lat: 52.5200, lng: 13.4050 },
+
+  // ── Niedersachsen ──
+  { name: 'Hannover', region: 'Niedersachsen', country: 'DE', lat: 52.3759, lng: 9.7320 },
+  { name: 'Braunschweig', region: 'Niedersachsen', country: 'DE', lat: 52.2689, lng: 10.5268 },
+
+  // ── Rheinland-Pfalz ──
+  { name: 'Mainz', region: 'Rheinland-Pfalz', country: 'DE', lat: 49.9929, lng: 8.2473 },
+  { name: 'Ludwigshafen', region: 'Rheinland-Pfalz', country: 'DE', lat: 49.4744, lng: 8.4313 },
+  { name: 'Kaiserslautern', region: 'Rheinland-Pfalz', country: 'DE', lat: 49.4440, lng: 7.7689 },
+
+  // ── Sachsen ──
+  { name: 'Dresden', region: 'Sachsen', country: 'DE', lat: 51.0504, lng: 13.7373 },
+  { name: 'Leipzig', region: 'Sachsen', country: 'DE', lat: 51.3397, lng: 12.3731 },
+
+  // ── Bremen ──
+  { name: 'Bremen', region: 'Bremen', country: 'DE', lat: 53.0793, lng: 8.8017 },
+
+  // ═══════════════════════════════════════════════════════════════
+  // AUSTRIJA (po saveznim zemljama)
+  // ═══════════════════════════════════════════════════════════════
+
+  // ── Wien ──
+  { name: 'Wien', region: 'Wien', country: 'AT', lat: 48.2082, lng: 16.3738 },
+
+  // ── Steiermark ──
+  { name: 'Graz', region: 'Steiermark', country: 'AT', lat: 47.0707, lng: 15.4395 },
+  { name: 'Leoben', region: 'Steiermark', country: 'AT', lat: 47.3833, lng: 15.0939 },
+  { name: 'Kapfenberg', region: 'Steiermark', country: 'AT', lat: 47.4450, lng: 15.2939 },
+
+  // ── Oberösterreich ──
+  { name: 'Linz', region: 'Oberösterreich', country: 'AT', lat: 48.3064, lng: 14.2858 },
+  { name: 'Wels', region: 'Oberösterreich', country: 'AT', lat: 48.1581, lng: 14.0286 },
+  { name: 'Steyr', region: 'Oberösterreich', country: 'AT', lat: 48.0422, lng: 14.4200 },
+
+  // ── Salzburg ──
+  { name: 'Salzburg', region: 'Salzburg', country: 'AT', lat: 47.8095, lng: 13.0550 },
+
+  // ── Tirol ──
+  { name: 'Innsbruck', region: 'Tirol', country: 'AT', lat: 47.2692, lng: 11.4041 },
+
+  // ── Kärnten ──
+  { name: 'Klagenfurt', region: 'Kärnten', country: 'AT', lat: 46.6228, lng: 14.3050 },
+  { name: 'Villach', region: 'Kärnten', country: 'AT', lat: 46.6103, lng: 13.8558 },
+
+  // ── Niederösterreich ──
+  { name: 'St. Pölten', region: 'Niederösterreich', country: 'AT', lat: 48.2042, lng: 15.6229 },
+  { name: 'Krems', region: 'Niederösterreich', country: 'AT', lat: 48.4094, lng: 15.5994 },
+  { name: 'Wiener Neustadt', region: 'Niederösterreich', country: 'AT', lat: 47.8150, lng: 16.2468 },
+  { name: 'Baden', region: 'Niederösterreich', country: 'AT', lat: 48.0056, lng: 16.2303 },
+
+  // ── Vorarlberg ──
+  { name: 'Bregenz', region: 'Vorarlberg', country: 'AT', lat: 47.5031, lng: 9.7471 },
+  { name: 'Dornbirn', region: 'Vorarlberg', country: 'AT', lat: 47.4125, lng: 9.7417 },
+  { name: 'Feldkirch', region: 'Vorarlberg', country: 'AT', lat: 47.2372, lng: 9.5997 },
 ];
 
 const STORAGE_KEY = 'nudinadi_location';

@@ -3,7 +3,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import React from 'react';
 import { getSupabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
@@ -118,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [lastError, setLastError] = useState<string | null>(null);
+  const userRef = useRef<AuthUser | null>(null);
 
   const supabase = getSupabase();
 
@@ -149,15 +150,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchProfile(session.user.id),
         new Promise<null>(resolve => setTimeout(() => resolve(null), 8000)),
       ]);
-      setUser(toAuthUser(session.user, profile));
+      // If profile fetch timed out (null) but we already have user data, keep it
+      // This prevents the fallback 'user_xxxxxxxx' name from appearing after token refresh
+      if (profile === null && userRef.current) {
+        return; // finally still runs → setIsLoading(false)
+      }
+      const authUser = toAuthUser(session.user, profile);
+      setUser(authUser);
+      userRef.current = authUser;
 
       // Check verification XP (email + phone both verified → 500 XP one-time)
       if (profile?.email_verified && profile?.phone_verified) {
         logVerificationXp(session.user.id).catch(() => {/* non-critical */});
       }
     } catch {
-      // Profile fetch failed — still set user with basic session data
-      setUser(toAuthUser(session.user, null));
+      // Profile fetch failed — keep existing user data if available
+      if (!userRef.current) {
+        setUser(toAuthUser(session.user, null));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -180,6 +190,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'INITIAL_SESSION') return;
+        // TOKEN_REFRESHED: Supabase stores the new token automatically.
+        // Profile data doesn't change — skipping prevents the fallback username bug.
+        if (event === 'TOKEN_REFRESHED') return;
         await setUserFromSession(session);
       }
     );
@@ -394,7 +407,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         new Promise<null>(resolve => setTimeout(() => resolve(null), 6000)),
       ]);
       if (profile) {
-        setUser(toAuthUser(session.user, profile));
+        const authUser = toAuthUser(session.user, profile);
+        setUser(authUser);
+        userRef.current = authUser;
       }
     } catch {
       // silent — keep existing user data

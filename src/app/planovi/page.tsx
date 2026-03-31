@@ -172,7 +172,7 @@ export default function PlansPage() {
             {/* BUSINESS */}
             <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-bl-[8px]">
-                <span className="text-[8px] font-black text-white uppercase tracking-wider">Angebot</span>
+                <span className="text-[8px] font-black text-white uppercase tracking-wider">Ponuda</span>
               </div>
               <div className="mb-4">
                 <div className="w-10 h-10 rounded-[4px] bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mb-3">

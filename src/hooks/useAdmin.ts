@@ -9,12 +9,11 @@ export function useAdmin(redirectTo = '/') {
   const router = useRouter();
   const isAdmin = user?.isAdmin ?? false;
 
-  // DEBUG: redirect temporarily disabled
-  // useEffect(() => {
-  //   if (!isLoading && (!isAuthenticated || !isAdmin)) {
-  //     router.replace(redirectTo);
-  //   }
-  // }, [isLoading, isAuthenticated, isAdmin, router, redirectTo]);
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !isAdmin)) {
+      router.replace(redirectTo);
+    }
+  }, [isLoading, isAuthenticated, isAdmin, router, redirectTo]);
 
   return { user, isAdmin, isLoading };
 }

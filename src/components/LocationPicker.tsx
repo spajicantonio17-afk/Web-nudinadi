@@ -13,9 +13,11 @@ interface LocationPickerProps {
 const COUNTRY_LABELS: Record<City['country'], string> = {
   'BiH': 'Bosna i Hercegovina',
   'HR': 'Hrvatska',
+  'DE': 'Deutschland',
+  'AT': 'Österreich',
 };
 
-const COUNTRY_ORDER: City['country'][] = ['BiH', 'HR'];
+const COUNTRY_ORDER: City['country'][] = ['BiH', 'HR', 'DE', 'AT'];
 
 export default function LocationPicker({ isOpen, onClose, onSelect, currentCity }: LocationPickerProps) {
   const [query, setQuery] = useState('');

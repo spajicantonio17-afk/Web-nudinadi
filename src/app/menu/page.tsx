@@ -12,11 +12,12 @@ import { getSupabase } from '@/lib/supabase';
 import { uploadAvatar } from '@/services/uploadService';
 import AppSettings from '@/components/settings/AppSettings';
 import LanguageSettings from '@/components/settings/LanguageSettings';
+import EmailNotificationSettings from '@/components/EmailNotificationSettings';
 import { getBlockedUsers, unblockUser } from '@/services/blockService';
 import { isBusiness } from '@/lib/plans';
 import type { Profile } from '@/lib/database.types';
 
-type MenuStep = 'main' | 'account' | 'main-settings' | 'security' | 'devices' | 'notifications' | 'appearance' | 'language' | 'support' | 'privacy' | 'verification' | 'blocked-users';
+type MenuStep = 'main' | 'account' | 'main-settings' | 'security' | 'devices' | 'notifications' | 'appearance' | 'language' | 'support' | 'verification' | 'blocked-users';
 
 // ── localStorage Persistence Helpers ─────────────────────────
 
@@ -615,10 +616,6 @@ export default function MenuPage() {
     }
   };
 
-  const goToProfileTab = (tab: string) => {
-    router.push(`/profile?tab=${tab}`);
-  };
-
   if (isLoading) {
     return (
       <MainLayout>
@@ -773,6 +770,13 @@ export default function MenuPage() {
                         onToggle={() => updateNotif({ promotions: !notifSettings.promotions })}
                     />
                 </section>
+
+                {user && (
+                  <section>
+                    <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">Email</h2>
+                    <EmailNotificationSettings user={user} />
+                  </section>
+                )}
             </div>
         </MainLayout>
       );
@@ -914,7 +918,7 @@ export default function MenuPage() {
 
   if (step === 'security') {
     return (
-        <MainLayout title={t('menu.security')} showSigurnost={false} onBack={() => setStep('main')}>
+        <MainLayout title="Sigurnost & Privatnost" showSigurnost={false} onBack={() => setStep('main')}>
             <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-6">
                 {/* Change Password */}
                 <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] overflow-hidden">
@@ -1010,6 +1014,82 @@ export default function MenuPage() {
                           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                           <span className="text-[9px] text-emerald-500 font-bold uppercase">Aktivan</span>
                         </div>
+                    </div>
+                </section>
+
+                {/* Podaci & Privatnost */}
+                <section>
+                    <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">Podaci & Privatnost</h2>
+                    <div className="space-y-2">
+                      <button className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-4 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-[10px] bg-blue-500/10 flex items-center justify-center">
+                            <i className="fa-solid fa-download text-blue-500 text-xs"></i>
+                          </div>
+                          <div>
+                            <span className="text-[13px] font-bold text-[var(--c-text)] block">Preuzmi moje podatke</span>
+                            <span className="text-[10px] text-[var(--c-text3)]">Izvoz svih podataka (GDPR)</span>
+                          </div>
+                        </div>
+                        <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-[10px]"></i>
+                      </button>
+                      <button
+                        onClick={() => setStep('blocked-users')}
+                        className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-4 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-[10px] bg-[var(--c-hover)] flex items-center justify-center">
+                            <i className="fa-solid fa-user-slash text-[var(--c-text3)] text-xs"></i>
+                          </div>
+                          <div>
+                            <span className="text-[13px] font-bold text-[var(--c-text)] block">{t('settings.blockedUsers')}</span>
+                            <span className="text-[10px] text-[var(--c-text3)]">{t('settings.blockedUsers.desc')}</span>
+                          </div>
+                        </div>
+                        <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-[10px]"></i>
+                      </button>
+                    </div>
+                </section>
+
+                {/* Opasna Zona */}
+                <section>
+                    <h2 className="text-[11px] font-black uppercase tracking-[2px] text-red-400 mb-3 px-2">Opasna Zona</h2>
+                    <div className="bg-red-500/5 border border-red-500/15 rounded-[18px] p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <i className="fa-solid fa-triangle-exclamation text-red-400 mt-0.5"></i>
+                        <div>
+                          <h4 className="text-[13px] font-bold text-red-400">Obriši racun</h4>
+                          <p className="text-[10px] text-[var(--c-text3)] mt-1 leading-relaxed">
+                            Ova akcija je nepovratna. Svi oglasi, poruke i podaci ce biti trajno obrisani.
+                          </p>
+                        </div>
+                      </div>
+                      {!showDeleteConfirm ? (
+                        <button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="w-full py-3 text-red-400 font-bold text-[12px] border border-red-500/20 rounded-[12px] hover:bg-red-500/10 transition-colors uppercase tracking-wider"
+                        >
+                          Obriši moj racun
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-[11px] font-bold text-red-400 text-center">Jeste li sigurni? Ovo se ne može poništiti.</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setShowDeleteConfirm(false)}
+                              className="flex-1 py-2.5 text-[var(--c-text)] font-bold text-[11px] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[12px] hover:bg-[var(--c-hover)] transition-colors"
+                            >
+                              Odustani
+                            </button>
+                            <button
+                              onClick={handleDeleteAccount}
+                              className="flex-1 py-2.5 text-white font-bold text-[11px] bg-red-500 rounded-[12px] hover:bg-red-600 transition-colors"
+                            >
+                              Da, obriši
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                 </section>
             </div>
@@ -1108,125 +1188,12 @@ export default function MenuPage() {
     return <VerificationStep onBack={() => setStep('main')} user={user} refreshProfile={refreshProfile} showToast={showToast} t={t} />;
   }
 
-  // ── Privacy & Data ─────────────────────────────────────
-
   // ── Blocked Users ─────────────────────────────────────────
   if (step === 'blocked-users') {
-    return <BlockedUsersStep onBack={() => setStep('privacy')} userId={user?.id} t={t} showToast={showToast} />;
+    return <BlockedUsersStep onBack={() => setStep('security')} userId={user?.id} t={t} showToast={showToast} />;
   }
 
-  if (step === 'privacy') {
-    return (
-      <MainLayout title={t('menu.privacy')} showSigurnost={false} onBack={() => setStep('main')}>
-        <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-6">
-
-          {/* Data Management */}
-          <section>
-            <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">Upravljanje Podacima</h2>
-            <div className="space-y-2">
-              <button className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-4 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-[10px] bg-blue-500/10 flex items-center justify-center">
-                    <i className="fa-solid fa-download text-blue-500 text-xs"></i>
-                  </div>
-                  <div>
-                    <span className="text-[13px] font-bold text-[var(--c-text)] block">Preuzmi moje podatke</span>
-                    <span className="text-[10px] text-[var(--c-text3)]">Izvoz svih vaših podataka (GDPR)</span>
-                  </div>
-                </div>
-                <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-[10px]"></i>
-              </button>
-
-              <button
-                onClick={() => setStep('blocked-users')}
-                className="w-full bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-4 flex items-center justify-between hover:bg-[var(--c-hover)] transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-[10px] bg-[var(--c-hover)] flex items-center justify-center">
-                    <i className="fa-solid fa-user-slash text-[var(--c-text3)] text-xs"></i>
-                  </div>
-                  <div>
-                    <span className="text-[13px] font-bold text-[var(--c-text)] block">{t('settings.blockedUsers')}</span>
-                    <span className="text-[10px] text-[var(--c-text3)]">{t('settings.blockedUsers.desc')}</span>
-                  </div>
-                </div>
-                <i className="fa-solid fa-chevron-right text-[var(--c-text-muted)] text-[10px]"></i>
-              </button>
-            </div>
-          </section>
-
-          {/* Privacy Settings */}
-          <section>
-            <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">Privatnost</h2>
-            <ToggleRow
-              label="Prikaži online status"
-              desc="Drugi korisnici mogu vidjeti kada ste aktivni"
-              isOn={true}
-              onToggle={() => showToast('Uskoro dostupno')}
-            />
-            <ToggleRow
-              label="Prikaži lokaciju na profilu"
-              desc="Vaš grad se prikazuje na profilu"
-              isOn={true}
-              onToggle={() => showToast('Uskoro dostupno')}
-            />
-            <ToggleRow
-              label="Personalizirani oglasi"
-              desc="Na osnovu vaših interesa i pretraga"
-              isOn={false}
-              onToggle={() => showToast('Uskoro dostupno')}
-            />
-          </section>
-
-          {/* Danger Zone */}
-          <section>
-            <h2 className="text-[11px] font-black uppercase tracking-[2px] text-red-400 mb-3 px-2">Opasna Zona</h2>
-            <div className="bg-red-500/5 border border-red-500/15 rounded-[18px] p-4 space-y-3">
-              <div className="flex items-start gap-3">
-                <i className="fa-solid fa-triangle-exclamation text-red-400 mt-0.5"></i>
-                <div>
-                  <h4 className="text-[13px] font-bold text-red-400">Obriši račun</h4>
-                  <p className="text-[10px] text-[var(--c-text3)] mt-1 leading-relaxed">
-                    Ova akcija je nepovratna. Svi vaši oglasi, poruke i podaci će biti trajno obrisani.
-                  </p>
-                </div>
-              </div>
-
-              {!showDeleteConfirm ? (
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full py-3 text-red-400 font-bold text-[12px] border border-red-500/20 rounded-[12px] hover:bg-red-500/10 transition-colors uppercase tracking-wider"
-                >
-                  Obriši moj račun
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-[11px] font-bold text-red-400 text-center">Jeste li sigurni? Ovo se ne može poništiti.</p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowDeleteConfirm(false)}
-                      className="flex-1 py-2.5 text-[var(--c-text)] font-bold text-[11px] bg-[var(--c-card)] border border-[var(--c-border)] rounded-[12px] hover:bg-[var(--c-hover)] transition-colors"
-                    >
-                      Odustani
-                    </button>
-                    <button
-                      onClick={handleDeleteAccount}
-                      className="flex-1 py-2.5 text-white font-bold text-[11px] bg-red-500 rounded-[12px] hover:bg-red-600 transition-colors"
-                    >
-                      Da, obriši
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // MAIN MENU
+    // MAIN MENU
   // ══════════════════════════════════════════════════════════
 
   return (
@@ -1244,27 +1211,18 @@ export default function MenuPage() {
             <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)] group-hover:text-[var(--c-text2)] transition-colors"></i>
         </Link>
 
-        {/* MOJI OGLASI */}
-        <div>
-            <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-[var(--c-text-muted)] mb-3 px-2">{t('menu.myListings')}</h2>
-            <MenuOption label={t('menu.activeListings')} icon="fa-bolt" onClick={() => goToProfileTab('Aktivni')} />
-            <MenuOption label={t('menu.finishedListings')} icon="fa-flag-checkered" onClick={() => goToProfileTab('Završeni')} />
-            <MenuOption label={t('menu.markedListings')} icon="fa-heart" onClick={() => goToProfileTab('Markirani')} />
-        </div>
-
         {/* RAČUN */}
         <div>
             <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-[var(--c-text-muted)] mb-3 mt-4 px-2">{t('menu.account')}</h2>
             <MenuOption label={t('menu.personalInfo')} icon="fa-user-gear" onClick={() => setStep('account')} />
             <MenuOption label={t('verify.section')} icon="fa-certificate" onClick={() => setStep('verification')} />
-            <MenuOption label={t('menu.security')} icon="fa-lock" onClick={() => setStep('security')} />
-            <MenuOption label={t('menu.privacy')} icon="fa-shield-halved" onClick={() => setStep('privacy')} />
+            <MenuOption label="Sigurnost & Privatnost" icon="fa-shield-halved" onClick={() => setStep('security')} />
         </div>
 
         {/* POSTAVKE */}
         <div>
             <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-[var(--c-text-muted)] mb-3 mt-4 px-2">{t('menu.settings')}</h2>
-            <MenuOption label={t('menu.mainSettings')} icon="fa-sliders" onClick={() => setStep('main-settings')} />
+            <MenuOption label="Aplikacija" icon="fa-sliders" onClick={() => setStep('main-settings')} />
             <MenuOption label={t('menu.notifications')} icon="fa-bell" onClick={() => setStep('notifications')} />
             <MenuOption label={t('menu.appearance')} icon="fa-palette" onClick={() => setStep('appearance')} />
             <MenuOption label={t('menu.language')} icon="fa-globe" onClick={() => setStep('language')} />
