@@ -130,7 +130,7 @@ function ProfileContent() {
     const match = CITIES.find(c => loc.includes(c.name));
     setSelectedRegion(match?.region || '');
     setSelectedCity(match?.name || '');
-    setLocationCountry(match?.country || 'BiH');
+    setLocationCountry((match?.country as 'BiH' | 'HR') || 'BiH');
     setEditForm({
       username: user?.username || '',
       fullName: user?.fullName || '',
