@@ -58,7 +58,7 @@ export default function EmailNotificationSettings({ user }: Props) {
         .eq('id', user.id);
       if (error) throw error;
     } catch {
-      setPrefs(prefs); // revert on error
+      setPrefs(prefs);
       showToast('Greška pri snimanju', 'error');
     } finally {
       setSaving(false);
@@ -75,37 +75,25 @@ export default function EmailNotificationSettings({ user }: Props) {
   const visibleItems = items.filter(i => !i.businessOnly || isBusiness(user.accountType));
 
   return (
-    <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] p-5 space-y-3">
-      <div className="flex items-center gap-2 mb-1">
-        <i className="fa-solid fa-envelope text-blue-400 text-sm"></i>
-        <h3 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide">Email obavještenja</h3>
-        {saving && <i className="fa-solid fa-spinner animate-spin text-[10px] text-[var(--c-text3)] ml-auto"></i>}
-      </div>
-
+    <div>
       {visibleItems.map(item => (
-        <div key={item.key} className="flex items-center justify-between gap-3">
+        <div
+          key={item.key}
+          onClick={() => !saving && toggle(item.key)}
+          className="flex items-center justify-between p-4 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] mb-2 cursor-pointer active:scale-[0.99] transition-all"
+        >
           <div>
-            <p className="text-[12px] font-semibold text-[var(--c-text)]">{item.label}</p>
-            <p className="text-[10px] text-[var(--c-text3)]">{item.desc}</p>
+            <h4 className="text-[13px] font-bold text-[var(--c-text)]">{item.label}</h4>
+            <p className="text-[10px] text-[var(--c-text3)] mt-0.5">{item.desc}</p>
           </div>
-          <button
-            onClick={() => toggle(item.key)}
-            disabled={saving}
-            className={`relative w-10 h-5 rounded-full transition-colors duration-200 shrink-0 ${
-              prefs[item.key] ? 'bg-blue-500' : 'bg-[var(--c-border)]'
-            }`}
-          >
-            <span
-              className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${
-                prefs[item.key] ? 'translate-x-5' : 'translate-x-0.5'
-              }`}
-            />
-          </button>
+          <div className={`w-11 h-6 rounded-full p-1 transition-colors duration-300 shrink-0 ${prefs[item.key] ? 'bg-blue-500' : 'bg-[var(--c-active)]'}`}>
+            <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${prefs[item.key] ? 'translate-x-5' : 'translate-x-0'}`}></div>
+          </div>
         </div>
       ))}
-
-      <p className="text-[10px] text-[var(--c-text3)] pt-1">
+      <p className="text-[10px] text-[var(--c-text3)] px-1 mt-1">
         Emailovi se šalju na: <span className="font-semibold text-[var(--c-text2)]">{user.email}</span>
+        {saving && <i className="fa-solid fa-spinner animate-spin ml-2"></i>}
       </p>
     </div>
   );
