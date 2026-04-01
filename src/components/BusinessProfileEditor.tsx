@@ -12,9 +12,10 @@ import { BUSINESS_DAYS, BUSINESS_TYPES } from '@/lib/constants';
 interface Props {
   user: AuthUser;
   onUpdate: () => void;
+  onSaveSuccess?: () => void;
 }
 
-export default function BusinessProfileEditor({ user, onUpdate }: Props) {
+export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }: Props) {
   const { showToast } = useToast();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -116,7 +117,11 @@ export default function BusinessProfileEditor({ user, onUpdate }: Props) {
       showToast('Poslovni profil ažuriran!');
       onUpdate();
       router.refresh();
-      router.push('/user/' + user.username);
+      if (onSaveSuccess) {
+        onSaveSuccess();
+      } else {
+        router.push('/user/' + user.username);
+      }
     } catch {
       showToast('Greška pri snimanju', 'error');
     } finally {

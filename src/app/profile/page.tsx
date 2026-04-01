@@ -14,9 +14,8 @@ import { getCurrencyMode, eurToKm } from '@/lib/currency';
 import type { Profile, ProductWithSeller, Review, FavoriteWithProduct } from '@/lib/database.types';
 import { xpForNextLevel } from '@/lib/database.types';
 import ProBadge from '@/components/ProBadge';
-import BusinessProfileEditor from '@/components/BusinessProfileEditor';
-import TeamManager from '@/components/TeamManager';
 import TeamInvitations from '@/components/TeamInvitations';
+import BusinessSettingsDrawer from '@/components/BusinessSettingsDrawer';
 import { isPro, isBusiness } from '@/lib/plans';
 import { useToast } from '@/components/Toast';
 import VerificationProgress from '@/components/VerificationProgress';
@@ -103,6 +102,9 @@ function ProfileContent() {
   // ── Markirani (Favorites) ───────────────────────────────
   const [markedProducts, setMarkedProducts] = useState<FavoriteWithProduct[]>([]);
   const [markedLoading, setMarkedLoading] = useState(false);
+
+  // ── Business Settings Drawer ──────────────────────────
+  const [businessDrawerOpen, setBusinessDrawerOpen] = useState(false);
 
   // ── Edit Profile ──────────────────────────────────────
   const [verifyPopup, setVerifyPopup] = useState(false);
@@ -925,6 +927,15 @@ function ProfileContent() {
                         <i className="fa-solid fa-arrow-right-from-bracket text-[9px] md:text-[10px] text-[var(--c-text2)] group-hover:text-red-500 transition-colors"></i>
                         <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-red-500 uppercase tracking-wide">{t('profile.action.logout')}</span>
                     </button>
+                    {isBusiness(user?.accountType) && (
+                        <button
+                            onClick={() => setBusinessDrawerOpen(true)}
+                            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-full hover:bg-purple-500/20 hover:border-purple-500/50 transition-all active:scale-95 group shadow-lg"
+                        >
+                            <i className="fa-solid fa-building text-[9px] md:text-[10px] text-purple-500"></i>
+                            <span className="text-[8px] md:text-[9px] font-bold text-purple-500 uppercase tracking-wide">Poslovne postavke</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -959,14 +970,6 @@ function ProfileContent() {
 
         {/* TEAM INVITATIONS (any user can be invited) */}
         {user && <TeamInvitations userId={user.id} />}
-
-        {/* BUSINESS PROFILE EDITOR + TEAM (only for business users) */}
-        {user && isBusiness(user.accountType) && (
-          <>
-            <BusinessProfileEditor user={user} onUpdate={refreshProfile} />
-            <TeamManager userId={user.id} />
-          </>
-        )}
 
         {/* COMPACT TABS WITH COUNTS */}
         <div>
@@ -1394,6 +1397,14 @@ function ProfileContent() {
             </div>
         )}
 
+      {user && isBusiness(user.accountType) && (
+        <BusinessSettingsDrawer
+          open={businessDrawerOpen}
+          onClose={() => setBusinessDrawerOpen(false)}
+          user={user}
+          onUpdate={refreshProfile}
+        />
+      )}
       </div>
     </MainLayout>
   );
