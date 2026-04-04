@@ -6,7 +6,7 @@ const BLOG_POSTS = [
   { date: '20. Apr 2025', title: 'Kako AI mijenja online marketplace', desc: 'Napredno prepoznavanje namjere, automatska kategorizacija i pametna pretraga — sve što NudiNađi donosi.', category: 'AI', readTime: '5 min', color: 'purple' },
   { date: '12. Apr 2025', title: '5 savjeta za brzu prodaju na NudiNađi', desc: 'Kako napisati oglas koji prodaje: naslovi, slike, cijene i tajming — iz naših podataka.', category: 'Savjeti', readTime: '3 min', color: 'blue' },
   { date: '01. Apr 2025', title: 'Sigurnost na prvom mjestu: Kako prepoznati scam', desc: 'Naš AI detektuje 99% lažnih oglasa — ali i ti možeš prepoznati znakove upozorenja.', category: 'Sigurnost', readTime: '4 min', color: 'emerald' },
-  { date: '25. Mar 2025', title: 'NudiNađi vs. tradicionalni oglasnici', desc: 'Zašto smo drugačiji: AI pretraga, vizualna prodaja, Trust Score i real-time zaštita.', category: 'Proizvod', readTime: '6 min', color: 'orange' },
+  { date: '25. Mar 2025', title: 'NudiNađi vs. tradicionalni oglasnici', desc: 'Zašto smo drugačiji: AI pretraga, AI import, Trust Score i real-time zaštita.', category: 'Proizvod', readTime: '6 min', color: 'orange' },
   { date: '15. Mar 2025', title: 'Lansirali smo NudiNađi!', desc: 'Naša priča — od ideje do platforme. Kako smo izgradili AI marketplace iz BiH za regiju.', category: 'Vijesti', readTime: '7 min', color: 'blue' },
 ];
 

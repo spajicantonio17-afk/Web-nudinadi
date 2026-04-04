@@ -9,18 +9,17 @@ import { useAuth } from '@/lib/auth';
 const FEATURES = [
   { name: 'Objavljivanje oglasa', free: '10 aktivnih', pro: '30 aktivnih', business: 'Neograničeno' },
   { name: 'Slike po oglasu', free: 'Do 7', pro: 'Do 20', business: 'Neograničeno' },
-  { name: 'Istaknuti oglas', free: 'Pojedinačno (uskoro)', pro: '3 besplatna/mj', business: '10 besplatnih/mj' },
+  { name: 'Istaknuti oglas', free: 'Pojedinačno', pro: '3 besplatna/mj', business: '10 besplatnih/mj' },
   { name: 'Pretraga i filteri', free: true, pro: true, business: true },
   { name: 'AI Pretraga / Kategorija', free: true, pro: true, business: true },
   { name: 'Chat s kupcima i prodavačima', free: true, pro: true, business: true },
   { name: 'Favoriti', free: true, pro: true, business: true },
   { name: 'AI Link-Import', free: true, pro: true, business: true },
-  { name: 'AI VIN Dekoder', free: true, pro: true, business: true },
   { name: 'AI Opis (Generiranje teksta)', free: false, pro: true, business: true },
   { name: 'Statistike (pregledi, klikovi)', free: false, pro: true, business: true },
   { name: 'Pro značka na profilu', free: false, pro: true, business: true },
   { name: 'Prioritet u rezultatima pretrage', free: false, pro: true, business: true },
-  { name: 'AI Foto → Oglas (samo u aplikaciji)', free: false, pro: false, business: true },
+  { name: 'AI Foto → Oglas (mobilna aplikacija)', free: false, pro: false, business: true },
   { name: 'AI OCR (skeniranje auto dijelova)', free: false, pro: false, business: true },
   { name: 'Bulk Upload (višestruko objavljivanje)', free: false, pro: false, business: true },
   { name: 'Verificirani poslovni profil', free: false, pro: false, business: true },
@@ -33,7 +32,7 @@ const FAQ = [
   { q: 'Mogu li nadograditi plan kasnije?', a: 'Da! Možete nadograditi sa Besplatnog na Pro ili Business u bilo kojem trenutku. Promjena se aktivira odmah.' },
   { q: 'Kako funkcionira plaćanje?', a: 'Prihvatamo kartice i bankarski prijenos. Plaćanje je mjesečno, bez ugovora — možete otkazati kad god želite.' },
   { q: 'Šta se dešava s mojim oglasima ako promijenim plan?', a: 'Vaši oglasi ostaju aktivni. Ako pređete na niži plan, nećete moći objaviti nove dok ne budete ispod limita.' },
-  { q: 'Da li je AI Foto Oglas dostupan na webu?', a: 'AI Foto Oglas je ekskluzivno dostupan u NudiNađi mobilnoj aplikaciji — jedan od razloga zašto se isplati instalirati.' },
+  { q: 'Da li je AI Foto Oglas dostupan na webu?', a: 'AI Foto Oglas je dostupan isključivo u NudiNađi mobilnoj aplikaciji i bit će objavljen uz lansiranje aplikacije.' },
 ];
 
 function Cell({ value }: { value: boolean | string }) {
@@ -125,7 +124,6 @@ export default function PlansPage() {
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Chat</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Favoriti</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Link-Import</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI VIN Dekoder</li>
               </ul>
               <div className="block text-center py-2.5 border border-[var(--c-border)] rounded-[4px] text-[10px] font-black text-[var(--c-text3)] uppercase tracking-wider">
                 Aktivan plan

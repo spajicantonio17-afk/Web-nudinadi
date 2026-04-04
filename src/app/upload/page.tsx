@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, laz
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
+import BuyCreditsModal from '@/components/BuyCreditsModal';
 import { CATEGORIES } from '@/lib/constants';
 import { useToast } from '@/components/Toast';
 import { useAuth } from '@/lib/auth';
@@ -1654,6 +1655,8 @@ function UploadPageInner() {
   const editProductId = searchParams.get('edit');
   const isEditMode = !!editProductId;
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [extraImagesUnlocked, setExtraImagesUnlocked] = useState(0);
+  const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
   const [selectedPreviewSource, setSelectedPreviewSource] = useState<{ type: 'new' | 'existing'; index: number } | null>(null);
   const [mobilePreviewUrl, setMobilePreviewUrl] = useState<string | null>(null);
 
@@ -1708,7 +1711,6 @@ function UploadPageInner() {
   const [catSearch, setCatSearch] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [showAiInfo, setShowAiInfo] = useState(false);
   const [aiWarning, setAiWarning] = useState<{ warnings: string[]; recommendation: string; score: number } | null>(null);
   const [aiWarningBypass, setAiWarningBypass] = useState(false);
 
@@ -1830,6 +1832,7 @@ function UploadPageInner() {
           setGeneratedTags((product as unknown as Record<string, unknown>).tags as string[]);
         }
         setExistingImages(product.images || []);
+        setExtraImagesUnlocked((product as unknown as Record<string, unknown>).extra_images_unlocked as number || 0);
         setStep('form');
       })
       .catch(() => showToast('Oglas nije pronađen', 'error'));
@@ -2648,7 +2651,8 @@ function UploadPageInner() {
       else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) e.price = 'Unesite ispravnu cijenu';
     }
     if (images.length === 0 && existingImages.length === 0) e.images = 'Dodajte barem jednu sliku';
-    const maxImg = getPlanLimits(user?.accountType).maxImagesPerListing;
+    const basePlanMax = getPlanLimits(user?.accountType).maxImagesPerListing;
+    const maxImg = isEditMode ? basePlanMax + extraImagesUnlocked : basePlanMax;
     const totalImages = images.length + existingImages.length;
     if (totalImages > maxImg) e.images = `Maksimalno ${maxImg} slika po oglasu. Imate ${totalImages}.`;
     if (!formData.category.trim()) e.category = 'Odaberite kategoriju';
@@ -2837,39 +2841,6 @@ function UploadPageInner() {
       reader.onerror = reject;
     });
 
-  const handleAiAnalyzeImage = async () => {
-    if (images.length === 0) { showToast('Dodajte sliku za analizu', 'error'); return; }
-    setIsAiLoading(true);
-    try {
-      const file = images[0];
-      const base64 = await fileToBase64(file);
-      const res = await fetch('/api/ai/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'full', image: base64, mimeType: file.type || 'image/jpeg' }),
-      });
-      const json = await res.json();
-      if (json.success && json.data) {
-        const d = json.data;
-        setFormData(prev => ({
-          ...prev,
-          title: d.title || prev.title,
-          category: d.category || prev.category,
-          description: d.description || prev.description,
-          brand: d.brand || prev.brand,
-          model: d.model || prev.model,
-          condition: d.condition === 'Novo' ? 'Novo' : d.condition === 'Kao novo' ? 'Kao novo' : 'Korišteno',
-          price: d.priceEstimate?.min ? Math.round((d.priceEstimate.min + (d.priceEstimate.max || d.priceEstimate.min)) / 2).toString() : prev.price,
-        }));
-        showToast('AI prepoznao sliku i popunio podatke!');
-        setStep('form');
-      } else {
-        showToast('AI nije uspio prepoznati sliku', 'error');
-      }
-    } catch { showToast('Greška pri analizi slike', 'error'); }
-    setIsAiLoading(false);
-    setShowAiWindow(false);
-  };
 
   const handleAiImproveTitle = async () => {
     if (!formData.title) { showToast('Unesite naslov za poboljšanje', 'error'); return; }
@@ -2951,22 +2922,7 @@ function UploadPageInner() {
             )}
 
             <div className="grid grid-cols-1 gap-3">
-              <button
-                onClick={handleAiAnalyzeImage}
-                disabled={images.length === 0 || isAiLoading}
-                className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[var(--c-hover)]"
-              >
-                <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
-                  <i className="fa-solid fa-camera-retro"></i>
-                </div>
-                <div>
-                  <h4 className="text-[15px] font-bold text-[var(--c-text)]">Prepoznaj Sliku</h4>
-                  <p className="text-[11px] text-[var(--c-text3)]">AI popunjava sve podatke sa foto</p>
-                </div>
-                {images.length === 0 && <span className="ml-auto text-[9px] text-[var(--c-text-muted)] font-bold uppercase">Dodaj sliku</span>}
-              </button>
-
-              <button
+<button
                 onClick={handleAiGenerateDescription}
                 disabled={!hasInput || isAiLoading}
                 className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[var(--c-hover)]"
@@ -3091,76 +3047,10 @@ function UploadPageInner() {
     return (
       <MainLayout title="Kategorija" showSigurnost={false} hideSearchOnMobile headerRight={
         <div className="flex items-center gap-1.5 md:gap-2">
-          <button onClick={() => setShowAiInfo(true)} className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-2 md:py-2.5 rounded-[8px] text-[10px] md:text-[11px] font-bold text-blue-500 hover:text-blue-600 bg-blue-500/5 hover:bg-blue-50 border border-blue-500/20 hover:border-blue-300 transition-all group">
-            <div className="w-5 h-5 md:w-6 md:h-6 rounded-[5px] bg-blue-500/10 border border-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-              <i className="fa-solid fa-camera-retro text-[9px] md:text-[10px] text-blue-500"></i>
-            </div>
-            <span className="hidden sm:inline">AI Foto</span>
-          </button>
-          <button onClick={() => router.push('/')} className="hidden md:flex w-10 h-10 rounded-full bg-[var(--c-hover)] items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors"><i className="fa-solid fa-xmark text-sm"></i></button>
+<button onClick={() => router.push('/')} className="hidden md:flex w-10 h-10 rounded-full bg-[var(--c-hover)] items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors"><i className="fa-solid fa-xmark text-sm"></i></button>
         </div>
       }>
-        {/* AI Image Recognition Info Popup */}
-        {showAiInfo && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6 md:p-10" onClick={() => setShowAiInfo(false)}>
-            <div className="absolute inset-0 bg-[var(--c-overlay)] backdrop-blur-sm"></div>
-            <div className="relative bg-[var(--c-card)] border border-[var(--c-border)] rounded-[8px] p-5 sm:p-8 max-w-lg w-full shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              {/* Header */}
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-[8px] bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                    <i className="fa-solid fa-camera-retro text-2xl"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-[var(--c-text)]">AI Prepoznavanje Slika</h3>
-                    <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Smart Recognition</p>
-                  </div>
-                </div>
-                <button onClick={() => setShowAiInfo(false)} className="w-9 h-9 rounded-[6px] bg-[var(--c-hover)] hover:bg-[var(--c-active)] flex items-center justify-center text-[var(--c-text3)] hover:text-[var(--c-text)] transition-all">
-                  <i className="fa-solid fa-xmark text-sm"></i>
-                </button>
-              </div>
 
-              {/* How it works - 3 steps */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-[2px] bg-blue-500"></div>
-                <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Kako radi?</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-6">
-                {[
-                  { step: '1', icon: 'fa-camera', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20', label: 'Slikaj', desc: 'Fotografiši artikal koji prodaješ' },
-                  { step: '2', icon: 'fa-wand-magic-sparkles', color: 'bg-purple-500/10 text-purple-500 border-purple-500/20', label: 'AI analizira', desc: 'AI prepoznaje artikal i popunjava podatke' },
-                  { step: '3', icon: 'fa-check-circle', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', label: 'Gotovo', desc: 'Naslov, kategorija, cijena — sve automatski' },
-                ].map((s) => (
-                  <div key={s.step} className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[6px] p-3 sm:p-4 text-center sm:text-center hover:border-blue-500/30 transition-colors flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
-                    <div className={`w-10 h-10 rounded-[6px] ${s.color} border flex items-center justify-center mx-auto mb-3`}>
-                      <i className={`fa-solid ${s.icon} text-sm`}></i>
-                    </div>
-                    <p className="text-[11px] font-black text-[var(--c-text)] mb-1">{s.label}</p>
-                    <p className="text-[9px] text-[var(--c-text3)] leading-relaxed">{s.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* App-only notice */}
-              <div className="bg-amber-500/5 border border-amber-500/20 rounded-[8px] p-5 mb-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-[6px] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 flex-shrink-0 mt-0.5">
-                    <i className="fa-solid fa-mobile-screen text-sm"></i>
-                  </div>
-                  <div>
-                    <p className="text-[12px] font-bold text-[var(--c-text)] mb-0.5">Samo u aplikaciji</p>
-                    <p className="text-[10px] text-[var(--c-text2)] leading-relaxed">AI prepoznavanje slika koristi kameru uređaja i trenutno je dostupno samo u NudiNađi mobilnoj aplikaciji.</p>
-                  </div>
-                </div>
-              </div>
-
-              <button onClick={() => setShowAiInfo(false)} className="w-full py-3.5 bg-blue-500 hover:bg-blue-600 text-white text-[12px] font-black rounded-[8px] transition-colors active:scale-[0.98]">
-                Razumijem
-              </button>
-            </div>
-          </div>
-        )}
 
         <div className="max-w-4xl mx-auto space-y-4 pt-2 pb-24">
           <div className="text-center px-1">
@@ -5206,8 +5096,35 @@ function UploadPageInner() {
               )}
 
               {/* Image Upload */}
-              <ImageUpload images={images} maxImages={getPlanLimits(user?.accountType).maxImagesPerListing} onImagesChange={(imgs) => { setImages(imgs); if (formErrors.images && imgs.length > 0) setFormErrors(prev => ({ ...prev, images: undefined })); }} onImageClick={(idx) => handleImagePreview('new', idx)} selectedIndex={selectedPreviewSource?.type === 'new' ? selectedPreviewSource.index : null} />
-              {formErrors.images && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.images}</p>}
+              {(() => {
+                const basePlanMax = getPlanLimits(user?.accountType).maxImagesPerListing;
+                const effectiveMax = isEditMode ? basePlanMax + extraImagesUnlocked : basePlanMax;
+                const totalImages = images.length + existingImages.length;
+                const atLimit = totalImages >= effectiveMax;
+                return (
+                  <>
+                    <ImageUpload images={images} maxImages={effectiveMax} onImagesChange={(imgs) => { setImages(imgs); if (formErrors.images && imgs.length > 0) setFormErrors(prev => ({ ...prev, images: undefined })); }} onImageClick={(idx) => handleImagePreview('new', idx)} selectedIndex={selectedPreviewSource?.type === 'new' ? selectedPreviewSource.index : null} />
+                    {formErrors.images && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.images}</p>}
+                    {isEditMode && atLimit && (
+                      <button
+                        type="button"
+                        onClick={() => setShowBuyCreditsModal(true)}
+                        className="mt-2 flex items-center gap-2 text-[11px] font-bold text-amber-400 hover:text-amber-300 transition-colors ml-1"
+                      >
+                        <i className="fa-solid fa-coins text-xs"></i>
+                        Dodaj još slika (krediti)
+                      </button>
+                    )}
+                    {!isEditMode && atLimit && (
+                      <p className="mt-2 text-[10px] text-[var(--c-text3)] ml-1">
+                        <i className="fa-solid fa-circle-info mr-1 text-blue-400"></i>
+                        Možeš otključati više slika kreditima nakon objavljivanja oglasa.
+                      </p>
+                    )}
+                  </>
+                );
+              })()}
+
 
               {/* OCR Button - only for vehicle parts */}
               {(formData.category.includes('Dijelovi') || formData.category.includes('dijelovi')) && images.length > 0 && (
@@ -5942,6 +5859,12 @@ function UploadPageInner() {
           </div>
         </div>
       )}
+
+      <BuyCreditsModal
+        isOpen={showBuyCreditsModal}
+        onClose={() => setShowBuyCreditsModal(false)}
+        reason="extra_photos"
+      />
 
     </MainLayout>
   );

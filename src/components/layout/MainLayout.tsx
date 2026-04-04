@@ -395,14 +395,14 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
                 <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-5 relative overflow-hidden hover:border-purple-500/40 transition-colors flex flex-col">
                   <div className="absolute top-0 right-0 w-14 h-14 bg-purple-500/20 rounded-bl-[35px]"></div>
                   <div className="w-10 h-10 rounded-[4px] bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mb-4 shrink-0">
-                    <i className="fa-solid fa-camera text-purple-400 text-sm"></i>
+                    <i className="fa-solid fa-file-import text-purple-400 text-sm"></i>
                   </div>
-                  <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">2. Vizualna<br />Prodaja</h3>
+                  <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">2. AI<br />Import</h3>
                   <p className="text-[10px] text-[var(--c-text3)] leading-relaxed mb-3">
-                    Prodaja nikad nije bila brža. Uslikaj predmet, a naš AI ga prepoznaje, kategorizira i predlaže opis. Tvoj oglas je online za manje od 30 sekundi.
+                    Već prodaješ negdje drugdje? Zalijepi link s drugog portala — AI automatski preuzima slike, opis, cijenu i kategoriju. Oglas je spreman za sekunde.
                   </p>
                   <p className="text-[8px] font-bold text-purple-400 uppercase tracking-wider mt-auto">
-                    <i className="fa-solid fa-mobile-screen text-[7px] mr-1"></i>Dostupno u aplikaciji · Business plan
+                    <i className="fa-solid fa-link text-[7px] mr-1"></i>Olx · Njuškalo · Nekretnine.ba i drugi
                   </p>
                 </div>
 

@@ -103,11 +103,11 @@ export default function AboutPage() {
             <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-5 relative overflow-hidden hover:border-orange-500/40 transition-colors">
               <div className="absolute top-0 right-0 w-14 h-14 bg-orange-500/20 rounded-bl-[35px]"></div>
               <div className="w-10 h-10 rounded-[4px] bg-orange-500/20 border border-orange-500/30 flex items-center justify-center mb-4">
-                <i className="fa-solid fa-camera text-orange-400 text-sm"></i>
+                <i className="fa-solid fa-file-import text-orange-400 text-sm"></i>
               </div>
-              <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">Vizualna Prodaja</h3>
+              <h3 className="text-[11px] font-black text-[var(--c-text)] uppercase tracking-wide mb-2">AI Import</h3>
               <p className="text-[10px] text-[var(--c-text3)] leading-relaxed">
-                Uslikaj predmet — AI ga prepoznaje, kategorizira i piše opis. Oglas online za 30 sekundi.
+                Zalijepi link s drugog portala — AI preuzima slike, opis, cijenu i kategoriju automatski.
               </p>
             </div>
           </div>

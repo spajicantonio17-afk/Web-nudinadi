@@ -72,10 +72,27 @@ export async function POST(req: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.supabase_user_id;
+
+        // ── Credit purchase (one-time payment) ──────────────
+        if (session.metadata?.type === 'credit_purchase') {
+          const credits = parseInt(session.metadata?.credits || '0', 10);
+          const piId = session.payment_intent as string | null;
+          if (userId && credits > 0) {
+            const supabase = getAdminClient();
+            await supabase.rpc('add_credits', {
+              p_user_id: userId,
+              p_amount: credits,
+              p_stripe_pi: piId,
+              p_desc: `Kupovina paketa: ${session.metadata?.package_id}`,
+            });
+          }
+          break;
+        }
+
+        // ── Subscription purchase ────────────────────────────
         const plan = session.metadata?.plan;
         if (!userId || !plan) break;
 
-        // Subscription is now active
         if (session.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string

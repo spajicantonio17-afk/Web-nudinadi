@@ -55,3 +55,21 @@ export function isPro(accountType: string | undefined): boolean {
 export function isBusiness(accountType: string | undefined): boolean {
   return accountType === 'business';
 }
+
+// ─── Credit Packages ─────────────────────────────────────────
+export const CREDIT_PACKAGES = [
+  { id: 'credits_10',  credits: 10, priceEur: 10, label: 'Starter' },
+  { id: 'credits_25',  credits: 25, priceEur: 20, label: 'Standard' },
+  { id: 'credits_60',  credits: 60, priceEur: 40, label: 'Pro' },
+] as const;
+
+export type CreditPackageId = typeof CREDIT_PACKAGES[number]['id'];
+
+// ─── Istaknuti (Featured) Options ────────────────────────────
+export const ISTAKNUTI_OPTIONS = [
+  { id: 'istaknuti_3d',  days: 3,  credits: 1, label: 'Kratko',    desc: '3 dana' },
+  { id: 'istaknuti_7d',  days: 7,  credits: 3, label: 'Sedmično',  desc: '7 dana' },
+  { id: 'istaknuti_30d', days: 30, credits: 8, label: 'Mjesečno',  desc: '30 dana' },
+] as const;
+
+export type IstaknutiOptionId = typeof ISTAKNUTI_OPTIONS[number]['id'];

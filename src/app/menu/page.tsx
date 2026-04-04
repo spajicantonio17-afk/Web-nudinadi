@@ -1200,13 +1200,23 @@ export default function MenuPage() {
     <MainLayout title={t('menu.title')} showSigurnost={false}>
       <div className="max-w-2xl mx-auto mt-2 space-y-4 pb-24">
         {/* User Quick Info */}
-        <Link href="/planovi" className="bg-blue-500/5 border border-blue-500/10 rounded-[22px] p-5 mb-6 flex items-center gap-4 group">
+        <Link href="/planovi" className="bg-blue-500/5 border border-blue-500/10 rounded-[22px] p-5 mb-3 flex items-center gap-4 group">
             <div className="w-12 h-12 rounded-full blue-gradient flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                 <i className="fa-solid fa-star"></i>
             </div>
             <div className="flex-1">
                 <h3 className="text-[15px] font-bold text-[var(--c-text)]">{t('menu.plusMembership')}</h3>
                 <p className="text-[11px] text-[var(--c-text3)] leading-tight">{t('menu.plusDesc')}</p>
+            </div>
+            <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)] group-hover:text-[var(--c-text2)] transition-colors"></i>
+        </Link>
+        <Link href="/krediti" className="bg-amber-500/5 border border-amber-500/10 rounded-[22px] p-5 mb-6 flex items-center gap-4 group">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 shadow-lg shadow-amber-500/10">
+                <i className="fa-solid fa-coins"></i>
+            </div>
+            <div className="flex-1">
+                <h3 className="text-[15px] font-bold text-[var(--c-text)]">Moji krediti</h3>
+                <p className="text-[11px] text-[var(--c-text3)] leading-tight">Extra slike i istaknuti oglasi</p>
             </div>
             <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)] group-hover:text-[var(--c-text2)] transition-colors"></i>
         </Link>
