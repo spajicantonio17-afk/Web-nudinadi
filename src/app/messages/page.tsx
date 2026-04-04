@@ -470,11 +470,14 @@ function MessagesContent() {
         content: text || null,
         image_url: imageUrl,
       });
-      // Replace optimistic with real
-      setChatMessages(prev => prev.map(m => m.id === optimisticId
-        ? { ...m, id: sent.id, imageUrl: sent.image_url || imageUrl }
-        : m
-      ));
+      // Replace optimistic with real (filter out any realtime duplicate first)
+      setChatMessages(prev => {
+        const deduped = prev.filter(m => m.id !== sent.id);
+        return deduped.map(m => m.id === optimisticId
+          ? { ...m, id: sent.id, imageUrl: sent.image_url || imageUrl }
+          : m
+        );
+      });
       // Update sidebar snippet
       const snippetText = text || (imageUrl ? '📷 Slika' : '');
       setConversations(prev => prev.map(c =>
