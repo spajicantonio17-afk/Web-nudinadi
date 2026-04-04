@@ -54,14 +54,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Insert message via admin client (bypasses RLS)
+    const insertPayload: Record<string, unknown> = {
+      conversation_id,
+      sender_id: userId,
+      content: content || null,
+    }
+    if (image_url) insertPayload.image_url = image_url
+
     const { data: message, error: insertError } = await admin
       .from('messages')
-      .insert({
-        conversation_id,
-        sender_id: userId,
-        content: content || null,
-        image_url: image_url || null,
-      })
+      .insert(insertPayload)
       .select()
       .single()
 
