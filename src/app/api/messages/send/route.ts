@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     if (insertError) {
       logger.error('Failed to insert message:', insertError)
-      return NextResponse.json({ error: 'Greška pri slanju poruke.' }, { status: 500 })
+      return NextResponse.json({ error: `DB greška: ${insertError.message} (code: ${insertError.code})` }, { status: 500 })
     }
 
     // 5. Update conversation last_message_at
