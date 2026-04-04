@@ -24,6 +24,7 @@ import type { ConversationWithUsers, MessageWithSender, Message, Product } from 
 import ChatProductBanner from '@/components/ChatProductBanner';
 import ObavjestiContactRow from '@/components/ObavjestiContactRow';
 import ObavjestiChat from '@/components/ObavjestiChat';
+import { useToast } from '@/components/Toast';
 
 // ─── UI types ─────────────────────────────────────────
 
@@ -225,6 +226,7 @@ function MessagesContent() {
   const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading } = useAuth();
   const { t } = useI18n();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -478,11 +480,13 @@ function MessagesContent() {
       setConversations(prev => prev.map(c =>
         c.id === selectedConvId ? { ...c, snippet: snippetText, time: formatTime(sent.created_at) } : c
       ));
-    } catch {
+    } catch (err) {
       // Remove optimistic message on error
       setChatMessages(prev => prev.filter(m => m.id !== optimisticId));
       setInputText(text);
       setImageUploading(false);
+      const msg = err instanceof Error ? err.message : 'Greška pri slanju poruke.';
+      showToast(msg, 'error');
     } finally {
       setIsSending(false);
     }

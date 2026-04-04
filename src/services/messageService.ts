@@ -75,30 +75,38 @@ export async function getMessages(conversationId: string, limit = 50, offset = 0
 // ─── Send Message ─────────────────────────────────────
 
 export async function sendMessage(message: MessageInsert): Promise<Message> {
-  const { data, error } = await supabase
-    .from('messages')
-    .insert(message)
-    .select()
+  const res = await fetch('/api/messages/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      conversation_id: message.conversation_id,
+      content: message.content,
+      image_url: message.image_url,
+    }),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Greška pri slanju poruke.')
+  }
+
+  const data: Message = await res.json()
+
+  // Fire & forget email notification
+  void supabase
+    .from('conversations')
+    .select('user1_id, user2_id, product_id')
+    .eq('id', message.conversation_id)
     .single()
-
-  if (error) throw error
-
-  // Fire & forget email notification — look up receiver from conversation
-  Promise.resolve(
-    supabase
-      .from('conversations')
-      .select('user1_id, user2_id, product_id')
-      .eq('id', message.conversation_id)
-      .single()
-  ).then(({ data: conv }) => {
-    if (!conv) return
-    const receiverId = conv.user1_id === message.sender_id ? conv.user2_id : conv.user1_id
-    fetch('/api/notifications/email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'new_message', recipientId: receiverId, productId: conv.product_id }),
-    }).catch(() => {/* non-critical */})
-  }).catch(() => {/* non-critical */})
+    .then(({ data: conv }) => {
+      if (!conv) return
+      const receiverId = conv.user1_id === message.sender_id ? conv.user2_id : conv.user1_id
+      void fetch('/api/notifications/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'new_message', recipientId: receiverId, productId: conv.product_id }),
+      })
+    })
 
   return data
 }
