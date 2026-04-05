@@ -3,12 +3,13 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { useI18n } from '@/lib/i18n';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useI18n();
 
-  // Redirect logged-in users to home
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       router.replace('/');
@@ -33,9 +34,9 @@ export default function OnboardingPage() {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Marketplace</span>
             </h1>
             <p className="text-[var(--c-text2)] text-sm max-w-[280px] leading-relaxed mb-12">
-                Revolucija trgovine.
-                <span className="text-[var(--c-text)] font-bold"> AI podrška</span>,
-                munjevita pretraga i dizajn koji diše.
+                {t('onboarding.tagline')}
+                <span className="text-[var(--c-text)] font-bold"> {t('onboarding.aiSupport')}</span>,{' '}
+                {t('onboarding.desc')}
             </p>
 
             <div className="w-full space-y-4">
@@ -43,21 +44,21 @@ export default function OnboardingPage() {
                     onClick={() => router.push('/login')}
                     className="w-full py-4 rounded-[24px] bg-[var(--c-text)] text-[var(--c-bg)] font-black uppercase tracking-[2px] shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
-                    <i className="fa-solid fa-arrow-right-to-bracket"></i> Prijavi se
+                    <i className="fa-solid fa-arrow-right-to-bracket"></i> {t('menu.login')}
                 </button>
 
                 <button
                     onClick={() => router.push('/register')}
                     className="w-full py-4 rounded-[24px] bg-[var(--c-card)] border border-[var(--c-border2)] text-[var(--c-text)] font-black uppercase tracking-[2px] hover:bg-[var(--c-hover)] active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
-                    <i className="fa-solid fa-user-plus"></i> Registracija
+                    <i className="fa-solid fa-user-plus"></i> {t('onboarding.register')}
                 </button>
 
                 <button
                     onClick={() => router.push('/')}
                     className="block w-full py-4 text-[10px] text-[var(--c-text3)] font-bold uppercase tracking-widest hover:text-[var(--c-text)] transition-colors"
                 >
-                    Nastavi kao Gost
+                    {t('onboarding.continueAsGuest')}
                 </button>
             </div>
       </div>

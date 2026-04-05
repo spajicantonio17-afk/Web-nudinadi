@@ -4,20 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
+import { useI18n } from '@/lib/i18n';
 import { getFavorites, removeFavorite as removeFav } from '@/services/favoriteService';
 import type { FavoriteWithProduct } from '@/lib/database.types';
-
-function formatTimeLabel(createdAt: string): string {
-  const diffDays = Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000);
-  if (diffDays === 0) return 'Danas';
-  if (diffDays === 1) return 'Jučer';
-  if (diffDays < 7) return `${diffDays}d`;
-  return `${Math.floor(diffDays / 7)}tj`;
-}
 
 export default function FavoritesPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useI18n();
   const [favorites, setFavorites] = useState<FavoriteWithProduct[]>([]);
   const [loadingFavs, setLoadingFavs] = useState(true);
 
@@ -36,6 +30,14 @@ export default function FavoritesPage() {
       .finally(() => setLoadingFavs(false));
   }, [user?.id]);
 
+  function formatTimeLabel(createdAt: string): string {
+    const diffDays = Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000);
+    if (diffDays === 0) return t('favorites.timeToday');
+    if (diffDays === 1) return t('favorites.timeYesterday');
+    if (diffDays < 7) return `${diffDays}d`;
+    return `${Math.floor(diffDays / 7)}tj`;
+  }
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -51,12 +53,10 @@ export default function FavoritesPage() {
   const handleRemove = async (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
     if (!user?.id) return;
-    // Optimistic remove
     setFavorites(prev => prev.filter(f => f.product_id !== productId));
     try {
       await removeFav(user.id, productId);
     } catch {
-      // Re-add on error
       if (user?.id) {
         getFavorites(user.id).then(setFavorites).catch(console.error);
       }
@@ -65,13 +65,13 @@ export default function FavoritesPage() {
 
   return (
     <MainLayout
-      title="Sviđanja"
+      title={t('favorites.title')}
       showSigurnost={false}
     >
       <div className="pt-2 pb-24 px-2 sm:px-0">
         <div className="mb-6 px-1 sm:px-2">
-          <h1 className="text-2xl font-black text-[var(--c-text)] uppercase tracking-tight mb-1">Moji Favoriti</h1>
-          <p className="text-xs text-[var(--c-text3)]">Artikli koje ste označili sa &quot;Sviđa mi se&quot;</p>
+          <h1 className="text-2xl font-black text-[var(--c-text)] uppercase tracking-tight mb-1">{t('favorites.heading')}</h1>
+          <p className="text-xs text-[var(--c-text3)]">{t('favorites.subtitle')}</p>
         </div>
 
         {loadingFavs ? (
@@ -109,7 +109,7 @@ export default function FavoritesPage() {
                     </button>
                     {p.status === 'sold' && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span className="text-[10px] font-black text-white bg-red-500 px-2 py-1 rounded-full uppercase">Prodano</span>
+                        <span className="text-[10px] font-black text-white bg-red-500 px-2 py-1 rounded-full uppercase">{t('favorites.sold')}</span>
                       </div>
                     )}
                   </div>
@@ -129,9 +129,9 @@ export default function FavoritesPage() {
             <div className="w-20 h-20 bg-[var(--c-hover)] rounded-full flex items-center justify-center mb-4">
               <i className="fa-regular fa-heart text-3xl text-[var(--c-text3)]"></i>
             </div>
-            <p className="text-sm text-[var(--c-text2)] font-bold uppercase tracking-wider">Nema spašenih artikala</p>
+            <p className="text-sm text-[var(--c-text2)] font-bold uppercase tracking-wider">{t('favorites.empty')}</p>
             <button onClick={() => router.push('/')} className="mt-4 text-blue-400 text-xs font-bold uppercase tracking-widest hover:text-[var(--c-text)]">
-              Istraži Ponudu
+              {t('favorites.explore')}
             </button>
           </div>
         )}

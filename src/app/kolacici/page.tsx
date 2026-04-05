@@ -2,10 +2,61 @@
 
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
+import { useI18n } from '@/lib/i18n';
 
 export default function CookiesPage() {
+  const { t } = useI18n();
+
+  const COOKIE_TYPES = [
+    {
+      nameKey: 'cookies.type1Name' as const,
+      required: true,
+      icon: 'fa-shield-halved',
+      color: 'emerald',
+      descKey: 'cookies.type1Desc' as const,
+      examplesKey: 'cookies.type1Examples' as const,
+    },
+    {
+      nameKey: 'cookies.type2Name' as const,
+      required: false,
+      icon: 'fa-chart-line',
+      color: 'blue',
+      descKey: 'cookies.type2Desc' as const,
+      examplesKey: 'cookies.type2Examples' as const,
+    },
+    {
+      nameKey: 'cookies.type3Name' as const,
+      required: false,
+      icon: 'fa-sliders',
+      color: 'purple',
+      descKey: 'cookies.type3Desc' as const,
+      examplesKey: 'cookies.type3Examples' as const,
+    },
+    {
+      nameKey: 'cookies.type4Name' as const,
+      required: false,
+      icon: 'fa-bullhorn',
+      color: 'orange',
+      descKey: 'cookies.type4Desc' as const,
+      examplesKey: 'cookies.type4Examples' as const,
+    },
+  ];
+
+  const colorMap: Record<string, { bg: string; border: string; text: string; accent: string }> = {
+    emerald: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/30', text: 'text-emerald-400', accent: 'border-emerald-500/40' },
+    blue: { bg: 'bg-blue-500/20', border: 'border-blue-500/30', text: 'text-blue-400', accent: 'border-blue-500/40' },
+    purple: { bg: 'bg-purple-500/20', border: 'border-purple-500/30', text: 'text-purple-400', accent: 'border-purple-500/40' },
+    orange: { bg: 'bg-orange-500/20', border: 'border-orange-500/30', text: 'text-orange-400', accent: 'border-orange-500/40' },
+  };
+
+  const MANAGE_ITEMS = [
+    t('cookies.manageItem1'),
+    t('cookies.manageItem2'),
+    t('cookies.manageItem3'),
+  ];
+
   return (
-    <MainLayout title="Kolačići">
+    <MainLayout title={t('cookies.title')}>
       <div className="max-w-4xl mx-auto py-6">
 
         {/* HERO */}
@@ -15,27 +66,25 @@ export default function CookiesPage() {
               <i className="fa-solid fa-cookie-bite text-white text-sm"></i>
             </div>
             <div>
-              <p className="text-[8px] font-bold text-orange-400 uppercase tracking-[0.2em]">Pravni dokumenti</p>
+              <p className="text-[8px] font-bold text-orange-400 uppercase tracking-[0.2em]">{t('cookies.eyebrow')}</p>
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[var(--c-text)] uppercase leading-none tracking-tighter mb-4">
-            POLITIKA<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">KOLAČIĆA.</span>
+            {t('cookies.heading1')}<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">{t('cookies.heading2')}</span>
           </h1>
           <div className="w-10 h-[3px] bg-orange-500 mb-4"></div>
-          <p className="text-[11px] text-[var(--c-text3)]">Posljednje ažuriranje: 01. februar 2026.</p>
+          <p className="text-[11px] text-[var(--c-text3)]">{t('cookies.lastUpdated')}</p>
         </div>
 
         {/* WHAT ARE COOKIES */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-[2px] bg-orange-500"></div>
-            <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Šta su kolačići?</p>
+            <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">{t('cookies.whatSection')}</p>
           </div>
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
-            <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">
-              Kolačići (cookies) su male tekstualne datoteke koje se pohranjuju na vašem uređaju kada posjetite web stranicu. Pomažu stranici da zapamti vaše postavke, preferencije i poboljša korisničko iskustvo. NudiNađi koristi kolačiće u skladu sa zakonima Bosne i Hercegovine i EU regulativama.
-            </p>
+            <p className="text-[11px] text-[var(--c-text3)] leading-relaxed">{t('cookies.whatBody')}</p>
           </div>
         </div>
 
@@ -43,52 +92,13 @@ export default function CookiesPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-[2px] bg-orange-500"></div>
-            <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Vrste kolačića koje koristimo</p>
+            <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">{t('cookies.typesSection')}</p>
           </div>
           <div className="space-y-3">
-            {[
-              {
-                type: 'Neophodni kolačići',
-                required: true,
-                icon: 'fa-shield-halved',
-                color: 'emerald',
-                desc: 'Ovi kolačići su neophodni za funkcionisanje platforme. Bez njih ne možete koristiti osnovne funkcije poput prijave, navigacije i sigurnosnih provjera.',
-                examples: 'Sesija korisnika, CSRF zaštita, jezičke postavke',
-              },
-              {
-                type: 'Analitički kolačići',
-                required: false,
-                icon: 'fa-chart-line',
-                color: 'blue',
-                desc: 'Pomažu nam da razumijemo kako korisnici koriste platformu. Prikupljamo anonimne podatke o posjetama, popularnim stranicama i načinu navigacije.',
-                examples: 'Google Analytics, vlastita analitika pretrage',
-              },
-              {
-                type: 'Funkcionalni kolačići',
-                required: false,
-                icon: 'fa-sliders',
-                color: 'purple',
-                desc: 'Pamte vaše postavke i preferencije — odabrana lokacija, preferirana kategorija, tema (svijetla/tamna) i historija pretrage.',
-                examples: 'Lokacija, tema, posljednje pretrage, favoriti',
-              },
-              {
-                type: 'Marketinški kolačići',
-                required: false,
-                icon: 'fa-bullhorn',
-                color: 'orange',
-                desc: 'Koristimo ih za prikazivanje relevantnih oglasa i mjerenje učinkovitosti kampanja. Možete ih u potpunosti isključiti bez uticaja na funkcionalnost.',
-                examples: 'Facebook Pixel, Google Ads (planirano)',
-              },
-            ].map((cookie) => {
-              const colorMap: Record<string, { bg: string; border: string; text: string; accent: string }> = {
-                emerald: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/30', text: 'text-emerald-400', accent: 'border-emerald-500/40' },
-                blue: { bg: 'bg-blue-500/20', border: 'border-blue-500/30', text: 'text-blue-400', accent: 'border-blue-500/40' },
-                purple: { bg: 'bg-purple-500/20', border: 'border-purple-500/30', text: 'text-purple-400', accent: 'border-purple-500/40' },
-                orange: { bg: 'bg-orange-500/20', border: 'border-orange-500/30', text: 'text-orange-400', accent: 'border-orange-500/40' },
-              };
+            {COOKIE_TYPES.map((cookie) => {
               const c = colorMap[cookie.color];
               return (
-                <div key={cookie.type} className={`bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-5 hover:${c.accent} transition-colors relative overflow-hidden`}>
+                <div key={cookie.nameKey} className={`bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-5 hover:${c.accent} transition-colors relative overflow-hidden`}>
                   <div className={`absolute top-0 right-0 w-14 h-14 ${c.bg} rounded-bl-[35px]`}></div>
                   <div className="flex items-start gap-4">
                     <div className={`w-10 h-10 rounded-[4px] ${c.bg} ${c.border} border flex items-center justify-center shrink-0`}>
@@ -96,13 +106,13 @@ export default function CookiesPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-[12px] font-black text-[var(--c-text)]">{cookie.type}</h3>
+                        <h3 className="text-[12px] font-black text-[var(--c-text)]">{t(cookie.nameKey)}</h3>
                         {cookie.required && (
-                          <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-[4px] text-[8px] font-bold text-emerald-500 uppercase">Obavezni</span>
+                          <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-[4px] text-[8px] font-bold text-emerald-500 uppercase">{t('cookies.type1Required')}</span>
                         )}
                       </div>
-                      <p className="text-[10px] text-[var(--c-text3)] leading-relaxed mb-2">{cookie.desc}</p>
-                      <p className="text-[9px] text-[var(--c-text3)]"><span className="font-bold text-[var(--c-text)]">Primjeri:</span> {cookie.examples}</p>
+                      <p className="text-[10px] text-[var(--c-text3)] leading-relaxed mb-2">{t(cookie.descKey)}</p>
+                      <p className="text-[9px] text-[var(--c-text3)]"><span className="font-bold text-[var(--c-text)]">{t('cookies.examplesLabel')}</span> {t(cookie.examplesKey)}</p>
                     </div>
                   </div>
                 </div>
@@ -115,18 +125,12 @@ export default function CookiesPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-[2px] bg-orange-500"></div>
-            <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">Upravljanje kolačićima</p>
+            <p className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em]">{t('cookies.manageSection')}</p>
           </div>
           <div className="bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] p-6">
-            <p className="text-[11px] text-[var(--c-text3)] leading-relaxed mb-3">
-              Možete upravljati kolačićima na nekoliko načina:
-            </p>
+            <p className="text-[11px] text-[var(--c-text3)] leading-relaxed mb-3">{t('cookies.manageIntro')}</p>
             <ul className="space-y-2">
-              {[
-                'Postavke pretraživača — većina pretraživača omogućava blokiranje ili brisanje kolačića',
-                'Naše postavke — na dnu svake stranice možete prilagoditi kolačiće',
-                'Brisanje — možete u svakom trenutku obrisati sve kolačiće iz svog pretraživača',
-              ].map((item) => (
+              {MANAGE_ITEMS.map((item) => (
                 <li key={item} className="flex items-start gap-2 text-[10px] text-[var(--c-text3)]">
                   <i className="fa-solid fa-check text-orange-400 text-[8px] mt-1 shrink-0"></i>
                   <span>{item}</span>
@@ -138,8 +142,8 @@ export default function CookiesPage() {
 
         {/* BOTTOM */}
         <div className="text-center py-8 border-t border-[var(--c-border)]">
-          <p className="text-[10px] text-[var(--c-text3)]">Za pitanja o kolačićima: <Link href="/kontakt" className="text-orange-400 font-bold hover:underline">Kontaktiraj nas</Link></p>
-          <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-[0.3em] mt-2">NudiNađi platforma</p>
+          <p className="text-[10px] text-[var(--c-text3)]">{t('cookies.bottomContact')} <Link href="/kontakt" className="text-orange-400 font-bold hover:underline">{t('cookies.bottomContactLink')}</Link></p>
+          <p className="text-[8px] font-bold text-[var(--c-text3)] uppercase tracking-[0.3em] mt-2">{t('cookies.bottomPlatform')}</p>
         </div>
       </div>
     </MainLayout>

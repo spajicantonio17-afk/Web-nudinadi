@@ -5,13 +5,11 @@ import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
+import { useI18n } from '@/lib/i18n';
 import { getUserProducts, updateProduct, deleteProduct } from '@/services/productService';
 import type { ProductWithSeller } from '@/lib/database.types';
 import BuyerPickerModal from '@/components/BuyerPickerModal';
 
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Aktivan', sold: 'Prodano', draft: 'Skica', pending_sale: 'Čeka potvrdu',
-};
 const STATUS_COLORS: Record<string, string> = {
   active: 'text-emerald-500', sold: 'text-gray-400', draft: 'text-amber-500', pending_sale: 'text-blue-400',
 };
@@ -23,12 +21,20 @@ export default function MyListingsPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [products, setProducts] = useState<ProductWithSeller[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [buyerPickerProduct, setBuyerPickerProduct] = useState<ProductWithSeller | null>(null);
+
+  const STATUS_LABELS: Record<string, string> = {
+    active: t('myListings.statusActive'),
+    sold: t('myListings.statusSold'),
+    draft: t('myListings.statusDraft'),
+    pending_sale: t('myListings.statusPending'),
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace('/login?redirect=/my-listings');
@@ -45,7 +51,6 @@ export default function MyListingsPage() {
 
   useEffect(() => { loadProducts(); }, [loadProducts]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     if (!menuOpenId) return;
     const handler = () => setMenuOpenId(null);
@@ -59,9 +64,9 @@ export default function MyListingsPage() {
     try {
       await updateProduct(p.id, { status: nextStatus });
       setProducts(prev => prev.map(x => x.id === p.id ? { ...x, status: nextStatus } : x));
-      showToast(nextStatus === 'active' ? 'Oglas aktiviran.' : 'Oglas deaktiviran.');
+      showToast(nextStatus === 'active' ? t('myListings.toastActivated') : t('myListings.toastDeactivated'));
     } catch {
-      showToast('Greška pri promjeni statusa.', 'error');
+      showToast(t('myListings.toastStatusError'), 'error');
     }
   };
 
@@ -75,9 +80,9 @@ export default function MyListingsPage() {
     setProducts(prev => prev.map(x => x.id === buyerPickerProduct.id ? { ...x, status } : x));
     setBuyerPickerProduct(null);
     if (status === 'pending_sale') {
-      showToast('Transakcija kreirana! Čekamo potvrdu kupca.');
+      showToast(t('myListings.toastTransactionCreated'));
     } else {
-      showToast('Označeno kao prodano.');
+      showToast(t('myListings.toastMarkedSold'));
     }
   };
 
@@ -87,9 +92,9 @@ export default function MyListingsPage() {
     try {
       await deleteProduct(id);
       setProducts(prev => prev.filter(x => x.id !== id));
-      showToast('Oglas obrisan.');
+      showToast(t('myListings.toastDeleted'));
     } catch {
-      showToast('Greška pri brisanju.', 'error');
+      showToast(t('myListings.toastDeleteError'), 'error');
     } finally {
       setDeletingId(null);
     }
@@ -97,7 +102,7 @@ export default function MyListingsPage() {
 
   if (authLoading) {
     return (
-      <MainLayout title="Moji Oglasi" showSigurnost={false}>
+      <MainLayout title={t('myListings.title')} showSigurnost={false}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <i className="fa-solid fa-spinner animate-spin text-2xl text-blue-500"></i>
         </div>
@@ -108,21 +113,21 @@ export default function MyListingsPage() {
   if (!isAuthenticated) return null;
 
   return (
-    <MainLayout title="Moji Oglasi" showSigurnost={false}>
+    <MainLayout title={t('myListings.title')} showSigurnost={false}>
       <div className="max-w-2xl mx-auto pt-4 pb-24 px-3 sm:px-4">
 
         <div className="flex items-center justify-between mb-6">
           <div className="min-w-0">
-            <h1 className="text-xl font-black text-[var(--c-text)]">Moji Oglasi</h1>
+            <h1 className="text-xl font-black text-[var(--c-text)]">{t('myListings.title')}</h1>
             {!isLoading && (
-              <p className="text-[11px] text-[var(--c-text3)]">{products.length} ukupno</p>
+              <p className="text-[11px] text-[var(--c-text3)]">{products.length} {t('myListings.total')}</p>
             )}
           </div>
           <button
             onClick={() => router.push('/upload')}
             className="blue-gradient text-white px-4 py-2.5 rounded-[12px] text-xs font-bold uppercase tracking-widest flex items-center gap-2"
           >
-            <i className="fa-solid fa-plus"></i>Novi Oglas
+            <i className="fa-solid fa-plus"></i>{t('myListings.newListing')}
           </button>
         </div>
 
@@ -135,12 +140,12 @@ export default function MyListingsPage() {
         ) : products.length === 0 ? (
           <div className="text-center py-20 opacity-50">
             <i className="fa-solid fa-box-open text-4xl text-[var(--c-text3)] mb-4 block"></i>
-            <p className="text-sm font-bold text-[var(--c-text2)] uppercase tracking-wider">Nemate nijedan oglas</p>
+            <p className="text-sm font-bold text-[var(--c-text2)] uppercase tracking-wider">{t('myListings.empty')}</p>
             <button
               onClick={() => router.push('/upload')}
               className="mt-4 text-blue-400 text-xs font-bold uppercase tracking-widest hover:text-[var(--c-text)]"
             >
-              Objavi prvi oglas
+              {t('myListings.publishFirst')}
             </button>
           </div>
         ) : (
@@ -150,13 +155,13 @@ export default function MyListingsPage() {
                 {/* Confirm delete overlay */}
                 {confirmDeleteId === p.id && (
                   <div className="absolute inset-0 z-20 bg-[var(--c-card)] border border-red-500/30 rounded-[18px] flex items-center justify-between px-3 sm:px-5 shadow-lg">
-                    <p className="text-[12px] font-bold text-[var(--c-text)]">Obrisati oglas?</p>
+                    <p className="text-[12px] font-bold text-[var(--c-text)]">{t('myListings.confirmDelete')}</p>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setConfirmDeleteId(null)}
                         className="px-3 py-1.5 text-[11px] font-bold text-[var(--c-text2)] bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[10px]"
                       >
-                        Odustani
+                        {t('myListings.cancel')}
                       </button>
                       <button
                         onClick={() => handleDelete(p.id)}
@@ -165,7 +170,7 @@ export default function MyListingsPage() {
                       >
                         {deletingId === p.id
                           ? <i className="fa-solid fa-spinner animate-spin text-[10px]"></i>
-                          : 'Obriši'}
+                          : t('myListings.delete')}
                       </button>
                     </div>
                   </div>
@@ -217,7 +222,7 @@ export default function MyListingsPage() {
                           className="w-full text-left px-4 py-3 text-[12px] font-bold text-[var(--c-text)] hover:bg-[var(--c-hover)] flex items-center gap-2.5 border-b border-[var(--c-border)]"
                         >
                           <i className="fa-solid fa-eye text-[var(--c-text3)] text-xs w-3"></i>
-                          Pogledaj oglas
+                          {t('myListings.viewListing')}
                         </button>
                         {p.status !== 'sold' && p.status !== 'pending_sale' && (
                           <button
@@ -225,7 +230,7 @@ export default function MyListingsPage() {
                             className="w-full text-left px-4 py-3 text-[12px] font-bold text-[var(--c-text)] hover:bg-[var(--c-hover)] flex items-center gap-2.5 border-b border-[var(--c-border)]"
                           >
                             <i className="fa-solid fa-flag-checkered text-emerald-400 text-xs w-3"></i>
-                            Označi prodano
+                            {t('myListings.markSold')}
                           </button>
                         )}
                         {p.status !== 'sold' && (
@@ -234,7 +239,7 @@ export default function MyListingsPage() {
                             className="w-full text-left px-4 py-3 text-[12px] font-bold text-[var(--c-text)] hover:bg-[var(--c-hover)] flex items-center gap-2.5 border-b border-[var(--c-border)]"
                           >
                             <i className={`fa-solid ${p.status === 'active' ? 'fa-pause' : 'fa-play'} text-amber-400 text-xs w-3`}></i>
-                            {p.status === 'active' ? 'Deaktiviraj' : 'Aktiviraj'}
+                            {p.status === 'active' ? t('myListings.deactivate') : t('myListings.activate')}
                           </button>
                         )}
                         <button
@@ -242,7 +247,7 @@ export default function MyListingsPage() {
                           className="w-full text-left px-4 py-3 text-[12px] font-bold text-red-400 hover:bg-red-500/10 flex items-center gap-2.5"
                         >
                           <i className="fa-solid fa-trash-can text-xs w-3"></i>
-                          Obriši oglas
+                          {t('myListings.deleteListing')}
                         </button>
                       </div>
                     )}
@@ -254,7 +259,6 @@ export default function MyListingsPage() {
         )}
       </div>
 
-      {/* BUYER PICKER MODAL */}
       {buyerPickerProduct && user && (
         <BuyerPickerModal
           productId={buyerPickerProduct.id}

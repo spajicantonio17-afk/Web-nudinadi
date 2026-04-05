@@ -2566,7 +2566,7 @@ function UploadPageInner() {
   };
 
   const getPriceLabel = () => {
-    const sym = currency === 'KM' ? 'KM' : '€';
+    const sym = currency === 'BAM' ? 'KM' : currency === 'RSD' ? 'RSD' : '€';
     const price = formData.price || '0';
     const suffix = formData.priceType === 'mk' ? ' MK' : formData.priceType === 'negotiable' ? ' (dogovor)' : '';
     return `${price}${suffix} ${sym}`;

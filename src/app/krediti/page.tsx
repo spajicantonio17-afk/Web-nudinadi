@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
+import { useI18n } from '@/lib/i18n';
 import { CREDIT_PACKAGES } from '@/lib/plans';
 import { getSupabase } from '@/lib/supabase';
 
@@ -17,6 +18,7 @@ interface Transaction {
 
 export default function KreditiPage() {
   const { user, isAuthenticated } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -73,11 +75,11 @@ export default function KreditiPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error || 'Greška pri kreiranju plaćanja.');
+        alert(data.error || t('credits.paymentError'));
         setBuying(null);
       }
     } catch {
-      alert('Greška pri povezivanju sa serverom.');
+      alert(t('credits.serverError'));
       setBuying(null);
     }
   }
@@ -94,14 +96,14 @@ export default function KreditiPage() {
   }
 
   function txLabel(type: string) {
-    if (type === 'purchase') return 'Kupovina';
-    if (type === 'extra_photos') return 'Extra slike';
-    if (type === 'istaknuti') return 'Istaknuti oglas';
+    if (type === 'purchase') return t('credits.txPurchase');
+    if (type === 'extra_photos') return t('credits.txExtraPhotos');
+    if (type === 'istaknuti') return t('credits.txFeatured');
     return type;
   }
 
   return (
-    <MainLayout title="Moji krediti" showSigurnost={false} onBack={() => router.push('/menu')}>
+    <MainLayout title={t('credits.title')} showSigurnost={false} onBack={() => router.push('/menu')}>
       <div className="max-w-2xl mx-auto pt-2 pb-24 space-y-6">
 
         {/* Success / Cancel banners */}
@@ -109,15 +111,15 @@ export default function KreditiPage() {
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-[18px] p-4 flex items-center gap-3">
             <i className="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
             <div>
-              <p className="text-[13px] font-bold text-[var(--c-text)]">Plaćanje uspješno!</p>
-              <p className="text-[11px] text-[var(--c-text3)]">Krediti su dodani na tvoj račun.</p>
+              <p className="text-[13px] font-bold text-[var(--c-text)]">{t('credits.paymentSuccess')}</p>
+              <p className="text-[11px] text-[var(--c-text3)]">{t('credits.creditsAdded')}</p>
             </div>
           </div>
         )}
         {cancelled && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-[18px] p-4 flex items-center gap-3">
             <i className="fa-solid fa-circle-xmark text-amber-400 text-lg"></i>
-            <p className="text-[13px] text-[var(--c-text)]">Plaćanje otkazano.</p>
+            <p className="text-[13px] text-[var(--c-text)]">{t('credits.paymentCancelled')}</p>
           </div>
         )}
 
@@ -127,13 +129,13 @@ export default function KreditiPage() {
             <i className="fa-solid fa-coins text-xl"></i>
           </div>
           <div className="flex-1">
-            <p className="text-[11px] uppercase font-bold tracking-[2px] text-[var(--c-text3)] mb-1">Trenutno stanje</p>
+            <p className="text-[11px] uppercase font-bold tracking-[2px] text-[var(--c-text3)] mb-1">{t('credits.currentBalance')}</p>
             {loading ? (
               <div className="h-8 w-20 bg-[var(--c-active)] rounded animate-pulse"></div>
             ) : (
               <p className="text-[32px] font-black text-[var(--c-text)] leading-none">
                 {balance ?? 0}
-                <span className="text-[14px] font-bold text-[var(--c-text3)] ml-2">kredita</span>
+                <span className="text-[14px] font-bold text-[var(--c-text3)] ml-2">{t('credits.credits')}</span>
               </p>
             )}
           </div>
@@ -141,20 +143,20 @@ export default function KreditiPage() {
 
         {/* Credit info */}
         <div className="bg-blue-500/5 border border-blue-500/10 rounded-[18px] p-4 space-y-2">
-          <p className="text-[12px] font-bold text-[var(--c-text)]">Šta možeš s kreditima?</p>
+          <p className="text-[12px] font-bold text-[var(--c-text)]">{t('credits.whatCanYouDo')}</p>
           <div className="flex items-center gap-2">
             <i className="fa-solid fa-image text-blue-400 text-xs w-4"></i>
-            <p className="text-[11px] text-[var(--c-text3)]">1 kredit = 1 extra slika po oglasu (iznad limita plana)</p>
+            <p className="text-[11px] text-[var(--c-text3)]">{t('credits.useCase1')}</p>
           </div>
           <div className="flex items-center gap-2">
             <i className="fa-solid fa-star text-amber-400 text-xs w-4"></i>
-            <p className="text-[11px] text-[var(--c-text3)]">1 kredit = 3 dana istaknutog oglasa · 3 kredita = 7 dana · 8 kredita = 30 dana</p>
+            <p className="text-[11px] text-[var(--c-text3)]">{t('credits.useCase2')}</p>
           </div>
         </div>
 
         {/* Packages */}
         <div>
-          <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-1">Kupi kredite</h2>
+          <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-1">{t('credits.buyCredits')}</h2>
           <div className="space-y-3">
             {CREDIT_PACKAGES.map((pkg, i) => {
               const isPopular = i === 1;
@@ -168,7 +170,7 @@ export default function KreditiPage() {
                 >
                   {isPopular && (
                     <span className="absolute -top-2.5 left-4 bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full">
-                      Najpopularniji
+                      {t('credits.mostPopular')}
                     </span>
                   )}
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -178,7 +180,7 @@ export default function KreditiPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-bold text-[var(--c-text)]">{pkg.label}</p>
-                    <p className="text-[12px] text-[var(--c-text3)]">{pkg.credits} kredita · {perCredit}€/kredit</p>
+                    <p className="text-[12px] text-[var(--c-text3)]">{t('credits.creditsCount', { count: String(pkg.credits), price: perCredit })}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-[18px] font-black text-[var(--c-text)]">{pkg.priceEur}€</p>
@@ -193,7 +195,7 @@ export default function KreditiPage() {
                     >
                       {buying === pkg.id
                         ? <i className="fa-solid fa-spinner animate-spin"></i>
-                        : 'Kupi'
+                        : t('credits.buy')
                       }
                     </button>
                   </div>
@@ -206,7 +208,7 @@ export default function KreditiPage() {
         {/* Transaction history */}
         {!loading && transactions.length > 0 && (
           <div>
-            <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-1">Istorija</h2>
+            <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-1">{t('credits.history')}</h2>
             <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] overflow-hidden divide-y divide-[var(--c-border)]">
               {transactions.map(tx => (
                 <div key={tx.id} className="flex items-center gap-3 px-4 py-3">

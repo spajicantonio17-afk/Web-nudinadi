@@ -8,9 +8,11 @@ import {
 } from '@/lib/country';
 import { useTheme } from '@/lib/theme';
 import { detectGPSLocation, findNearestCity } from '@/lib/location';
+import { useI18n } from '@/lib/i18n';
 
 export default function AppSettings() {
   const { theme, setTheme } = useTheme();
+  const { t } = useI18n();
   const [country, setCountry] = useState<CountryPreference>('all');
   const [gps, setGps] = useState<GPSPosition | null>(null);
   const [radius, setRadiusState] = useState<RadiusKm>(50);
@@ -53,11 +55,11 @@ export default function AppSettings() {
       setGps(pos);
       setGPSPosition(pos);
     } catch (err) {
-      setGpsError(err instanceof Error ? err.message : 'Greška pri detekciji lokacije');
+      setGpsError(err instanceof Error ? err.message : t('settings.gps.error'));
     } finally {
       setGpsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const handleClearGPS = useCallback(() => {
     setGps(null);
@@ -67,8 +69,8 @@ export default function AppSettings() {
 
   if (!mounted) return null;
 
-  const countryLabel = country === 'ba' ? '🇧🇦 BiH' : country === 'hr' ? '🇭🇷 Hrvatska' : country === 'rs' ? '🇷🇸 Srbija' : '🌍 Sve';
-  const themeLabel = theme === 'dark' ? 'Tamna' : theme === 'light' ? 'Svijetla' : 'Sistemska';
+  const countryLabel = t(`settings.countryLabel.${country}` as Parameters<typeof t>[0]);
+  const themeLabel = t(`settings.themeLabel.${theme}` as Parameters<typeof t>[0]);
 
   return (
     <div className="space-y-6">
@@ -82,8 +84,8 @@ export default function AppSettings() {
             <i className="fa-solid fa-palette text-lg"></i>
           </div>
           <div>
-            <h3 className="text-lg font-black text-[var(--c-text)]">Izgled i tržište</h3>
-            <p className="text-[11px] text-[var(--c-text3)]">Tema, tržište i lokacijske preference</p>
+            <h3 className="text-lg font-black text-[var(--c-text)]">{t('menu.appearance')}</h3>
+            <p className="text-[11px] text-[var(--c-text3)]">{t('settings.appearance.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -91,23 +93,23 @@ export default function AppSettings() {
       {/* ── Country Filter ── */}
       <section>
         <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">
-          Prikaži artikle iz
+          {t('settings.market.showFrom')}
         </h2>
         <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-1 overflow-hidden">
           <CountryRow
-            flag="🇧🇦" label="Bosna i Hercegovina" sub="Samo KM cijene"
+            flag="🇧🇦" label={t('settings.market.bih')} sub={t('settings.market.bihSub')}
             selected={country === 'ba'} onClick={() => handleCountryChange('ba')}
           />
           <CountryRow
-            flag="🇭🇷" label="Hrvatska" sub="Samo EUR cijene"
+            flag="🇭🇷" label={t('settings.market.hr')} sub={t('settings.market.hrSub')}
             selected={country === 'hr'} onClick={() => handleCountryChange('hr')}
           />
           <CountryRow
-            flag="🇷🇸" label="Srbija" sub="Samo RSD cijene"
+            flag="🇷🇸" label={t('settings.market.rs')} sub={t('settings.market.rsSub')}
             selected={country === 'rs'} onClick={() => handleCountryChange('rs')}
           />
           <CountryRow
-            flag="🌍" label="Sva tržišta" sub="Sve valute · KM, EUR i RSD"
+            flag="🌍" label={t('settings.market.all')} sub={t('settings.market.allSub')}
             selected={country === 'all'} onClick={() => handleCountryChange('all')} last
           />
         </div>
@@ -116,14 +118,14 @@ export default function AppSettings() {
       {/* ── Theme ── */}
       <section>
         <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">
-          Tema
+          {t('menu.theme')}
         </h2>
         <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] p-1 overflow-hidden">
-          <ThemeRow icon="fa-sun" label="Svijetla" sub="Klasični svijetli izgled"
+          <ThemeRow icon="fa-sun" label={t('settings.theme.light')} sub={t('settings.theme.lightSub')}
             selected={theme === 'light'} onClick={() => setTheme('light')} />
-          <ThemeRow icon="fa-moon" label="Tamna" sub="Glassmorphism dark mode"
+          <ThemeRow icon="fa-moon" label={t('settings.theme.dark')} sub={t('settings.theme.darkSub')}
             selected={theme === 'dark'} onClick={() => setTheme('dark')} />
-          <ThemeRow icon="fa-circle-half-stroke" label="Sistemska" sub="Prati postavke uređaja"
+          <ThemeRow icon="fa-circle-half-stroke" label={t('settings.theme.system')} sub={t('settings.theme.systemSub')}
             selected={theme === 'system'} onClick={() => setTheme('system')} last />
         </div>
       </section>
@@ -131,7 +133,7 @@ export default function AppSettings() {
       {/* ── Location / GPS ── */}
       <section>
         <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">
-          Lokacija
+          {t('location.title')}
         </h2>
 
         <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] overflow-hidden">
@@ -158,18 +160,18 @@ export default function AppSettings() {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className={`text-[13px] font-bold ${gps ? 'text-blue-500' : 'text-[var(--c-text)]'}`}>
-                {gpsLoading ? 'Detektiranje lokacije...' : gps ? 'GPS aktivan' : 'Koristi moju lokaciju'}
+                {gpsLoading ? t('location.detecting') : gps ? t('settings.gps.active') : t('settings.gps.useLocation')}
               </h4>
               <p className="text-[10px] text-[var(--c-text3)] mt-0.5">
                 {gps && nearestCityName
-                  ? `Najbliži grad: ${nearestCityName}`
-                  : 'Artikli u blizini tvoje lokacije'
+                  ? t('settings.gps.nearestCity', { city: nearestCityName })
+                  : t('settings.gps.nearbyDesc')
                 }
               </p>
             </div>
             {gps ? (
               <span className="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-1 rounded-md border border-red-500/10">
-                Ukloni
+                {t('settings.gps.remove')}
               </span>
             ) : (
               <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)]" />
@@ -182,7 +184,7 @@ export default function AppSettings() {
               <div className="flex items-center justify-between mb-3 mt-3">
                 <div className="flex items-center gap-2">
                   <i className="fa-solid fa-bullseye text-[10px] text-[var(--c-text3)]" />
-                  <h4 className="text-[12px] font-bold text-[var(--c-text)]">Radius pretrage</h4>
+                  <h4 className="text-[12px] font-bold text-[var(--c-text)]">{t('settings.gps.radiusTitle')}</h4>
                 </div>
                 <span className="text-[12px] font-black text-blue-500 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/15">
                   {radius} km
@@ -210,12 +212,12 @@ export default function AppSettings() {
                 <i className="fa-solid fa-circle-info text-[9px] text-[var(--c-text-muted)]" />
                 <p className="text-[10px] text-[var(--c-text-muted)]">
                   {country === 'ba'
-                    ? 'Prikazuje samo artikle iz BiH unutar radijusa'
+                    ? t('settings.gps.radiusInfoBa')
                     : country === 'hr'
-                      ? 'Prikazuje samo artikle iz Hrvatske unutar radijusa'
+                      ? t('settings.gps.radiusInfoHr')
                       : country === 'rs'
-                        ? 'Prikazuje samo artikle iz Srbije unutar radijusa'
-                        : 'Prikazuje artikle iz svih tržišta unutar radijusa'
+                        ? t('settings.gps.radiusInfoRs')
+                        : t('settings.gps.radiusInfoAll')
                   }
                 </p>
               </div>

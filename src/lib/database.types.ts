@@ -60,7 +60,7 @@ export interface Profile {
   email_notif_sold: boolean | null
   email_notif_follower: boolean | null
   email_notif_favorite: boolean | null
-  locale: 'bs' | 'en' | null
+  locale: 'bs' | 'en' | 'de' | null
   created_at: string
   updated_at: string
 }
@@ -173,7 +173,7 @@ export interface ProfileInsert {
   total_purchases?: number
   rating_average?: number | null
   location?: string | null
-  locale?: 'bs' | 'en' | null
+  locale?: 'bs' | 'en' | 'de' | null
 }
 
 export interface ProductInsert {
@@ -270,7 +270,7 @@ export interface ProfileUpdate {
   business_hours?: Record<string, string> | null
   business_category?: string | null
   website_url?: string | null
-  locale?: 'bs' | 'en' | null
+  locale?: 'bs' | 'en' | 'de' | null
 }
 
 export interface ProductUpdate {
