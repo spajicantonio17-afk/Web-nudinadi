@@ -4,7 +4,7 @@
 export interface City {
   name: string;
   region: string;
-  country: 'BiH' | 'HR' | 'DE' | 'AT';
+  country: 'BiH' | 'HR' | 'RS' | 'DE' | 'AT';
   lat: number;
   lng: number;
 }
@@ -292,6 +292,137 @@ export const CITIES: City[] = [
   { name: 'Bregenz', region: 'Vorarlberg', country: 'AT', lat: 47.5031, lng: 9.7471 },
   { name: 'Dornbirn', region: 'Vorarlberg', country: 'AT', lat: 47.4125, lng: 9.7417 },
   { name: 'Feldkirch', region: 'Vorarlberg', country: 'AT', lat: 47.2372, lng: 9.5997 },
+
+  // ═══════════════════════════════════════════════════════════════
+  // SRBIJA (po okruzima)
+  // ═══════════════════════════════════════════════════════════════
+
+  // ── Grad Beograd ──
+  { name: 'Beograd', region: 'Grad Beograd', country: 'RS', lat: 44.8176, lng: 20.4569 },
+  { name: 'Zemun', region: 'Grad Beograd', country: 'RS', lat: 44.8458, lng: 20.4011 },
+  { name: 'Novi Beograd', region: 'Grad Beograd', country: 'RS', lat: 44.8069, lng: 20.4222 },
+  { name: 'Surčin', region: 'Grad Beograd', country: 'RS', lat: 44.7961, lng: 20.2800 },
+  { name: 'Mladenovac', region: 'Grad Beograd', country: 'RS', lat: 44.4344, lng: 20.6936 },
+  { name: 'Lazarevac', region: 'Grad Beograd', country: 'RS', lat: 44.3881, lng: 20.2569 },
+
+  // ── Južnobački okrug ──
+  { name: 'Novi Sad', region: 'Južnobački okrug', country: 'RS', lat: 45.2671, lng: 19.8335 },
+  { name: 'Vrbas', region: 'Južnobački okrug', country: 'RS', lat: 45.5706, lng: 19.6392 },
+  { name: 'Bačka Palanka', region: 'Južnobački okrug', country: 'RS', lat: 45.2500, lng: 19.3894 },
+  { name: 'Temerin', region: 'Južnobački okrug', country: 'RS', lat: 45.4061, lng: 19.8878 },
+  { name: 'Bečej', region: 'Južnobački okrug', country: 'RS', lat: 45.6153, lng: 20.0325 },
+
+  // ── Severnobački okrug ──
+  { name: 'Subotica', region: 'Severnobački okrug', country: 'RS', lat: 46.1003, lng: 19.6658 },
+  { name: 'Senta', region: 'Severnobački okrug', country: 'RS', lat: 45.9261, lng: 20.0797 },
+  { name: 'Kanjiža', region: 'Severnobački okrug', country: 'RS', lat: 46.0653, lng: 20.0483 },
+
+  // ── Severnobanatski okrug ──
+  { name: 'Kikinda', region: 'Severnobanatski okrug', country: 'RS', lat: 45.8281, lng: 20.4675 },
+  { name: 'Novi Kneževac', region: 'Severnobanatski okrug', country: 'RS', lat: 46.0481, lng: 20.1019 },
+
+  // ── Srednjobanatski okrug ──
+  { name: 'Zrenjanin', region: 'Srednjobanatski okrug', country: 'RS', lat: 45.3819, lng: 20.3906 },
+  { name: 'Žitište', region: 'Srednjobanatski okrug', country: 'RS', lat: 45.4844, lng: 20.5558 },
+
+  // ── Južnobanatski okrug ──
+  { name: 'Pančevo', region: 'Južnobanatski okrug', country: 'RS', lat: 44.8706, lng: 20.6408 },
+  { name: 'Vršac', region: 'Južnobanatski okrug', country: 'RS', lat: 45.1194, lng: 21.3036 },
+  { name: 'Bela Crkva', region: 'Južnobanatski okrug', country: 'RS', lat: 44.8983, lng: 21.4153 },
+
+  // ── Zapadnobački okrug ──
+  { name: 'Sombor', region: 'Zapadnobački okrug', country: 'RS', lat: 45.7756, lng: 19.1139 },
+  { name: 'Apatin', region: 'Zapadnobački okrug', country: 'RS', lat: 45.6694, lng: 18.9817 },
+
+  // ── Sremski okrug ──
+  { name: 'Sremska Mitrovica', region: 'Sremski okrug', country: 'RS', lat: 44.9706, lng: 19.6133 },
+  { name: 'Ruma', region: 'Sremski okrug', country: 'RS', lat: 45.0089, lng: 19.8214 },
+  { name: 'Šid', region: 'Sremski okrug', country: 'RS', lat: 45.1289, lng: 19.0064 },
+  { name: 'Stara Pazova', region: 'Sremski okrug', country: 'RS', lat: 44.9817, lng: 20.1628 },
+  { name: 'Inđija', region: 'Sremski okrug', country: 'RS', lat: 45.0456, lng: 20.0789 },
+
+  // ── Mačvanski okrug ──
+  { name: 'Šabac', region: 'Mačvanski okrug', country: 'RS', lat: 44.7539, lng: 19.6933 },
+  { name: 'Loznica', region: 'Mačvanski okrug', country: 'RS', lat: 44.5339, lng: 19.2256 },
+  { name: 'Bogatic', region: 'Mačvanski okrug', country: 'RS', lat: 44.8367, lng: 19.4806 },
+
+  // ── Kolubarski okrug ──
+  { name: 'Valjevo', region: 'Kolubarski okrug', country: 'RS', lat: 44.2733, lng: 19.8881 },
+  { name: 'Lajkovac', region: 'Kolubarski okrug', country: 'RS', lat: 44.3619, lng: 20.1542 },
+  { name: 'Mionica', region: 'Kolubarski okrug', country: 'RS', lat: 44.2406, lng: 20.0931 },
+
+  // ── Podunavski okrug ──
+  { name: 'Smederevo', region: 'Podunavski okrug', country: 'RS', lat: 44.6644, lng: 20.9281 },
+  { name: 'Smederevska Palanka', region: 'Podunavski okrug', country: 'RS', lat: 44.3664, lng: 20.9578 },
+
+  // ── Braničevski okrug ──
+  { name: 'Požarevac', region: 'Braničevski okrug', country: 'RS', lat: 44.6189, lng: 21.1869 },
+  { name: 'Petrovac na Mlavi', region: 'Braničevski okrug', country: 'RS', lat: 44.3781, lng: 21.4158 },
+
+  // ── Šumadijski okrug ──
+  { name: 'Kragujevac', region: 'Šumadijski okrug', country: 'RS', lat: 44.0122, lng: 20.9239 },
+  { name: 'Aranđelovac', region: 'Šumadijski okrug', country: 'RS', lat: 44.3044, lng: 20.5600 },
+  { name: 'Topola', region: 'Šumadijski okrug', country: 'RS', lat: 44.2583, lng: 20.6789 },
+
+  // ── Pomoravski okrug ──
+  { name: 'Jagodina', region: 'Pomoravski okrug', country: 'RS', lat: 43.9764, lng: 21.2611 },
+  { name: 'Paraćin', region: 'Pomoravski okrug', country: 'RS', lat: 43.8628, lng: 21.4083 },
+  { name: 'Ćuprija', region: 'Pomoravski okrug', country: 'RS', lat: 43.9286, lng: 21.3711 },
+
+  // ── Borski okrug ──
+  { name: 'Bor', region: 'Borski okrug', country: 'RS', lat: 44.0764, lng: 22.0958 },
+  { name: 'Zaječar', region: 'Borski okrug', country: 'RS', lat: 43.9056, lng: 22.2764 },
+  { name: 'Negotin', region: 'Borski okrug', country: 'RS', lat: 44.2258, lng: 22.5239 },
+
+  // ── Zaječarski okrug ──
+  { name: 'Knjaževac', region: 'Zaječarski okrug', country: 'RS', lat: 43.5683, lng: 22.2567 },
+  { name: 'Sokobanja', region: 'Zaječarski okrug', country: 'RS', lat: 43.6439, lng: 21.8708 },
+
+  // ── Zlatiborski okrug ──
+  { name: 'Užice', region: 'Zlatiborski okrug', country: 'RS', lat: 43.8572, lng: 19.8428 },
+  { name: 'Čajetina', region: 'Zlatiborski okrug', country: 'RS', lat: 43.7519, lng: 19.7178 },
+  { name: 'Nova Varoš', region: 'Zlatiborski okrug', country: 'RS', lat: 43.4606, lng: 19.7981 },
+  { name: 'Priboj', region: 'Zlatiborski okrug', country: 'RS', lat: 43.5831, lng: 19.5217 },
+  { name: 'Prijepolje', region: 'Zlatiborski okrug', country: 'RS', lat: 43.3889, lng: 19.6458 },
+
+  // ── Moravički okrug ──
+  { name: 'Čačak', region: 'Moravički okrug', country: 'RS', lat: 43.8914, lng: 20.3494 },
+  { name: 'Gornji Milanovac', region: 'Moravički okrug', country: 'RS', lat: 44.0258, lng: 20.4622 },
+  { name: 'Ivanjica', region: 'Moravički okrug', country: 'RS', lat: 43.5822, lng: 20.2275 },
+
+  // ── Raški okrug ──
+  { name: 'Kraljevo', region: 'Raški okrug', country: 'RS', lat: 43.7239, lng: 20.6878 },
+  { name: 'Novi Pazar', region: 'Raški okrug', country: 'RS', lat: 43.1367, lng: 20.5122 },
+  { name: 'Vrnjačka Banja', region: 'Raški okrug', country: 'RS', lat: 43.6233, lng: 20.8942 },
+  { name: 'Raška', region: 'Raški okrug', country: 'RS', lat: 43.2867, lng: 20.6147 },
+
+  // ── Rasinski okrug ──
+  { name: 'Kruševac', region: 'Rasinski okrug', country: 'RS', lat: 43.5794, lng: 21.3333 },
+  { name: 'Trstenik', region: 'Rasinski okrug', country: 'RS', lat: 43.6189, lng: 21.0003 },
+  { name: 'Aleksandrovac', region: 'Rasinski okrug', country: 'RS', lat: 43.4567, lng: 21.0494 },
+
+  // ── Nišavski okrug ──
+  { name: 'Niš', region: 'Nišavski okrug', country: 'RS', lat: 43.3209, lng: 21.8958 },
+  { name: 'Aleksinac', region: 'Nišavski okrug', country: 'RS', lat: 43.5417, lng: 21.7069 },
+  { name: 'Svrljig', region: 'Nišavski okrug', country: 'RS', lat: 43.4167, lng: 22.1283 },
+
+  // ── Toplički okrug ──
+  { name: 'Prokuplje', region: 'Toplički okrug', country: 'RS', lat: 43.2350, lng: 21.5908 },
+  { name: 'Kuršumlija', region: 'Toplički okrug', country: 'RS', lat: 43.1386, lng: 21.2683 },
+
+  // ── Pirotski okrug ──
+  { name: 'Pirot', region: 'Pirotski okrug', country: 'RS', lat: 43.1531, lng: 22.5869 },
+  { name: 'Dimitrovgrad', region: 'Pirotski okrug', country: 'RS', lat: 43.0156, lng: 22.7817 },
+
+  // ── Jablanički okrug ──
+  { name: 'Leskovac', region: 'Jablanički okrug', country: 'RS', lat: 42.9981, lng: 21.9458 },
+  { name: 'Vlasotince', region: 'Jablanički okrug', country: 'RS', lat: 42.9703, lng: 22.1303 },
+  { name: 'Bojnik', region: 'Jablanički okrug', country: 'RS', lat: 42.9636, lng: 21.7256 },
+
+  // ── Pčinjski okrug ──
+  { name: 'Vranje', region: 'Pčinjski okrug', country: 'RS', lat: 42.5503, lng: 21.9006 },
+  { name: 'Vladičin Han', region: 'Pčinjski okrug', country: 'RS', lat: 42.7064, lng: 22.0644 },
+  { name: 'Surdulica', region: 'Pčinjski okrug', country: 'RS', lat: 42.6903, lng: 22.1664 },
 ];
 
 const STORAGE_KEY = 'nudinadi_location';

@@ -1681,7 +1681,7 @@ function UploadPageInner() {
   const [formPage, setFormPage] = useState<1 | 2 | 3>(1);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
-  const [currency, setCurrency] = useState<'EUR' | 'KM'>('EUR');
+  const [currency, setCurrency] = useState<'EUR' | 'BAM' | 'RSD'>('EUR');
   const [listingLimitReached, setListingLimitReached] = useState(false);
   const [activeListingCount, setActiveListingCount] = useState(0);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -1958,10 +1958,12 @@ function UploadPageInner() {
         }
       }
 
-      // Set currency from import (KM, EUR, HRK → map to EUR/KM)
+      // Set currency from import
       const importCurrency = (d.currency as string || '').toUpperCase();
       if (importCurrency === 'KM' || importCurrency === 'BAM') {
-        setCurrency('KM');
+        setCurrency('BAM');
+      } else if (importCurrency === 'RSD') {
+        setCurrency('RSD');
       } else if (importCurrency === 'EUR' || importCurrency === 'HRK' || importCurrency === 'USD') {
         setCurrency('EUR');
       }
@@ -2705,10 +2707,15 @@ function UploadPageInner() {
       // 1.6 Resolve category name → UUID
       const categoryId = await resolveCategoryId(deepCategory);
 
-      // Convert KM → EUR if needed
-      const priceEUR = currency === 'KM'
-        ? Math.round((Number(formData.price) / BAM_RATE) * 100) / 100
-        : Number(formData.price);
+      // Store native price — no conversion
+      const priceEUR = Number(formData.price);
+      const nativeCurrency: 'EUR' | 'BAM' | 'RSD' = currency;
+      const productCountry = selectedCity?.country === 'RS' ? 'rs'
+        : selectedCity?.country === 'HR' ? 'hr'
+        : selectedCity?.country === 'BiH' ? 'ba'
+        : selectedCity?.country === 'DE' ? 'de'
+        : selectedCity?.country === 'AT' ? 'at'
+        : null;
 
       // Merge price_type into attributes
       const priceTypeLabel = formData.priceType === 'mk' ? 'MK' : formData.priceType === 'negotiable' ? 'Po dogovoru' : 'Fiksno';
@@ -2743,6 +2750,8 @@ function UploadPageInner() {
           title: formData.title.trim(),
           description: formData.description.trim() || null,
           price: priceEUR,
+          currency: nativeCurrency,
+          country: productCountry,
           category_id: categoryId,
           condition: mapCondition(formData.condition),
           images: finalImages.length > 0 ? finalImages : undefined,
@@ -2759,6 +2768,8 @@ function UploadPageInner() {
           title: formData.title.trim(),
           description: formData.description.trim() || null,
           price: priceEUR,
+          currency: nativeCurrency,
+          country: productCountry,
           category_id: categoryId,
           condition: mapCondition(formData.condition),
           images: finalImages,
@@ -5413,10 +5424,10 @@ function UploadPageInner() {
                       <div className="flex items-center gap-3 border-t border-[var(--c-border)] pt-4">
                         <button
                           type="button"
-                          onClick={() => setCurrency(prev => prev === 'EUR' ? 'KM' : 'EUR')}
+                          onClick={() => setCurrency(prev => prev === 'EUR' ? 'BAM' : prev === 'BAM' ? 'RSD' : 'EUR')}
                           className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--c-border2)] bg-[var(--c-hover)] hover:bg-[var(--c-active)] transition-all active:scale-95"
                         >
-                          <span className="text-lg font-black text-[var(--c-text)]">{currency === 'EUR' ? '€' : 'KM'}</span>
+                          <span className="text-lg font-black text-[var(--c-text)]">{currency === 'EUR' ? '€' : currency === 'BAM' ? 'KM' : 'RSD'}</span>
                           <i className="fa-solid fa-arrows-rotate text-[8px] text-[var(--c-text3)]"></i>
                         </button>
                         <input
@@ -5426,15 +5437,10 @@ function UploadPageInner() {
                           placeholder="0"
                           className="w-full bg-transparent text-xl font-black text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none"
                         />
-                        <span className={`shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${currency === 'KM' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}`}>
-                          {currency === 'KM' ? 'Konvertibilna Marka' : 'Euro'}
+                        <span className={`shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${currency === 'BAM' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : currency === 'RSD' ? 'bg-purple-500/10 text-purple-500 border border-purple-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}`}>
+                          {currency === 'BAM' ? 'Konvertibilna Marka' : currency === 'RSD' ? 'Srpski Dinar' : 'Euro'}
                         </span>
                       </div>
-                      {currency === 'KM' && formData.price && (
-                        <p className="text-[10px] text-[var(--c-text3)] -mt-2">
-                          ≈ € {(Number(formData.price) / BAM_RATE).toFixed(2)} EUR (kurs: 1 EUR = {BAM_RATE} KM)
-                        </p>
-                      )}
                     </>
                   )}
                 </div>

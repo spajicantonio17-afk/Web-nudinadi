@@ -36,6 +36,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const stored = getStoredLocale();
     setLocaleState(stored);
     document.documentElement.lang = stored;
+
+    // External sync — auth.ts dispatches this event after loading profile.locale
+    const handler = (e: Event) => {
+      const incoming = (e as CustomEvent<string>).detail as Locale;
+      if (incoming && (incoming === 'bs' || incoming === 'en')) {
+        setLocaleState(incoming);
+        localStorage.setItem(STORAGE_KEY, incoming);
+        document.documentElement.lang = incoming;
+      }
+    };
+    window.addEventListener('nudinadi:set-locale', handler);
+    return () => window.removeEventListener('nudinadi:set-locale', handler);
   }, []);
 
   const setLocale = useCallback((newLocale: Locale) => {

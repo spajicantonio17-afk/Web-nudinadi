@@ -3,7 +3,6 @@ import type {
   Product, ProductInsert, ProductUpdate,
   ProductWithSeller, ProductFull, ProductStatus, ListingType,
 } from '@/lib/database.types'
-import { CITIES } from '@/lib/location'
 import type { CountryPreference } from '@/lib/country'
 import { getPlanLimits } from '@/lib/plans'
 import { logger } from '@/lib/logger'
@@ -34,8 +33,6 @@ function _setCached(filters: ProductFilters, data: ProductFull[], count: number)
 export function clearProductCache() { _queryCache.clear() }
 
 // ─── City→Country lookup for filtering ───────────────
-const BIH_CITIES = CITIES.filter(c => c.country === 'BiH').map(c => c.name)
-const HR_CITIES = CITIES.filter(c => c.country === 'HR').map(c => c.name)
 
 // ─── Filter Options ───────────────────────────────────
 
@@ -63,7 +60,7 @@ export interface ProductFilters {
 
 // List views: NO PostgREST embeds — seller/category fetched separately.
 // PostgREST embeds silently filter products in list queries (works fine with .single()).
-const LIST_SELECT = 'id,title,description,price,condition,listing_type,location,images,status,views_count,favorites_count,promoted_until,created_at,updated_at,tags,attributes,seller_id,category_id'
+const LIST_SELECT = 'id,title,description,price,currency,country,condition,listing_type,location,images,status,views_count,favorites_count,promoted_until,created_at,updated_at,tags,attributes,seller_id,category_id'
 
 // ─── Enrich products with seller + category (batch) ──
 
@@ -118,11 +115,14 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   if (filters.minPrice !== undefined) query = query.gte('price', filters.minPrice)
   if (filters.maxPrice !== undefined) query = query.lte('price', filters.maxPrice)
   if (filters.location) query = query.ilike('location', `%${filters.location}%`)
-  if (filters.country === 'ba' && HR_CITIES.length > 0) {
-    query = query.not('location', 'in', `(${HR_CITIES.join(',')})`)
+  if (filters.country === 'ba') {
+    query = query.eq('country', 'ba')
   }
-  if (filters.country === 'hr' && BIH_CITIES.length > 0) {
-    query = query.not('location', 'in', `(${BIH_CITIES.join(',')})`)
+  if (filters.country === 'hr') {
+    query = query.eq('country', 'hr')
+  }
+  if (filters.country === 'rs') {
+    query = query.eq('country', 'rs')
   }
   if (filters.search) {
     // Use flexible_search RPC for AND→OR fallback with synonym support

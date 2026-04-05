@@ -56,6 +56,8 @@ function dbToDisplayProduct(p: ProductFull): Product {
     id: p.id,
     name: p.title,
     price: Number(p.price),
+    currency: p.currency ?? 'EUR',
+    country: p.country ?? null,
     secondaryPriceLabel: `${Number((Number(p.price) * BAM_RATE).toFixed(0)).toLocaleString()} KM`,
     location: p.location || 'Nepoznato',
     timeLabel: formatTimeLabel(p.created_at),

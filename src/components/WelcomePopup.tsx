@@ -97,7 +97,9 @@ export default function WelcomePopup() {
                   selected={country === 'ba'} onClick={() => setCountry('ba')} isDark={isDark} />
                 <CountryRow flag="🇭🇷" label="Hrvatska" sub="Samo EUR cijene"
                   selected={country === 'hr'} onClick={() => setCountry('hr')} isDark={isDark} />
-                <CountryRow flag="🌍" label="Sva tržišta" sub="Obje valute · KM i EUR"
+                <CountryRow flag="🇷🇸" label="Srbija" sub="Samo RSD cijene"
+                  selected={country === 'rs'} onClick={() => setCountry('rs')} isDark={isDark} />
+                <CountryRow flag="🌍" label="Sva tržišta" sub="Sve valute · KM, EUR i RSD"
                   selected={country === 'all'} onClick={() => setCountry('all')} isDark={isDark} last />
               </div>
             </section>

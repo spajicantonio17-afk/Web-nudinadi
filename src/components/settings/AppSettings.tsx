@@ -67,7 +67,7 @@ export default function AppSettings() {
 
   if (!mounted) return null;
 
-  const countryLabel = country === 'ba' ? '🇧🇦 BiH' : country === 'hr' ? '🇭🇷 Hrvatska' : '🌍 Sve';
+  const countryLabel = country === 'ba' ? '🇧🇦 BiH' : country === 'hr' ? '🇭🇷 Hrvatska' : country === 'rs' ? '🇷🇸 Srbija' : '🌍 Sve';
   const themeLabel = theme === 'dark' ? 'Tamna' : theme === 'light' ? 'Svijetla' : 'Sistemska';
 
   return (
@@ -103,7 +103,11 @@ export default function AppSettings() {
             selected={country === 'hr'} onClick={() => handleCountryChange('hr')}
           />
           <CountryRow
-            flag="🌍" label="Sva tržišta" sub="Obje valute · KM i EUR"
+            flag="🇷🇸" label="Srbija" sub="Samo RSD cijene"
+            selected={country === 'rs'} onClick={() => handleCountryChange('rs')}
+          />
+          <CountryRow
+            flag="🌍" label="Sva tržišta" sub="Sve valute · KM, EUR i RSD"
             selected={country === 'all'} onClick={() => handleCountryChange('all')} last
           />
         </div>
@@ -209,7 +213,9 @@ export default function AppSettings() {
                     ? 'Prikazuje samo artikle iz BiH unutar radijusa'
                     : country === 'hr'
                       ? 'Prikazuje samo artikle iz Hrvatske unutar radijusa'
-                      : 'Prikazuje artikle iz oba tržišta unutar radijusa'
+                      : country === 'rs'
+                        ? 'Prikazuje samo artikle iz Srbije unutar radijusa'
+                        : 'Prikazuje artikle iz svih tržišta unutar radijusa'
                   }
                 </p>
               </div>

@@ -6,10 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Product } from '@/lib/types';
 import { useFavorites } from '@/lib/favorites';
 import { useToast } from '@/components/Toast';
-import { CITIES } from '@/lib/location';
-import { getCurrencyMode, eurToKm } from '@/lib/currency';
-
-const bihCities = new Set(CITIES.filter(c => c.country === 'BiH').map(c => c.name.toLowerCase()));
+import { formatNativePrice } from '@/lib/currency';
 
 interface ProductCardProps {
   product: Product;
@@ -23,8 +20,6 @@ function ProductCard({ product }: ProductCardProps) {
 
   // Use the product ID directly — Supabase UUIDs contain hyphens
   const isFavorite = checkFavorite(product.id);
-  const isBiH = bihCities.has(product.location.toLowerCase().trim());
-  const currencyMode = getCurrencyMode();
   const promoted = !!product.promoted_until && new Date(product.promoted_until) > new Date();
 
   const handleCardClick = () => {
@@ -87,24 +82,9 @@ function ProductCard({ product }: ProductCardProps) {
             <span className="text-[11px] text-[var(--c-text-muted)] truncate">{product.timeLabel}</span>
           </div>
           <div className="flex flex-col items-end gap-0.5 shrink-0">
-            {currencyMode === 'km-only' ? (
-              <span className="text-[14px] font-bold text-[var(--c-accent)] leading-none whitespace-nowrap">
-                {eurToKm(product.price).toLocaleString()}&nbsp;KM
-              </span>
-            ) : currencyMode === 'eur-only' ? (
-              <span className="text-[14px] font-bold text-[var(--c-accent)] leading-none whitespace-nowrap">
-                {product.price.toLocaleString()}&nbsp;&euro;
-              </span>
-            ) : (
-              <>
-                <span className="text-[14px] font-bold text-[var(--c-accent)] leading-none whitespace-nowrap">
-                  {isBiH ? product.secondaryPriceLabel : <>{product.price.toLocaleString()}&nbsp;&euro;</>}
-                </span>
-                <span className="text-[12px] font-semibold text-[var(--c-accent)]/60 leading-none whitespace-nowrap">
-                  {isBiH ? <>{product.price.toLocaleString()}&nbsp;&euro;</> : product.secondaryPriceLabel}
-                </span>
-              </>
-            )}
+            <span className="text-[14px] font-bold text-[var(--c-accent)] leading-none whitespace-nowrap">
+              {formatNativePrice(product.price, product.currency ?? 'EUR')}
+            </span>
           </div>
         </div>
       </div>

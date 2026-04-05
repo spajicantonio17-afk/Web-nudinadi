@@ -159,6 +159,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(authUser);
       userRef.current = authUser;
 
+      // Sync UI locale from profile (overrides localStorage if profile has a preference)
+      if (profile?.locale && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('nudinadi:set-locale', { detail: profile.locale }));
+      }
+
       // Check verification XP (email + phone both verified → 500 XP one-time)
       if (profile?.email_verified && profile?.phone_verified) {
         logVerificationXp(session.user.id).catch(() => {/* non-critical */});

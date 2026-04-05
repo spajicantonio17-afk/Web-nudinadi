@@ -3,6 +3,9 @@ import { Product, User, Category } from './types';
 /** Fixed EUR → BAM (Convertible Mark) exchange rate */
 export const BAM_RATE = 1.95583;
 
+/** Approximate EUR → RSD (Serbian Dinar) exchange rate */
+export const RSD_RATE = 117.0;
+
 // ─── Business Profile Constants ──────────────────────────────
 
 export const BUSINESS_DAYS = [

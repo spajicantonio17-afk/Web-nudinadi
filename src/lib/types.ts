@@ -2,6 +2,8 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  currency?: 'EUR' | 'BAM' | 'RSD';
+  country?: string | null;
   secondaryPriceLabel: string;
   location: string;
   timeLabel: string;

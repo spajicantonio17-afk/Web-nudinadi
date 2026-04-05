@@ -2,20 +2,26 @@
 
 import React from 'react';
 import { useI18n, type Locale } from '@/lib/i18n';
-import { LANGUAGES, setLanguagePreference, type LanguageCode } from '@/lib/language';
+import { useAuth } from '@/lib/auth';
+import { updateProfile } from '@/services/profileService';
 
-// Only show Bosanski and English in settings
-const AVAILABLE_LANGUAGES = LANGUAGES.filter(l => l.code !== 'de');
+const AVAILABLE_LANGUAGES: { code: Locale; flag: string; nativeLabel: string; label: string }[] = [
+  { code: 'bs', flag: '🇧🇦', nativeLabel: 'Bosanski', label: 'Bosanski' },
+  { code: 'en', flag: '🇬🇧', nativeLabel: 'English',  label: 'Engleski' },
+];
 
 export default function LanguageSettings() {
   const { locale, setLocale } = useI18n();
+  const { user } = useAuth();
 
-  const handleLanguageChange = (code: LanguageCode) => {
-    setLocale(code as Locale);
-    setLanguagePreference(code);
+  const handleLanguageChange = async (code: Locale) => {
+    setLocale(code);
+    if (user?.id) {
+      updateProfile(user.id, { locale: code }).catch(() => {/* non-critical */});
+    }
   };
 
-  const currentLang = LANGUAGES.find(l => l.code === locale) || LANGUAGES[0];
+  const currentLang = AVAILABLE_LANGUAGES.find(l => l.code === locale) || AVAILABLE_LANGUAGES[0];
 
   return (
     <div className="space-y-6">

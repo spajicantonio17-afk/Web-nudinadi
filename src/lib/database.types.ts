@@ -60,6 +60,7 @@ export interface Profile {
   email_notif_sold: boolean | null
   email_notif_follower: boolean | null
   email_notif_favorite: boolean | null
+  locale: 'bs' | 'en' | null
   created_at: string
   updated_at: string
 }
@@ -83,6 +84,8 @@ export interface Product {
   listing_type: ListingType
   tags: string[]
   promoted_until: string | null
+  currency: 'EUR' | 'BAM' | 'RSD'
+  country: string | null
 }
 
 export interface Category {
@@ -170,6 +173,7 @@ export interface ProfileInsert {
   total_purchases?: number
   rating_average?: number | null
   location?: string | null
+  locale?: 'bs' | 'en' | null
 }
 
 export interface ProductInsert {
@@ -178,6 +182,8 @@ export interface ProductInsert {
   title: string
   description?: string | null
   price: number
+  currency?: 'EUR' | 'BAM' | 'RSD'
+  country?: string | null
   category_id?: string | null
   condition?: ProductCondition
   images?: string[]
@@ -264,12 +270,15 @@ export interface ProfileUpdate {
   business_hours?: Record<string, string> | null
   business_category?: string | null
   website_url?: string | null
+  locale?: 'bs' | 'en' | null
 }
 
 export interface ProductUpdate {
   title?: string
   description?: string | null
   price?: number
+  currency?: 'EUR' | 'BAM' | 'RSD'
+  country?: string | null
   category_id?: string | null
   condition?: ProductCondition
   listing_type?: ListingType

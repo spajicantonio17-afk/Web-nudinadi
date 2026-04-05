@@ -1,7 +1,7 @@
 // ── Country & Location Preferences ──────────────────────────
 // Manages user's country selection, GPS location, and radius preferences
 
-export type CountryPreference = 'ba' | 'hr' | 'all';
+export type CountryPreference = 'ba' | 'hr' | 'rs' | 'all';
 
 const COUNTRY_KEY = 'nudinadi_country';
 const ONBOARDED_KEY = 'nudinadi_onboarded';
@@ -25,7 +25,7 @@ export function setOnboarded(): void {
 export function getCountryPreference(): CountryPreference {
   if (typeof window === 'undefined') return 'all';
   const stored = localStorage.getItem(COUNTRY_KEY);
-  if (stored === 'ba' || stored === 'hr' || stored === 'all') return stored;
+  if (stored === 'ba' || stored === 'hr' || stored === 'rs' || stored === 'all') return stored;
   return 'all';
 }
 
