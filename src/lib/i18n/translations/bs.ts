@@ -37,14 +37,6 @@ const bs: Record<string, string> = {
   'home.antiScamDesc': 'Skeniramo sumnjive aktivnosti i štitimo vaš identitet 24/7.',
   'home.ok': 'U redu',
 
-  // Favorites
-  'favorites.title': 'Moji Favoriti',
-  'favorites.subtitle': 'Artikli koje ste označili sa "Sviđa mi se"',
-  'favorites.empty': 'Nema spašenih artikala',
-  'favorites.explore': 'Istraži Ponudu',
-  'favorites.removed': 'Uklonjeno iz favorita',
-  'favorites.added': 'Dodano u favorite',
-
   // Cart
   'cart.title': 'Moja Korpa',
   'cart.itemCount': '{{count}} artikal/a u korpi',

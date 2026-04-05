@@ -37,14 +37,6 @@ const en: Record<string, string> = {
   'home.antiScamDesc': 'We scan suspicious activity and protect your identity 24/7.',
   'home.ok': 'OK',
 
-  // Favorites
-  'favorites.title': 'My Favorites',
-  'favorites.subtitle': 'Items you liked',
-  'favorites.empty': 'No saved items',
-  'favorites.explore': 'Explore Listings',
-  'favorites.removed': 'Removed from favorites',
-  'favorites.added': 'Added to favorites',
-
   // Cart
   'cart.title': 'My Cart',
   'cart.itemCount': '{{count}} item(s) in cart',

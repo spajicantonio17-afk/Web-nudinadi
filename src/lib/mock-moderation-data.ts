@@ -38,6 +38,7 @@ export const MOCK_ADMIN_PROFILE: Profile = {
   promoted_credits: 0,
   company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
   email_notif_messages: true, email_notif_sold: true, email_notif_follower: true, email_notif_favorite: true,
+  locale: 'bs',
   created_at: '2025-01-01T00:00:00Z',
   updated_at: '2025-01-01T00:00:00Z',
 };
@@ -50,7 +51,7 @@ export const MOCK_USERS: Profile[] = [
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
     company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     email_notif_messages: true, email_notif_sold: true, email_notif_follower: true, email_notif_favorite: true,
-    created_at: '2025-06-15T10:00:00Z', updated_at: '2026-02-20T10:00:00Z',
+    locale: 'bs', created_at: '2025-06-15T10:00:00Z', updated_at: '2026-02-20T10:00:00Z',
   },
   {
     id: 'user_02', username: 'amina_sa', full_name: 'Amina Hadžić', avatar_url: null,
@@ -59,7 +60,7 @@ export const MOCK_USERS: Profile[] = [
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
     company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     email_notif_messages: true, email_notif_sold: true, email_notif_follower: true, email_notif_favorite: true,
-    created_at: '2025-03-10T08:00:00Z', updated_at: '2026-02-22T14:00:00Z',
+    locale: 'bs', created_at: '2025-03-10T08:00:00Z', updated_at: '2026-02-22T14:00:00Z',
   },
   {
     id: 'user_03', username: 'dejan_mo', full_name: 'Dejan Jovanović', avatar_url: null,
@@ -68,7 +69,7 @@ export const MOCK_USERS: Profile[] = [
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
     company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     email_notif_messages: true, email_notif_sold: true, email_notif_follower: true, email_notif_favorite: true,
-    created_at: '2026-02-01T12:00:00Z', updated_at: '2026-02-23T09:00:00Z',
+    locale: 'bs', created_at: '2026-02-01T12:00:00Z', updated_at: '2026-02-23T09:00:00Z',
   },
   {
     id: 'user_04', username: 'lejla_tz', full_name: 'Lejla Mujić', avatar_url: null,
@@ -77,7 +78,7 @@ export const MOCK_USERS: Profile[] = [
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
     company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     email_notif_messages: true, email_notif_sold: true, email_notif_follower: true, email_notif_favorite: true,
-    created_at: '2025-05-20T14:00:00Z', updated_at: '2026-02-24T08:00:00Z',
+    locale: 'bs', created_at: '2025-05-20T14:00:00Z', updated_at: '2026-02-24T08:00:00Z',
   },
   {
     id: 'user_05', username: 'spam_bot_99', full_name: '', avatar_url: null,
@@ -86,7 +87,7 @@ export const MOCK_USERS: Profile[] = [
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
     company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     email_notif_messages: true, email_notif_sold: true, email_notif_follower: true, email_notif_favorite: true,
-    created_at: '2026-02-23T22:00:00Z', updated_at: '2026-02-23T22:00:00Z',
+    locale: 'bs', created_at: '2026-02-23T22:00:00Z', updated_at: '2026-02-23T22:00:00Z',
   },
   {
     id: 'user_06', username: 'emir_ze', full_name: 'Emir Begović', avatar_url: null,
@@ -95,7 +96,7 @@ export const MOCK_USERS: Profile[] = [
     account_type: 'free', plan_expires_at: null, promoted_credits: 0,
     company_name: null, company_logo: null, banner_image: null, business_address: null, business_hours: null, business_category: null, business_categories: null, business_verified: false, website_url: null,
     email_notif_messages: true, email_notif_sold: true, email_notif_follower: true, email_notif_favorite: true,
-    created_at: '2025-09-01T10:00:00Z', updated_at: '2026-02-21T16:00:00Z',
+    locale: 'bs', created_at: '2025-09-01T10:00:00Z', updated_at: '2026-02-21T16:00:00Z',
   },
 ];
 
