@@ -2,7 +2,7 @@
 // Used by CategoryFilterBar to show relevant filters per category.
 // Supports subcategory-specific filters (Phase 2).
 
-import { CAR_BRANDS_WITH_MODELS } from './vehicle-models';
+import { CAR_BRANDS_WITH_MODELS, MOTORCYCLE_BRANDS, TRUCK_BRANDS } from './vehicle-models';
 
 export type QuickFilterType = 'select' | 'range' | 'text' | 'autocomplete';
 
@@ -44,16 +44,28 @@ export function getAutoCompleteOptions(
   categoryName: string,
   filterKey: string,
   currentFilters: Record<string, string | number | boolean | [number, number]>,
-  _subcategoryName?: string,
+  subcategoryName?: string,
 ): string[] {
   if (categoryName === 'Vozila' || categoryName === 'Dijelovi za automobile') {
     if (filterKey === 'marka' || filterKey === 'markaVozila') {
+      if (subcategoryName === 'Motocikli i skuteri') {
+        return MOTORCYCLE_BRANDS.map(b => b.name);
+      }
+      if (subcategoryName === 'Teretna vozila' || subcategoryName === 'Autobusi i minibusi') {
+        return TRUCK_BRANDS.map(b => b.name);
+      }
       return CAR_BRANDS_WITH_MODELS.map(b => b.name);
     }
     if (filterKey === 'model') {
       const marka = currentFilters.marka ?? currentFilters.markaVozila;
       if (typeof marka === 'string') {
-        const brand = CAR_BRANDS_WITH_MODELS.find(
+        const brandList =
+          subcategoryName === 'Motocikli i skuteri'
+            ? MOTORCYCLE_BRANDS
+            : subcategoryName === 'Teretna vozila' || subcategoryName === 'Autobusi i minibusi'
+              ? TRUCK_BRANDS
+              : CAR_BRANDS_WITH_MODELS;
+        const brand = brandList.find(
           b => b.name.toLowerCase() === marka.toLowerCase()
         );
         if (brand) {

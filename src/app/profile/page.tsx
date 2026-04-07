@@ -121,7 +121,7 @@ function ProfileContent() {
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [locationCountry, setLocationCountry] = useState<'BiH' | 'HR'>('BiH');
+  const [locationCountry, setLocationCountry] = useState<'BiH' | 'HR' | 'DE' | 'AT' | 'RS'>('BiH');
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const usernameTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -131,7 +131,7 @@ function ProfileContent() {
     const match = CITIES.find(c => loc.includes(c.name));
     setSelectedRegion(match?.region || '');
     setSelectedCity(match?.name || '');
-    setLocationCountry((match?.country as 'BiH' | 'HR') || 'BiH');
+    setLocationCountry(match?.country || 'BiH');
     setEditForm({
       username: user?.username || '',
       fullName: user?.fullName || '',
@@ -626,8 +626,8 @@ function ProfileContent() {
                     <label className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-[0.25em] mb-1.5 block">{t('profile.edit.locationLabel')}</label>
 
                     {/* Country toggle */}
-                    <div className="flex gap-1.5 mb-2">
-                      {(['BiH', 'HR'] as const).map(c => (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {(['BiH', 'HR', 'RS', 'DE', 'AT'] as const).map(c => (
                         <button
                           key={c}
                           type="button"
@@ -638,7 +638,7 @@ function ProfileContent() {
                               : 'bg-[var(--c-hover)] text-[var(--c-text3)] border border-[var(--c-border)] hover:text-[var(--c-text)]'
                           }`}
                         >
-                          {c === 'BiH' ? t('profile.edit.countryBiH') : t('profile.edit.countryHR')}
+                          {c}
                         </button>
                       ))}
                     </div>
@@ -651,7 +651,13 @@ function ProfileContent() {
                         onChange={e => { setSelectedRegion(e.target.value); setSelectedCity(''); }}
                         className="w-full bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[4px] pl-9 pr-3.5 py-2.5 text-[12px] font-bold text-[var(--c-text)] focus:outline-none focus:border-blue-500/50 transition-colors appearance-none cursor-pointer"
                       >
-                        <option value="">{locationCountry === 'BiH' ? t('profile.edit.selectCantonBiH') : t('profile.edit.selectCountyHR')}</option>
+                        <option value="">{{
+                          'BiH': t('profile.edit.selectCantonBiH'),
+                          'HR': t('profile.edit.selectCountyHR'),
+                          'RS': t('profile.edit.selectRegionRS'),
+                          'DE': t('profile.edit.selectRegionDE'),
+                          'AT': t('profile.edit.selectRegionAT'),
+                        }[locationCountry]}</option>
                         {getRegionsForCountry(locationCountry).map(r => (
                           <option key={r} value={r}>{r}</option>
                         ))}

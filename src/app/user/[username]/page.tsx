@@ -194,7 +194,7 @@ function UserProfileContent() {
 
   if (loading) {
     return (
-      <MainLayout title={t('userProfile.title')} showSigurnost={false}>
+      <MainLayout title={t('userProfile.title')} showSigurnost={false} onBack={() => router.push('/')}>
         <div className="max-w-2xl mx-auto mt-4 pb-24 space-y-3 animate-pulse">
           <div className="h-32 bg-[var(--c-card)] rounded-[24px]" />
           <div className="h-10 bg-[var(--c-card)] rounded-[14px]" />
@@ -208,7 +208,7 @@ function UserProfileContent() {
 
   if (notFound || !profile) {
     return (
-      <MainLayout title={t('userProfile.title')} showSigurnost={false}>
+      <MainLayout title={t('userProfile.title')} showSigurnost={false} onBack={() => router.push('/')}>
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <i className="fa-solid fa-user-slash text-4xl text-[var(--c-text3)] mb-4"></i>
           <h2 className="text-lg font-black text-[var(--c-text)] mb-2">{t('userProfile.notFoundTitle')}</h2>
@@ -234,7 +234,7 @@ function UserProfileContent() {
   const userLevel = profile.level || 1;
 
   return (
-    <MainLayout title={`@${profile.username}`} showSigurnost={false}>
+    <MainLayout title={`@${profile.username}`} showSigurnost={false} onBack={() => router.push("/")}>
 
       {/* JSON-LD Structured Data */}
       <JsonLd data={buildPersonSchema(profile)} />
