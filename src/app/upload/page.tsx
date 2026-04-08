@@ -1752,8 +1752,15 @@ function UploadPageInner() {
     aiConfirmActionRef.current = null;
     setShowAiConfirm(false);
     setAiConfirmData(null);
-    // Navigate to full category list for manual selection
-    setStep('all-categories');
+    // If form already has data (e.g. from link-import), open inline category popup
+    // to avoid losing brand/model/title through the destructive vehicle-sub flow
+    if (formData.title || formData.brand || formData.description) {
+      setStep('form');
+      setShowCategoryPopup(true);
+    } else {
+      // Navigate to full category list for manual selection (fresh listing)
+      setStep('all-categories');
+    }
   };
 
   // ── Car flow sub-steps state ──
