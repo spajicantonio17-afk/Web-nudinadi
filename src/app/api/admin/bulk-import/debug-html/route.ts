@@ -20,17 +20,25 @@ export async function POST(req: NextRequest) {
   const data = await res.json();
   const html: string = data.html || '';
 
-  // Extract all href patterns containing /oglas/
-  const oglasHrefs = [...html.matchAll(/href=["']([^"']*\/oglas\/[^"']+)["']/gi)].map(m => m[1]).slice(0, 20);
-  const oglasJson = [...html.matchAll(/"(?:url|link|href)"\s*:\s*"([^"]*\/oglas\/[^"]+)"/gi)].map(m => m[1]).slice(0, 20);
-  const nextData = html.match(/"\/oglas\/[^"]{5,100}"/g)?.slice(0, 20) || [];
+  // All unique href paths (first 40)
+  const allHrefs = [...new Set([...html.matchAll(/href=["']([^"']{5,200})["']/gi)].map(m => m[1]))].slice(0, 40);
+  // API calls in JS
+  const apiCalls = [...new Set([...html.matchAll(/["'](https?:\/\/[^"']*api[^"']{5,200})["']/gi)].map(m => m[1]))].slice(0, 20);
+  // User ID patterns
+  const userIds = [...html.matchAll(/"(?:user_id|userId|advertiser_id|seller_id|owner_id)"\s*:\s*["']?(\d+)["']?/gi)].map(m => ({ key: m[1] })).slice(0, 10);
+  // Any numeric IDs that look like user IDs near "user" keyword
+  const userPatterns = html.match(/"user"\s*:\s*\{[^}]{0,200}\}/gi)?.slice(0, 3) || [];
+  // shop/profil slug
+  const shopSlug = html.match(/["'](?:shop_slug|username|sellerSlug|profileSlug)["']\s*:\s*["']([^"']{2,60})["']/i)?.[1] || null;
 
   return NextResponse.json({
     htmlLength: html.length,
     oglasMentions: (html.match(/\/oglas\//g) || []).length,
-    oglasHrefs,
-    oglasJson,
-    nextDataMatches: nextData,
-    snippet: html.slice(0, 3000),
+    allHrefs,
+    apiCalls,
+    userIds,
+    userPatterns,
+    shopSlug,
+    snippet: html.slice(0, 5000),
   });
 }
