@@ -87,6 +87,29 @@ export default function BulkImportTab() {
     return session?.access_token ?? '';
   }
 
+  // ── Debug scrape ────────────────────────────────────
+  async function handleDebug() {
+    if (!profileUrl.trim()) return;
+    setStep('scraping');
+    setStepMsg('Debug: dohvaćanje HTML-a...');
+    setErrorMsg('');
+    const authToken = await getToken();
+    try {
+      const res = await fetch('/api/admin/bulk-import/debug-html', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ url: profileUrl.trim() }),
+      });
+      const json = await res.json();
+      console.log('DEBUG RESULT:', json);
+      alert(`HTML: ${json.htmlLength} chars\nOglas mentions: ${json.oglasMentions}\nHref matches: ${json.oglasHrefs?.length}\nJSON matches: ${json.oglasJson?.length}\n\nSnippet (konzola za više)`);
+      setStep('idle');
+    } catch (e) {
+      alert('Debug greška: ' + e);
+      setStep('idle');
+    }
+  }
+
   // ── Run full import ──────────────────────────────────
   async function handleImport() {
     if (!profileUrl.trim()) return;
@@ -200,6 +223,14 @@ export default function BulkImportTab() {
             ) : (
               <><i className="fa-solid fa-play text-xs" /> Pokreni uvoz</>
             )}
+          </button>
+          <button
+            onClick={handleDebug}
+            disabled={isRunning || !profileUrl.trim()}
+            className="px-3 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Debug — pokaži HTML strukturu"
+          >
+            <i className="fa-solid fa-bug text-xs" />
           </button>
         </div>
 
