@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const res = await fetch(`${SCRAPER_URL}/render`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': SCRAPER_API_KEY! },
-    body: JSON.stringify({ url }),
+    body: JSON.stringify({ url, waitFor: 3000, scrollToBottom: true, waitUntil: 'networkidle0' }),
     signal: AbortSignal.timeout(45000),
   });
 

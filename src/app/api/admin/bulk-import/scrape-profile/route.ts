@@ -62,8 +62,13 @@ async function fetchViaScraper(url: string): Promise<{ html: string; finalUrl: s
       'Content-Type': 'application/json',
       'x-api-key': SCRAPER_API_KEY,
     },
-    body: JSON.stringify({ url }),
-    signal: AbortSignal.timeout(45000),
+    body: JSON.stringify({
+      url,
+      waitFor: 3000,          // wait 3s for JS to render listings
+      scrollToBottom: true,   // scroll to trigger lazy loading
+      waitUntil: 'networkidle0',
+    }),
+    signal: AbortSignal.timeout(60000),
   });
 
   if (!response.ok) {
