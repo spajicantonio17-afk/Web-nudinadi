@@ -58,7 +58,17 @@ export async function GET(req: NextRequest) {
   }
   results.expired_transactions = expiredTxns?.length ?? 0
 
-  // 5. Mark expired pending_claims as 'expired'
+  // 5. Downgrade expired business accounts
+  const { data: expiredBusiness } = await admin
+    .from('profiles')
+    .update({ account_type: 'free', business_verified: false })
+    .lt('business_until', now)
+    .eq('account_type', 'business')
+    .not('business_until', 'is', null)
+    .select('id')
+  results.expired_business = expiredBusiness?.length ?? 0
+
+  // 8. Mark expired pending_claims as 'expired'
   const { data: expiredClaims } = await admin
     .from('pending_claims')
     .update({ status: 'expired' })

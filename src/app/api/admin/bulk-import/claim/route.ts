@@ -119,12 +119,15 @@ export async function POST(req: NextRequest) {
     .eq('id', userId)
     .maybeSingle();
 
+  const businessUntil = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString();
+
   const profileData = {
     username,
     full_name: claim.seller_name || username,
     account_type: 'business',
     business_verified: true,
     company_name: claim.seller_name || username,
+    business_until: businessUntil,
   };
 
   if (!existingProfile) {
