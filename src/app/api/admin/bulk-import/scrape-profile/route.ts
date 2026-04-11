@@ -20,7 +20,7 @@ function detectPlatform(url: string): Platform {
 
 // ── Validate that URL looks like a profile page ──────────
 function isProfileUrl(url: string, platform: Platform): boolean {
-  if (platform === 'olx') return /\/profil\//i.test(url);
+  if (platform === 'olx') return /\/profil\//i.test(url) || /\/shops?\//i.test(url);
   if (platform === 'njuskalo') return /\/korisnik\//i.test(url);
   return false;
 }
@@ -109,15 +109,44 @@ function extractListingUrls(html: string, platform: Platform, baseOrigin: string
   const urls = new Set<string>();
 
   if (platform === 'olx') {
-    // OLX listing links: /oglas/SLUG/ID/
+    // 1) Plain href: /oglas/SLUG/ID/
     for (const m of html.matchAll(/href=["']((?:https?:\/\/(?:www\.)?olx\.(?:ba|rs|hr))?\/oglas\/[^"'?#]+)["']/gi)) {
       const href = m[1].startsWith('http') ? m[1] : baseOrigin + m[1];
-      // Exclude profile-relative links
       if (/\/oglas\//i.test(href)) urls.add(href.split('?')[0].replace(/\/$/, '') + '/');
     }
+
+    // 2) JSON/JS inline: "url":"/oglas/..." or "link":"/oglas/..."
+    for (const m of html.matchAll(/"(?:url|link|href)"\s*:\s*"((?:https?:\/\/(?:www\.)?olx\.(?:ba|rs|hr))?\/oglas\/[^"?#]+)"/gi)) {
+      const href = m[1].startsWith('http') ? m[1] : baseOrigin + m[1];
+      urls.add(href.split('?')[0].replace(/\/$/, '') + '/');
+    }
+
+    // 3) OLX Next.js __NEXT_DATA__: extract all /oglas/ paths from JSON blob
+    const nextData = html.match(/<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+    if (nextData) {
+      for (const m of nextData[1].matchAll(/\/oglas\/[^"\\?#]{5,150}/g)) {
+        const path = m[0].replace(/\/$/, '') + '/';
+        urls.add(baseOrigin + path);
+      }
+    }
+
+    // 4) OLX listing IDs in JSON: "id":12345678 near "slug":"some-title" → build URL
+    // Pattern: {"id":ID,"slug":"SLUG"} or similar
+    for (const m of html.matchAll(/"slug"\s*:\s*"([^"]{3,80})"\s*,\s*"id"\s*:\s*(\d{6,12})/gi)) {
+      urls.add(`${baseOrigin}/oglas/${m[1]}-${m[2]}/`);
+    }
+    for (const m of html.matchAll(/"id"\s*:\s*(\d{6,12})\s*,\s*"slug"\s*:\s*"([^"]{3,80})"/gi)) {
+      urls.add(`${baseOrigin}/oglas/${m[2]}-${m[1]}/`);
+    }
+
   } else if (platform === 'njuskalo') {
     // Njuskalo listing links: /oglas/SLUG-ID.htm
     for (const m of html.matchAll(/href=["']((?:https?:\/\/(?:www\.)?njuskalo\.hr)?\/oglas\/[^"'?#]+\.htm)["']/gi)) {
+      const href = m[1].startsWith('http') ? m[1] : baseOrigin + m[1];
+      urls.add(href.split('?')[0]);
+    }
+    // JSON fallback
+    for (const m of html.matchAll(/"(?:url|link|href)"\s*:\s*"((?:https?:\/\/(?:www\.)?njuskalo\.hr)?\/oglas\/[^"?#]+\.htm)"/gi)) {
       const href = m[1].startsWith('http') ? m[1] : baseOrigin + m[1];
       urls.add(href.split('?')[0]);
     }
@@ -185,7 +214,7 @@ export async function POST(req: NextRequest) {
   if (!isProfileUrl(normalizedUrl, platform)) {
     return NextResponse.json(
       { error: platform === 'olx'
-        ? 'URL mora biti OLX profil (olx.ba/profil/...)'
+        ? 'URL mora biti OLX profil (olx.ba/profil/... ili olx.ba/shop/...)'
         : 'URL mora biti Njuskalo profil (njuskalo.hr/korisnik/...)' },
       { status: 400 }
     );
@@ -229,7 +258,11 @@ export async function POST(req: NextRequest) {
       if (!allListingUrls.includes(u)) allListingUrls.push(u);
     }
 
-    logger.info(`[scrape-profile] Page ${page}: found ${pageUrls.length} listings (total: ${allListingUrls.length})`);
+    logger.info(`[scrape-profile] Page ${page}: HTML length=${html.length}, oglas mentions=${(html.match(/\/oglas\//g) || []).length}, found ${pageUrls.length} listings (total: ${allListingUrls.length})`);
+    if (page === 1 && pageUrls.length === 0) {
+      // Log a snippet to diagnose
+      logger.info(`[scrape-profile] HTML snippet (2000 chars): ${html.slice(0, 2000)}`);
+    }
 
     if (allListingUrls.length >= MAX_LISTINGS) {
       logger.warn(`[scrape-profile] Hit MAX_LISTINGS cap (${MAX_LISTINGS}), stopping`);
