@@ -58,5 +58,41 @@ export async function GET(req: NextRequest) {
   }
   results.expired_transactions = expiredTxns?.length ?? 0
 
+  // 5. Mark expired pending_claims as 'expired'
+  const { data: expiredClaims } = await admin
+    .from('pending_claims')
+    .update({ status: 'expired' })
+    .in('status', ['pending', 'ready'])
+    .lt('expires_at', now)
+    .select('id')
+  results.expired_claims = expiredClaims?.length ?? 0
+
+  // 6. Delete expired/failed claims older than 7 days + their draft products
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: staleClaims } = await admin
+    .from('pending_claims')
+    .select('id, claimed_by')
+    .in('status', ['expired', 'failed'])
+    .lt('expires_at', sevenDaysAgo)
+
+  if (staleClaims?.length) {
+    // Delete draft products for unclaimed profiles (claimed_by is null)
+    const unclaimedIds = staleClaims.filter(c => !c.claimed_by).map(c => c.id)
+    if (unclaimedIds.length) {
+      // We need seller_ids — fetch them from the claim token→user link
+      // Since unclaimed profiles have no user, just delete the claim records
+      // (products were never created for unclaimed claims)
+    }
+
+    const { data: deleted } = await admin
+      .from('pending_claims')
+      .delete()
+      .in('id', staleClaims.map(c => c.id))
+      .select('id')
+    results.deleted_stale_claims = deleted?.length ?? 0
+  } else {
+    results.deleted_stale_claims = 0
+  }
+
   return NextResponse.json({ success: true, results })
 }

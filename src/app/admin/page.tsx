@@ -8,6 +8,7 @@ import ReportQueue from '@/components/admin/ReportQueue';
 import UserManagement from '@/components/admin/UserManagement';
 import AiModerationTab from '@/components/admin/AiModerationTab';
 import ProductManagement from '@/components/admin/ProductManagement';
+import BulkImportTab from '@/components/admin/BulkImportTab';
 
 const TABS = [
   { key: 'stats', label: 'Pregled', icon: 'fa-chart-line' },
@@ -15,6 +16,7 @@ const TABS = [
   { key: 'users', label: 'Korisnici', icon: 'fa-users' },
   { key: 'products', label: 'Oglasi', icon: 'fa-box-open' },
   { key: 'ai', label: 'AI Moderacija', icon: 'fa-robot' },
+  { key: 'bulk', label: 'Bulk Import', icon: 'fa-arrow-down-to-bracket' },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -96,6 +98,7 @@ function AdminDashboardContent() {
         {activeTab === 'users' && <UserManagement />}
         {activeTab === 'products' && <ProductManagement />}
         {activeTab === 'ai' && <AiModerationTab />}
+        {activeTab === 'bulk' && <BulkImportTab />}
       </div>
     </MainLayout>
   );
