@@ -54,7 +54,8 @@ export default function BulkImportTab() {
   const { user } = useAuth();
 
   // ── Form state ───────────────────────────────────────
-  const [profileUrl, setProfileUrl] = useState('');
+  const [sellerName, setSellerName] = useState('');
+  const [listingUrlsRaw, setListingUrlsRaw] = useState('');
   const [step, setStep] = useState<ImportStep>('idle');
   const [stepMsg, setStepMsg] = useState('');
   const [resultUrl, setResultUrl] = useState('');
@@ -87,73 +88,38 @@ export default function BulkImportTab() {
     return session?.access_token ?? '';
   }
 
-  // ── Debug scrape ────────────────────────────────────
-  async function handleDebug() {
-    if (!profileUrl.trim()) return;
-    setStep('scraping');
-    setStepMsg('Debug: dohvaćanje HTML-a...');
-    setErrorMsg('');
-    const authToken = await getToken();
-    try {
-      const res = await fetch('/api/admin/bulk-import/debug-html', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ url: profileUrl.trim() }),
-      });
-      const json = await res.json();
-      console.log('DEBUG RESULT:', json);
-      alert(`HTML: ${json.htmlLength} chars\nOglas mentions: ${json.oglasMentions}\nHref matches: ${json.oglasHrefs?.length}\nJSON matches: ${json.oglasJson?.length}\n\nSnippet (konzola za više)`);
-      setStep('idle');
-    } catch (e) {
-      alert('Debug greška: ' + e);
-      setStep('idle');
-    }
-  }
-
-  // ── Run full import ──────────────────────────────────
+  // ── Run import ──────────────────────────────────────
   async function handleImport() {
-    if (!profileUrl.trim()) return;
-    setStep('scraping');
-    setStepMsg('Dohvaćanje profila i oglasa...');
+    const urls = listingUrlsRaw
+      .split('\n')
+      .map(u => u.trim())
+      .filter(u => u.startsWith('http'));
+
+    if (urls.length === 0) {
+      setErrorMsg('Dodaj najmanje jedan link.');
+      return;
+    }
+    if (!sellerName.trim()) {
+      setErrorMsg('Unesite ime prodavača.');
+      return;
+    }
+
+    setStep('importing');
+    setStepMsg(`Uvoz ${urls.length} oglasa u toku... (može potrajati par minuta)`);
     setErrorMsg('');
     setResultUrl('');
 
     const authToken = await getToken();
 
-    // Step 1: Scrape profile
-    let scrapeData: { platform: string; sellerName: string; listingUrls: string[]; listingCount: number };
-    try {
-      const res = await fetch('/api/admin/bulk-import/scrape-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ profileUrl: profileUrl.trim() }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        setErrorMsg(json.error || 'Greška pri dohvaćanju profila.');
-        setStep('error');
-        return;
-      }
-      scrapeData = json;
-    } catch {
-      setErrorMsg('Greška u mreži. Provjeri internet.');
-      setStep('error');
-      return;
-    }
-
-    setStep('importing');
-    setStepMsg(`Pronađeno ${scrapeData.listingCount} oglasa — uvoz u toku (može potrajati par minuta)...`);
-
-    // Step 2: Run import
     try {
       const res = await fetch('/api/admin/bulk-import/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
         body: JSON.stringify({
-          profileUrl: profileUrl.trim(),
-          sellerName: scrapeData.sellerName,
-          platform: scrapeData.platform,
-          listingUrls: scrapeData.listingUrls,
+          profileUrl: urls[0],
+          sellerName: sellerName.trim(),
+          platform: urls[0].includes('olx') ? 'olx' : urls[0].includes('njuskalo') ? 'njuskalo' : 'manual',
+          listingUrls: urls,
         }),
       });
       const json = await res.json();
@@ -165,7 +131,8 @@ export default function BulkImportTab() {
       setResultUrl(json.claimUrl);
       setResultCount(json.importedCount);
       setStep('done');
-      setProfileUrl('');
+      setSellerName('');
+      setListingUrlsRaw('');
       loadClaims();
     } catch {
       setErrorMsg('Greška u mreži tokom uvoza.');
@@ -201,37 +168,42 @@ export default function BulkImportTab() {
           Novi bulk import
         </h2>
         <p className="text-xs text-[var(--c-text2)] mb-4">
-          Unesi OLX ili Njuskalo profil URL. Sistem uvozi sve oglase i generira claim link.
+          Unesi ime prodavača i linkove oglasa (svaki link u novi red). Sistem uvozi sve oglase i generira claim link.
         </p>
 
-        <div className="flex gap-2">
+        <div className="space-y-3">
           <input
-            type="url"
-            value={profileUrl}
-            onChange={e => setProfileUrl(e.target.value)}
-            placeholder="https://www.olx.ba/profil/korisnik/"
+            type="text"
+            value={sellerName}
+            onChange={e => setSellerName(e.target.value)}
+            placeholder="Ime prodavača (npr. BikeDavid, Zlatarna Tuzla...)"
             disabled={isRunning}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full px-4 py-2.5 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           />
-          <button
-            onClick={handleImport}
-            disabled={isRunning || !profileUrl.trim()}
-            className="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
-          >
-            {isRunning ? (
-              <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uvoz...</>
-            ) : (
-              <><i className="fa-solid fa-play text-xs" /> Pokreni uvoz</>
-            )}
-          </button>
-          <button
-            onClick={handleDebug}
-            disabled={isRunning || !profileUrl.trim()}
-            className="px-3 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Debug — pokaži HTML strukturu"
-          >
-            <i className="fa-solid fa-bug text-xs" />
-          </button>
+          <textarea
+            value={listingUrlsRaw}
+            onChange={e => setListingUrlsRaw(e.target.value)}
+            placeholder={"https://www.olx.ba/oglas/bicikl-trek.../\nhttps://www.olx.ba/oglas/helm-poc.../\nhttps://www.njuskalo.hr/oglas/..."}
+            disabled={isRunning}
+            rows={6}
+            className="w-full px-4 py-2.5 rounded-xl border border-[var(--c-border)] bg-[var(--c-bg)] text-sm text-[var(--c-text)] placeholder:text-[var(--c-text-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 font-mono resize-none"
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-[var(--c-text-muted)]">
+              {listingUrlsRaw.split('\n').filter(u => u.trim().startsWith('http')).length} linkova
+            </span>
+            <button
+              onClick={handleImport}
+              disabled={isRunning || !listingUrlsRaw.trim() || !sellerName.trim()}
+              className="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isRunning ? (
+                <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uvoz...</>
+              ) : (
+                <><i className="fa-solid fa-play text-xs" /> Pokreni uvoz</>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Progress / Result */}
