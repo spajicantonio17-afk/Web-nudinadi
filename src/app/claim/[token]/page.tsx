@@ -181,7 +181,7 @@ export default function ClaimPage() {
               onChange={e => setUsername(e.target.value)}
               placeholder="npr. zlatarna_tuzla"
               disabled={step === 'submitting'}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
             />
             {formErrors.username && <p className="text-red-500 text-xs mt-1">{formErrors.username}</p>}
           </div>
@@ -196,7 +196,7 @@ export default function ClaimPage() {
               onChange={e => setEmail(e.target.value)}
               placeholder="tvoj@email.com"
               disabled={step === 'submitting'}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
             />
             {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
           </div>
@@ -211,7 +211,7 @@ export default function ClaimPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder="najmanje 6 znakova"
               disabled={step === 'submitting'}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
             />
             {formErrors.password && <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>}
           </div>

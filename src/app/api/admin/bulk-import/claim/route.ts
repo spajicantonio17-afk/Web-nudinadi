@@ -119,17 +119,18 @@ export async function POST(req: NextRequest) {
     .eq('id', userId)
     .maybeSingle();
 
+  const profileData = {
+    username,
+    full_name: claim.seller_name || username,
+    account_type: 'business',
+    business_verified: true,
+    company_name: claim.seller_name || username,
+  };
+
   if (!existingProfile) {
-    await supabase.from('profiles').insert({
-      id: userId,
-      username,
-      full_name: claim.seller_name || username,
-    });
+    await supabase.from('profiles').insert({ id: userId, ...profileData });
   } else {
-    await supabase
-      .from('profiles')
-      .update({ username, full_name: claim.seller_name || username })
-      .eq('id', userId);
+    await supabase.from('profiles').update(profileData).eq('id', userId);
   }
 
   // ── 4. Insert imported listings as 'draft' ─────────────
@@ -150,7 +151,7 @@ export async function POST(req: NextRequest) {
         images: listing.images || [],
         location: listing.location || null,
         category_id: categoryId,
-        status: 'draft', // hidden — user activates manually
+        status: 'active',
       });
 
       if (prodErr) {
