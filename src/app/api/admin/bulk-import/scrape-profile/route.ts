@@ -21,7 +21,7 @@ function detectPlatform(url: string): Platform {
 // ── Validate that URL looks like a profile page ──────────
 function isProfileUrl(url: string, platform: Platform): boolean {
   if (platform === 'olx') return /\/profil\//i.test(url) || /\/shops?\//i.test(url);
-  if (platform === 'njuskalo') return /\/korisnik\//i.test(url);
+  if (platform === 'njuskalo') return /\/korisnik\//i.test(url) || /\/trgovina\//i.test(url);
   return false;
 }
 
@@ -214,8 +214,8 @@ export async function POST(req: NextRequest) {
   if (!isProfileUrl(normalizedUrl, platform)) {
     return NextResponse.json(
       { error: platform === 'olx'
-        ? 'URL mora biti OLX profil (olx.ba/profil/... ili olx.ba/shop/...)'
-        : 'URL mora biti Njuskalo profil (njuskalo.hr/korisnik/...)' },
+        ? 'URL mora biti OLX profil (olx.ba/profil/... ili olx.ba/shops/...)'
+        : 'URL mora biti Njuskalo profil (njuskalo.hr/korisnik/... ili njuskalo.hr/trgovina/...)' },
       { status: 400 }
     );
   }
