@@ -5,6 +5,8 @@ import { getProducts, deleteProduct } from '@/services/productService';
 import type { ProductFull, ProductStatus } from '@/lib/database.types';
 import ProductEditModal from './ProductEditModal';
 
+const PAGE_SIZE = 30;
+
 const STATUS_LABELS: Record<ProductStatus, string> = {
   active: 'Aktivan',
   sold: 'Prodan',
@@ -35,29 +37,35 @@ export default function ProductManagement() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProductStatus | ''>('');
+  const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [editProduct, setEditProduct] = useState<ProductFull | null>(null);
 
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const filters = {
+      const { data, count } = await getProducts({
         search: search || undefined,
         status: statusFilter || undefined,
-        limit: 30,
-        sortBy: 'created_at' as const,
-        sortOrder: 'desc' as const,
-      };
-      const { data, count } = await getProducts(filters);
+        limit: PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
+        sortBy: 'created_at',
+        sortOrder: 'desc',
+      });
       setProducts(data);
       setTotal(count);
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter]);
+  }, [search, statusFilter, page]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setPage(1); }, [search, statusFilter]);
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -71,13 +79,13 @@ export default function ProductManagement() {
     }
   };
 
-  function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('bs', { day: 'numeric', month: 'short', year: 'numeric' });
-  }
-
   const handleSaved = (id: string, updated: Partial<ProductFull>) => {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updated } : p));
   };
+
+  function formatDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('bs', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
 
   return (
     <div className="space-y-4">
@@ -88,6 +96,7 @@ export default function ProductManagement() {
           onSaved={(updated) => { handleSaved(editProduct.id, updated); setEditProduct(null); }}
         />
       )}
+
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
@@ -213,6 +222,71 @@ export default function ProductManagement() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--c-border)]">
+              <span className="text-xs text-[var(--c-text2)]">
+                Stranica {page} od {totalPages}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  className="w-7 h-7 rounded-lg text-xs text-[var(--c-text2)] hover:bg-[var(--c-hover)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <i className="fa-solid fa-angles-left" />
+                </button>
+                <button
+                  onClick={() => setPage(p => p - 1)}
+                  disabled={page === 1}
+                  className="w-7 h-7 rounded-lg text-xs text-[var(--c-text2)] hover:bg-[var(--c-hover)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <i className="fa-solid fa-angle-left" />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                  .reduce<(number | '...')[]>((acc, p, i, arr) => {
+                    if (i > 0 && (p as number) - (arr[i - 1] as number) > 1) acc.push('...');
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, i) =>
+                    p === '...' ? (
+                      <span key={`dots-${i}`} className="w-7 text-center text-xs text-[var(--c-text-muted)]">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p as number)}
+                        className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${
+                          page === p
+                            ? 'bg-blue-500 text-white'
+                            : 'text-[var(--c-text2)] hover:bg-[var(--c-hover)]'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={page === totalPages}
+                  className="w-7 h-7 rounded-lg text-xs text-[var(--c-text2)] hover:bg-[var(--c-hover)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <i className="fa-solid fa-angle-right" />
+                </button>
+                <button
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  className="w-7 h-7 rounded-lg text-xs text-[var(--c-text2)] hover:bg-[var(--c-hover)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <i className="fa-solid fa-angles-right" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
