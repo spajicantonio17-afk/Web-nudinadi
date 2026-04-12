@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Product } from '@/lib/types';
 import { useFavorites } from '@/lib/favorites';
 import { useToast } from '@/components/Toast';
-import { formatNativePrice } from '@/lib/currency';
+import { formatNativePrice, getCurrencyMode, eurToKm, eurToRsd } from '@/lib/currency';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +20,7 @@ function ProductCard({ product }: ProductCardProps) {
 
   // Use the product ID directly — Supabase UUIDs contain hyphens
   const isFavorite = checkFavorite(product.id);
+  const currencyMode = typeof window !== 'undefined' ? getCurrencyMode() : 'dual';
   const promoted = !!product.promoted_until && new Date(product.promoted_until) > new Date();
 
   const handleCardClick = () => {
@@ -83,7 +84,11 @@ function ProductCard({ product }: ProductCardProps) {
           </div>
           <div className="flex flex-col items-end gap-0.5 shrink-0">
             <span className="text-[14px] font-bold text-[var(--c-accent)] leading-none whitespace-nowrap">
-              {formatNativePrice(product.price, product.currency ?? 'EUR')}
+              {currencyMode === 'km-only' && (product.currency === 'EUR' || !product.currency)
+                ? `${eurToKm(product.price).toLocaleString()} KM`
+                : currencyMode === 'rsd-only' && (product.currency === 'EUR' || !product.currency)
+                ? `${eurToRsd(product.price).toLocaleString()} RSD`
+                : formatNativePrice(product.price, product.currency ?? 'EUR')}
             </span>
           </div>
         </div>
