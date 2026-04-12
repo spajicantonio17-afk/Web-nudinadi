@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getProducts, deleteProduct } from '@/services/productService';
 import type { ProductFull, ProductStatus } from '@/lib/database.types';
+import ProductEditModal from './ProductEditModal';
 
 const STATUS_LABELS: Record<ProductStatus, string> = {
   active: 'Aktivan',
@@ -36,6 +37,7 @@ export default function ProductManagement() {
   const [statusFilter, setStatusFilter] = useState<ProductStatus | ''>('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [editProduct, setEditProduct] = useState<ProductFull | null>(null);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -73,8 +75,19 @@ export default function ProductManagement() {
     return new Date(dateStr).toLocaleDateString('bs', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
+  const handleSaved = (id: string, updated: Partial<ProductFull>) => {
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updated } : p));
+  };
+
   return (
     <div className="space-y-4">
+      {editProduct && (
+        <ProductEditModal
+          product={editProduct}
+          onClose={() => setEditProduct(null)}
+          onSaved={(updated) => { handleSaved(editProduct.id, updated); setEditProduct(null); }}
+        />
+      )}
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
@@ -120,7 +133,7 @@ export default function ProductManagement() {
                   <th className="p-3 text-right">Cijena</th>
                   <th className="p-3 text-center">Status</th>
                   <th className="p-3 text-left">Datum</th>
-                  <th className="p-3 w-20 text-center">Akcije</th>
+                  <th className="p-3 w-24 text-center">Akcije</th>
                 </tr>
               </thead>
               <tbody>
@@ -158,31 +171,42 @@ export default function ProductManagement() {
                       {formatDate(product.created_at)}
                     </td>
                     <td className="p-3 text-center">
-                      {confirmId === product.id ? (
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => handleDelete(product.id)}
-                            disabled={deletingId === product.id}
-                            className="px-2 py-1 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50"
-                          >
-                            {deletingId === product.id ? <i className="fa-solid fa-spinner fa-spin" /> : 'Da'}
-                          </button>
-                          <button
-                            onClick={() => setConfirmId(null)}
-                            className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
-                          >
-                            Ne
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmId(product.id)}
-                          className="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center mx-auto"
-                          title="Izbriši oglas"
-                        >
-                          <i className="fa-solid fa-trash text-xs" />
-                        </button>
-                      )}
+                      <div className="flex items-center justify-center gap-1">
+                        {confirmId === product.id ? (
+                          <>
+                            <button
+                              onClick={() => handleDelete(product.id)}
+                              disabled={deletingId === product.id}
+                              className="px-2 py-1 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50"
+                            >
+                              {deletingId === product.id ? <i className="fa-solid fa-spinner fa-spin" /> : 'Da'}
+                            </button>
+                            <button
+                              onClick={() => setConfirmId(null)}
+                              className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+                            >
+                              Ne
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => setEditProduct(product)}
+                              className="w-7 h-7 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 flex items-center justify-center"
+                              title="Uredi oglas"
+                            >
+                              <i className="fa-solid fa-pen text-xs" />
+                            </button>
+                            <button
+                              onClick={() => setConfirmId(product.id)}
+                              className="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center"
+                              title="Izbriši oglas"
+                            >
+                              <i className="fa-solid fa-trash text-xs" />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
