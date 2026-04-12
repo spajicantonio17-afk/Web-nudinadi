@@ -55,7 +55,7 @@ function dbToDisplayProduct(p: ProductFull): Product {
   return {
     id: p.id,
     name: p.title,
-    price: Number(p.price),
+    price: ((p.attributes as Record<string, unknown>)?.price_type === 'Po dogovoru' || (Number(p.price) === 0 && !(p.attributes as Record<string, unknown>)?.price_type)) ? -1 : Number(p.price),
     currency: p.currency ?? 'EUR',
     country: p.country ?? null,
     secondaryPriceLabel: `${Number((Number(p.price) * BAM_RATE).toFixed(0)).toLocaleString()} KM`,
@@ -161,6 +161,14 @@ function HomeContent() {
       return () => clearTimeout(t);
     }
   }, [showSecondaryCats, handleSecondaryScroll]);
+
+  useEffect(() => {
+    if (searchParams.get('openCategories')) {
+      const catId = searchParams.get('openCatId');
+      if (catId) setSelectedCatId(catId);
+      setShowAllCatsPopup(true);
+    }
+  }, [searchParams]);
 
   // Build server-side filter params from current state
   const buildServerFilters = useCallback(async (offset = 0): Promise<ProductFilters> => {

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useRecentlyViewed } from '@/lib/recently-viewed';
 import { getProductsByIds } from '@/services/productService';
 import { removeFromRecentlyViewed } from '@/lib/recently-viewed';
-import { getCurrencyMode, eurToKm } from '@/lib/currency';
+import { getCurrencyMode, formatProductPrice } from '@/lib/currency';
 import { useI18n } from '@/lib/i18n';
 import type { ProductFull } from '@/lib/database.types';
 
@@ -70,11 +70,7 @@ export default function RecentlyViewed() {
         ) : (
           products.map(product => {
             const img = product.images?.[0] || `https://picsum.photos/seed/${product.id}/200`;
-            const priceDisplay = currency === 'km-only'
-              ? `${eurToKm(product.price).toFixed(2)} KM`
-              : currency === 'dual'
-              ? `${product.price.toFixed(2)} € / ${eurToKm(product.price).toFixed(2)} KM`
-              : `${product.price.toFixed(2)} €`;
+            const priceDisplay = formatProductPrice(product.price, product.currency, product.attributes as Record<string, unknown>);
 
             return (
               <div

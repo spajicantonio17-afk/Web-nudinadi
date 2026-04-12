@@ -31,11 +31,11 @@ export default function SiteFooter() {
           <div>
             <h4 className="text-[12px] font-extrabold text-[var(--c-text)] uppercase tracking-wider mb-4">Marketplace</h4>
             <ul className="space-y-2.5">
-              <li><Link href="/?category=Vozila" className={linkClass}>Vozila</Link></li>
-              <li><Link href="/?category=Nekretnine" className={linkClass}>Nekretnine</Link></li>
-              <li><Link href="/?category=Elektronika" className={linkClass}>Elektronika</Link></li>
-              <li><Link href="/?category=Odjeća i obuća" className={linkClass}>Odjeća i obuća</Link></li>
-              <li><Link href="/" className="text-[13px] text-[var(--c-accent)] hover:text-[var(--c-accent-hover)] transition-colors duration-150 font-semibold">Sve kategorije →</Link></li>
+              <li><Link href="/?openCategories=1&openCatId=vozila" className={linkClass}>Vozila</Link></li>
+              <li><Link href="/?openCategories=1&openCatId=nekretnine" className={linkClass}>Nekretnine</Link></li>
+              <li><Link href="/?openCategories=1&openCatId=tehnika" className={linkClass}>Elektronika</Link></li>
+              <li><Link href="/?openCategories=1&openCatId=odjeca" className={linkClass}>Odjeća i obuća</Link></li>
+              <li><Link href="/?openCategories=1" className="text-[13px] text-[var(--c-accent)] hover:text-[var(--c-accent-hover)] transition-colors duration-150 font-semibold">Sve kategorije →</Link></li>
             </ul>
           </div>
 

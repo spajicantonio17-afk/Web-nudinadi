@@ -18,9 +18,22 @@ export function getCurrencyMode(country?: CountryPreference): CurrencyMode {
 
 /** Format a native price for display based on its currency */
 export function formatNativePrice(price: number, currency: 'EUR' | 'BAM' | 'RSD'): string {
+  if (price < 0) return 'Po dogovoru';
   if (currency === 'BAM') return `${price.toLocaleString()} KM`;
   if (currency === 'RSD') return `${price.toLocaleString()} RSD`;
   return `${price.toLocaleString()} €`;
+}
+
+/** Format price from raw DB product (handles Po dogovoru via attributes or price=0) */
+export function formatProductPrice(
+  price: number | string,
+  currency: string | null,
+  attributes?: Record<string, unknown> | null,
+): string {
+  const numPrice = Number(price);
+  const priceType = attributes?.price_type as string | undefined;
+  if (priceType === 'Po dogovoru' || (numPrice === 0 && !priceType)) return 'Po dogovoru';
+  return formatNativePrice(numPrice, (currency ?? 'EUR') as 'EUR' | 'BAM' | 'RSD');
 }
 
 /** Convert EUR price to KM */

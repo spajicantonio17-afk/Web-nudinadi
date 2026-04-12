@@ -213,15 +213,10 @@ interface VerificationStepProps {
 
 function VerificationStep({ onBack, user, refreshProfile, showToast, t }: VerificationStepProps) {
   const [emailCodeSent, setEmailCodeSent] = React.useState(false);
-  const [phoneCodeSent, setPhoneCodeSent] = React.useState(false);
   const [emailSending, setEmailSending] = React.useState(false);
-  const [phoneSending, setPhoneSending] = React.useState(false);
   const [verifyError, setVerifyError] = React.useState<string | null>(null);
   const [emailVerified, setEmailVerified] = React.useState(user?.emailVerified || false);
-  const [phoneVerified, setPhoneVerified] = React.useState(user?.phoneVerified || false);
   const [resendCooldown, setResendCooldown] = React.useState(0);
-  const [phoneResendCooldown, setPhoneResendCooldown] = React.useState(0);
-  const [phoneNumber, setPhoneNumber] = React.useState(user?.phone || '');
 
   React.useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -229,47 +224,32 @@ function VerificationStep({ onBack, user, refreshProfile, showToast, t }: Verifi
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  React.useEffect(() => {
-    if (phoneResendCooldown <= 0) return;
-    const timer = setTimeout(() => setPhoneResendCooldown(c => c - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [phoneResendCooldown]);
-
-  const sendCode = async (type: 'email' | 'phone') => {
-    if (type === 'email') setEmailSending(true);
-    else setPhoneSending(true);
+  const sendCode = async () => {
+    setEmailSending(true);
     setVerifyError(null);
     try {
-      // If phone and number not saved yet, update profile first
-      if (type === 'phone' && phoneNumber && phoneNumber !== user?.phone) {
-        await getSupabase().from('profiles').update({ phone: phoneNumber }).eq('id', user!.id);
-      }
       const res = await fetch('/api/verify/send-code', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type }),
+        body: JSON.stringify({ type: 'email' }),
       });
       const data = await res.json();
       if (!res.ok) { setVerifyError(data.error); return; }
-      if (type === 'email') { setEmailCodeSent(true); setResendCooldown(60); }
-      else { setPhoneCodeSent(true); setPhoneResendCooldown(60); }
+      setEmailCodeSent(true);
+      setResendCooldown(60);
     } catch { setVerifyError('Greška pri slanju koda.'); }
-    finally {
-      if (type === 'email') setEmailSending(false);
-      else setPhoneSending(false);
-    }
+    finally { setEmailSending(false); }
   };
 
-  const confirmCode = async (type: 'email' | 'phone', code: string) => {
+  const confirmCode = async (code: string) => {
     setVerifyError(null);
     try {
       const res = await fetch('/api/verify/confirm', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, code }),
+        body: JSON.stringify({ type: 'email', code }),
       });
       const data = await res.json();
       if (!res.ok) { setVerifyError(data.error); return; }
-      if (type === 'email') setEmailVerified(true);
-      else setPhoneVerified(true);
+      setEmailVerified(true);
       showToast(t('verify.success'));
       refreshProfile();
     } catch { setVerifyError('Greška pri verifikaciji.'); }
@@ -301,71 +281,18 @@ function VerificationStep({ onBack, user, refreshProfile, showToast, t }: Verifi
           {!emailVerified && (
             <div className="space-y-3">
               {!emailCodeSent ? (
-                <button onClick={() => sendCode('email')} disabled={emailSending}
+                <button onClick={() => sendCode()} disabled={emailSending}
                   className="w-full py-3 rounded-[14px] bg-blue-600/10 text-blue-500 text-[11px] font-black uppercase tracking-widest hover:bg-blue-600/20 transition-colors disabled:opacity-50">
                   {emailSending ? <i className="fa-solid fa-spinner animate-spin"></i> : t('verify.phone.send')}
                 </button>
               ) : (
                 <>
-                  <OtpInputMenu onComplete={(code) => confirmCode('email', code)} />
+                  <OtpInputMenu onComplete={(code) => confirmCode(code)} />
                   <div className="text-center">
                     {resendCooldown > 0 ? (
                       <p className="text-[10px] text-[var(--c-text3)]">{t('verify.resendIn')} {resendCooldown}s</p>
                     ) : (
-                      <button onClick={() => sendCode('email')} className="text-[10px] text-blue-400 font-bold">{t('verify.resend')}</button>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Phone */}
-        <div className={`bg-[var(--c-card)] border rounded-[18px] p-5 ${phoneVerified ? 'border-green-500/30' : 'border-[var(--c-border)]'}`}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className={`w-10 h-10 rounded-[12px] flex items-center justify-center ${phoneVerified ? 'bg-green-500/10 text-green-500' : 'bg-purple-500/10 text-purple-500'}`}>
-              <i className={`fa-solid ${phoneVerified ? 'fa-check' : 'fa-phone'}`}></i>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-[13px] font-bold text-[var(--c-text)]">Telefon</h3>
-              <p className="text-[10px] text-[var(--c-text2)]">{phoneNumber || t('verify.phone.add')}</p>
-            </div>
-            {phoneVerified ? (
-              <span className="text-[9px] font-black text-green-500 uppercase tracking-widest">
-                <i className="fa-solid fa-circle-check mr-1"></i>{t('verify.verified')}
-              </span>
-            ) : (
-              <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest">
-                <i className="fa-solid fa-exclamation-circle mr-1"></i>{t('verify.notVerified')}
-              </span>
-            )}
-          </div>
-          {!phoneVerified && (
-            <div className="space-y-3">
-              {!phoneNumber && (
-                <div className="bg-[var(--c-hover)] rounded-[14px] p-1.5 pr-4 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-[10px] bg-[var(--c-card)] flex items-center justify-center text-[var(--c-text3)]">
-                    <i className="fa-solid fa-phone text-xs"></i>
-                  </div>
-                  <input type="tel" inputMode="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)}
-                    placeholder="+387 6..." className="flex-1 bg-transparent text-sm text-[var(--c-text)] font-bold outline-none placeholder:text-[var(--c-placeholder)]" />
-                </div>
-              )}
-              {!phoneCodeSent ? (
-                <button onClick={() => sendCode('phone')} disabled={phoneSending || !phoneNumber}
-                  className="w-full py-3 rounded-[14px] bg-purple-600/10 text-purple-500 text-[11px] font-black uppercase tracking-widest hover:bg-purple-600/20 transition-colors disabled:opacity-50">
-                  {phoneSending ? <i className="fa-solid fa-spinner animate-spin"></i> : t('verify.phone.send')}
-                </button>
-              ) : (
-                <>
-                  <p className="text-[10px] text-[var(--c-text2)] text-center">{t('verify.phone.sent')} {phoneNumber}</p>
-                  <OtpInputMenu onComplete={(code) => confirmCode('phone', code)} />
-                  <div className="text-center">
-                    {phoneResendCooldown > 0 ? (
-                      <p className="text-[10px] text-[var(--c-text3)]">{t('verify.resendIn')} {phoneResendCooldown}s</p>
-                    ) : (
-                      <button onClick={() => sendCode('phone')} className="text-[10px] text-purple-400 font-bold">{t('verify.resend')}</button>
+                      <button onClick={() => sendCode()} className="text-[10px] text-blue-400 font-bold">{t('verify.resend')}</button>
                     )}
                   </div>
                 </>

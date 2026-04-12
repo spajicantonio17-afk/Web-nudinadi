@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { type } = body as { type: 'email' | 'phone' }
 
-    if (!type || !['email', 'phone'].includes(type)) {
+    if (type !== 'email') {
       return NextResponse.json({ error: 'Neispravan tip verifikacije.' }, { status: 400 })
     }
 

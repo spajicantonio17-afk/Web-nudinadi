@@ -116,7 +116,7 @@ export default function FavoritesPage() {
                   <div className="p-2 sm:p-3">
                     <h3 className="text-[10px] sm:text-[11px] font-bold text-[var(--c-text)] leading-tight line-clamp-2 sm:line-clamp-1 mb-1">{p.title}</h3>
                     <div className="flex justify-between items-center mt-1 sm:mt-2">
-                      <span className="text-[12px] font-black text-[var(--c-text)]">&euro;{Number(p.price).toLocaleString()}</span>
+                      <span className="text-[12px] font-black text-[var(--c-text)]">{(p.attributes as Record<string, unknown>)?.price_type === 'Po dogovoru' || Number(p.price) === 0 ? 'Po dogovoru' : `€${Number(p.price).toLocaleString()}`}</span>
                       <span className="text-[9px] text-[var(--c-text3)]">{formatTimeLabel(p.created_at)}</span>
                     </div>
                   </div>

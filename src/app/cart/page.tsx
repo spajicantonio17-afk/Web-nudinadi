@@ -11,7 +11,7 @@ import { getProductById } from '@/services/productService';
 import { getOrCreateConversation } from '@/services/messageService';
 import type { ProductFull } from '@/lib/database.types';
 import { BAM_RATE } from '@/lib/constants';
-import { getCurrencyMode, eurToKm } from '@/lib/currency';
+import { getCurrencyMode, eurToKm, formatProductPrice } from '@/lib/currency';
 
 export default function CartPage() {
   const router = useRouter();
@@ -38,7 +38,8 @@ export default function CartPage() {
       .finally(() => setLoading(false));
   }, [items]);
 
-  const totalPrice = products.reduce((sum, p) => sum + Number(p.price), 0);
+  const hasNegotiable = products.some(p => (p.attributes as Record<string, unknown>)?.price_type === 'Po dogovoru' || Number(p.price) === 0);
+  const totalPrice = products.filter(p => !((p.attributes as Record<string, unknown>)?.price_type === 'Po dogovoru' || Number(p.price) === 0)).reduce((sum, p) => sum + Number(p.price), 0);
   const totalKM = Math.round(totalPrice * BAM_RATE);
   const currencyMode = getCurrencyMode();
 
@@ -118,7 +119,9 @@ export default function CartPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-baseline gap-2">
-                        {currencyMode === 'km-only' ? (
+                        {(product.attributes as Record<string, unknown>)?.price_type === 'Po dogovoru' || Number(product.price) === 0 ? (
+                          <span className="text-[14px] font-black text-[var(--c-text)]">Po dogovoru</span>
+                        ) : currencyMode === 'km-only' ? (
                           <span className="text-[14px] font-black text-[var(--c-text)]">{eurToKm(Number(product.price)).toLocaleString()} KM</span>
                         ) : currencyMode === 'eur-only' ? (
                           <span className="text-[14px] font-black text-[var(--c-text)]">€{Number(product.price).toLocaleString()}</span>
@@ -161,11 +164,14 @@ export default function CartPage() {
               <div className="flex justify-between items-center mb-1">
                 <span className="text-[10px] font-black text-[var(--c-text3)] uppercase tracking-widest">{t('cart.total')}</span>
                 {currencyMode === 'km-only' ? (
-                  <span className="text-xl font-black text-[var(--c-text)]">{totalKM.toLocaleString()} KM</span>
+                  <span className="text-xl font-black text-[var(--c-text)]">{totalKM.toLocaleString()} KM{hasNegotiable ? ' +' : ''}</span>
                 ) : (
-                  <span className="text-xl font-black text-[var(--c-text)]">€{totalPrice.toLocaleString()}</span>
+                  <span className="text-xl font-black text-[var(--c-text)]">€{totalPrice.toLocaleString()}{hasNegotiable ? ' +' : ''}</span>
                 )}
               </div>
+              {hasNegotiable && (
+                <p className="text-[9px] text-[var(--c-text-muted)] text-right">+ 1 artikal po dogovoru</p>
+              )}
               {currencyMode === 'dual' && (
                 <div className="flex justify-end">
                   <span className="text-[10px] text-blue-400 font-bold">KM {totalKM.toLocaleString()}</span>

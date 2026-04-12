@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSimilarProducts, type SimilarProduct } from '@/services/productService'
-import { getCurrencyMode, eurToKm } from '@/lib/currency'
+import { getCurrencyMode, eurToKm, formatProductPrice } from '@/lib/currency'
 
 interface SimilarProductsProps {
   productId: string
@@ -86,9 +86,7 @@ export default function SimilarProducts({ productId, categoryId, tags, price }: 
                   {p.title}
                 </p>
                 <p className="text-[13px] font-bold text-[var(--c-accent)]">
-                  {getCurrencyMode() === 'km-only'
-                    ? `${eurToKm(p.price).toLocaleString('de-DE')} KM`
-                    : `${p.price.toLocaleString('de-DE')} €`}
+                  {formatProductPrice(p.price, null)}
                 </p>
                 {p.location && (
                   <p className="text-[10px] text-[var(--c-text3)] mt-0.5 truncate">{p.location}</p>

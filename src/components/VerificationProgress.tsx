@@ -47,7 +47,7 @@ function VerificationCompact({ status, isFullyVerified }: { status: Verification
     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--c-card)] border border-[var(--c-border)]">
       <i className="fa-solid fa-shield-halved text-[var(--c-text3)] text-[10px]"></i>
       <span className="text-[10px] font-bold text-[var(--c-text2)]">
-        Verifikacija: {status.currentStep}/3
+        Verifikacija: {status.currentStep}/2
       </span>
     </div>
   );
@@ -79,7 +79,7 @@ function VerificationFull({ status }: { status: VerificationStatus }) {
               {status.isFullyVerified ? 'Potpuno verificiran!' : 'Verifikacija'}
             </h3>
             <p className="text-[9px] text-[var(--c-text3)]">
-              {status.currentStep}/{status.totalSteps} koraka zavrseno
+              {status.currentStep}/2 koraka zavrseno
             </p>
           </div>
         </div>

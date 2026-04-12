@@ -26,7 +26,7 @@ VALUES (
   '00000000-0000-0000-0000-000000000001',
   'test_prodavac',
   'Test Prodavač',
-  NULL,
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200&h=200',
   'Test korisnički profil za seed podatke.',
   'Sarajevo'
 )
@@ -45,7 +45,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'BMW 320d F30 2017 godište', 'Odlično očuvan BMW 320d, redovno servisiran, garažiran. Bez ulaganja.', 18500.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/bmw,320d?lock=101'],
       'active', 'Sarajevo', 187, 12,
       '{"marka":"BMW","model":"320d","godiste":2017,"km":145000,"gorivo":"Dizel","mjenjac":"Automatik","karoserija":"Limuzina","boja":"Crna","snaga":190,"pogon":"Zadnji","kubikaza":1995,"registracija":"2025-06","klima":true,"autoKlima":true,"tempomat":true,"adaptivniTempomat":false,"parkSenzori":true,"kameraNazad":true,"kamera360":false,"navigacija":true,"bluetooth":true,"appleCarPlay":false,"androidAuto":false,"kozenaSjed":true,"grejanaSjed":true,"xenon":true,"matrixLed":false,"panoramskiKrov":false,"abs":true,"esp":true,"laneAssist":false,"autoKocenje":false,"servisnaKnjiga":true,"udareno":false,"registriran":true,"turbo":true,"aluFelge":true,"touchscreen":true,"digKokpit":false,"headUpDisplay":false,"bezKljucPokr":true,"startStop":true,"grijaniVolan":false,"elProzori":true,"elRetrovizori":true,"kukaPrivez":false,"isofix":true,"ocarinjen":true,"alarm":true,"centralnaBrava":true,"voznoStanje":true,"uKompletu":false}'::jsonb,
       ARRAY['bmw','320d','f30','dizel','limuzina','automatik']);
@@ -55,7 +55,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'VW Golf 7 1.6 TDI 2015', 'Golf 7 u odličnom stanju, mali potrošač, idealan za grad i cestu.', 13200.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/volkswagen,golf?lock=102'],
       'active', 'Mostar', 134, 8,
       '{"marka":"Volkswagen","model":"Golf 7","godiste":2015,"km":178000,"gorivo":"Dizel","mjenjac":"Manual","karoserija":"Hatchback","boja":"Siva","snaga":110,"pogon":"Prednji","kubikaza":1598,"registracija":"2025-09","klima":true,"autoKlima":true,"tempomat":true,"adaptivniTempomat":false,"parkSenzori":true,"kameraNazad":false,"kamera360":false,"navigacija":false,"bluetooth":true,"appleCarPlay":false,"androidAuto":false,"kozenaSjed":false,"grejanaSjed":false,"xenon":false,"matrixLed":false,"panoramskiKrov":false,"abs":true,"esp":true,"laneAssist":false,"autoKocenje":false,"servisnaKnjiga":true,"udareno":false,"registriran":true,"turbo":true,"aluFelge":true,"touchscreen":false,"digKokpit":false,"headUpDisplay":false,"bezKljucPokr":false,"startStop":true,"grijaniVolan":false,"elProzori":true,"elRetrovizori":true,"kukaPrivez":false,"isofix":true,"ocarinjen":true,"alarm":false,"centralnaBrava":true,"voznoStanje":true,"uKompletu":false}'::jsonb,
       ARRAY['golf','vw','tdi','golf7','dizel','hatchback']);
@@ -66,7 +66,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Yamaha MT-07 2020', 'Yamaha MT-07 u izvrsnom stanju, redovno servisirana. Idealan naked bike.', 6800.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/yamaha,motorcycle,naked?lock=103'],
       'active', 'Tuzla', 89, 6,
       '{"marka":"Yamaha","model":"MT-07","godiste":2020,"km":12000,"kubikaza":689,"tip":"Naked","snaga":75,"boja":"Plava"}'::jsonb,
       ARRAY['yamaha','mt07','naked','motocikl','689cc']);
@@ -77,7 +77,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Mercedes Actros 1845 2018', 'Mercedes Actros sa punom opremom, redovno servisiran u ovlaštenom servisu.', 45000.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/mercedes,actros,truck?lock=104'],
       'active', 'Banja Luka', 56, 4,
       '{"marka":"Mercedes-Benz","model":"Actros 1845","godiste":2018,"km":520000,"nosivost":18000,"gorivo":"Dizel","mjenjac":"Automatik","tip":"Tegljač"}'::jsonb,
       ARRAY['mercedes','actros','tegljac','kamion','teretno']);
@@ -88,7 +88,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Mercedes Sprinter 519 CDI Minibus 2019', 'Sprinter minibus sa 19 sjedišta, klima, idealan za prijevoz putnika.', 38000.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/mercedes,sprinter,minibus?lock=105'],
       'active', 'Zenica', 42, 2,
       '{"marka":"Mercedes-Benz","godiste":2019,"km":185000,"brojMjesta":19,"gorivo":"Dizel","tip":"Minibus"}'::jsonb,
       ARRAY['sprinter','minibus','mercedes','prijevoz','putnici']);
@@ -99,7 +99,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Specialized Rockhopper MTB 29"', 'Mountain bike Specialized Rockhopper, veličina okvira L, odlično stanje.', 450.00, cat, 'like_new',
-      ARRAY['https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/specialized,mountain,bike?lock=106'],
       'active', 'Zagreb', 67, 5,
       '{"marka":"Specialized","tip":"Mountain bike","velicinaOkvira":"L","materijal":"Aluminij"}'::jsonb,
       ARRAY['specialized','mtb','bicikl','mountain','29er']);
@@ -110,7 +110,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Fiat Ducato Kamper 2016', 'Potpuno opremljen kamper na bazi Fiat Ducato, kuhinja, kupaonica, spavanje za 4 osobe.', 32000.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/campervan,fiat,ducato?lock=107'],
       'active', 'Split', 78, 9,
       '{"marka":"Fiat","godiste":2016,"km":95000,"duzina":7.2,"brojLezajeva":4,"tip":"Kamper van"}'::jsonb,
       ARRAY['kamper','fiat','ducato','kampovanje','putovanje']);
@@ -121,7 +121,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Auto prikolica 750kg nosivosti', 'Jednoosovisnka prikolica sa ceradom, idealna za transport. Registrovana.', 800.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/car,trailer?lock=108'],
       'active', 'Travnik', 34, 1,
       '{"tipPrikolice":"Teretna","nosivost":750,"duzina":2.5}'::jsonb,
       ARRAY['prikolica','teretna','750kg','transport']);
@@ -132,7 +132,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Gumeni čamac Zodiac 4.2m sa motorom', 'Zodiac gumeni čamac sa Yamaha 40KS vanbrodskim motorom. Komplet sa prikolicom.', 5500.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/zodiac,inflatable,boat?lock=109'],
       'active', 'Split', 45, 3,
       '{"tip":"Gumeni čamac","duzina":4.2,"snagaMotora":40,"godiste":2018,"gorivo":"Benzin"}'::jsonb,
       ARRAY['camac','zodiac','yamaha','nautika','more']);
@@ -143,7 +143,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Can-Am Outlander 650 XT 2021', 'Can-Am quad u odličnom stanju, malo korišten, sa vitlom i zaštitom.', 9500.00, cat, 'like_new',
-      ARRAY['https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/can-am,atv,quad?lock=110'],
       'active', 'Bihać', 53, 7,
       '{"marka":"Can-Am","godiste":2021,"km":3200,"kubikaza":650,"snaga":62}'::jsonb,
       ARRAY['canam','quad','atv','outlander','offroad']);
@@ -154,7 +154,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Električni trotinet Xiaomi Pro 2', 'Xiaomi električni trotinet, domet do 45km, max brzina 25km/h.', 350.00, cat, 'like_new',
-      ARRAY['https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800&h=600&fit=crop'],
+      ARRAY['https://loremflickr.com/800/600/xiaomi,electric,scooter?lock=111'],
       'active', 'Bijeljina', 91, 4,
       '{"marka":"Xiaomi","godiste":2023}'::jsonb,
       ARRAY['trotinet','xiaomi','elektricni','eskuter']);
@@ -229,7 +229,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Zimske gume Michelin 205/55 R16', 'Set od 4 zimske gume, profil 6mm, jedna sezona korištene.', 200.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'],
+      ARRAY['https://images.unsplash.com/photo-1578844251758-2f71da645217?w=800&h=600&fit=crop'],
       'active', 'Zagreb', 73, 5,
       '{"markaVozila":"Univerzalno","dimenzija":"205/55 R16","sezona":"Zimska","promjerFelge":16}'::jsonb,
       ARRAY['gume','zimske','michelin','r16','205/55']);
@@ -273,7 +273,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Karburator za Honda CBR 600', 'Originalni karburator, radi ispravno. Skinut sa motora sa 35.000km.', 150.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'],
+      ARRAY['https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&h=600&fit=crop'],
       'active', 'Bijeljina', 27, 1,
       '{"markaMotocikla":"Honda","model":"CBR 600"}'::jsonb,
       ARRAY['karburator','honda','cbr600','moto','motor']);
@@ -284,7 +284,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Bočne obloge za Kawasaki Z750', 'Set bočnih plastika u zelenoj boji. Bez pukotina.', 90.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'],
+      ARRAY['https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&h=600&fit=crop'],
       'active', 'Sarajevo', 19, 0,
       '{"markaMotocikla":"Kawasaki","model":"Z750"}'::jsonb,
       ARRAY['obloge','kawasaki','z750','plastike','karoserija']);
@@ -295,7 +295,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'CDI modul za Suzuki GSX-R 600', 'Originalni CDI, ispravan. Testiran prije skidanja.', 70.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'],
+      ARRAY['https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&h=600&fit=crop'],
       'active', 'Mostar', 15, 0,
       '{"markaMotocikla":"Suzuki","model":"GSX-R 600"}'::jsonb,
       ARRAY['cdi','suzuki','gsxr','elektrika','moto']);
@@ -306,7 +306,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Zadnji amortizer za Yamaha R6', 'Originalni amortizer u dobrom stanju. Nema curenja ulja.', 85.00, cat, 'used',
-      ARRAY['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'],
+      ARRAY['https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&h=600&fit=crop'],
       'active', 'Tuzla', 22, 1,
       '{"markaMotocikla":"Yamaha","model":"R6"}'::jsonb,
       ARRAY['amortizer','yamaha','r6','ovjes','zadnji']);
@@ -317,7 +317,7 @@ BEGIN
   IF cat IS NOT NULL THEN
     INSERT INTO products (seller_id, title, description, price, category_id, condition, images, status, location, views_count, favorites_count, attributes, tags)
     VALUES (seller, 'Moto guma Pirelli Diablo Rosso 180/55 ZR17', 'Nova guma, nikad montirana. Ljetna sezona.', 110.00, cat, 'new',
-      ARRAY['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'],
+      ARRAY['https://images.unsplash.com/photo-1578844251758-2f71da645217?w=800&h=600&fit=crop'],
       'active', 'Banja Luka', 41, 3,
       '{"dimenzija":"180/55 ZR17","sezona":"Ljetna"}'::jsonb,
       ARRAY['guma','pirelli','moto','180/55','zr17']);

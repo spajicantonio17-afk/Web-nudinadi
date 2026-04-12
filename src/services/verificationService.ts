@@ -4,13 +4,12 @@ import type { Profile } from '@/lib/database.types'
 const supabase = getSupabase()
 
 // ─── Verification Steps ──────────────────────────────────
-// 1/3: Account created (automatic on registration)
-// 2/3: Email verified
-// 3/3: Phone verified → FULLY VERIFIED (+500 XP)
+// 1/2: Account created (automatic on registration)
+// 2/2: Email verified → FULLY VERIFIED (+500 XP)
 
 export interface VerificationStatus {
   currentStep: number
-  totalSteps: 3
+  totalSteps: 2
   steps: VerificationStep[]
   isFullyVerified: boolean
 }
@@ -41,21 +40,14 @@ export function getVerificationStatus(profile: Profile): VerificationStatus {
       completed: !!profile.email_verified,
       icon: 'fa-envelope',
     },
-    {
-      step: 3,
-      label: 'Telefon',
-      description: 'Potvrdi broj telefona',
-      completed: !!profile.phone_verified,
-      icon: 'fa-phone',
-    },
   ]
 
   const currentStep = steps.filter(s => s.completed).length
-  const isFullyVerified = currentStep === 3
+  const isFullyVerified = currentStep === 2
 
   return {
     currentStep,
-    totalSteps: 3,
+    totalSteps: 2,
     steps,
     isFullyVerified,
   }
@@ -68,8 +60,7 @@ export async function sendVerificationStepNotification(
   step: number
 ): Promise<void> {
   const messages: Record<number, { title: string; body: string }> = {
-    2: { title: 'Email potvrdjen!', body: 'Email potvrdjen! Verifikacija 2/3' },
-    3: { title: 'Telefon potvrdjen!', body: 'Telefon potvrdjen! Verifikacija 3/3' },
+    2: { title: 'Email potvrdjen!', body: 'Email potvrdjen! Verifikacija 2/2' },
   }
 
   const msg = messages[step]
@@ -80,7 +71,7 @@ export async function sendVerificationStepNotification(
     type: 'verification_step',
     title: msg.title,
     body: msg.body,
-    data: { step, total: 3 },
+    data: { step, total: 2 },
   })
 }
 

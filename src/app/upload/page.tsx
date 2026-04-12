@@ -21,7 +21,7 @@ import { findBrandModels, getBrandsForVehicleType, findBrandModelsForType, resol
 import { lookupChassis, chassisLabel, generateVehicleTags, type ChassisLookupResult } from '@/lib/vehicle-chassis-codes';
 const VehicleModelPicker = lazy(() => import('@/components/upload/VehicleModelPicker'));
 const AiModelVerifier = lazy(() => import('@/components/upload/AiModelVerifier'));
-import { type City } from '@/lib/location';
+import { type City, CITIES } from '@/lib/location';
 import { BAM_RATE } from '@/lib/constants';
 
 // Lazy-loaded heavy components
@@ -2717,11 +2717,14 @@ function UploadPageInner() {
       // Store native price — no conversion
       const priceEUR = Number(formData.price);
       const nativeCurrency: 'EUR' | 'BAM' | 'RSD' = currency;
-      const productCountry = selectedCity?.country === 'RS' ? 'rs'
-        : selectedCity?.country === 'HR' ? 'hr'
-        : selectedCity?.country === 'BiH' ? 'ba'
-        : selectedCity?.country === 'DE' ? 'de'
-        : selectedCity?.country === 'AT' ? 'at'
+      // Fallback: if selectedCity is null (e.g. link-import or category changed after picking),
+      // look up country from CITIES array by location name
+      const resolvedCity = selectedCity ?? (formData.location ? CITIES.find(c => c.name === formData.location) ?? null : null);
+      const productCountry = resolvedCity?.country === 'RS' ? 'rs'
+        : resolvedCity?.country === 'HR' ? 'hr'
+        : resolvedCity?.country === 'BiH' ? 'ba'
+        : resolvedCity?.country === 'DE' ? 'de'
+        : resolvedCity?.country === 'AT' ? 'at'
         : null;
 
       // Merge price_type into attributes

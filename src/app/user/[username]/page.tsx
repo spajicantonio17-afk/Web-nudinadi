@@ -419,15 +419,6 @@ function UserProfileContent() {
                       <i className="fa-solid fa-shield text-[8px]"></i> {t('userProfile.premium')}
                     </span>
                   )}
-                  {profile.phone_verified ? (
-                    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <i className="fa-solid fa-phone text-[8px]"></i> {t('userProfile.phoneVerified')}
-                    </span>
-                  ) : profile.phone ? (
-                    <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <i className="fa-solid fa-phone text-[8px]"></i> {t('userProfile.phoneLabel')}
-                    </span>
-                  ) : null}
                 </div>
 
                 {/* Social Media Links */}
