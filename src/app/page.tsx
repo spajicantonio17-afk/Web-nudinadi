@@ -283,9 +283,10 @@ function HomeContent() {
       }
     }
 
-    // Location filter — only apply when user explicitly set a radius > 0
-    // radiusKm === 0 means "no location filter" (don't restrict by saved location)
-    // radiusKm > 0 is handled client-side via distance calculation
+    // Location filter — exact city match when no radius set; radius handled client-side
+    if (selectedLocation && filters.radiusKm === 0) {
+      serverFilters.location = selectedLocation.name;
+    }
 
     // Country filter (from settings)
     const countryPref = getCountryPreference();
