@@ -14,8 +14,8 @@ const COUNTRY_LABELS: Record<City['country'], string> = {
   'BiH': 'Bosna i Hercegovina',
   'HR': 'Hrvatska',
   'RS': 'Srbija',
-  'DE': 'Deutschland',
-  'AT': 'Österreich',
+  'DE': 'Njemačka',
+  'AT': 'Austrija',
 };
 
 const COUNTRY_FLAGS: Record<City['country'], string> = {
