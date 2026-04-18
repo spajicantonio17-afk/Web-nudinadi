@@ -84,25 +84,6 @@ export async function POST(req: NextRequest) {
         logger.error('[verify/send-code] Email send error:', emailErr)
         return NextResponse.json({ error: 'Greška pri slanju emaila.' }, { status: 500 })
       }
-    } else {
-      // Send SMS verification code
-      const { data: profile } = await admin
-        .from('profiles')
-        .select('phone')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.phone) {
-        return NextResponse.json({ error: 'Broj telefona nije postavljen u profilu.' }, { status: 400 })
-      }
-
-      try {
-        const { sendSMS } = await import('@/lib/sms')
-        await sendSMS(profile.phone, `NudiNađi verifikacijski kod: ${code}. Ističe za 10 minuta.`)
-      } catch (smsErr) {
-        logger.error('[verify/send-code] SMS send error:', smsErr)
-        return NextResponse.json({ error: 'Greška pri slanju SMS-a.' }, { status: 500 })
-      }
     }
 
     return NextResponse.json({ success: true, message: 'Kod je poslan.' })

@@ -12,10 +12,9 @@ interface VerificationProgressProps {
   compact?: boolean;
 }
 
-function authUserToProfileFields(u: AuthUser): Pick<Profile, 'email_verified' | 'phone_verified'> {
+function authUserToProfileFields(u: AuthUser): Pick<Profile, 'email_verified'> {
   return {
     email_verified: u.emailVerified,
-    phone_verified: u.phoneVerified,
   };
 }
 

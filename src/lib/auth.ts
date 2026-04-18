@@ -38,9 +38,7 @@ export interface AuthUser {
   fullName: string;
   avatarUrl: string;
   bio?: string | null;
-  phone?: string | null;
   emailVerified: boolean;
-  phoneVerified: boolean;
   location?: string;
   level: number;
   xp: number;
@@ -89,9 +87,7 @@ function toAuthUser(user: User, profile?: Profile | null): AuthUser {
     fullName: profile?.full_name || user.user_metadata?.full_name || '',
     avatarUrl: profile?.avatar_url || user.user_metadata?.avatar_url || '',
     bio: profile?.bio ?? null,
-    phone: profile?.phone ?? null,
     emailVerified: profile?.email_verified || false,
-    phoneVerified: profile?.phone_verified || false,
     location: profile?.location || undefined,
     level: profile?.level || 1,
     xp: profile?.xp || 0,
@@ -164,8 +160,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.dispatchEvent(new CustomEvent('nudinadi:set-locale', { detail: profile.locale }));
       }
 
-      // Check verification XP (email + phone both verified → 500 XP one-time)
-      if (profile?.email_verified && profile?.phone_verified) {
+      // Check verification XP (email verified → 500 XP one-time)
+      if (profile?.email_verified) {
         logVerificationXp(session.user.id).catch(() => {/* non-critical */});
       }
     } catch {

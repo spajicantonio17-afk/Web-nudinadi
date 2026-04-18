@@ -825,18 +825,6 @@ function ProfileContent() {
                                       <i className="fa-solid fa-exclamation-circle text-[9px]"></i> {t('profile.badge.emailNotVerified')}
                                   </button>
                                 )}
-                                {user?.phoneVerified ? (
-                                  <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                      <i className="fa-solid fa-check-circle text-[9px]"></i> {t('profile.badge.phoneVerified')}
-                                  </span>
-                                ) : (
-                                  <button
-                                    onClick={() => router.push('/menu?step=verification')}
-                                    className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 hover:bg-orange-500/20 transition-colors cursor-pointer"
-                                  >
-                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> {t('profile.badge.phoneNotVerified')}
-                                  </button>
-                                )}
                                 {userLevel >= 5 && (
                                   <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
                                       <i className="fa-solid fa-star text-[9px]"></i> {t('profile.badge.premium')}

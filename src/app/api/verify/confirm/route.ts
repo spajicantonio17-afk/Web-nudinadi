@@ -9,9 +9,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { type, code } = body as { type: 'email' | 'phone'; code: string }
+    const { type, code } = body as { type: 'email'; code: string }
 
-    if (!type || !['email', 'phone'].includes(type)) {
+    if (type !== 'email') {
       return NextResponse.json({ error: 'Neispravan tip verifikacije.' }, { status: 400 })
     }
 
@@ -80,10 +80,9 @@ export async function POST(req: NextRequest) {
       .eq('id', verificationCode.id)
 
     // Update profile
-    const updateField = type === 'email' ? 'email_verified' : 'phone_verified'
     const { error: updateError } = await admin
       .from('profiles')
-      .update({ [updateField]: true })
+      .update({ email_verified: true })
       .eq('id', user.id)
 
     if (updateError) {
@@ -91,15 +90,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Greška pri ažuriranju profila.' }, { status: 500 })
     }
 
-    // Award XP (500 XP one-time for verification)
-    // Check if both email and phone are now verified
+    // Award XP (500 XP one-time for email verification)
     const { data: profile } = await admin
       .from('profiles')
-      .select('email_verified, phone_verified')
+      .select('email_verified')
       .eq('id', user.id)
       .single()
 
-    if (profile?.email_verified || profile?.phone_verified) {
+    if (profile?.email_verified) {
       // Log verification activity for XP (levelService handles one-time check)
       try {
         const { logVerificationXp } = await import('@/services/levelService')
