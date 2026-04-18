@@ -27,9 +27,11 @@ export default function RecentlyViewed() {
     setIsLoading(true);
     getProductsByIds(productIds)
       .then(data => {
-        setProducts(data);
-        // Clean up IDs for products that no longer exist
-        const validIds = new Set(data.map(p => p.id));
+        // Filter out archived products — they should not appear in recently viewed
+        const visible = data.filter(p => p.status !== 'archived');
+        setProducts(visible);
+        // Clean up localStorage: remove IDs that no longer exist OR are archived
+        const validIds = new Set(visible.map(p => p.id));
         productIds.forEach(id => {
           if (!validIds.has(id)) removeFromRecentlyViewed(id);
         });

@@ -47,17 +47,6 @@ function formatMemberSince(dateStr: string | undefined, t: TranslateFn): string 
   return `${t(monthKey)} ${date.getFullYear()}`;
 }
 
-function calcDraftCompletion(draft: ProductWithSeller): number {
-  let score = 0;
-  const total = 5;
-  if (draft.title && draft.title.length > 0) score++;
-  if (draft.description && draft.description.length > 0) score++;
-  if (draft.price && draft.price > 0) score++;
-  if (draft.images && draft.images.length > 0) score++;
-  if (draft.category_id) score++;
-  return Math.round((score / total) * 100);
-}
-
 function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex text-yellow-500 text-[10px] gap-0.5">
@@ -94,7 +83,7 @@ function ProfileContent() {
   const [reviewsPage, setReviewsPage] = useState(1);
   const [hasMoreReviews, setHasMoreReviews] = useState(true);
   const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
-  const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
+  const [deletingArchivedId, setDeletingArchivedId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [shareToast, setShareToast] = useState(false);
@@ -318,17 +307,17 @@ function ProfileContent() {
     fetchReviews(nextPage, true);
   };
 
-  // Delete draft
-  const handleDeleteDraft = async (draftId: string) => {
-    if (deletingDraftId) return;
-    setDeletingDraftId(draftId);
+  // Delete archived product
+  const handleDeleteArchived = async (productId: string) => {
+    if (deletingArchivedId) return;
+    setDeletingArchivedId(productId);
     try {
-      await deleteProduct(draftId);
-      setUserProducts(prev => prev.filter(p => p.id !== draftId));
+      await deleteProduct(productId);
+      setUserProducts(prev => prev.filter(p => p.id !== productId));
     } catch (err) {
-      logger.error('Draft deletion failed:', err);
+      logger.error('Delete archived failed:', err);
     } finally {
-      setDeletingDraftId(null);
+      setDeletingArchivedId(null);
     }
   };
 
@@ -423,7 +412,6 @@ function ProfileContent() {
   // Computed from real data
   const activeProducts = userProducts.filter(p => p.status === 'active');
   const soldProducts = userProducts.filter(p => p.status === 'sold');
-  const draftProducts = userProducts.filter(p => p.status === 'draft');
   const archivedProducts = userProducts.filter(p => p.status === 'archived');
   const totalReviews = reviews.length;
   const averageRating = totalReviews > 0
@@ -446,6 +434,7 @@ function ProfileContent() {
   const tabCounts: Record<string, number> = {
     Aktivni: activeProducts.length,
     'Završeni': soldProducts.length,
+    Arhivirani: archivedProducts.length,
     Dojmovi: totalReviews,
     Markirani: markedProducts.length,
   };
@@ -454,6 +443,7 @@ function ProfileContent() {
   const tabLabels: Record<string, string> = {
     Aktivni: t('profile.tab.active'),
     'Završeni': t('profile.tab.finished'),
+    Arhivirani: 'Arhivirani',
     Dojmovi: t('profile.tab.reviews'),
     Markirani: t('profile.tab.marked'),
     Info: t('profile.tab.info'),
@@ -834,6 +824,18 @@ function ProfileContent() {
                                       <i className="fa-solid fa-exclamation-circle text-[9px]"></i> {t('profile.badge.emailNotVerified')}
                                   </button>
                                 )}
+                                {user?.phoneVerified ? (
+                                  <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                      <i className="fa-solid fa-check-circle text-[9px]"></i> {t('profile.badge.phoneVerified')}
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => router.push('/menu?step=verification')}
+                                    className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 hover:bg-orange-500/20 transition-colors cursor-pointer"
+                                  >
+                                      <i className="fa-solid fa-exclamation-circle text-[9px]"></i> {t('profile.badge.phoneNotVerified')}
+                                  </button>
+                                )}
                                 {userLevel >= 5 && (
                                   <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-[6px] text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
                                       <i className="fa-solid fa-star text-[9px]"></i> {t('profile.badge.premium')}
@@ -968,7 +970,7 @@ function ProfileContent() {
         {/* COMPACT TABS WITH COUNTS */}
         <div>
             <div className="flex p-0.5 bg-[var(--c-card)] border border-[var(--c-border)] rounded-[14px] overflow-x-auto no-scrollbar">
-                {['Aktivni', 'Završeni', 'Dojmovi', 'Markirani', 'Info'].map((tab) => (
+                {['Aktivni', 'Završeni', 'Arhivirani', 'Dojmovi', 'Markirani', 'Info'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => handleTabChange(tab)}
@@ -1320,12 +1322,20 @@ function ProfileContent() {
                                 <div className="flex justify-between items-start">
                                     <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
                                     <div className="flex items-center gap-0.5 shrink-0 -mr-2 -mt-1">
-                                      {isPro(user?.accountType) && !isPromoted(p) && (
+                                      {!isPromoted(p) && (
                                         <button
-                                          onClick={(e) => { e.stopPropagation(); handlePromote(p.id); }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if ((user?.promotedCredits ?? 0) < 1) return;
+                                            handlePromote(p.id);
+                                          }}
                                           disabled={promotingId === p.id}
-                                          title="Promoviraj (3 dana)"
-                                          className="text-[var(--c-text-muted)] hover:text-amber-400 p-1 transition-colors disabled:opacity-50"
+                                          title={(user?.promotedCredits ?? 0) < 1 ? "Nemaš kredita za promoviranje" : "Promoviraj oglas (3 dana)"}
+                                          className={`p-1 transition-colors disabled:opacity-50 ${
+                                            (user?.promotedCredits ?? 0) < 1
+                                              ? 'text-[var(--c-text-muted)] opacity-40 cursor-not-allowed'
+                                              : 'text-[var(--c-text-muted)] hover:text-amber-400'
+                                          }`}
                                         >
                                           <i className={`text-[10px] ${promotingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-rocket'}`}></i>
                                         </button>
@@ -1385,6 +1395,65 @@ function ProfileContent() {
                                 <span className="text-[11px] font-black text-emerald-500 mt-0.5 block">{Number(p.price).toLocaleString()} &euro;</span>
                             </div>
                             <span className="text-[9px] text-[var(--c-text3)]">{formatTimeLabel(p.created_at, t)}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
+
+        {/* ARHIVIRANI TAB */}
+        {activeTab === 'Arhivirani' && (
+            <div className="space-y-2 animate-[fadeIn_0.2s_ease-out]">
+                {archivedProducts.length === 0 ? (
+                    <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-6 flex flex-col items-center text-center min-h-[200px] justify-center">
+                        <i className="fa-solid fa-box-archive text-2xl text-[var(--c-text-muted)] mb-3"></i>
+                        <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">Nema arhiviranih oglasa</h3>
+                        <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed">Oglasi koje arhiviraš pojavit će se ovdje.</p>
+                    </div>
+                ) : archivedProducts.map(p => (
+                    <div key={p.id} onClick={() => router.push(`/product/${p.id}`)} className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-2.5 flex gap-3 group active:scale-[0.99] transition-all hover:border-[var(--c-border2)] cursor-pointer opacity-80">
+                        <div className="w-16 h-16 rounded-[12px] overflow-hidden shrink-0 relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={p.images?.[0] || `https://picsum.photos/seed/${p.id}/200/200`} alt={p.title} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                <span className="text-[8px] font-black text-white bg-orange-500 px-1.5 py-0.5 rounded-full uppercase">Arhivirano</span>
+                            </div>
+                            <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[7px] font-black px-1 py-0.5 rounded-[4px] leading-none backdrop-blur-sm z-10">#{productNumberMap.get(p.id)}</span>
+                        </div>
+                        <div className="flex-1 flex flex-col justify-between py-0.5">
+                            <div>
+                                <div className="flex justify-between items-start">
+                                    <h4 className="text-[12px] font-bold text-[var(--c-text)] leading-tight line-clamp-1">{p.title}</h4>
+                                    <div className="flex items-center gap-0.5 shrink-0 -mr-2 -mt-1">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleUnarchive(p.id); }}
+                                            disabled={archivingId === p.id}
+                                            title="Reaktiviraj oglas"
+                                            className="text-[var(--c-text-muted)] hover:text-blue-400 p-1 transition-colors disabled:opacity-50"
+                                        >
+                                            <i className={`text-[10px] ${archivingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-rotate-left'}`}></i>
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteArchived(p.id); }}
+                                            disabled={deletingArchivedId === p.id}
+                                            title="Obriši oglas"
+                                            className="text-[var(--c-text-muted)] hover:text-red-400 p-1 transition-colors disabled:opacity-50"
+                                        >
+                                            <i className={`text-[10px] ${deletingArchivedId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-trash'}`}></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <span className="text-[11px] font-black text-blue-500 mt-0.5 block">{Number(p.price).toLocaleString()} &euro;</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-[9px] text-[var(--c-text3)]">
+                                <i className="fa-solid fa-eye text-[8px]"></i>
+                                <span>{p.views_count} {t('profile.active.views')}</span>
+                                <span>·</span>
+                                <i className="fa-solid fa-heart text-[8px]"></i>
+                                <span>{p.favorites_count}</span>
+                                <span>·</span>
+                                <span>{formatTimeLabel(p.created_at, t)}</span>
+                            </div>
                         </div>
                     </div>
                 ))}

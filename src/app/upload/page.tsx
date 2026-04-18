@@ -41,18 +41,6 @@ const generateListingDescription = async (title: string, category: string): Prom
     return `${title} u odličnom stanju. Potpuno funkcionalno, bez oštećenja. Idealno za svakodnevnu upotrebu.`;
 };
 
-const suggestPrice = async (title: string, category: string): Promise<number> => {
-    const res = await fetch('/api/ai/enhance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'quality', title, category }),
-    });
-    const json = await res.json();
-    if (json.success && json.data?.priceEstimate?.min) {
-        return Math.round((json.data.priceEstimate.min + (json.data.priceEstimate.max || json.data.priceEstimate.min)) / 2);
-    }
-    return 0;
-};
 
 type AiAnalysisResult = {
   title: string;
@@ -2839,21 +2827,6 @@ function UploadPageInner() {
     }
   };
 
-  const handleAiSuggestPrice = async () => {
-    const title = getActiveTitle();
-    if (!title) return;
-    setIsAiLoading(true);
-    try {
-      const price = await suggestPrice(title, formData.category);
-      if (price > 0) setFormData(prev => ({ ...prev, price: price.toString() }));
-    } catch {
-      showToast('Greška pri procjeni cijene', 'error');
-    } finally {
-      setShowAiWindow(false);
-      setIsAiLoading(false);
-    }
-  };
-
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -2968,20 +2941,6 @@ function UploadPageInner() {
                 <div>
                   <h4 className="text-[15px] font-bold text-[var(--c-text)]">Poboljšaj Naslov</h4>
                   <p className="text-[11px] text-[var(--c-text3)]">Optimizacija naslova za bolji reach</p>
-                </div>
-              </button>
-
-              <button
-                onClick={handleAiSuggestPrice}
-                disabled={!hasInput || isAiLoading}
-                className="w-full bg-[var(--c-card-alt)] border border-[var(--c-border)] rounded-2xl p-5 flex items-center gap-5 active:scale-95 transition-all text-left group disabled:opacity-50 hover:bg-[var(--c-hover)]"
-              >
-                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                  <i className="fa-solid fa-chart-line"></i>
-                </div>
-                <div>
-                  <h4 className="text-[15px] font-bold text-[var(--c-text)]">Provjeri Cijenu</h4>
-                  <p className="text-[11px] text-[var(--c-text3)]">Analiza tržišne vrijednosti</p>
                 </div>
               </button>
 
@@ -5393,20 +5352,8 @@ function UploadPageInner() {
 
               {/* Price + Currency + Price Type */}
               <div>
-                <div className="flex items-center justify-between mb-2 px-2">
+                <div className="mb-2 px-2">
                   <label className="text-[9px] font-black text-green-500 uppercase tracking-widest">Cijena &amp; Uvjeti</label>
-                  <button
-                    onClick={handleAiSuggestPrice}
-                    disabled={!formData.title || isAiLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-green-500/10 border border-green-500/20 text-green-400 text-[9px] font-black uppercase tracking-wider hover:bg-green-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
-                  >
-                    {isAiLoading ? (
-                      <i className="fa-solid fa-spinner animate-spin text-[9px]"></i>
-                    ) : (
-                      <i className="fa-solid fa-chart-line text-[9px]"></i>
-                    )}
-                    AI Cijena
-                  </button>
                 </div>
                 <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl overflow-hidden p-4 space-y-4">
                   {/* Price type pills — shown first so user picks type before entering price */}
