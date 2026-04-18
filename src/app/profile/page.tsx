@@ -86,6 +86,7 @@ function ProfileContent() {
   const [deletingArchivedId, setDeletingArchivedId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [promotingId, setPromotingId] = useState<string | null>(null);
+  const [confirmPromoteId, setConfirmPromoteId] = useState<string | null>(null);
   const [shareToast, setShareToast] = useState(false);
 
   // ── Markirani (Favorites) ───────────────────────────────
@@ -1327,7 +1328,7 @@ function ProfileContent() {
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             if ((user?.promotedCredits ?? 0) < 1) return;
-                                            handlePromote(p.id);
+                                            setConfirmPromoteId(p.id);
                                           }}
                                           disabled={promotingId === p.id}
                                           title={(user?.promotedCredits ?? 0) < 1 ? "Nemaš kredita za promoviranje" : "Promoviraj oglas (3 dana)"}
@@ -1468,6 +1469,43 @@ function ProfileContent() {
           onUpdate={refreshProfile}
         />
       )}
+      {/* CONFIRM PROMOTE POPUP */}
+      {confirmPromoteId && (
+        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmPromoteId(null)} />
+          <div className="relative bg-[var(--c-card)] border border-[var(--c-border2)] rounded-[20px] w-full max-w-sm p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <i className="fa-solid fa-rocket text-amber-400"></i>
+              </div>
+              <div>
+                <h3 className="text-[15px] font-black text-[var(--c-text)]">Istaknuti oglas?</h3>
+                <p className="text-[11px] text-[var(--c-text3)]">Oglas će biti istaknut 3 dana</p>
+              </div>
+            </div>
+            <div className="bg-amber-500/8 border border-amber-500/15 rounded-[12px] px-4 py-3 mb-5 flex items-center justify-between">
+              <span className="text-[12px] text-[var(--c-text2)]">Cijena</span>
+              <span className="text-[13px] font-black text-amber-400">1 kredit</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmPromoteId(null)}
+                className="flex-1 py-3 rounded-[12px] bg-[var(--c-hover)] text-[var(--c-text2)] text-[13px] font-bold hover:bg-[var(--c-active)] transition-colors"
+              >
+                Odustani
+              </button>
+              <button
+                onClick={() => { handlePromote(confirmPromoteId); setConfirmPromoteId(null); }}
+                disabled={!!promotingId}
+                className="flex-1 py-3 rounded-[12px] bg-amber-500 text-white text-[13px] font-bold hover:bg-amber-600 transition-colors disabled:opacity-50"
+              >
+                {promotingId ? <i className="fa-solid fa-spinner animate-spin" /> : 'Istaknuti'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     </MainLayout>
   );
