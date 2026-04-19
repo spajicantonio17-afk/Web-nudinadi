@@ -168,8 +168,8 @@ function VerificationFull({ status, userId }: { status: VerificationStatus; user
         ))}
       </div>
 
-      {/* Collect 500 XP Button — shown only when fully verified */}
-      {status.isFullyVerified && (
+      {/* Collect 500 XP Button — shown only when fully verified & not yet collected */}
+      {status.isFullyVerified && !collected && (
         <button
           onClick={handleCollectXp}
           disabled={collecting}
