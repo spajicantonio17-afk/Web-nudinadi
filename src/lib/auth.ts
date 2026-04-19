@@ -38,6 +38,7 @@ export interface AuthUser {
   fullName: string;
   avatarUrl: string;
   bio?: string | null;
+  phone?: string | null;
   emailVerified: boolean;
   location?: string;
   level: number;
@@ -87,6 +88,7 @@ function toAuthUser(user: User, profile?: Profile | null): AuthUser {
     fullName: profile?.full_name || user.user_metadata?.full_name || '',
     avatarUrl: profile?.avatar_url || user.user_metadata?.avatar_url || '',
     bio: profile?.bio ?? null,
+    phone: profile?.phone ?? null,
     emailVerified: profile?.email_verified || false,
     location: profile?.location || undefined,
     level: profile?.level || 1,
