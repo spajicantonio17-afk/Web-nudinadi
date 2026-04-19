@@ -666,6 +666,21 @@ const de: Record<string, string> = {
   'userProfile.unknown': 'Unbekannt',
   'userProfile.level': 'Level',
   'userProfile.premium': 'Premium',
+  'userProfile.featuredListings': 'Hervorgehobene Anzeigen',
+  'userProfile.otherListings': 'Weitere Anzeigen',
+  'userProfile.featuredBadge': 'Hervorgehoben',
+  'userProfile.savedCount': '{{count}} gespeichert',
+
+  'admin.featured.title': 'Hervorgehobene Anzeigen',
+  'admin.featured.subtitle': 'Verwaltung hervorgehobener Anzeigen für Geschäftskunden',
+  'admin.featured.searchPlaceholder': 'Suche nach Titel oder Benutzer...',
+  'admin.featured.allTypes': 'Alle Typen',
+  'admin.featured.businessOnly': 'Nur Geschäftlich',
+  'admin.featured.featuredOnly': 'Nur Hervorgehobene',
+  'admin.featured.seller': 'Verkäufer',
+  'admin.featured.noResults': 'Keine Ergebnisse',
+  'admin.featured.featured': 'Hervorgehoben',
+  'admin.featured.notFeatured': 'Nicht hervorgehoben',
 
   // Product Detail Page (extended)
   'product.loadingTitle': 'Wird geladen...',

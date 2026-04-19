@@ -9,12 +9,14 @@ import UserManagement from '@/components/admin/UserManagement';
 import AiModerationTab from '@/components/admin/AiModerationTab';
 import ProductManagement from '@/components/admin/ProductManagement';
 import BulkImportTab from '@/components/admin/BulkImportTab';
+import FeaturedManagement from '@/components/admin/FeaturedManagement';
 
 const TABS = [
   { key: 'stats', label: 'Pregled', icon: 'fa-chart-line' },
   { key: 'queue', label: 'Red za pregled', icon: 'fa-shield-halved' },
   { key: 'users', label: 'Korisnici', icon: 'fa-users' },
   { key: 'products', label: 'Oglasi', icon: 'fa-box-open' },
+  { key: 'featured', label: 'Istaknuti', icon: 'fa-star' },
   { key: 'ai', label: 'AI Moderacija', icon: 'fa-robot' },
   { key: 'bulk', label: 'Bulk Import', icon: 'fa-arrow-down-to-bracket' },
 ] as const;
@@ -97,6 +99,7 @@ function AdminDashboardContent() {
         {activeTab === 'queue' && <ReportQueue />}
         {activeTab === 'users' && <UserManagement />}
         {activeTab === 'products' && <ProductManagement />}
+        {activeTab === 'featured' && <FeaturedManagement />}
         {activeTab === 'ai' && <AiModerationTab />}
         {activeTab === 'bulk' && <BulkImportTab />}
       </div>

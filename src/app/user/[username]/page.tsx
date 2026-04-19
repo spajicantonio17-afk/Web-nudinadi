@@ -349,10 +349,12 @@ function UserProfileContent() {
         )}
 
         {/* ── PROFILE HEADER (matches private profile layout) ── */}
-        <div className="relative bg-[var(--c-card)] rounded-[24px] overflow-hidden border border-[var(--c-border)] p-5">
+        <div className="relative bg-[var(--c-card)] rounded-[24px] border border-[var(--c-border)] p-5">
           {/* Background Decor */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[50px] rounded-full pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/5 blur-[40px] rounded-full pointer-events-none" />
+          <div className="absolute inset-0 overflow-hidden rounded-[24px] pointer-events-none">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[50px] rounded-full" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/5 blur-[40px] rounded-full" />
+          </div>
 
           <div className="relative z-10">
             {/* Top row: Avatar + Name + Level */}
@@ -609,53 +611,108 @@ function UserProfileContent() {
         </div>
 
         {/* ── LISTINGS TAB ── */}
-        {activeTab === 'oglasi' && (
-          <div className="animate-[fadeIn_0.2s_ease-out]">
-            {products.length === 0 ? (
-              <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-6 flex flex-col items-center text-center min-h-[200px] justify-center relative overflow-hidden group">
-                <div className="absolute inset-0 bg-[linear-gradient(var(--c-grid-line,rgba(255,255,255,0.03))_1px,transparent_1px),linear-gradient(90deg,var(--c-grid-line,rgba(255,255,255,0.03))_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)]"></div>
-                <div className="relative z-10 flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-[16px] bg-[var(--c-overlay)] border border-[var(--c-border)] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500">
-                    <i className="fa-solid fa-ghost text-xl text-[var(--c-text-muted)] group-hover:text-[var(--c-text)] transition-colors"></i>
+        {activeTab === 'oglasi' && (() => {
+          const featuredProducts = isBiz ? products.filter(p => p.is_featured) : [];
+          const regularProducts = isBiz ? products.filter(p => !p.is_featured) : products;
+
+          const renderProductCard = (p: ProductWithSeller, showFeaturedBadge = false) => (
+            <div
+              key={p.id}
+              onClick={() => router.push(`/product/${p.id}`)}
+              className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] overflow-hidden cursor-pointer active:scale-[0.98] transition-all hover:border-[var(--c-border2)] group"
+            >
+              <div className="aspect-square overflow-hidden relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.images?.[0] || `https://picsum.photos/seed/${p.id}/300/300`}
+                  alt={p.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                {showFeaturedBadge && (
+                  <span className="absolute top-2 left-2 bg-amber-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                    <i className="fa-solid fa-star text-[7px]" />
+                    {t('userProfile.featuredBadge')}
+                  </span>
+                )}
+              </div>
+              <div className="p-2.5">
+                <p className="text-[11px] font-bold text-[var(--c-text)] line-clamp-1">{p.title}</p>
+                {((p.attributes as Record<string, unknown>)?.price_type === 'Po dogovoru' || Number(p.price) === 0) ? (
+                  <p className="text-[12px] font-black text-blue-500 mt-0.5">Po dogovoru</p>
+                ) : currencyMode === 'km-only' ? (
+                  <p className="text-[12px] font-black text-blue-500 mt-0.5">{eurToKm(Number(p.price)).toLocaleString()} KM</p>
+                ) : (
+                  <p className="text-[12px] font-black text-blue-500 mt-0.5">{Number(p.price).toLocaleString()} &euro;</p>
+                )}
+                <p className="text-[9px] text-[var(--c-text3)] mt-0.5">
+                  {currencyMode === 'dual' && <>{Math.round(Number(p.price) * BAM_RATE).toLocaleString()} KM &middot; </>}
+                  {formatTimeLabel(p.created_at)}
+                </p>
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="animate-[fadeIn_0.2s_ease-out]">
+              {products.length === 0 ? (
+                <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[20px] p-6 flex flex-col items-center text-center min-h-[200px] justify-center relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[linear-gradient(var(--c-grid-line,rgba(255,255,255,0.03))_1px,transparent_1px),linear-gradient(90deg,var(--c-grid-line,rgba(255,255,255,0.03))_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)]"></div>
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-[16px] bg-[var(--c-overlay)] border border-[var(--c-border)] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500">
+                      <i className="fa-solid fa-ghost text-xl text-[var(--c-text-muted)] group-hover:text-[var(--c-text)] transition-colors"></i>
+                    </div>
+                    <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">{t('userProfile.noActiveListings')}</h3>
+                    <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed">{t('userProfile.noActiveListingsDesc')}</p>
                   </div>
-                  <h3 className="text-[13px] font-black text-[var(--c-text)] mb-0.5">{t('userProfile.noActiveListings')}</h3>
-                  <p className="text-[10px] text-[var(--c-text3)] max-w-[180px] leading-relaxed">{t('userProfile.noActiveListingsDesc')}</p>
                 </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {products.map(p => (
-                  <div
-                    key={p.id}
-                    onClick={() => router.push(`/product/${p.id}`)}
-                    className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] overflow-hidden cursor-pointer active:scale-[0.98] transition-all hover:border-[var(--c-border2)] group"
-                  >
-                    <div className="aspect-square overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={p.images?.[0] || `https://picsum.photos/seed/${p.id}/300/300`}
-                        alt={p.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+              ) : (
+                <div className="space-y-4">
+                  {/* Featured Products Section (Business profiles only) */}
+                  {isBiz && featuredProducts.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <i className="fa-solid fa-star text-amber-500 text-xs" />
+                          <h3 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide">
+                            {t('userProfile.featuredListings')}
+                          </h3>
+                        </div>
+                        <span className="text-[10px] text-[var(--c-text3)]">
+                          {t('userProfile.savedCount', { count: featuredProducts.length })}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        {featuredProducts.map(p => (
+                          <div key={p.id} className="min-w-[160px] max-w-[180px] flex-shrink-0">
+                            {renderProductCard(p, true)}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="p-2.5">
-                      <p className="text-[11px] font-bold text-[var(--c-text)] line-clamp-1">{p.title}</p>
-                      {currencyMode === 'km-only' ? (
-                        <p className="text-[12px] font-black text-blue-500 mt-0.5">{eurToKm(Number(p.price)).toLocaleString()} KM</p>
-                      ) : (
-                        <p className="text-[12px] font-black text-blue-500 mt-0.5">{Number(p.price).toLocaleString()} &euro;</p>
-                      )}
-                      <p className="text-[9px] text-[var(--c-text3)] mt-0.5">
-                        {currencyMode === 'dual' && <>{Math.round(Number(p.price) * BAM_RATE).toLocaleString()} KM &middot; </>}
-                        {formatTimeLabel(p.created_at)}
-                      </p>
+                  )}
+
+                  {/* Divider between featured and regular */}
+                  {isBiz && featuredProducts.length > 0 && regularProducts.length > 0 && (
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-px bg-[var(--c-border)]" />
+                      <span className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider">
+                        {t('userProfile.otherListings')}
+                      </span>
+                      <div className="flex-1 h-px bg-[var(--c-border)]" />
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  )}
+
+                  {/* Regular Products Grid */}
+                  {regularProducts.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {regularProducts.map(p => renderProductCard(p))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── REVIEWS TAB ── */}
         {activeTab === 'dojmovi' && (

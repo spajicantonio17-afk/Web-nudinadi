@@ -658,6 +658,21 @@ const en: Record<string, string> = {
   'userProfile.unknown': 'Unknown',
   'userProfile.level': 'Level',
   'userProfile.premium': 'Premium',
+  'userProfile.featuredListings': 'Featured Listings',
+  'userProfile.otherListings': 'Other listings',
+  'userProfile.featuredBadge': 'Featured',
+  'userProfile.savedCount': '{{count}} saved',
+
+  'admin.featured.title': 'Featured Listings',
+  'admin.featured.subtitle': 'Manage featured listings for business users',
+  'admin.featured.searchPlaceholder': 'Search by title or user...',
+  'admin.featured.allTypes': 'All types',
+  'admin.featured.businessOnly': 'Business only',
+  'admin.featured.featuredOnly': 'Featured only',
+  'admin.featured.seller': 'Seller',
+  'admin.featured.noResults': 'No results',
+  'admin.featured.featured': 'Featured',
+  'admin.featured.notFeatured': 'Not featured',
 
   // Product Detail Page (extended)
   'product.loadingTitle': 'Loading...',

@@ -658,6 +658,22 @@ const bs: Record<string, string> = {
   'userProfile.unknown': 'Nepoznato',
   'userProfile.level': 'Level',
   'userProfile.premium': 'Premium',
+  'userProfile.featuredListings': 'Istaknuti Oglasi',
+  'userProfile.otherListings': 'Ostali oglasi',
+  'userProfile.featuredBadge': 'Istaknuto',
+  'userProfile.savedCount': '{{count}} sačuvano',
+
+  // Admin Featured
+  'admin.featured.title': 'Istaknuti Oglasi',
+  'admin.featured.subtitle': 'Upravljanje istaknutim oglasima za poslovne korisnike',
+  'admin.featured.searchPlaceholder': 'Traži po naslovu ili korisniku...',
+  'admin.featured.allTypes': 'Svi tipovi',
+  'admin.featured.businessOnly': 'Samo poslovni',
+  'admin.featured.featuredOnly': 'Samo istaknuti',
+  'admin.featured.seller': 'Prodavač',
+  'admin.featured.noResults': 'Nema rezultata',
+  'admin.featured.featured': 'Istaknuto',
+  'admin.featured.notFeatured': 'Nije istaknuto',
 
   // Product Detail Page (extended)
   'product.loadingTitle': 'Učitavanje...',

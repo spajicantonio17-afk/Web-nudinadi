@@ -84,6 +84,7 @@ export interface Product {
   listing_type: ListingType
   tags: string[]
   promoted_until: string | null
+  is_featured: boolean
   currency: 'EUR' | 'BAM' | 'RSD'
   country: string | null
 }
@@ -192,6 +193,7 @@ export interface ProductInsert {
   listing_type?: ListingType
   attributes?: Record<string, string | number | boolean | string[]> | null
   tags?: string[]
+  is_featured?: boolean
 }
 
 export interface CategoryInsert {
@@ -287,6 +289,7 @@ export interface ProductUpdate {
   location?: string | null
   attributes?: Record<string, unknown> | null
   tags?: string[]
+  is_featured?: boolean
 }
 
 export interface ReviewUpdate {
