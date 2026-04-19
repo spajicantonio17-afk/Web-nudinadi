@@ -214,8 +214,8 @@ export default function RegisterPage() {
     handleRegister();
   };
 
-  const verifiedCount = (emailVerified ? 1 : 0) + (phoneVerified ? 1 : 0);
-  const totalVerify = verifyPhone ? 2 : 1;
+  const verifiedCount = emailVerified ? 1 : 0;
+  const totalVerify = 1;
 
   // ─── Verification Screen ────────────────────────────────
   if (showVerification) {
@@ -268,80 +268,6 @@ export default function RegisterPage() {
                     </button>
                   )}
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Phone Verification */}
-          <div className={`bg-[var(--c-card)] border rounded-[18px] p-5 ${phoneVerified ? 'border-green-500/30' : 'border-[var(--c-border2)]'}`}>
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${phoneVerified ? 'bg-green-500/10 text-green-500' : 'bg-purple-500/10 text-purple-500'}`}>
-                <i className={`fa-solid ${phoneVerified ? 'fa-check' : 'fa-phone'}`}></i>
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-black text-[var(--c-text)]">{t('auth.phone')}</p>
-                <p className="text-[10px] text-[var(--c-text2)]">
-                  {phoneVerified
-                    ? t('auth.codeVerified')
-                    : verifyPhone
-                      ? t('auth.verifyPhone')
-                      : t('auth.addPhone')
-                  }
-                </p>
-              </div>
-              {phoneVerified && (
-                <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">
-                  <i className="fa-solid fa-circle-check mr-1"></i>OK
-                </span>
-              )}
-            </div>
-
-            {!phoneVerified && (
-              <div className="space-y-3">
-                {!verifyPhone && (
-                  <div className="bg-[var(--c-hover)] rounded-[14px] p-1.5 pr-4 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-[10px] bg-[var(--c-card)] flex items-center justify-center text-[var(--c-text3)]">
-                      <i className="fa-solid fa-phone text-xs"></i>
-                    </div>
-                    <input
-                      type="tel"
-                      inputMode="tel"
-                      value={verifyPhone}
-                      onChange={e => setVerifyPhone(e.target.value)}
-                      placeholder="+387 6..."
-                      className="flex-1 bg-transparent text-sm text-[var(--c-text)] font-bold outline-none placeholder:text-[var(--c-placeholder)]"
-                    />
-                  </div>
-                )}
-                {!phoneCodeSent ? (
-                  <button
-                    onClick={() => sendCode('phone')}
-                    disabled={phoneSending || (!verifyPhone)}
-                    className="w-full py-3 rounded-[14px] bg-purple-600/10 text-purple-500 text-[11px] font-black uppercase tracking-widest hover:bg-purple-600/20 transition-colors disabled:opacity-50"
-                  >
-                    {phoneSending ? <i className="fa-solid fa-spinner animate-spin"></i> : t('auth.sendCode')}
-                  </button>
-                ) : (
-                  <>
-                    <p className="text-[10px] text-[var(--c-text2)] text-center">
-                      {t('auth.codeSentToPhone')} {verifyPhone}
-                    </p>
-                    <OtpInput onComplete={(code) => confirmCode('phone', code)} />
-                    <div className="text-center">
-                      {phoneResendCooldown > 0 ? (
-                        <p className="text-[10px] text-[var(--c-text3)]">{t('auth.resendIn')} {phoneResendCooldown}s</p>
-                      ) : (
-                        <button
-                          onClick={() => sendCode('phone')}
-                          disabled={phoneSending}
-                          className="text-[10px] text-purple-400 font-bold hover:text-purple-300 transition-colors"
-                        >
-                          {phoneSending ? t('auth.sending') : t('auth.resend')}
-                        </button>
-                      )}
-                    </div>
-                  </>
-                )}
               </div>
             )}
           </div>

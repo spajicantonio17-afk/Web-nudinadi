@@ -6,13 +6,15 @@ import { useRecentlyViewed } from '@/lib/recently-viewed';
 import { getProductsByIds } from '@/services/productService';
 import { removeFromRecentlyViewed } from '@/lib/recently-viewed';
 import { getCurrencyMode, formatProductPrice } from '@/lib/currency';
+import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import type { ProductFull } from '@/lib/database.types';
 
 export default function RecentlyViewed() {
   const router = useRouter();
   const { t } = useI18n();
-  const { productIds, hasItems, clearAll } = useRecentlyViewed();
+  const { user } = useAuth();
+  const { productIds, hasItems, clearAll } = useRecentlyViewed(user?.id);
   const [products, setProducts] = useState<ProductFull[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const currency = getCurrencyMode();
@@ -33,7 +35,7 @@ export default function RecentlyViewed() {
         // Clean up localStorage: remove IDs that no longer exist OR are archived
         const validIds = new Set(visible.map(p => p.id));
         productIds.forEach(id => {
-          if (!validIds.has(id)) removeFromRecentlyViewed(id);
+          if (!validIds.has(id)) removeFromRecentlyViewed(id, user?.id);
         });
       })
       .catch(() => setProducts([]))

@@ -1,10 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getVerificationStatus, type VerificationStatus } from '@/services/verificationService';
 import type { Profile } from '@/lib/database.types';
 import type { AuthUser } from '@/lib/auth';
+import { logVerificationXp } from '@/services/levelService';
+import { useToast } from '@/components/Toast';
 
 interface VerificationProgressProps {
   profile?: Profile;
@@ -27,7 +29,7 @@ export default function VerificationProgress({ profile, authUser, compact = fals
     return <VerificationCompact status={status} isFullyVerified={status.isFullyVerified} />;
   }
 
-  return <VerificationFull status={status} />;
+  return <VerificationFull status={status} userId={authUser?.id} />;
 }
 
 // ─── Compact Badge (for profile header) ─────────────────────
@@ -54,9 +56,29 @@ function VerificationCompact({ status, isFullyVerified }: { status: Verification
 
 // ─── Full Progress Card (for profile page) ──────────────────
 
-function VerificationFull({ status }: { status: VerificationStatus }) {
+function VerificationFull({ status, userId }: { status: VerificationStatus; userId?: string }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const progress = (status.currentStep / status.totalSteps) * 100;
+  const [collected, setCollected] = useState(false);
+  const [collecting, setCollecting] = useState(false);
+
+  // Hide the card entirely if XP was already collected
+  if (collected) return null;
+
+  const handleCollectXp = async () => {
+    if (!userId || collecting) return;
+    setCollecting(true);
+    try {
+      await logVerificationXp(userId);
+      showToast('+500 XP!');
+      setCollected(true);
+    } catch {
+      showToast('Greska pri dodavanju XP-a');
+    } finally {
+      setCollecting(false);
+    }
+  };
 
   return (
     <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[16px] p-4 relative overflow-hidden">
@@ -145,6 +167,24 @@ function VerificationFull({ status }: { status: VerificationStatus }) {
           </div>
         ))}
       </div>
+
+      {/* Collect 500 XP Button — shown only when fully verified */}
+      {status.isFullyVerified && (
+        <button
+          onClick={handleCollectXp}
+          disabled={collecting}
+          className="w-full mt-4 py-3 rounded-[14px] bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-[11px] font-black uppercase tracking-widest hover:from-emerald-600 hover:to-emerald-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {collecting ? (
+            <i className="fa-solid fa-spinner animate-spin"></i>
+          ) : (
+            <>
+              <i className="fa-solid fa-gift"></i>
+              500 XP einsammeln
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }

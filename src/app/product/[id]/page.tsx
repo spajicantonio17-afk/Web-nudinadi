@@ -89,7 +89,7 @@ export default function ProductDetailPage() {
       .then(data => {
         setProduct(data);
         incrementViews(params.id).catch(() => {});
-        addRecentlyViewed(params.id);
+        addRecentlyViewed(params.id, user?.id);
       })
       .catch(() => setNotFound(true))
       .finally(() => setIsLoading(false));
