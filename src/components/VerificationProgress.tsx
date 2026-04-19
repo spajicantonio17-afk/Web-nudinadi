@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getVerificationStatus, type VerificationStatus } from '@/services/verificationService';
 import type { Profile } from '@/lib/database.types';
 import type { AuthUser } from '@/lib/auth';
 import { logVerificationXp } from '@/services/levelService';
 import { useToast } from '@/components/Toast';
+import { getSupabase } from '@/lib/supabase';
 
 interface VerificationProgressProps {
   profile?: Profile;
@@ -62,6 +63,31 @@ function VerificationFull({ status, userId }: { status: VerificationStatus; user
   const progress = (status.currentStep / status.totalSteps) * 100;
   const [collected, setCollected] = useState(false);
   const [collecting, setCollecting] = useState(false);
+
+  // Check if XP was already collected (persist across page reloads)
+  useEffect(() => {
+    if (!userId) return;
+
+    const checkAlreadyCollected = async () => {
+      try {
+        const supabase = getSupabase();
+        const { data } = await supabase
+          .from('user_activities')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('activity_type', 'verification')
+          .maybeSingle();
+
+        if (data) {
+          setCollected(true);
+        }
+      } catch {
+        // Non-critical — if check fails, just show the button
+      }
+    };
+
+    checkAlreadyCollected();
+  }, [userId]);
 
   // Hide the card entirely if XP was already collected
   if (collected) return null;
