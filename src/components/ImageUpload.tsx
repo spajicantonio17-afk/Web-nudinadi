@@ -15,12 +15,15 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 8, onI
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingCount, setProcessingCount] = useState(0);
   const { t } = useI18n();
 
   // Generate preview URLs
   useEffect(() => {
     const urls = images.map(f => URL.createObjectURL(f));
     setPreviewUrls(urls);
+    setIsProcessing(false);
     return () => urls.forEach(u => URL.revokeObjectURL(u));
   }, [images]);
 
@@ -29,11 +32,25 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 8, onI
     const newFiles = Array.from(files).filter(f =>
       f.type.startsWith('image/') && f.size <= 10 * 1024 * 1024
     );
+    if (newFiles.length === 0) {
+      if (inputEl) inputEl.value = '';
+      return;
+    }
     const combined = [...images, ...newFiles].slice(0, maxImages);
+    setProcessingCount(combined.length);
+    setIsProcessing(true);
     onImagesChange(combined);
     // Reset input so the same file can be reselected after removal
     if (inputEl) inputEl.value = '';
   }, [images, onImagesChange, maxImages]);
+
+  const moveImage = useCallback((from: number, to: number) => {
+    if (to < 0 || to >= images.length || from === to) return;
+    const next = [...images];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    onImagesChange(next);
+  }, [images, onImagesChange]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -56,7 +73,14 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 8, onI
         onChange={(e) => handleFileSelect(e.target.files, e.target)}
       />
 
-      {images.length === 0 ? (
+      {isProcessing ? (
+        /* Skeleton Grid während Verarbeitung */
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {Array.from({ length: processingCount }).map((_, idx) => (
+            <div key={idx} className="aspect-square animate-pulse bg-[var(--c-card-alt)] rounded-[16px]" />
+          ))}
+        </div>
+      ) : images.length === 0 ? (
         /* Viewfinder Placeholder */
         <div
           onClick={() => fileInputRef.current?.click()}
@@ -103,6 +127,24 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 8, onI
                   <span className="text-[8px] font-bold text-white uppercase tracking-widest">{t('upload.coverPhoto')}</span>
                 </div>
               )}
+              <div className={`absolute ${idx === 0 ? 'bottom-5' : 'bottom-1'} left-1 right-1 flex justify-between pointer-events-none`}>
+                <button
+                  type="button"
+                  disabled={idx === 0}
+                  onClick={(e) => { e.stopPropagation(); moveImage(idx, idx - 1); }}
+                  className={`pointer-events-auto w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                >
+                  <i className="fa-solid fa-chevron-left text-[10px]"></i>
+                </button>
+                <button
+                  type="button"
+                  disabled={idx === previewUrls.length - 1}
+                  onClick={(e) => { e.stopPropagation(); moveImage(idx, idx + 1); }}
+                  className={`pointer-events-auto w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white ${idx === previewUrls.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                >
+                  <i className="fa-solid fa-chevron-right text-[10px]"></i>
+                </button>
+              </div>
             </div>
           ))}
           {images.length < maxImages && (
