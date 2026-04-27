@@ -147,6 +147,15 @@ export const CITIES: City[] = [
   { name: 'Lopare', region: 'Republika Srpska', country: 'BiH', lat: 44.6344, lng: 18.8461 },
   { name: 'Petrovo', region: 'Republika Srpska', country: 'BiH', lat: 44.6300, lng: 18.3300 },
   { name: 'Kostajnica', region: 'Republika Srpska', country: 'BiH', lat: 45.2228, lng: 16.5361 },
+  { name: 'Šipovo', region: 'Republika Srpska', country: 'BiH', lat: 44.2814, lng: 17.0844 },
+  { name: 'Han Pijesak', region: 'Republika Srpska', country: 'BiH', lat: 44.0817, lng: 18.9519 },
+  { name: 'Šekovići', region: 'Republika Srpska', country: 'BiH', lat: 44.2961, lng: 18.8567 },
+  { name: 'Berkovići', region: 'Republika Srpska', country: 'BiH', lat: 43.0942, lng: 18.1869 },
+  { name: 'Ribnik', region: 'Republika Srpska', country: 'BiH', lat: 44.5631, lng: 16.7889 },
+  { name: 'Jezero', region: 'Republika Srpska', country: 'BiH', lat: 44.3331, lng: 17.1956 },
+  { name: 'Srbac', region: 'Republika Srpska', country: 'BiH', lat: 45.0961, lng: 17.5256 },
+  { name: 'Krupa na Uni', region: 'Republika Srpska', country: 'BiH', lat: 44.8881, lng: 16.1731 },
+  { name: 'Oštra Luka', region: 'Republika Srpska', country: 'BiH', lat: 44.8128, lng: 16.7344 },
 
   // ═══════════════════════════════════════════════════════════════
   // BOSNA I HERCEGOVINA — BRČKO DISTRIKT
@@ -156,45 +165,175 @@ export const CITIES: City[] = [
   // ═══════════════════════════════════════════════════════════════
   // HRVATSKA (po županijama)
   // ═══════════════════════════════════════════════════════════════
+  // ── Grad Zagreb ──
   { name: 'Zagreb', region: 'Grad Zagreb', country: 'HR', lat: 45.8150, lng: 15.9819 },
+
+  // ── Zagrebačka županija ──
   { name: 'Velika Gorica', region: 'Zagrebačka županija', country: 'HR', lat: 45.7142, lng: 16.0750 },
   { name: 'Samobor', region: 'Zagrebačka županija', country: 'HR', lat: 45.8011, lng: 15.7108 },
   { name: 'Zaprešić', region: 'Zagrebačka županija', country: 'HR', lat: 45.8564, lng: 15.8075 },
+  { name: 'Dugo Selo', region: 'Zagrebačka županija', country: 'HR', lat: 45.8081, lng: 16.2342 },
+  { name: 'Sveta Nedelja', region: 'Zagrebačka županija', country: 'HR', lat: 45.8000, lng: 15.7833 },
+  { name: 'Jastrebarsko', region: 'Zagrebačka županija', country: 'HR', lat: 45.6700, lng: 15.6450 },
+  { name: 'Ivanić-Grad', region: 'Zagrebačka županija', country: 'HR', lat: 45.7081, lng: 16.4011 },
+  { name: 'Vrbovec', region: 'Zagrebačka županija', country: 'HR', lat: 45.8800, lng: 16.4250 },
+  { name: 'Sveti Ivan Zelina', region: 'Zagrebačka županija', country: 'HR', lat: 45.9606, lng: 16.2436 },
+  { name: 'Stubičke Toplice', region: 'Zagrebačka županija', country: 'HR', lat: 45.9764, lng: 15.9456 },
 
+  // ── Splitsko-dalmatinska ──
   { name: 'Split', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.5081, lng: 16.4402 },
+  { name: 'Trogir', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.5147, lng: 16.2519 },
   { name: 'Kaštela', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.5533, lng: 16.3750 },
   { name: 'Solin', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.5439, lng: 16.4906 },
   { name: 'Sinj', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.7006, lng: 16.6364 },
   { name: 'Makarska', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.2969, lng: 17.0175 },
   { name: 'Omiš', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.4442, lng: 16.6889 },
   { name: 'Imotski', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.4469, lng: 17.2158 },
+  { name: 'Supetar', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.3850, lng: 16.5536 },
+  { name: 'Hvar', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.1722, lng: 16.4414 },
+  { name: 'Vis', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.0617, lng: 16.1872 },
+  { name: 'Vrgorac', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.2069, lng: 17.3700 },
+  { name: 'Trilj', region: 'Splitsko-dalmatinska', country: 'HR', lat: 43.6228, lng: 16.7264 },
 
+  // ── Primorsko-goranska ──
   { name: 'Rijeka', region: 'Primorsko-goranska', country: 'HR', lat: 45.3271, lng: 14.4422 },
   { name: 'Opatija', region: 'Primorsko-goranska', country: 'HR', lat: 45.3361, lng: 14.3053 },
+  { name: 'Crikvenica', region: 'Primorsko-goranska', country: 'HR', lat: 45.1761, lng: 14.6917 },
+  { name: 'Krk', region: 'Primorsko-goranska', country: 'HR', lat: 45.0264, lng: 14.5747 },
+  { name: 'Rab', region: 'Primorsko-goranska', country: 'HR', lat: 44.7556, lng: 14.7611 },
+  { name: 'Mali Lošinj', region: 'Primorsko-goranska', country: 'HR', lat: 44.5331, lng: 14.4669 },
+  { name: 'Delnice', region: 'Primorsko-goranska', country: 'HR', lat: 45.4017, lng: 14.7989 },
+  { name: 'Čabar', region: 'Primorsko-goranska', country: 'HR', lat: 45.5942, lng: 14.6444 },
 
+  // ── Osječko-baranjska ──
   { name: 'Osijek', region: 'Osječko-baranjska', country: 'HR', lat: 45.5550, lng: 18.6955 },
   { name: 'Đakovo', region: 'Osječko-baranjska', country: 'HR', lat: 45.3086, lng: 18.4106 },
   { name: 'Našice', region: 'Osječko-baranjska', country: 'HR', lat: 45.4900, lng: 18.0900 },
+  { name: 'Beli Manastir', region: 'Osječko-baranjska', country: 'HR', lat: 45.7686, lng: 18.6097 },
+  { name: 'Belišće', region: 'Osječko-baranjska', country: 'HR', lat: 45.6797, lng: 18.4097 },
+  { name: 'Donji Miholjac', region: 'Osječko-baranjska', country: 'HR', lat: 45.7625, lng: 18.1683 },
+  { name: 'Valpovo', region: 'Osječko-baranjska', country: 'HR', lat: 45.6606, lng: 18.4178 },
 
+  // ── Zadarska ──
   { name: 'Zadar', region: 'Zadarska', country: 'HR', lat: 44.1194, lng: 15.2314 },
+  { name: 'Biograd na Moru', region: 'Zadarska', country: 'HR', lat: 43.9436, lng: 15.4458 },
+  { name: 'Benkovac', region: 'Zadarska', country: 'HR', lat: 44.0344, lng: 15.6133 },
+  { name: 'Nin', region: 'Zadarska', country: 'HR', lat: 44.2417, lng: 15.1789 },
+  { name: 'Obrovac', region: 'Zadarska', country: 'HR', lat: 44.2008, lng: 15.6864 },
+  { name: 'Pag', region: 'Zadarska', country: 'HR', lat: 44.4444, lng: 15.0586 },
+  { name: 'Preko', region: 'Zadarska', country: 'HR', lat: 44.0814, lng: 15.1853 },
+  { name: 'Starigrad', region: 'Zadarska', country: 'HR', lat: 44.2961, lng: 15.4453 },
+  { name: 'Novigrad (Zadar)', region: 'Zadarska', country: 'HR', lat: 44.1856, lng: 15.5483 },
+
+  // ── Brodsko-posavska ──
   { name: 'Slavonski Brod', region: 'Brodsko-posavska', country: 'HR', lat: 45.1603, lng: 18.0156 },
+  { name: 'Nova Gradiška', region: 'Brodsko-posavska', country: 'HR', lat: 45.2553, lng: 17.3781 },
+  { name: 'Okučani', region: 'Brodsko-posavska', country: 'HR', lat: 45.2647, lng: 17.1969 },
+
+  // ── Istarska ──
   { name: 'Pula', region: 'Istarska', country: 'HR', lat: 44.8666, lng: 13.8496 },
+  { name: 'Rovinj', region: 'Istarska', country: 'HR', lat: 45.0811, lng: 13.6386 },
+  { name: 'Poreč', region: 'Istarska', country: 'HR', lat: 45.2269, lng: 13.5944 },
+  { name: 'Umag', region: 'Istarska', country: 'HR', lat: 45.4350, lng: 13.5236 },
+  { name: 'Pazin', region: 'Istarska', country: 'HR', lat: 45.2406, lng: 13.9358 },
+  { name: 'Labin', region: 'Istarska', country: 'HR', lat: 45.0950, lng: 14.1192 },
+  { name: 'Novigrad (Istra)', region: 'Istarska', country: 'HR', lat: 45.3175, lng: 13.5586 },
+  { name: 'Vrsar', region: 'Istarska', country: 'HR', lat: 45.1469, lng: 13.6047 },
+  { name: 'Grožnjan', region: 'Istarska', country: 'HR', lat: 45.3736, lng: 13.7142 },
+  { name: 'Buzet', region: 'Istarska', country: 'HR', lat: 45.4097, lng: 13.9628 },
+
+  // ── Dubrovačko-neretvanska ──
   { name: 'Dubrovnik', region: 'Dubrovačko-neretvanska', country: 'HR', lat: 42.6507, lng: 18.0944 },
   { name: 'Metković', region: 'Dubrovačko-neretvanska', country: 'HR', lat: 43.0544, lng: 17.6481 },
   { name: 'Ploče', region: 'Dubrovačko-neretvanska', country: 'HR', lat: 43.0575, lng: 17.4331 },
+  { name: 'Opuzen', region: 'Dubrovačko-neretvanska', country: 'HR', lat: 43.0153, lng: 17.5631 },
+  { name: 'Korčula', region: 'Dubrovačko-neretvanska', country: 'HR', lat: 42.9606, lng: 17.1356 },
+  { name: 'Blato', region: 'Dubrovačko-neretvanska', country: 'HR', lat: 42.9461, lng: 16.7900 },
+  { name: 'Vela Luka', region: 'Dubrovačko-neretvanska', country: 'HR', lat: 42.9631, lng: 16.7197 },
+  { name: 'Lastovo', region: 'Dubrovačko-neretvanska', country: 'HR', lat: 42.7672, lng: 16.9019 },
+
+  // ── Šibensko-kninska ──
   { name: 'Šibenik', region: 'Šibensko-kninska', country: 'HR', lat: 43.7350, lng: 15.8952 },
   { name: 'Knin', region: 'Šibensko-kninska', country: 'HR', lat: 44.0406, lng: 16.1997 },
+  { name: 'Drniš', region: 'Šibensko-kninska', country: 'HR', lat: 43.8589, lng: 16.1567 },
+  { name: 'Skradin', region: 'Šibensko-kninska', country: 'HR', lat: 43.8197, lng: 15.9217 },
+  { name: 'Vodice', region: 'Šibensko-kninska', country: 'HR', lat: 43.7575, lng: 15.7800 },
+  { name: 'Primošten', region: 'Šibensko-kninska', country: 'HR', lat: 43.5856, lng: 15.9233 },
+  { name: 'Rogoznica', region: 'Šibensko-kninska', country: 'HR', lat: 43.5267, lng: 15.9722 },
+  { name: 'Tisno', region: 'Šibensko-kninska', country: 'HR', lat: 43.7975, lng: 15.6433 },
+
+  // ── Varaždinska ──
   { name: 'Varaždin', region: 'Varaždinska', country: 'HR', lat: 46.3057, lng: 16.3366 },
+  { name: 'Ludbreg', region: 'Varaždinska', country: 'HR', lat: 46.2553, lng: 16.6228 },
+  { name: 'Ivanec', region: 'Varaždinska', country: 'HR', lat: 46.2231, lng: 16.1158 },
+  { name: 'Lepoglava', region: 'Varaždinska', country: 'HR', lat: 46.2128, lng: 16.0392 },
+  { name: 'Novi Marof', region: 'Varaždinska', country: 'HR', lat: 46.1592, lng: 16.3267 },
+
+  // ── Karlovačka ──
   { name: 'Karlovac', region: 'Karlovačka', country: 'HR', lat: 45.4929, lng: 15.5553 },
+  { name: 'Ogulin', region: 'Karlovačka', country: 'HR', lat: 45.2611, lng: 15.2306 },
+  { name: 'Slunj', region: 'Karlovačka', country: 'HR', lat: 45.1242, lng: 15.5853 },
+  { name: 'Ozalj', region: 'Karlovačka', country: 'HR', lat: 45.6086, lng: 15.4736 },
+  { name: 'Duga Resa', region: 'Karlovačka', country: 'HR', lat: 45.4444, lng: 15.4811 },
+
+  // ── Sisačko-moslavačka ──
   { name: 'Sisak', region: 'Sisačko-moslavačka', country: 'HR', lat: 45.4658, lng: 16.3725 },
+  { name: 'Petrinja', region: 'Sisačko-moslavačka', country: 'HR', lat: 45.4406, lng: 16.2814 },
+  { name: 'Kutina', region: 'Sisačko-moslavačka', country: 'HR', lat: 45.4789, lng: 16.7811 },
+  { name: 'Glina', region: 'Sisačko-moslavačka', country: 'HR', lat: 45.3417, lng: 16.0833 },
+  { name: 'Novska', region: 'Sisačko-moslavačka', country: 'HR', lat: 45.3414, lng: 16.9806 },
+  { name: 'Hrvatska Kostajnica', region: 'Sisačko-moslavačka', country: 'HR', lat: 45.2278, lng: 16.5417 },
+
+  // ── Međimurska ──
   { name: 'Čakovec', region: 'Međimurska', country: 'HR', lat: 46.3844, lng: 16.4339 },
+  { name: 'Prelog', region: 'Međimurska', country: 'HR', lat: 46.3361, lng: 16.6094 },
+  { name: 'Mursko Središće', region: 'Međimurska', country: 'HR', lat: 46.5036, lng: 16.4356 },
+
+  // ── Koprivničko-križevačka ──
   { name: 'Koprivnica', region: 'Koprivničko-križevačka', country: 'HR', lat: 46.1628, lng: 16.8272 },
+  { name: 'Križevci', region: 'Koprivničko-križevačka', country: 'HR', lat: 46.0264, lng: 16.5478 },
+  { name: 'Đurđevac', region: 'Koprivničko-križevačka', country: 'HR', lat: 46.0339, lng: 17.0703 },
+
+  // ── Bjelovarsko-bilogorska ──
   { name: 'Bjelovar', region: 'Bjelovarsko-bilogorska', country: 'HR', lat: 45.8986, lng: 16.8425 },
+  { name: 'Čazma', region: 'Bjelovarsko-bilogorska', country: 'HR', lat: 45.7472, lng: 16.6178 },
+  { name: 'Daruvar', region: 'Bjelovarsko-bilogorska', country: 'HR', lat: 45.5908, lng: 17.2247 },
+  { name: 'Garešnica', region: 'Bjelovarsko-bilogorska', country: 'HR', lat: 45.5700, lng: 16.9400 },
+  { name: 'Grubišno Polje', region: 'Bjelovarsko-bilogorska', country: 'HR', lat: 45.7028, lng: 17.1750 },
+
+  // ── Požeško-slavonska ──
   { name: 'Požega', region: 'Požeško-slavonska', country: 'HR', lat: 45.3400, lng: 17.6850 },
+  { name: 'Pakrac', region: 'Požeško-slavonska', country: 'HR', lat: 45.4400, lng: 17.1872 },
+  { name: 'Lipik', region: 'Požeško-slavonska', country: 'HR', lat: 45.4153, lng: 17.1503 },
+  { name: 'Kutjevo', region: 'Požeško-slavonska', country: 'HR', lat: 45.4192, lng: 17.8689 },
+  { name: 'Pleternica', region: 'Požeško-slavonska', country: 'HR', lat: 45.2892, lng: 17.8056 },
+
+  // ── Virovitičko-podravska ──
   { name: 'Virovitica', region: 'Virovitičko-podravska', country: 'HR', lat: 45.8317, lng: 17.3836 },
+  { name: 'Slatina', region: 'Virovitičko-podravska', country: 'HR', lat: 45.7019, lng: 17.7044 },
+  { name: 'Orahovica', region: 'Virovitičko-podravska', country: 'HR', lat: 45.5331, lng: 17.8842 },
+  { name: 'Pitomača', region: 'Virovitičko-podravska', country: 'HR', lat: 45.9586, lng: 17.2306 },
+
+  // ── Vukovarsko-srijemska ──
   { name: 'Vukovar', region: 'Vukovarsko-srijemska', country: 'HR', lat: 45.3517, lng: 18.9986 },
   { name: 'Vinkovci', region: 'Vukovarsko-srijemska', country: 'HR', lat: 45.2883, lng: 18.8044 },
+  { name: 'Županja', region: 'Vukovarsko-srijemska', country: 'HR', lat: 45.0772, lng: 18.6939 },
+  { name: 'Ilok', region: 'Vukovarsko-srijemska', country: 'HR', lat: 45.2225, lng: 19.3781 },
+  { name: 'Otok', region: 'Vukovarsko-srijemska', country: 'HR', lat: 45.1525, lng: 18.8856 },
+
+  // ── Ličko-senjska ──
   { name: 'Gospić', region: 'Ličko-senjska', country: 'HR', lat: 44.5461, lng: 15.3744 },
+  { name: 'Senj', region: 'Ličko-senjska', country: 'HR', lat: 44.9897, lng: 14.9050 },
+  { name: 'Otočac', region: 'Ličko-senjska', country: 'HR', lat: 44.8694, lng: 15.2367 },
+  { name: 'Novalja', region: 'Ličko-senjska', country: 'HR', lat: 44.5567, lng: 14.8867 },
+  { name: 'Plitvička Jezera', region: 'Ličko-senjska', country: 'HR', lat: 44.8654, lng: 15.5820 },
+
+  // ── Krapinsko-zagorska ──
+  { name: 'Krapina', region: 'Krapinsko-zagorska', country: 'HR', lat: 46.1606, lng: 15.8761 },
+  { name: 'Zabok', region: 'Krapinsko-zagorska', country: 'HR', lat: 46.0306, lng: 15.9097 },
+  { name: 'Zlatar', region: 'Krapinsko-zagorska', country: 'HR', lat: 46.0903, lng: 16.0789 },
+  { name: 'Pregrada', region: 'Krapinsko-zagorska', country: 'HR', lat: 46.1644, lng: 15.7506 },
+  { name: 'Đurmanec', region: 'Krapinsko-zagorska', country: 'HR', lat: 46.2125, lng: 15.8867 },
 
   // ═══════════════════════════════════════════════════════════════
   // DEUTSCHLAND (po saveznim zemljama)

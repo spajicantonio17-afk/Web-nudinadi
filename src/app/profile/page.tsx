@@ -16,6 +16,7 @@ import { xpForNextLevel } from '@/lib/database.types';
 import ProBadge from '@/components/ProBadge';
 import TeamInvitations from '@/components/TeamInvitations';
 import BusinessSettingsDrawer from '@/components/BusinessSettingsDrawer';
+import BuyCreditsModal from '@/components/BuyCreditsModal';
 import { isPro, isBusiness } from '@/lib/plans';
 import { useToast } from '@/components/Toast';
 import VerificationProgress from '@/components/VerificationProgress';
@@ -87,6 +88,7 @@ function ProfileContent() {
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [confirmPromoteId, setConfirmPromoteId] = useState<string | null>(null);
+  const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
   // ── Markirani (Favorites) ───────────────────────────────
@@ -408,7 +410,7 @@ function ProfileContent() {
 
   const displayName = user?.username || t('profile.guest');
   const displayLocation = user?.location || t('profile.unknownLocation');
-  const displayAvatar = user?.avatarUrl || 'https://picsum.photos/seed/guest/200/200';
+  const displayAvatar = user?.avatarUrl || '/default-avatar.svg';
 
   // Computed from real data
   const activeProducts = userProducts.filter(p => p.status === 'active');
@@ -543,7 +545,7 @@ function ProfileContent() {
                     <div className="w-20 h-20 rounded-[4px] overflow-hidden border-2 border-[var(--c-border)] shadow-lg">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={avatarPreview || user?.avatarUrl || `https://picsum.photos/seed/${user?.id}/200/200`}
+                        src={avatarPreview || user?.avatarUrl || '/default-avatar.svg'}
                         alt="Avatar"
                         className="w-full h-full object-cover"
                       />
@@ -948,7 +950,7 @@ function ProfileContent() {
             </div>
             <div className="flex items-center gap-2 text-[11px] text-[var(--c-text3)]">
               <i className="fa-solid fa-rocket text-amber-400 text-xs"></i>
-              <span>Krediti: <span className="font-bold text-[var(--c-text)]">{user?.promotedCredits ?? 0}</span></span>
+              <span>Istaknuti krediti: <span className="font-bold text-[var(--c-text)]">{user?.promotedCredits ?? 0} / {user?.accountType === 'business' ? 10 : 3}</span></span>
             </div>
           </div>
         )}
@@ -1315,18 +1317,17 @@ function ProfileContent() {
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            if ((user?.promotedCredits ?? 0) < 1) return;
+                                            if ((user?.promotedCredits ?? 0) < 1) {
+                                              setShowBuyCreditsModal(true);
+                                              return;
+                                            }
                                             setConfirmPromoteId(p.id);
                                           }}
                                           disabled={promotingId === p.id}
-                                          title={(user?.promotedCredits ?? 0) < 1 ? "Nemaš kredita za promoviranje" : "Promoviraj oglas (3 dana)"}
-                                          className={`p-1 transition-colors disabled:opacity-50 ${
-                                            (user?.promotedCredits ?? 0) < 1
-                                              ? 'text-[var(--c-text-muted)] opacity-40 cursor-not-allowed'
-                                              : 'text-[var(--c-text-muted)] hover:text-amber-400'
-                                          }`}
+                                          title={(user?.promotedCredits ?? 0) < 1 ? "Nemaš kredita — klikni za kupovinu" : "Promoviraj oglas (3 dana)"}
+                                          className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors disabled:opacity-50 text-[var(--c-text-muted)] hover:text-amber-400"
                                         >
-                                          <i className={`text-[10px] ${promotingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-rocket'}`}></i>
+                                          <i className={`text-sm ${promotingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-rocket'}`}></i>
                                         </button>
                                       )}
                                       {isPromoted(p) && (
@@ -1336,9 +1337,9 @@ function ProfileContent() {
                                           onClick={(e) => { e.stopPropagation(); handleArchive(p.id); }}
                                           disabled={archivingId === p.id}
                                           title={t('profile.active.archive')}
-                                          className="text-[var(--c-text-muted)] hover:text-orange-400 p-1 transition-colors disabled:opacity-50"
+                                          className="text-[var(--c-text-muted)] hover:text-orange-400 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors disabled:opacity-50"
                                       >
-                                          <i className={`text-[10px] ${archivingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-box-archive'}`}></i>
+                                          <i className={`text-sm ${archivingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-box-archive'}`}></i>
                                       </button>
                                     </div>
                                 </div>
@@ -1493,6 +1494,13 @@ function ProfileContent() {
           </div>
         </div>
       )}
+
+      <BuyCreditsModal
+        isOpen={showBuyCreditsModal}
+        onClose={() => setShowBuyCreditsModal(false)}
+        reason="istaknuti"
+        currentBalance={user?.promotedCredits ?? 0}
+      />
 
       </div>
     </MainLayout>

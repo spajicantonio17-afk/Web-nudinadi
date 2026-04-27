@@ -7,6 +7,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, ty
 import React from 'react';
 import { getSupabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { Profile } from '@/lib/database.types';
 import { logDailyLogin, logVerificationXp } from '@/services/levelService';
 import { logger } from '@/lib/logger';
@@ -117,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [lastError, setLastError] = useState<string | null>(null);
   const userRef = useRef<AuthUser | null>(null);
+  const profileChannelRef = useRef<RealtimeChannel | null>(null);
 
   const supabase = getSupabase();
 
@@ -128,6 +130,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq('id', userId)
       .maybeSingle();
     return data as Profile | null;
+  }, [supabase]);
+
+  // Subscribe to realtime profile updates so XP/level changes (driven by DB triggers)
+  // propagate to the client without a page refresh.
+  const subscribeToProfile = useCallback((userId: string) => {
+    if (profileChannelRef.current) return; // already subscribed for this session
+    const channel = supabase
+      .channel(`profile-xp-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${userId}`,
+        },
+        async (payload) => {
+          const newRow = payload.new as Partial<Profile>;
+          const oldRow = payload.old as Partial<Profile>;
+          const newXp = newRow.xp ?? 0;
+          const oldXp = oldRow.xp ?? 0;
+          const newLevel = newRow.level ?? 1;
+          const oldLevel = oldRow.level ?? newLevel;
+          if (newXp === oldXp && newLevel === oldLevel) return;
+
+          // Re-fetch full profile so all fields stay in sync (not just xp/level).
+          const profile = await fetchProfile(userId);
+          if (!profile) return;
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.user) return;
+          const authUser = toAuthUser(session.user, profile);
+          setUser(authUser);
+          userRef.current = authUser;
+
+          // Level-up: dispatch event so any mounted ToastProvider consumer can show a toast.
+          if (newLevel > oldLevel && typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('nudinadi:level-up', { detail: { newLevel } })
+            );
+          }
+        }
+      )
+      .subscribe();
+    profileChannelRef.current = channel;
+  }, [supabase, fetchProfile]);
+
+  const unsubscribeFromProfile = useCallback(() => {
+    if (profileChannelRef.current) {
+      supabase.removeChannel(profileChannelRef.current);
+      profileChannelRef.current = null;
+    }
   }, [supabase]);
 
   // Set user from Supabase session — resilient: always resolves even on profile fetch error
@@ -157,6 +210,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(authUser);
       userRef.current = authUser;
 
+      // Start realtime subscription so XP/level changes propagate without F5
+      subscribeToProfile(session.user.id);
+
       // Sync UI locale from profile (overrides localStorage if profile has a preference)
       if (profile?.locale && typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('nudinadi:set-locale', { detail: profile.locale }));
@@ -174,7 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchProfile]);
+  }, [fetchProfile, subscribeToProfile]);
 
   // Initialize: check current session + listen for subsequent auth changes
   useEffect(() => {
@@ -196,12 +252,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // TOKEN_REFRESHED: Supabase stores the new token automatically.
         // Profile data doesn't change — skipping prevents the fallback username bug.
         if (event === 'TOKEN_REFRESHED') return;
+        if (event === 'SIGNED_OUT') {
+          unsubscribeFromProfile();
+        }
         await setUserFromSession(session);
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, [supabase, setUserFromSession]);
+    return () => {
+      subscription.unsubscribe();
+      unsubscribeFromProfile();
+    };
+  }, [supabase, setUserFromSession, unsubscribeFromProfile]);
 
   // ─── Login with Email/Password ────────────────────────
 
@@ -364,9 +426,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ─── Logout ───────────────────────────────────────────
 
   const logout = useCallback(async () => {
+    unsubscribeFromProfile();
     await supabase.auth.signOut();
     setUser(null);
-  }, [supabase]);
+  }, [supabase, unsubscribeFromProfile]);
 
   // ─── Password Reset ──────────────────────────────────
 

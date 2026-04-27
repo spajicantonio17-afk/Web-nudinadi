@@ -364,7 +364,7 @@ function UserProfileContent() {
                 <div className="w-14 h-14 md:w-16 md:h-16 rounded-[16px] md:rounded-[18px] bg-gradient-to-br from-[var(--c-avatar-border-from,#3b82f6)] to-[var(--c-avatar-border-to,#6366f1)] p-0.5 shadow-2xl shadow-blue-500/10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={profile.avatar_url || `https://picsum.photos/seed/${profile.id}/200/200`}
+                    src={profile.avatar_url || '/default-avatar.svg'}
                     alt={profile.username}
                     className="w-full h-full object-cover rounded-[14px] md:rounded-[16px]"
                   />

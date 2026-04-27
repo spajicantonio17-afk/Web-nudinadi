@@ -1,6 +1,10 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function SiteFooter() {
+  const [showAppModal, setShowAppModal] = useState(false);
   const linkClass = "text-[13px] text-[var(--c-text3)] hover:text-[var(--c-text)] transition-colors duration-150";
 
   return (
@@ -67,14 +71,14 @@ export default function SiteFooter() {
         <div className="py-6 border-t border-[var(--c-border)]">
           <p className="text-[11px] font-semibold text-[var(--c-text3)] uppercase tracking-wider mb-3">Preuzmi Aplikaciju</p>
           <div className="flex gap-2">
-            <span className="flex items-center gap-2 px-3 py-2 bg-black border border-white/20 rounded-[6px] cursor-pointer hover:bg-gray-900 transition-all duration-150">
+            <span onClick={() => setShowAppModal(true)} className="flex items-center gap-2 px-3 py-2 bg-black border border-white/20 rounded-[6px] cursor-pointer hover:bg-gray-900 transition-all duration-150">
               <i className="fa-brands fa-apple text-white text-lg"></i>
               <div>
                 <p className="text-[10px] text-gray-400 leading-none">Dostupno na</p>
                 <p className="text-[12px] font-bold text-white leading-tight">App Store</p>
               </div>
             </span>
-            <span className="flex items-center gap-2 px-3 py-2 bg-black border border-white/20 rounded-[6px] cursor-pointer hover:bg-gray-900 transition-all duration-150">
+            <span onClick={() => setShowAppModal(true)} className="flex items-center gap-2 px-3 py-2 bg-black border border-white/20 rounded-[6px] cursor-pointer hover:bg-gray-900 transition-all duration-150">
               <i className="fa-brands fa-google-play text-white text-lg"></i>
               <div>
                 <p className="text-[10px] text-gray-400 leading-none">Preuzmi na</p>
@@ -105,6 +109,30 @@ export default function SiteFooter() {
         </div>
 
       </div>
+
+      {showAppModal && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowAppModal(false)}
+        >
+          <div
+            className="bg-white rounded-[20px] p-6 max-w-[320px] w-full text-center shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-4xl mb-3">📱</div>
+            <h3 className="text-[18px] font-bold text-[var(--c-text)] mb-2">Uskoro!</h3>
+            <p className="text-[14px] text-[var(--c-text-muted)] mb-4">
+              Aplikacija dolazi uskoro. Do tada, koristi web verziju na nudinadi.com
+            </p>
+            <button
+              onClick={() => setShowAppModal(false)}
+              className="w-full py-3 rounded-[12px] bg-[var(--c-accent)] text-white font-bold text-[14px] hover:opacity-90 transition-opacity"
+            >
+              U redu
+            </button>
+          </div>
+        </div>
+      )}
     </footer>
   );
 }

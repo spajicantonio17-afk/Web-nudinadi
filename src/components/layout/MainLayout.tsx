@@ -276,7 +276,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
               <div className={`w-7 h-7 md:w-9 md:h-9 rounded-full p-[2px] ${(isBusiness(user.accountType) ? pathname === `/user/${user.username}` : pathname === '/profile') ? 'blue-gradient' : 'bg-[var(--c-border)] group-hover:bg-[var(--c-active)]'}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={user.avatarUrl || 'https://picsum.photos/seed/me/200/200'}
+                  src={user.avatarUrl || '/default-avatar.svg'}
                   alt={`${user.username} profil slika`}
                   className="w-full h-full rounded-full object-cover border border-[var(--c-card)]"
                 />

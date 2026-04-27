@@ -279,6 +279,16 @@ export default function RegisterPage() {
             </div>
           )}
 
+          {/* Continue Button (after successful verification) */}
+          {emailVerified && (
+            <button
+              onClick={() => router.push('/profile')}
+              className="w-full py-3 rounded-[12px] bg-[var(--c-accent)] text-white font-bold text-[14px] hover:opacity-90 transition-opacity mt-4"
+            >
+              Nastavi →
+            </button>
+          )}
+
           {/* Skip Button */}
           <button
             onClick={() => router.push('/')}

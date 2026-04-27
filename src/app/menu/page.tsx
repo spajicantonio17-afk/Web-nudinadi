@@ -738,7 +738,7 @@ export default function MenuPage() {
                     <div className="relative">
                         <div className="w-24 h-24 rounded-full bg-[var(--c-card-alt)] overflow-hidden border-2 border-[var(--c-border2)]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={avatarPreview || user?.avatarUrl || 'https://picsum.photos/seed/guest/200/200'} alt="Profile" className="w-full h-full object-cover" />
+                            <img src={avatarPreview || user?.avatarUrl || '/default-avatar.svg'} alt="Profile" className="w-full h-full object-cover" />
                         </div>
                         <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarPick} className="hidden" />
                         <button onClick={() => avatarInputRef.current?.click()} className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white border-2 border-[var(--c-bg)]">
