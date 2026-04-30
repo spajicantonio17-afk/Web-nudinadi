@@ -206,7 +206,7 @@ function VerificationFull({ status, userId }: { status: VerificationStatus; user
           ) : (
             <>
               <i className="fa-solid fa-gift"></i>
-              500 XP einsammeln
+              Pokupi 500 XP
             </>
           )}
         </button>
