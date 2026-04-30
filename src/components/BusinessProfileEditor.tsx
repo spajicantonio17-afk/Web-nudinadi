@@ -119,9 +119,35 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
       router.refresh();
       if (onSaveSuccess) {
         onSaveSuccess();
-      } else {
-        router.push('/user/' + user.username);
       }
+    } catch {
+      showToast('Greška pri snimanju', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleViewProfile = async () => {
+    setSaving(true);
+    try {
+      let url = website.trim();
+      if (url && !url.startsWith('http')) {
+        url = 'https://' + url;
+      }
+
+      await updateBusinessProfile(user.id, {
+        company_name: companyName.trim() || null,
+        company_logo: companyLogo || null,
+        banner_image: bannerImage || null,
+        business_address: address.trim() || null,
+        business_hours: Object.keys(hours).length > 0 ? hours : null,
+        business_category: category || null,
+        website_url: url || null,
+      });
+      showToast('Poslovni profil ažuriran!');
+      onUpdate();
+      router.refresh();
+      router.push('/user/' + user.username);
     } catch {
       showToast('Greška pri snimanju', 'error');
     } finally {
@@ -302,18 +328,31 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
         </div>
       </div>
 
-      {/* Save Button */}
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="w-full py-3 bg-purple-500 text-white rounded-[8px] text-[11px] font-black uppercase tracking-wider hover:bg-purple-600 transition-colors disabled:opacity-50"
-      >
-        {saving ? (
-          <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Snimanje...</>
-        ) : (
-          <><i className="fa-solid fa-save mr-2"></i>Spremi poslovni profil</>
-        )}
-      </button>
+      {/* Save Buttons */}
+      <div className="flex gap-2.5">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex-1 py-3 bg-purple-500 text-white rounded-[8px] text-[11px] font-black uppercase tracking-wider hover:bg-purple-600 transition-colors disabled:opacity-50"
+        >
+          {saving ? (
+            <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Snimanje...</>
+          ) : (
+            <><i className="fa-solid fa-save mr-2"></i>Spremi</>
+          )}
+        </button>
+        <button
+          onClick={handleViewProfile}
+          disabled={saving}
+          className="flex-1 py-3 bg-[var(--c-bg)] border border-purple-500/50 text-purple-500 rounded-[8px] text-[11px] font-black uppercase tracking-wider hover:bg-purple-500/10 transition-colors disabled:opacity-50"
+        >
+          {saving ? (
+            <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Snimanje...</>
+          ) : (
+            <><i className="fa-solid fa-eye mr-2"></i>Pregledaj profil</>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
