@@ -915,13 +915,22 @@ function ProfileContent() {
                         <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-red-500 uppercase tracking-wide">{t('profile.action.logout')}</span>
                     </button>
                     {isBusiness(user?.accountType) && (
-                        <button
-                            onClick={() => setBusinessDrawerOpen(true)}
-                            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-full hover:bg-purple-500/20 hover:border-purple-500/50 transition-all active:scale-95 group shadow-lg"
-                        >
-                            <i className="fa-solid fa-building text-[9px] md:text-[10px] text-purple-500"></i>
-                            <span className="text-[8px] md:text-[9px] font-bold text-purple-500 uppercase tracking-wide">Poslovne postavke</span>
-                        </button>
+                        <>
+                            <button
+                                onClick={() => setBusinessDrawerOpen(true)}
+                                className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-full hover:bg-purple-500/20 hover:border-purple-500/50 transition-all active:scale-95 group shadow-lg"
+                            >
+                                <i className="fa-solid fa-building text-[9px] md:text-[10px] text-purple-500"></i>
+                                <span className="text-[8px] md:text-[9px] font-bold text-purple-500 uppercase tracking-wide">Poslovne postavke</span>
+                            </button>
+                            <button
+                                onClick={() => router.push(`/user/${user?.username}`)}
+                                className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-full hover:bg-purple-500/20 hover:border-purple-500/50 transition-all active:scale-95 group shadow-lg"
+                            >
+                                <i className="fa-solid fa-eye text-[9px] md:text-[10px] text-purple-500"></i>
+                                <span className="text-[8px] md:text-[9px] font-bold text-purple-500 uppercase tracking-wide">Spremi poslovni profil</span>
+                            </button>
+                        </>
                     )}
                 </div>
             </div>
