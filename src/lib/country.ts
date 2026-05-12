@@ -29,9 +29,13 @@ export function getCountryPreference(): CountryPreference {
   return 'all';
 }
 
+export const COUNTRY_CHANGE_EVENT = 'nudinadi:country-changed';
+
 export function setCountryPreference(country: CountryPreference): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(COUNTRY_KEY, country);
+  // Same-tab notification — `storage` event only fires across tabs
+  window.dispatchEvent(new CustomEvent(COUNTRY_CHANGE_EVENT, { detail: country }));
 }
 
 // ── GPS Position ────────────────────────────────────────────

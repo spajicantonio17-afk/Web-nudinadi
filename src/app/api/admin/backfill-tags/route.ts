@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini'
 import { sanitizeTags } from '@/lib/ai-utils'
+import { verifyAdmin } from '@/lib/admin-auth'
 
 const BATCH_SIZE = 10
 const DELAY_MS = 500 // Delay between AI calls to respect rate limits
@@ -11,20 +12,12 @@ function sleep(ms: number) {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = getSupabase()
-
-  // Check admin auth
-  try {
-    const body = await req.json().catch(() => ({}))
-    const adminKey = body.adminKey
-
-    // Simple admin key check — must match env variable
-    if (adminKey !== process.env.ADMIN_SECRET_KEY) {
-      return NextResponse.json({ error: 'Neovlašteni pristup' }, { status: 403 })
-    }
-  } catch {
+  const admin = await verifyAdmin(req)
+  if (!admin) {
     return NextResponse.json({ error: 'Neovlašteni pristup' }, { status: 403 })
   }
+
+  const supabase = getSupabase()
 
   // Get products without tags
   const { data: products, error } = await supabase

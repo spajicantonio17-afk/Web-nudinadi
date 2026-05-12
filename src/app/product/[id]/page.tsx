@@ -6,7 +6,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useFavorites } from '@/lib/favorites';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/components/Toast';
-import { getProductById, incrementViews, deleteProduct, promoteProduct, isPromoted } from '@/services/productService';
+import { getProductById, incrementViews, deleteProduct, isPromoted } from '@/services/productService';
+import IstaknutiModal from '@/components/IstaknutiModal';
 import { getOrCreateConversation } from '@/services/messageService';
 import { isPro, getPlanLimits } from '@/lib/plans';
 import ProBadge from '@/components/ProBadge';
@@ -72,6 +73,9 @@ export default function ProductDetailPage() {
 
   // Phone popup state
   const [showPhonePopup, setShowPhonePopup] = useState(false);
+
+  // Istaknuti modal state
+  const [showIstaknutiModal, setShowIstaknutiModal] = useState(false);
 
   // Review state
   const [reviewRating, setReviewRating] = useState(0);
@@ -625,25 +629,14 @@ export default function ProductDetailPage() {
                             <i className="fa-solid fa-star text-amber-500"></i>
                             {t('product.promotedUntil', { date: new Date(product.promoted_until!).toLocaleDateString('bs-BA') })}
                           </div>
-                        ) : isPro(user?.accountType) && (user?.promotedCredits ?? 0) > 0 ? (
+                        ) : (
                           <button
-                            onClick={async () => {
-                              try {
-                                await promoteProduct(product.id, user!.id, 3);
-                                setProduct({ ...product, promoted_until: new Date(Date.now() + 3 * 86400000).toISOString() });
-                                showToast(t('product.promotedSuccess'));
-                              } catch { showToast(t('product.promoteError'), 'error'); }
-                            }}
+                            onClick={() => setShowIstaknutiModal(true)}
                             className="flex items-center gap-2 text-[10px] font-bold text-amber-600 hover:text-amber-500 transition-colors"
                           >
                             <i className="fa-solid fa-star"></i>
-                            {t('product.promoteListing', { count: String(user?.promotedCredits) })}
+                            {t('product.promoteListing', { count: String(user?.promotedCredits ?? 0) })}
                           </button>
-                        ) : (
-                          <span className="text-[10px] text-[var(--c-text3)]">
-                            <i className="fa-solid fa-star text-[var(--c-text-muted)] mr-1"></i>
-                            {t('product.promoteComingSoon')}
-                          </span>
                         )}
                       </div>
                     )}
@@ -877,6 +870,19 @@ export default function ProductDetailPage() {
             price={product.price}
           />
         </div>
+      )}
+
+      {showIstaknutiModal && product && (
+        <IstaknutiModal
+          isOpen={showIstaknutiModal}
+          onClose={() => setShowIstaknutiModal(false)}
+          productId={product.id}
+          creditBalance={user?.promotedCredits ?? 0}
+          onSuccess={(promotedUntil) => {
+            setProduct({ ...product, promoted_until: promotedUntil });
+            showToast(t('product.promotedSuccess'));
+          }}
+        />
       )}
     </MainLayout>
   );

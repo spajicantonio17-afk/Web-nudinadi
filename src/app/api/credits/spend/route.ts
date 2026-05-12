@@ -78,21 +78,33 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Nevažeća opcija.' }, { status: 400 });
       }
 
-      // Spend credits
-      const { error: spendErr } = await admin.rpc('spend_credits', {
-        p_user_id: user.id,
-        p_amount: option.credits,
-        p_type: 'istaknuti',
-        p_reference: productId,
-        p_desc: `Istaknuti oglas — ${option.desc}`,
-      });
+      const { data: profile, error: profileErr } = await admin
+        .from('profiles')
+        .select('promoted_credits')
+        .eq('id', user.id)
+        .single();
 
-      if (spendErr) {
-        logger.error('[credits/spend istaknuti]', spendErr);
-        if (spendErr.message?.includes('non_negative')) {
-          return NextResponse.json({ error: 'Nedovoljno kredita.' }, { status: 402 });
-        }
-        throw spendErr;
+      if (profileErr || !profile) {
+        logger.error('[credits/spend istaknuti] profile lookup', profileErr);
+        return NextResponse.json({ error: 'Profil nije pronađen.' }, { status: 404 });
+      }
+
+      const currentCredits = profile.promoted_credits ?? 0;
+      if (currentCredits < option.credits) {
+        return NextResponse.json({ error: 'insufficient_credits' }, { status: 402 });
+      }
+
+      const { data: updatedProfile, error: deductErr } = await admin
+        .from('profiles')
+        .update({ promoted_credits: currentCredits - option.credits })
+        .eq('id', user.id)
+        .gte('promoted_credits', option.credits)
+        .select('promoted_credits')
+        .single();
+
+      if (deductErr || !updatedProfile) {
+        logger.error('[credits/spend istaknuti] deduct', deductErr);
+        return NextResponse.json({ error: 'insufficient_credits' }, { status: 402 });
       }
 
       // Set/extend promoted_until

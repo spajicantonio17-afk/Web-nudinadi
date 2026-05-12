@@ -4,11 +4,10 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import React from 'react';
 import bs from './translations/bs';
 import en from './translations/en';
-import de from './translations/de';
 
-export type Locale = 'bs' | 'en' | 'de';
+export type Locale = 'bs' | 'en';
 
-const dictionaries: Record<Locale, Record<string, string>> = { bs, en, de };
+const dictionaries: Record<Locale, Record<string, string>> = { bs, en };
 
 const STORAGE_KEY = 'nudinadi_locale';
 
@@ -24,7 +23,7 @@ function getStoredLocale(): Locale {
   if (typeof window === 'undefined') return 'bs';
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored && (stored === 'bs' || stored === 'en' || stored === 'de')) return stored as Locale;
+    if (stored && (stored === 'bs' || stored === 'en')) return stored as Locale;
     return 'bs';
   } catch { return 'bs'; }
 }

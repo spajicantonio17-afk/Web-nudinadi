@@ -411,6 +411,7 @@ export interface SimilarProduct {
 }
 
 // ─── Promote Product ─────────────────────────────────
+/** @deprecated Use /api/credits/spend with action='istaknuti' instead */
 export async function promoteProduct(productId: string, userId: string, days: number = 3): Promise<void> {
   // Deduct a promoted credit from the user
   const { data: profile, error: profileError } = await supabase

@@ -22,7 +22,7 @@ import ActiveFilterChips from '@/components/ActiveFilterChips';
 import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import PendingSaleBanner from '@/components/PendingSaleBanner';
 import RecentlyViewed from '@/components/RecentlyViewed';
-import { getCountryPreference } from '@/lib/country';
+import { getCountryPreference, COUNTRY_CHANGE_EVENT, type CountryPreference } from '@/lib/country';
 import CategoryFilterBar, { type AttributeFilters } from '@/components/CategoryFilterBar';
 import { logger } from '@/lib/logger';
 import { useI18n } from '@/lib/i18n';
@@ -118,6 +118,7 @@ function HomeContent() {
   const [listingType, setListingType] = useState<ListingType | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [selectedSubItem, setSelectedSubItem] = useState<string | null>(null);
+  const [countryPref, setCountryPref] = useState<CountryPreference>('all');
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -136,6 +137,34 @@ function HomeContent() {
     const savedCurrency = typeof window !== 'undefined' ? localStorage.getItem('nudinadi_currency') as SearchCurrency : null;
     if (savedCurrency === 'KM' || savedCurrency === 'EUR') setAiCurrency(savedCurrency);
   }, []);
+
+  // Country preference: read on mount + react to changes (popup, settings, other tabs)
+  useEffect(() => {
+    setCountryPref(getCountryPreference());
+    const sync = () => setCountryPref(getCountryPreference());
+    window.addEventListener(COUNTRY_CHANGE_EVENT, sync);
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'nudinadi_country') sync();
+    });
+    return () => {
+      window.removeEventListener(COUNTRY_CHANGE_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  // Auto-clear selected location if it's outside the active country
+  const countryToCityCode = (c: CountryPreference): City['country'] | null => {
+    if (c === 'ba') return 'BiH';
+    if (c === 'hr') return 'HR';
+    if (c === 'rs') return 'RS';
+    return null;
+  };
+  const restrictToCountry = countryToCityCode(countryPref);
+  useEffect(() => {
+    if (restrictToCountry && selectedLocation && selectedLocation.country !== restrictToCountry) {
+      setSelectedLocation(null);
+    }
+  }, [restrictToCountry, selectedLocation]);
 
   // Persist currency preference
   useEffect(() => {
@@ -288,8 +317,7 @@ function HomeContent() {
       serverFilters.location = selectedLocation.name;
     }
 
-    // Country filter (from settings)
-    const countryPref = getCountryPreference();
+    // Country filter (from settings) — reactive state, updates on popup/settings change
     if (countryPref !== 'all') serverFilters.country = countryPref;
 
     // listing_type filter (Nekretnine: prodaja/najam/najam_kratkorocni)
@@ -307,7 +335,7 @@ function HomeContent() {
     else { serverFilters.sortBy = 'created_at'; serverFilters.sortOrder = 'desc'; }
 
     return serverFilters;
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants, aiCleanQuery, listingType]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants, aiCleanQuery, listingType, countryPref]);
 
   // Load products from Supabase (re-fetches when filters change)
   const filterVersion = useRef(0);
@@ -345,7 +373,7 @@ function HomeContent() {
         if (version === filterVersion.current) setIsLoadingProducts(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants]);
+  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants, countryPref]);
 
   // Load more products (infinite scroll — uses same server-side filters)
   const loadMoreProducts = useCallback(async () => {
@@ -1546,6 +1574,7 @@ function HomeContent() {
           onClose={() => setShowLocationPicker(false)}
           onSelect={setSelectedLocation}
           currentCity={selectedLocation}
+          restrictToCountry={restrictToCountry}
         />
 
         {/* FILTER MODAL */}

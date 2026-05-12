@@ -22,6 +22,7 @@ import { lookupChassis, chassisLabel, generateVehicleTags, type ChassisLookupRes
 const VehicleModelPicker = lazy(() => import('@/components/upload/VehicleModelPicker'));
 const AiModelVerifier = lazy(() => import('@/components/upload/AiModelVerifier'));
 import { type City, CITIES } from '@/lib/location';
+import { getCountryPreference } from '@/lib/country';
 import { BAM_RATE } from '@/lib/constants';
 
 // Lazy-loaded heavy components
@@ -2708,12 +2709,15 @@ function UploadPageInner() {
       // Fallback: if selectedCity is null (e.g. link-import or category changed after picking),
       // look up country from CITIES array by location name
       const resolvedCity = selectedCity ?? (formData.location ? CITIES.find(c => c.name === formData.location) ?? null : null);
-      const productCountry = resolvedCity?.country === 'RS' ? 'rs'
+      const cityCountry = resolvedCity?.country === 'RS' ? 'rs'
         : resolvedCity?.country === 'HR' ? 'hr'
         : resolvedCity?.country === 'BiH' ? 'ba'
         : resolvedCity?.country === 'DE' ? 'de'
         : resolvedCity?.country === 'AT' ? 'at'
         : null;
+      // Fallback: if city lookup failed, use the user's country preference (avoids NULL in DB)
+      const pref = getCountryPreference();
+      const productCountry = cityCountry ?? (pref !== 'all' ? pref : 'ba');
 
       // Merge price_type into attributes
       const priceTypeLabel = formData.priceType === 'mk' ? 'MK' : formData.priceType === 'negotiable' ? 'Po dogovoru' : 'Fiksno';

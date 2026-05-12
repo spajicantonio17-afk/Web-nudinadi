@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
-import { getUserProducts, deleteProduct, archiveProduct, unarchiveProduct, promoteProduct, isPromoted } from '@/services/productService';
+import { getUserProducts, deleteProduct, archiveProduct, unarchiveProduct, isPromoted } from '@/services/productService';
 import { isUsernameAvailable } from '@/services/profileService';
 import { getFavorites } from '@/services/favoriteService';
 import { uploadAvatar } from '@/services/uploadService';
@@ -17,6 +17,7 @@ import ProBadge from '@/components/ProBadge';
 import TeamInvitations from '@/components/TeamInvitations';
 import BusinessSettingsDrawer from '@/components/BusinessSettingsDrawer';
 import BuyCreditsModal from '@/components/BuyCreditsModal';
+import IstaknutiModal from '@/components/IstaknutiModal';
 import { isPro, isBusiness } from '@/lib/plans';
 import { useToast } from '@/components/Toast';
 import VerificationProgress from '@/components/VerificationProgress';
@@ -86,8 +87,7 @@ function ProfileContent() {
   const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
   const [deletingArchivedId, setDeletingArchivedId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
-  const [promotingId, setPromotingId] = useState<string | null>(null);
-  const [confirmPromoteId, setConfirmPromoteId] = useState<string | null>(null);
+  const [istaknutiProductId, setIstaknutiProductId] = useState<string | null>(null);
   const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
@@ -348,29 +348,6 @@ function ProfileContent() {
       logger.error('Unarchive failed:', err);
     } finally {
       setArchivingId(null);
-    }
-  };
-
-  // Promote product
-  const handlePromote = async (productId: string) => {
-    if (!user || promotingId) return;
-    if ((user.promotedCredits ?? 0) < 1) {
-      showToast('Nemate dostupnih kredita za promociju.', 'error');
-      return;
-    }
-    setPromotingId(productId);
-    try {
-      await promoteProduct(productId, user.id);
-      const until = new Date();
-      until.setDate(until.getDate() + 3);
-      setUserProducts(prev => prev.map(p => p.id === productId ? { ...p, promoted_until: until.toISOString() } : p));
-      showToast('Oglas promoviran na 3 dana!');
-      refreshProfile();
-    } catch (err) {
-      const msg = err instanceof Error && err.message === 'NO_CREDITS' ? 'Nemate dostupnih kredita.' : 'Greška pri promociji';
-      showToast(msg, 'error');
-    } finally {
-      setPromotingId(null);
     }
   };
 
@@ -1326,17 +1303,12 @@ function ProfileContent() {
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            if ((user?.promotedCredits ?? 0) < 1) {
-                                              setShowBuyCreditsModal(true);
-                                              return;
-                                            }
-                                            setConfirmPromoteId(p.id);
+                                            setIstaknutiProductId(p.id);
                                           }}
-                                          disabled={promotingId === p.id}
-                                          title={(user?.promotedCredits ?? 0) < 1 ? "Nemaš kredita — klikni za kupovinu" : "Promoviraj oglas (3 dana)"}
-                                          className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors disabled:opacity-50 text-[var(--c-text-muted)] hover:text-amber-400"
+                                          title="Istakni oglas"
+                                          className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[var(--c-text-muted)] hover:text-amber-400 transition-colors"
                                         >
-                                          <i className={`text-sm ${promotingId === p.id ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-rocket'}`}></i>
+                                          <i className="fa-solid fa-rocket text-sm"></i>
                                         </button>
                                       )}
                                       {isPromoted(p) && (
@@ -1467,41 +1439,20 @@ function ProfileContent() {
           onUpdate={refreshProfile}
         />
       )}
-      {/* CONFIRM PROMOTE POPUP */}
-      {confirmPromoteId && (
-        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmPromoteId(null)} />
-          <div className="relative bg-[var(--c-card)] border border-[var(--c-border2)] rounded-[20px] w-full max-w-sm p-6 shadow-2xl">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-                <i className="fa-solid fa-rocket text-amber-400"></i>
-              </div>
-              <div>
-                <h3 className="text-[15px] font-black text-[var(--c-text)]">Istaknuti oglas?</h3>
-                <p className="text-[11px] text-[var(--c-text3)]">Oglas će biti istaknut 3 dana</p>
-              </div>
-            </div>
-            <div className="bg-amber-500/8 border border-amber-500/15 rounded-[12px] px-4 py-3 mb-5 flex items-center justify-between">
-              <span className="text-[12px] text-[var(--c-text2)]">Cijena</span>
-              <span className="text-[13px] font-black text-amber-400">1 kredit</span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirmPromoteId(null)}
-                className="flex-1 py-3 rounded-[12px] bg-[var(--c-hover)] text-[var(--c-text2)] text-[13px] font-bold hover:bg-[var(--c-active)] transition-colors"
-              >
-                Odustani
-              </button>
-              <button
-                onClick={() => { handlePromote(confirmPromoteId); setConfirmPromoteId(null); }}
-                disabled={!!promotingId}
-                className="flex-1 py-3 rounded-[12px] bg-amber-500 text-white text-[13px] font-bold hover:bg-amber-600 transition-colors disabled:opacity-50"
-              >
-                {promotingId ? <i className="fa-solid fa-spinner animate-spin" /> : 'Istaknuti'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {istaknutiProductId && (
+        <IstaknutiModal
+          isOpen={!!istaknutiProductId}
+          onClose={() => setIstaknutiProductId(null)}
+          productId={istaknutiProductId}
+          creditBalance={user?.promotedCredits ?? 0}
+          onSuccess={(promotedUntil) => {
+            setUserProducts(prev => prev.map(p =>
+              p.id === istaknutiProductId ? { ...p, promoted_until: promotedUntil } : p
+            ));
+            showToast('Oglas uspješno istaknut!');
+            refreshProfile();
+          }}
+        />
       )}
 
       <BuyCreditsModal

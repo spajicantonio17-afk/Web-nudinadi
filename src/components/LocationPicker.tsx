@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { CITIES, searchCities, setSelectedLocation, clearSelectedLocation, detectGPSLocation, findNearestCity, type City } from '@/lib/location';
 
 interface LocationPickerProps {
@@ -8,6 +8,7 @@ interface LocationPickerProps {
   onClose: () => void;
   onSelect: (city: City | null) => void;
   currentCity: City | null;
+  restrictToCountry?: City['country'] | null;
 }
 
 const COUNTRY_LABELS: Record<City['country'], string> = {
@@ -28,20 +29,29 @@ const COUNTRY_FLAGS: Record<City['country'], string> = {
 
 const COUNTRY_ORDER: City['country'][] = ['BiH', 'HR', 'RS', 'DE', 'AT'];
 
-export default function LocationPicker({ isOpen, onClose, onSelect, currentCity }: LocationPickerProps) {
+export default function LocationPicker({ isOpen, onClose, onSelect, currentCity, restrictToCountry = null }: LocationPickerProps) {
   const [query, setQuery] = useState('');
   const [isDetecting, setIsDetecting] = useState(false);
   const [gpsError, setGpsError] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState<City['country'] | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<City['country'] | null>(restrictToCountry);
   const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set());
+
+  // Keep selectedCountry in sync if parent changes the restriction while picker is open
+  useEffect(() => {
+    if (restrictToCountry) setSelectedCountry(restrictToCountry);
+  }, [restrictToCountry]);
 
   const isSearching = query.trim().length > 0;
 
   const filteredCities = useMemo(() => {
-    if (isSearching) return searchCities(query);
+    if (isSearching) {
+      const results = searchCities(query);
+      return restrictToCountry ? results.filter(c => c.country === restrictToCountry) : results;
+    }
     if (selectedCountry) return CITIES.filter(c => c.country === selectedCountry);
+    if (restrictToCountry) return CITIES.filter(c => c.country === restrictToCountry);
     return CITIES;
-  }, [query, selectedCountry, isSearching]);
+  }, [query, selectedCountry, isSearching, restrictToCountry]);
 
   // Group: country → region → cities
   const groupedByCountryRegion = useMemo(() => {
@@ -98,6 +108,10 @@ export default function LocationPicker({ isOpen, onClose, onSelect, currentCity 
     try {
       const coords = await detectGPSLocation();
       const nearest = findNearestCity(coords.lat, coords.lng);
+      if (restrictToCountry && nearest.country !== restrictToCountry) {
+        setGpsError(`Vaša lokacija je izvan odabrane države (${COUNTRY_LABELS[restrictToCountry]})`);
+        return;
+      }
       handleSelect(nearest);
     } catch (err) {
       setGpsError(err instanceof Error ? err.message : 'Greška pri detekciji lokacije');
@@ -114,7 +128,8 @@ export default function LocationPicker({ isOpen, onClose, onSelect, currentCity 
   if (!isOpen) return null;
 
   // ── Step 1: Country picker (shown when no country selected and not searching) ──
-  const showCountryPicker = !isSearching && !selectedCountry;
+  // Skipped entirely when restrictToCountry is set — user shouldn't pick a different country
+  const showCountryPicker = !isSearching && !selectedCountry && !restrictToCountry;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-4">
@@ -126,8 +141,8 @@ export default function LocationPicker({ isOpen, onClose, onSelect, currentCity 
         <div className="p-4 sm:p-6 border-b border-[var(--c-border)] shrink-0">
           <div className="flex items-center justify-between mb-4 sm:mb-5">
             <div className="flex items-center gap-3 min-w-0 flex-1 mr-3">
-              {/* Back button when inside a country */}
-              {selectedCountry && !isSearching && (
+              {/* Back button when inside a country (hidden when locked to one country) */}
+              {selectedCountry && !isSearching && !restrictToCountry && (
                 <button
                   onClick={handleBack}
                   className="w-8 h-8 rounded-full bg-[var(--c-hover)] flex items-center justify-center text-[var(--c-text2)] hover:text-[var(--c-text)] transition-colors shrink-0"
@@ -177,7 +192,7 @@ export default function LocationPicker({ isOpen, onClose, onSelect, currentCity 
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Traži grad u svim zemljama..."
+              placeholder={restrictToCountry ? `Traži grad (${COUNTRY_LABELS[restrictToCountry]})...` : 'Traži grad u svim zemljama...'}
               className="w-full bg-[var(--c-input)] border border-[var(--c-border2)] rounded-[14px] py-3.5 pl-11 pr-4 text-sm text-[var(--c-text)] placeholder:text-[var(--c-placeholder)] outline-none focus:border-blue-500/50 transition-colors"
             />
           </div>
