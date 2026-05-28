@@ -5,6 +5,7 @@
 --
 -- Categories are public reference data — everyone should be able to read them.
 
+DROP POLICY IF EXISTS "categories_select_public" ON categories;
 CREATE POLICY "categories_select_public"
   ON categories FOR SELECT
   USING (true);

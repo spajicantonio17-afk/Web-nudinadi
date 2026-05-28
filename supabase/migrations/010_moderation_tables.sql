@@ -4,6 +4,9 @@
 -- Creates tables for moderation reports, actions, warnings, bans, and AI logs.
 -- Based on types defined in src/lib/database.types.ts
 
+-- ─── Prerequisite: profiles.is_admin (also added by migration 016, idempotent) ──
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false NOT NULL;
+
 -- ─── Enums ──────────────────────────────────────────
 
 DO $$ BEGIN

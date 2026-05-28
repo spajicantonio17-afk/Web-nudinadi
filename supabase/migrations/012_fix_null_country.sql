@@ -7,6 +7,15 @@
 --
 -- Fix: backfill all NULL → 'ba' (default market), then enforce NOT NULL with default.
 
+-- 0. Prerequisite: currency + country columns (also added by add_currency_country_to_products.sql,
+--    which the Supabase CLI skips because its filename has no numeric prefix). Idempotent.
+ALTER TABLE products
+  ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'EUR'
+  CHECK (currency IN ('EUR', 'BAM', 'RSD'));
+ALTER TABLE products
+  ADD COLUMN IF NOT EXISTS country TEXT
+  CHECK (country IN ('ba', 'hr', 'rs', 'de', 'at'));
+
 -- 1. Backfill remaining NULLs to 'ba'
 UPDATE products SET country = 'ba' WHERE country IS NULL;
 
