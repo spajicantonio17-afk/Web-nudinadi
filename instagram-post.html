@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NudiNađi – Instagram Post</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Inter+Tight:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .post {
+    width: 1080px;
+    height: 1080px;
+    position: relative;
+    background: linear-gradient(145deg, #0a0c18 0%, #0d1225 40%, #111d35 100%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px;
+  }
+
+  /* Background ambient glows */
+  .glow-blue {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%);
+    top: -100px;
+    right: -100px;
+    pointer-events: none;
+  }
+  .glow-purple {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+    bottom: -100px;
+    left: -50px;
+    pointer-events: none;
+  }
+  .glow-center {
+    position: absolute;
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(37,99,235,0.08) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* Subtle grid overlay */
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* Header row */
+  .header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 52px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .emblem {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1D4ED8, #2563EB);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 24px rgba(37,99,235,0.5), 0 4px 12px rgba(0,0,0,0.4);
+    overflow: hidden;
+  }
+
+  .emblem img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px;
+  }
+
+  .emblem-fallback {
+    font-size: 26px;
+    font-weight: 900;
+    color: white;
+    font-family: 'Inter Tight', sans-serif;
+    letter-spacing: -1px;
+  }
+
+  .ai-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(37,99,235,0.2));
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 100px;
+    padding: 8px 18px;
+    backdrop-filter: blur(10px);
+  }
+
+  .ai-badge .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #a855f7;
+    box-shadow: 0 0 8px #a855f7;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .ai-badge span {
+    font-size: 13px;
+    font-weight: 700;
+    color: #c4b5fd;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Main headline */
+  .headline-block {
+    width: 100%;
+    position: relative;
+    z-index: 10;
+    margin-bottom: 16px;
+  }
+
+  .headline {
+    font-family: 'Inter Tight', 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 156px;
+    line-height: 0.88;
+    letter-spacing: -6px;
+    color: #ffffff;
+    text-transform: uppercase;
+    position: relative;
+  }
+
+  .headline .line1 { display: block; }
+  .headline .line2 {
+    display: block;
+    background: linear-gradient(135deg, #3b82f6, #2563EB, #1D4ED8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Tagline */
+  .tagline {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #2563EB;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 10;
+    width: 100%;
+  }
+
+  /* Divider */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #2563EB, #a855f7, transparent);
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Feature pills */
+  .features {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 44px;
+    position: relative;
+    z-index: 10;
+    width: 100%;
+  }
+
+  .feature-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    backdrop-filter: blur(20px);
+    flex: 1;
+    justify-content: center;
+  }
+
+  .feature-pill .icon {
+    font-size: 20px;
+  }
+
+  .feature-pill .label {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.3px;
+  }
+
+  .feature-pill.blue { border-color: rgba(37,99,235,0.4); }
+  .feature-pill.green { border-color: rgba(16,185,129,0.4); }
+  .feature-pill.amber { border-color: rgba(245,158,11,0.4); }
+
+  /* Phone mockup */
+  .phone-wrapper {
+    position: relative;
+    z-index: 10;
+    margin-bottom: 44px;
+  }
+
+  .phone {
+    width: 280px;
+    height: 184px;
+    background: #121829;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    box-shadow:
+      0 0 60px rgba(37,99,235,0.25),
+      0 30px 80px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .phone-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2px;
+  }
+
+  .phone-logo {
+    font-size: 10px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .phone-search {
+    flex: 1;
+    margin: 0 10px;
+    height: 18px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 4px;
+  }
+
+  .phone-search-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #2563EB;
+  }
+
+  .phone-search-bar {
+    height: 3px;
+    flex: 1;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+  }
+
+  .phone-cards {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .phone-card {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .phone-card-img {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .phone-card-img.car { background: linear-gradient(135deg, #1e3a5f, #1D4ED8); }
+  .phone-card-img.home { background: linear-gradient(135deg, #1a3a2a, #10b981); }
+  .phone-card-img.phone-icon { background: linear-gradient(135deg, #3a1a4a, #a855f7); }
+
+  .phone-card-info {
+    padding: 6px;
+    flex: 1;
+  }
+
+  .phone-card-title {
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    margin-bottom: 4px;
+    width: 70%;
+  }
+
+  .phone-card-price {
+    height: 4px;
+    background: rgba(37,99,235,0.6);
+    border-radius: 2px;
+    width: 45%;
+  }
+
+  /* Bottom section */
+  .bottom {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    position: relative;
+    z-index: 10;
+  }
+
+  .slogan {
+    font-size: 22px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    font-style: italic;
+    letter-spacing: 0.3px;
+  }
+
+  .slogan strong {
+    color: #fff;
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  .handle {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.5px;
+  }
+
+  /* Corner decoration */
+  .corner-tl {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    width: 40px;
+    height: 40px;
+    border-top: 2px solid rgba(37,99,235,0.4);
+    border-left: 2px solid rgba(37,99,235,0.4);
+    border-radius: 4px 0 0 0;
+  }
+
+  .corner-tr {
+    position: absolute;
+    top: 32px;
+    right: 32px;
+    width: 40px;
+    height: 40px;
+    border-top: 2px solid rgba(37,99,235,0.4);
+    border-right: 2px solid rgba(37,99,235,0.4);
+    border-radius: 0 4px 0 0;
+  }
+
+  .corner-bl {
+    position: absolute;
+    bottom: 32px;
+    left: 32px;
+    width: 40px;
+    height: 40px;
+    border-bottom: 2px solid rgba(37,99,235,0.4);
+    border-left: 2px solid rgba(37,99,235,0.4);
+    border-radius: 0 0 0 4px;
+  }
+
+  .corner-br {
+    position: absolute;
+    bottom: 32px;
+    right: 32px;
+    width: 40px;
+    height: 40px;
+    border-bottom: 2px solid rgba(37,99,235,0.4);
+    border-right: 2px solid rgba(37,99,235,0.4);
+    border-radius: 0 0 4px 0;
+  }
+
+  /* Print hint (hidden when screenshotting) */
+  .hint {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: #94a3b8;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    z-index: 9999;
+    font-family: monospace;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="post">
+  <!-- Ambient glows -->
+  <div class="glow-blue"></div>
+  <div class="glow-purple"></div>
+  <div class="glow-center"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Corner decorations -->
+  <div class="corner-tl"></div>
+  <div class="corner-tr"></div>
+  <div class="corner-bl"></div>
+  <div class="corner-br"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-area">
+      <div class="emblem">
+        <img src="/public/emblem.png" alt="NudiNađi" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=emblem-fallback>NN</span>'">
+      </div>
+    </div>
+    <div class="ai-badge">
+      <div class="dot"></div>
+      <span>AI-Powered</span>
+    </div>
+  </div>
+
+  <!-- Main headline -->
+  <div class="headline-block">
+    <div class="headline">
+      <span class="line1">NUDI</span>
+      <span class="line2">NAĐI</span>
+    </div>
+  </div>
+
+  <!-- Tagline -->
+  <div class="tagline">TRGOVINA REDEFINIRANA</div>
+
+  <!-- Divider -->
+  <div class="divider"></div>
+
+  <!-- Feature pills -->
+  <div class="features">
+    <div class="feature-pill blue">
+      <span class="icon">🤖</span>
+      <span class="label">AI Pretraga</span>
+    </div>
+    <div class="feature-pill green">
+      <span class="icon">🔒</span>
+      <span class="label">Sigurno</span>
+    </div>
+    <div class="feature-pill amber">
+      <span class="icon">⚡</span>
+      <span class="label">20+ Kategorija</span>
+    </div>
+  </div>
+
+  <!-- Phone mockup -->
+  <div class="phone-wrapper">
+    <div class="phone">
+      <div class="phone-header">
+        <span class="phone-logo">NudiNađi</span>
+        <div class="phone-search">
+          <div class="phone-search-dot"></div>
+          <div class="phone-search-bar"></div>
+        </div>
+      </div>
+      <div class="phone-cards">
+        <div class="phone-card">
+          <div class="phone-card-img car">🚗</div>
+          <div class="phone-card-info">
+            <div class="phone-card-title"></div>
+            <div class="phone-card-price"></div>
+          </div>
+        </div>
+        <div class="phone-card">
+          <div class="phone-card-img home">🏠</div>
+          <div class="phone-card-info">
+            <div class="phone-card-title"></div>
+            <div class="phone-card-price"></div>
+          </div>
+        </div>
+        <div class="phone-card">
+          <div class="phone-card-img phone-icon">📱</div>
+          <div class="phone-card-info">
+            <div class="phone-card-title"></div>
+            <div class="phone-card-price"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom -->
+  <div class="bottom">
+    <div class="slogan">Kupuj. Prodaj. <strong>Pametno.</strong></div>
+    <div class="handle">@nudinadi</div>
+  </div>
+
+</div>
+
+<div class="hint">📸 Screenshot bei 1080×1080px | Browser-Zoom: 100%</div>
+
+</body>
+</html>
