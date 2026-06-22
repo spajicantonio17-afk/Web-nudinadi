@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useFavorites } from '@/lib/favorites';
-import { useCart } from '@/lib/cart';
+import { useSaved } from '@/lib/saved';
 import { useToast } from '@/components/Toast';
 import { getProductById, incrementViews, deleteProduct, isPromoted } from '@/services/productService';
 import IstaknutiModal from '@/components/IstaknutiModal';
@@ -42,7 +42,7 @@ export default function ProductDetailPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const { isFavorite: checkFavorite, toggleFavorite } = useFavorites();
-  const { addToCart, isInCart } = useCart();
+  const { saveItem, isItemSaved } = useSaved();
   const { showToast } = useToast();
 
   const CONDITION_LABELS: Record<string, string> = {
@@ -50,7 +50,7 @@ export default function ProductDetailPage() {
   };
 
   const isFavorite = checkFavorite(params.id || '');
-  const inCart = isInCart(params.id || '');
+  const inCart = isItemSaved(params.id || '');
 
   const [product, setProduct] = useState<ProductFull | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -582,12 +582,12 @@ export default function ProductDetailPage() {
                         </button>
                     </div>
                     <button
-                        onClick={() => { if (!inCart) { addToCart(params.id || ''); showToast(t('product.addedToCart')); } else { showToast(t('product.alreadyInCart'), 'info'); } }}
+                        onClick={() => { if (!inCart) { saveItem(params.id || ''); showToast(t('product.addedToCart')); } else { showToast(t('product.alreadyInCart'), 'info'); } }}
                         aria-label={inCart ? t('product.alreadyInCartLabel') : t('product.addToCartLabel')}
                         aria-pressed={inCart}
                         className={`w-full h-12 text-xs font-bold uppercase tracking-widest transition-colors rounded-sm flex items-center justify-center gap-2 ${inCart ? 'bg-emerald-600 text-white hover:bg-emerald-500' : 'bg-blue-600 text-white hover:bg-blue-500'}`}
                     >
-                        <i className={`fa-solid ${inCart ? 'fa-check' : 'fa-bag-shopping'}`} aria-hidden="true"></i>
+                        <i className={`fa-${inCart ? 'solid fa-bookmark' : 'regular fa-bookmark'}`} aria-hidden="true"></i>
                         {inCart ? t('product.inCart') : t('product.buy')}
                     </button>
                 </div>

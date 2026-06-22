@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useCart } from '@/lib/cart';
+import { useSaved } from '@/lib/saved';
 import { useNotifications } from '@/lib/notifications';
 import { useAuth } from '@/lib/auth';
 import { getUnreadCount } from '@/services/messageService';
@@ -36,7 +36,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
   const [showSecurityInfo, setShowSecurityInfo] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const { items: cartItems } = useCart();
+  const { items: cartItems } = useSaved();
   const { unreadCount } = useNotifications();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -198,16 +198,16 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
 
           {/* Cart Icon — responsive size */}
           <Link
-            href="/cart"
+            href="/sacuvaj"
             className={`w-8 sm:w-7 md:w-8 lg:w-10 h-8 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
-              pathname === '/cart'
+              pathname === '/sacuvaj'
                 ? 'bg-emerald-600 text-white border-emerald-600'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
             }`}
-            aria-label={`Korpa${cartItems.length > 0 ? ` (${cartItems.length})` : ''}`}
+            aria-label={`Sačuvaj${cartItems.length > 0 ? ` (${cartItems.length})` : ''}`}
           >
             <div className="relative" aria-hidden="true">
-              <i className="fa-solid fa-bag-shopping text-xs md:text-sm"></i>
+              <i className="fa-regular fa-bookmark text-xs md:text-sm"></i>
               {cartItems.length > 0 && (
                 <div className="absolute -top-2 -right-2.5 min-w-[16px] h-[16px] md:min-w-[18px] md:h-[18px] bg-emerald-500 rounded-full border-2 border-[var(--c-card)] flex items-center justify-center">
                   <span className="text-[7px] md:text-[8px] font-black text-white">{cartItems.length}</span>
