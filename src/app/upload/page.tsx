@@ -2785,6 +2785,7 @@ function UploadPageInner() {
           location: formData.location.trim() || null,
           attributes: mergedAttributes,
           tags,
+          has_olx_images: importHadWatermarks || false,
         });
 
         // Award XP for upload
