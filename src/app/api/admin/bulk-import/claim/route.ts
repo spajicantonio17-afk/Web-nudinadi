@@ -144,6 +144,11 @@ export async function POST(req: NextRequest) {
     try {
       const categoryId = await resolveCategoryId(supabase, listing.category);
 
+      const images = listing.images || []
+      const hasOlxImages = images.some((img: string) =>
+        img.toLowerCase().includes('olx')
+      )
+
       const { error: prodErr } = await supabase.from('products').insert({
         seller_id: userId,
         title: listing.title || 'Bez naslova',
@@ -151,10 +156,11 @@ export async function POST(req: NextRequest) {
         price: listing.price ?? 0,
         currency: listing.currency || 'BAM',
         condition: listing.condition || 'used',
-        images: listing.images || [],
+        images,
         location: listing.location || null,
         category_id: categoryId,
         status: 'active',
+        has_olx_images: hasOlxImages,
       });
 
       if (prodErr) {

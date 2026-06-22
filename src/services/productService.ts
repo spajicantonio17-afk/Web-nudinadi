@@ -108,6 +108,9 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
     query = query.in('category_id', filters.category_ids)
   } else if (filters.category_id) {
     query = query.eq('category_id', filters.category_id)
+  } else {
+    // Main feed (no category filter): hide listings with OLX images
+    query = query.eq('has_olx_images', false)
   }
   if (filters.seller_id) query = query.eq('seller_id', filters.seller_id)
   if (filters.condition) query = query.eq('condition', filters.condition)
@@ -116,13 +119,13 @@ export async function getProducts(filters: ProductFilters = {}): Promise<{ data:
   if (filters.maxPrice !== undefined) query = query.lte('price', filters.maxPrice)
   if (filters.location) query = query.ilike('location', `%${filters.location}%`)
   if (filters.country === 'ba') {
-    query = query.eq('country', 'ba')
+    query = query.or('country.eq.ba,country.is.null')
   }
   if (filters.country === 'hr') {
-    query = query.eq('country', 'hr')
+    query = query.or('country.eq.hr,country.is.null')
   }
   if (filters.country === 'rs') {
-    query = query.eq('country', 'rs')
+    query = query.or('country.eq.rs,country.is.null')
   }
   if (filters.search) {
     // Use flexible_search RPC for AND→OR fallback with synonym support

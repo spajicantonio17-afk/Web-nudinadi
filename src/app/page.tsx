@@ -26,6 +26,7 @@ import { getCountryPreference, COUNTRY_CHANGE_EVENT, type CountryPreference } fr
 import CategoryFilterBar, { type AttributeFilters } from '@/components/CategoryFilterBar';
 import { logger } from '@/lib/logger';
 import { useI18n } from '@/lib/i18n';
+import HeroSection from '@/components/HeroSection';
 
 const PRIMARY_IDS = ['vozila', 'nekretnine', 'servisi', 'poslovi', 'tehnika', 'dom'];
 
@@ -689,6 +690,8 @@ function HomeContent() {
   return (
     <MainLayout>
       <div className="relative">
+
+        <HeroSection />
 
         {/* AI INFO MODAL */}
         {showAiInfo && (
