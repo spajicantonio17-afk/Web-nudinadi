@@ -571,7 +571,7 @@ function MessagesContent() {
 
   return (
     <MainLayout title="Poruke" showSigurnost={false} headerRight={null}>
-      <div className="flex h-[calc(100vh-210px)] sm:h-[calc(100vh-140px)] max-w-5xl mx-auto w-full gap-2 sm:gap-4 md:gap-6 overflow-hidden pt-2">
+      <div className="flex h-[calc(100dvh-210px)] sm:h-[calc(100dvh-140px)] max-w-5xl mx-auto w-full gap-2 sm:gap-4 md:gap-6 overflow-hidden pt-2">
 
         {/* --- LEFT SIDEBAR (People) --- */}
         <div className="w-[56px] sm:w-[68px] md:w-[260px] lg:w-[300px] flex flex-col gap-2 sm:gap-3 shrink-0 transition-all duration-300">

@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/api', '/auth', '/login', '/register', '/onboarding', '/cart', '/bulk-upload'],
+        disallow: ['/admin', '/api', '/auth', '/login', '/register', '/onboarding', '/cart', '/moj-biznis'],
       },
     ],
     sitemap: 'https://nudinadi.com/sitemap.xml',

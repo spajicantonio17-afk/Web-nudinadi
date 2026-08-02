@@ -3498,7 +3498,7 @@ function UploadPageInner() {
       </div>
 
       {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-[var(--c-border)]" style={{ background: 'var(--c-bg)' }}>
+      <div className="fixed bottom-0 left-0 right-0 border-t border-[var(--c-border)] pb-[env(safe-area-inset-bottom)]" style={{ background: 'var(--c-bg)' }}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex gap-3">
           <button
             onClick={() => setStep('form')}

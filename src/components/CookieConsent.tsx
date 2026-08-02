@@ -48,7 +48,7 @@ export default function CookieConsent() {
 
   return (
     <div
-      className={`fixed bottom-[72px] sm:bottom-0 left-0 right-0 z-[95] transition-transform duration-300 ease-out ${
+      className={`fixed bottom-[calc(72px+env(safe-area-inset-bottom))] sm:bottom-0 left-0 right-0 z-[95] transition-transform duration-300 ease-out ${
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >

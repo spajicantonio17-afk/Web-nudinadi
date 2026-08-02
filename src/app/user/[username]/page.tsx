@@ -254,7 +254,7 @@ function UserProfileContent() {
             {/* Edit button for owner */}
             {isOwnProfile && (
               <button
-                onClick={() => router.push('/profile')}
+                onClick={() => router.push('/moj-biznis?tab=postavke')}
                 className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-2.5 py-1.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white text-[10px] font-bold hover:bg-black/60 transition-all active:scale-95"
               >
                 <i className="fa-solid fa-pen text-[9px]"></i>
@@ -286,8 +286,8 @@ function UserProfileContent() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0 pb-1.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl font-black text-[var(--c-text)] truncate leading-tight">{profile.company_name || profile.username}</h2>
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <h2 className="text-xl font-black text-[var(--c-text)] truncate leading-tight max-w-full">{profile.company_name || profile.username}</h2>
                     <ProBadge accountType={profile.account_type} />
                     {profile.business_verified && (
                       <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
@@ -296,7 +296,7 @@ function UserProfileContent() {
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-[var(--c-text3)] mt-0.5">@{profile.username}</p>
+                  <p className="text-[11px] text-[var(--c-text3)] mt-0.5 truncate">@{profile.username}</p>
                 </div>
               </div>
             </div>
@@ -359,23 +359,23 @@ function UserProfileContent() {
           <div className="relative z-10">
             {/* Top row: Avatar + Name + Level */}
             <div className="flex items-start gap-4">
-              {/* Avatar */}
-              <div className="relative shrink-0 mt-1">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-[16px] md:rounded-[18px] bg-gradient-to-br from-[var(--c-avatar-border-from,#3b82f6)] to-[var(--c-avatar-border-to,#6366f1)] p-0.5 shadow-2xl shadow-blue-500/10">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={profile.avatar_url || '/default-avatar.svg'}
-                    alt={profile.username}
-                    className="w-full h-full object-cover rounded-[14px] md:rounded-[16px]"
-                  />
+              {/* Avatar (business: shop banner above already shows the logo identity) */}
+              {!isBiz && (
+                <div className="relative shrink-0 mt-1">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-[16px] md:rounded-[18px] bg-gradient-to-br from-[var(--c-avatar-border-from,#3b82f6)] to-[var(--c-avatar-border-to,#6366f1)] p-0.5 shadow-2xl shadow-blue-500/10">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={profile.avatar_url || '/default-avatar.svg'}
+                      alt={profile.username}
+                      className="w-full h-full object-cover rounded-[14px] md:rounded-[16px]"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Name + Location + Badges */}
               <div className="flex-1 min-w-0 pt-0.5">
-                {isBiz ? (
-                  <p className="text-[11px] text-[var(--c-text3)] font-medium leading-none">@{profile.username}</p>
-                ) : (
+                {!isBiz && (
                   <>
                     <h2 className="text-base md:text-lg font-black text-[var(--c-text)] tracking-tight leading-none truncate flex items-center gap-1.5">{profile.username} <ProBadge accountType={profile.account_type} /></h2>
                     {profile.full_name && (
@@ -474,7 +474,7 @@ function UserProfileContent() {
             <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mt-3">
               {isOwnProfile ? (
                 <button
-                  onClick={() => router.push('/profile')}
+                  onClick={() => router.push(isBiz ? '/moj-biznis' : '/profile')}
                   className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full hover:bg-blue-500/20 hover:border-blue-500/50 transition-all active:scale-95 shadow-lg"
                 >
                   <i className="fa-solid fa-pen text-[9px] md:text-[10px] text-blue-500"></i>

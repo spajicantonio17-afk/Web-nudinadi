@@ -15,10 +15,9 @@ import type { Profile, ProductWithSeller, Review, FavoriteWithProduct } from '@/
 import { xpForNextLevel } from '@/lib/database.types';
 import ProBadge from '@/components/ProBadge';
 import TeamInvitations from '@/components/TeamInvitations';
-import BusinessSettingsDrawer from '@/components/BusinessSettingsDrawer';
 import BuyCreditsModal from '@/components/BuyCreditsModal';
 import IstaknutiModal from '@/components/IstaknutiModal';
-import { isPro, isBusiness } from '@/lib/plans';
+import { isPro, isBusiness, getPlanLimits } from '@/lib/plans';
 import { useToast } from '@/components/Toast';
 import VerificationProgress from '@/components/VerificationProgress';
 import { logger } from '@/lib/logger';
@@ -94,9 +93,6 @@ function ProfileContent() {
   // ── Markirani (Favorites) ───────────────────────────────
   const [markedProducts, setMarkedProducts] = useState<FavoriteWithProduct[]>([]);
   const [markedLoading, setMarkedLoading] = useState(false);
-
-  // ── Business Settings Drawer ──────────────────────────
-  const [businessDrawerOpen, setBusinessDrawerOpen] = useState(false);
 
   // ── Edit Profile ──────────────────────────────────────
   const [verifyPopup, setVerifyPopup] = useState(false);
@@ -893,22 +889,13 @@ function ProfileContent() {
                         <span className="text-[8px] md:text-[9px] font-bold text-[var(--c-text2)] group-hover:text-red-500 uppercase tracking-wide">{t('profile.action.logout')}</span>
                     </button>
                     {isBusiness(user?.accountType) && (
-                        <>
-                            <button
-                                onClick={() => setBusinessDrawerOpen(true)}
-                                className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-full hover:bg-purple-500/20 hover:border-purple-500/50 transition-all active:scale-95 group shadow-lg"
-                            >
-                                <i className="fa-solid fa-building text-[9px] md:text-[10px] text-purple-500"></i>
-                                <span className="text-[8px] md:text-[9px] font-bold text-purple-500 uppercase tracking-wide">Poslovne postavke</span>
-                            </button>
-                            <button
-                                onClick={() => router.push(`/user/${user?.username}`)}
-                                className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-full hover:bg-purple-500/20 hover:border-purple-500/50 transition-all active:scale-95 group shadow-lg"
-                            >
-                                <i className="fa-solid fa-eye text-[9px] md:text-[10px] text-purple-500"></i>
-                                <span className="text-[8px] md:text-[9px] font-bold text-purple-500 uppercase tracking-wide">Spremi poslovni profil</span>
-                            </button>
-                        </>
+                        <button
+                            onClick={() => router.push('/moj-biznis')}
+                            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-full hover:bg-purple-500/20 hover:border-purple-500/50 transition-all active:scale-95 group shadow-lg"
+                        >
+                            <i className="fa-solid fa-building text-[9px] md:text-[10px] text-purple-500"></i>
+                            <span className="text-[8px] md:text-[9px] font-bold text-purple-500 uppercase tracking-wide">{t('business.dashboard')}</span>
+                        </button>
                     )}
                 </div>
             </div>
@@ -937,7 +924,7 @@ function ProfileContent() {
             </div>
             <div className="flex items-center gap-2 text-[11px] text-[var(--c-text3)]">
               <i className="fa-solid fa-rocket text-amber-400 text-xs"></i>
-              <span>Istaknuti krediti: <span className="font-bold text-[var(--c-text)]">{user?.promotedCredits ?? 0} / {user?.accountType === 'business' ? 10 : 3}</span></span>
+              <span>{t('profile.stats.promotedCredits')} <span className="font-bold text-[var(--c-text)]">{user?.promotedCredits ?? 0} / {getPlanLimits(user?.accountType).promotedCreditsPerMonth}</span></span>
             </div>
           </div>
         )}
@@ -1028,7 +1015,8 @@ function ProfileContent() {
                                 setMarkedProducts(prev => prev.filter(f => f.id !== fav.id));
                                 import('@/services/favoriteService').then(m => m.removeFavorite(user!.id, p.id)).catch(() => {});
                               }}
-                              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 before:absolute before:-inset-2 before:content-['']"
+                              aria-label="Ukloni iz favorita"
                             >
                               <i className="fa-solid fa-heart text-xs"></i>
                             </button>
@@ -1432,14 +1420,6 @@ function ProfileContent() {
             </div>
         )}
 
-      {user && isBusiness(user.accountType) && (
-        <BusinessSettingsDrawer
-          open={businessDrawerOpen}
-          onClose={() => setBusinessDrawerOpen(false)}
-          user={user}
-          onUpdate={refreshProfile}
-        />
-      )}
       {istaknutiProductId && (
         <IstaknutiModal
           isOpen={!!istaknutiProductId}

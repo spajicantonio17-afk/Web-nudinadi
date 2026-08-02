@@ -128,11 +128,12 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
                   <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0 mt-1.5 group-hover:opacity-0 transition-opacity"></div>
                 )}
 
-                {/* Dismiss button — visible on hover */}
+                {/* Dismiss button — always visible on touch (no hover there), fades in on hover for pointer devices */}
                 <button
                   onClick={(e) => { e.stopPropagation(); removeNotification(notif.id); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--c-hover)] border border-[var(--c-border)] items-center justify-center text-[var(--c-text3)] hover:text-red-400 hover:border-red-400/30 transition-all opacity-0 group-hover:opacity-100 hidden group-hover:flex"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--c-hover)] border border-[var(--c-border)] flex items-center justify-center text-[var(--c-text3)] hover:text-red-400 hover:border-red-400/30 transition-all opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                   title="Ukloni"
+                  aria-label="Ukloni obavještenje"
                 >
                   <i className="fa-solid fa-xmark text-[9px]"></i>
                 </button>

@@ -941,7 +941,8 @@ function HomeContent() {
         )}
 
         {/* STICKY HEADER SECTION */}
-        <div className="sticky top-14 md:top-16 z-30 bg-[var(--c-glass)] backdrop-blur-[12px] -mx-4 px-4 pt-2 md:pt-3 pb-0 border-b border-[var(--c-border)] shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-all">
+        {/* negative margin must match MainLayout's main padding (px-3 mobile / px-4 sm+) */}
+        <div className="sticky top-14 md:top-16 z-30 bg-[var(--c-glass)] backdrop-blur-[12px] -mx-3 px-3 sm:-mx-4 sm:px-4 pt-2 md:pt-3 pb-0 border-b border-[var(--c-border)] shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-all">
 
           {/* TOP ROW: Security right */}
           <div className="flex items-center justify-end mb-2 px-1">

@@ -58,15 +58,17 @@ export async function GET(req: NextRequest) {
   }
   results.expired_transactions = expiredTxns?.length ?? 0
 
-  // 5. Downgrade expired business accounts
-  const { data: expiredBusiness } = await admin
+  // 5. Downgrade expired pro/business accounts.
+  // 3-day grace period so a delayed Stripe invoice.paid webhook can't race the cron.
+  const gracePeriodCutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: expiredPlans } = await admin
     .from('profiles')
-    .update({ account_type: 'free', business_verified: false })
-    .lt('business_until', now)
-    .eq('account_type', 'business')
-    .not('business_until', 'is', null)
+    .update({ account_type: 'free', business_verified: false, plan_expires_at: null, promoted_credits: 0 })
+    .lt('plan_expires_at', gracePeriodCutoff)
+    .in('account_type', ['pro', 'business'])
+    .not('plan_expires_at', 'is', null)
     .select('id')
-  results.expired_business = expiredBusiness?.length ?? 0
+  results.expired_plans = expiredPlans?.length ?? 0
 
   // 8. Mark expired pending_claims as 'expired'
   const { data: expiredClaims } = await admin

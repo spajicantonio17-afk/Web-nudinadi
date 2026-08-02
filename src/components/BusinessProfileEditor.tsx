@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { updateBusinessProfile } from '@/services/businessService';
 import { uploadProductImage } from '@/services/uploadService';
 import { useToast } from '@/components/Toast';
+import { useI18n } from '@/lib/i18n';
 import type { AuthUser } from '@/lib/auth';
 import { getSupabase } from '@/lib/supabase';
 import { BUSINESS_DAYS, BUSINESS_TYPES } from '@/lib/constants';
@@ -12,11 +13,11 @@ import { BUSINESS_DAYS, BUSINESS_TYPES } from '@/lib/constants';
 interface Props {
   user: AuthUser;
   onUpdate: () => void;
-  onSaveSuccess?: () => void;
 }
 
-export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }: Props) {
+export default function BusinessProfileEditor({ user, onUpdate }: Props) {
   const { showToast } = useToast();
+  const { t } = useI18n();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -66,7 +67,7 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
       const url = await uploadProductImage(user.id, file);
       setCompanyLogo(url);
     } catch {
-      showToast('Greška pri uploadu loga', 'error');
+      showToast(t('business.logoUploadError'), 'error');
     } finally {
       setUploadingLogo(false);
     }
@@ -80,7 +81,7 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
       const url = await uploadProductImage(user.id, file);
       setBannerImage(url);
     } catch {
-      showToast('Greška pri uploadu bannera', 'error');
+      showToast(t('business.bannerUploadError'), 'error');
     } finally {
       setUploadingBanner(false);
     }
@@ -97,61 +98,46 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
     }));
   };
 
-  const handleSave = async () => {
+  const buildPayload = () => {
+    let url = website.trim();
+    if (url && !url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+    return {
+      company_name: companyName.trim() || null,
+      company_logo: companyLogo || null,
+      banner_image: bannerImage || null,
+      business_address: address.trim() || null,
+      business_hours: Object.keys(hours).length > 0 ? hours : null,
+      business_category: category || null,
+      website_url: url || null,
+    };
+  };
+
+  const saveProfile = async (): Promise<boolean> => {
     setSaving(true);
     try {
-      let url = website.trim();
-      if (url && !url.startsWith('http')) {
-        url = 'https://' + url;
-      }
-
-      await updateBusinessProfile(user.id, {
-        company_name: companyName.trim() || null,
-        company_logo: companyLogo || null,
-        banner_image: bannerImage || null,
-        business_address: address.trim() || null,
-        business_hours: Object.keys(hours).length > 0 ? hours : null,
-        business_category: category || null,
-        website_url: url || null,
-      });
-      showToast('Poslovni profil ažuriran!');
+      await updateBusinessProfile(user.id, buildPayload());
+      showToast(t('business.saved'));
       onUpdate();
       router.refresh();
-      if (onSaveSuccess) {
-        onSaveSuccess();
-      }
+      return true;
     } catch {
-      showToast('Greška pri snimanju', 'error');
+      showToast(t('business.saveError'), 'error');
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
-  const handleViewProfile = async () => {
-    setSaving(true);
-    try {
-      let url = website.trim();
-      if (url && !url.startsWith('http')) {
-        url = 'https://' + url;
-      }
+  const handleSave = () => {
+    saveProfile();
+  };
 
-      await updateBusinessProfile(user.id, {
-        company_name: companyName.trim() || null,
-        company_logo: companyLogo || null,
-        banner_image: bannerImage || null,
-        business_address: address.trim() || null,
-        business_hours: Object.keys(hours).length > 0 ? hours : null,
-        business_category: category || null,
-        website_url: url || null,
-      });
-      showToast('Poslovni profil ažuriran!');
-      onUpdate();
-      router.refresh();
+  const handleViewProfile = async () => {
+    const ok = await saveProfile();
+    if (ok) {
       router.push('/user/' + user.username);
-    } catch {
-      showToast('Greška pri snimanju', 'error');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -159,24 +145,24 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
     <div className="bg-[var(--c-card)] border border-purple-500/20 rounded-[14px] p-5 space-y-4">
       <div className="flex items-center gap-2 mb-1">
         <i className="fa-solid fa-building text-purple-400 text-sm"></i>
-        <h3 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide">Poslovni profil</h3>
+        <h3 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide">{t('business.title')}</h3>
       </div>
 
       {/* Company Name */}
       <div>
-        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">Naziv firme</label>
+        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">{t('business.companyName')}</label>
         <input
           type="text"
           value={companyName}
           onChange={e => setCompanyName(e.target.value)}
-          placeholder="Npr. Auto Salon Sarajevo"
+          placeholder={t('business.companyNamePlaceholder')}
           className="w-full bg-[var(--c-bg)] border border-[var(--c-border)] rounded-[8px] px-3 py-2.5 text-[12px] text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-purple-500/50"
         />
       </div>
 
       {/* Logo */}
       <div>
-        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">Logo</label>
+        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">{t('business.logo')}</label>
         <div className="flex items-center gap-3">
           {companyLogo ? (
             <div className="w-14 h-14 rounded-[8px] border-2 border-[var(--c-border)] overflow-hidden shrink-0">
@@ -190,7 +176,7 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
           )}
           <label className="flex items-center gap-1.5 px-3 py-2 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[8px] text-[10px] font-bold text-[var(--c-text3)] cursor-pointer hover:border-purple-500/40 transition-colors">
             {uploadingLogo ? <i className="fa-solid fa-spinner animate-spin text-xs"></i> : <i className="fa-solid fa-upload text-xs"></i>}
-            {uploadingLogo ? 'Upload...' : 'Promijeni logo'}
+            {uploadingLogo ? t('business.uploading') : t('business.changeLogo')}
             <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
           </label>
         </div>
@@ -198,7 +184,7 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
 
       {/* Banner */}
       <div>
-        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">Banner slika</label>
+        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">{t('business.banner')}</label>
         {bannerImage ? (
           <div className="w-full h-24 rounded-[8px] border border-[var(--c-border)] overflow-hidden mb-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -211,26 +197,26 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
         )}
         <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--c-hover)] border border-[var(--c-border)] rounded-[8px] text-[10px] font-bold text-[var(--c-text3)] cursor-pointer hover:border-purple-500/40 transition-colors">
           {uploadingBanner ? <i className="fa-solid fa-spinner animate-spin text-xs"></i> : <i className="fa-solid fa-upload text-xs"></i>}
-          {uploadingBanner ? 'Upload...' : 'Promijeni banner'}
+          {uploadingBanner ? t('business.uploading') : t('business.changeBanner')}
           <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
         </label>
       </div>
 
       {/* Address */}
       <div>
-        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">Adresa</label>
+        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">{t('business.address')}</label>
         <input
           type="text"
           value={address}
           onChange={e => setAddress(e.target.value)}
-          placeholder="Npr. Maršala Tita 15, 71000 Sarajevo"
+          placeholder={t('business.addressPlaceholder')}
           className="w-full bg-[var(--c-bg)] border border-[var(--c-border)] rounded-[8px] px-3 py-2.5 text-[12px] text-[var(--c-text)] placeholder-[var(--c-text-muted)] focus:outline-none focus:border-purple-500/50"
         />
       </div>
 
       {/* Website */}
       <div>
-        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">Web stranica</label>
+        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">{t('business.website')}</label>
         <input
           type="url"
           value={website}
@@ -242,7 +228,7 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
 
       {/* Category — Two-step selection */}
       <div>
-        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">Kategorija djelatnosti</label>
+        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-1.5">{t('business.category')}</label>
 
         {/* Step 1: Main group */}
         <div className="grid grid-cols-2 gap-1.5">
@@ -266,7 +252,7 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
         {/* Step 2: Subcategory pills */}
         {selectedGroup && (
           <div className="mt-3">
-            <p className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-wider mb-2">Odaberi vrstu djelatnosti:</p>
+            <p className="text-[9px] font-bold text-[var(--c-text3)] uppercase tracking-wider mb-2">{t('business.selectSubcategory')}</p>
             <div className="flex flex-wrap gap-1.5">
               {BUSINESS_TYPES.find(g => g.id === selectedGroup)?.subcategories.map(sub => (
                 <button
@@ -290,14 +276,14 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
         {category && (
           <div className="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-600 font-semibold">
             <i className="fa-solid fa-check-circle text-[9px]"></i>
-            Odabrano: <span className="font-black">{category}</span>
+            {t('business.selected')} <span className="font-black">{category}</span>
           </div>
         )}
       </div>
 
       {/* Business Hours */}
       <div>
-        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-2">Radno vrijeme</label>
+        <label className="text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-wider block mb-2">{t('business.hours')}</label>
         <div className="space-y-1.5">
           {BUSINESS_DAYS.map(day => {
             const isClosed = hours[day.key] === 'Zatvoreno';
@@ -320,7 +306,7 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
                       : 'bg-[var(--c-hover)] border-[var(--c-border)] text-[var(--c-text3)] hover:border-red-500/30'
                   }`}
                 >
-                  Zatvoreno
+                  {t('business.closed')}
                 </button>
               </div>
             );
@@ -336,9 +322,9 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
           className="flex-1 py-3 bg-purple-500 text-white rounded-[8px] text-[11px] font-black uppercase tracking-wider hover:bg-purple-600 transition-colors disabled:opacity-50"
         >
           {saving ? (
-            <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Snimanje...</>
+            <><i className="fa-solid fa-spinner animate-spin mr-2"></i>{t('business.saving')}</>
           ) : (
-            <><i className="fa-solid fa-save mr-2"></i>Spremi</>
+            <><i className="fa-solid fa-save mr-2"></i>{t('business.saveShort')}</>
           )}
         </button>
         <button
@@ -347,9 +333,9 @@ export default function BusinessProfileEditor({ user, onUpdate, onSaveSuccess }:
           className="flex-1 py-3 bg-[var(--c-bg)] border border-purple-500/50 text-purple-500 rounded-[8px] text-[11px] font-black uppercase tracking-wider hover:bg-purple-500/10 transition-colors disabled:opacity-50"
         >
           {saving ? (
-            <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Snimanje...</>
+            <><i className="fa-solid fa-spinner animate-spin mr-2"></i>{t('business.saving')}</>
           ) : (
-            <><i className="fa-solid fa-eye mr-2"></i>Pregledaj profil</>
+            <><i className="fa-solid fa-eye mr-2"></i>{t('business.previewProfile')}</>
           )}
         </button>
       </div>

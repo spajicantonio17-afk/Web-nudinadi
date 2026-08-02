@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     account_type: 'business',
     business_verified: true,
     company_name: claim.seller_name || username,
-    business_until: businessUntil,
+    plan_expires_at: businessUntil,
   };
 
   if (!existingProfile) {

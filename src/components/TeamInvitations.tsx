@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getMyInvitations, acceptInvitation, rejectInvitation } from '@/services/businessService';
 import { useToast } from '@/components/Toast';
+import { useI18n } from '@/lib/i18n';
 import type { Profile } from '@/lib/database.types';
 
 interface Invitation {
@@ -20,6 +21,7 @@ interface Props {
 
 export default function TeamInvitations({ userId }: Props) {
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -43,10 +45,10 @@ export default function TeamInvitations({ userId }: Props) {
     setProcessingId(id);
     try {
       await acceptInvitation(id, userId);
-      showToast('Poziv prihvaćen!');
+      showToast(t('business.inviteAccepted'));
       loadInvitations();
     } catch {
-      showToast('Greška pri prihvatanju poziva', 'error');
+      showToast(t('business.acceptError'), 'error');
     } finally {
       setProcessingId(null);
     }
@@ -56,10 +58,10 @@ export default function TeamInvitations({ userId }: Props) {
     setProcessingId(id);
     try {
       await rejectInvitation(id, userId);
-      showToast('Poziv odbijen');
+      showToast(t('business.inviteRejected'));
       loadInvitations();
     } catch {
-      showToast('Greška pri odbijanju poziva', 'error');
+      showToast(t('business.rejectError'), 'error');
     } finally {
       setProcessingId(null);
     }
@@ -72,7 +74,7 @@ export default function TeamInvitations({ userId }: Props) {
     <div className="bg-[var(--c-card)] border border-amber-500/20 rounded-[14px] p-5 space-y-3">
       <div className="flex items-center gap-2 mb-1">
         <i className="fa-solid fa-envelope-open text-amber-400 text-sm"></i>
-        <h3 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide">Pozivi u tim</h3>
+        <h3 className="text-[13px] font-black text-[var(--c-text)] uppercase tracking-wide">{t('business.teamInvites')}</h3>
         <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full">{invitations.length}</span>
       </div>
 
@@ -91,8 +93,8 @@ export default function TeamInvitations({ userId }: Props) {
               <div className="text-[11px] font-bold text-[var(--c-text)] truncate">
                 {inv.business?.company_name || inv.business?.full_name || 'Poslovni korisnik'}
               </div>
-              <div className="text-[9px] text-[var(--c-text-muted)]">
-                Pozvan kao <span className="font-bold">{inv.role === 'admin' ? 'Admin' : 'Član'}</span>
+              <div className="text-[9px] text-[var(--c-text-muted)] truncate">
+                {t('business.invitedAs')} <span className="font-bold">{inv.role === 'admin' ? t('business.admin') : t('business.member')}</span>
                 {' · '}
                 {new Date(inv.invited_at).toLocaleDateString('bs-BA')}
               </div>
@@ -101,16 +103,16 @@ export default function TeamInvitations({ userId }: Props) {
               <button
                 onClick={() => handleAccept(inv.id)}
                 disabled={processingId === inv.id}
-                className="px-3 py-1.5 bg-emerald-500 text-white rounded-[6px] text-[9px] font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                className="px-3 min-h-[44px] flex items-center bg-emerald-500 text-white rounded-[6px] text-[9px] font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50"
               >
-                {processingId === inv.id ? <i className="fa-solid fa-spinner animate-spin"></i> : 'Prihvati'}
+                {processingId === inv.id ? <i className="fa-solid fa-spinner animate-spin"></i> : t('business.accept')}
               </button>
               <button
                 onClick={() => handleReject(inv.id)}
                 disabled={processingId === inv.id}
-                className="px-3 py-1.5 bg-[var(--c-hover)] text-[var(--c-text3)] border border-[var(--c-border)] rounded-[6px] text-[9px] font-bold hover:border-red-500/30 hover:text-red-400 transition-colors disabled:opacity-50"
+                className="px-3 min-h-[44px] flex items-center bg-[var(--c-hover)] text-[var(--c-text3)] border border-[var(--c-border)] rounded-[6px] text-[9px] font-bold hover:border-red-500/30 hover:text-red-400 transition-colors disabled:opacity-50"
               >
-                Odbij
+                {t('business.reject')}
               </button>
             </div>
           </div>

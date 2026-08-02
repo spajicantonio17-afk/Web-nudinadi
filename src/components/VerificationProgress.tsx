@@ -61,7 +61,8 @@ function VerificationFull({ status, userId }: { status: VerificationStatus; user
   const router = useRouter();
   const { showToast } = useToast();
   const progress = (status.currentStep / status.totalSteps) * 100;
-  const [collected, setCollected] = useState(false);
+  // null = still checking whether XP was already collected — avoids flashing the card/button
+  const [collected, setCollected] = useState<boolean | null>(null);
   const [collecting, setCollecting] = useState(false);
 
   // Check if XP was already collected (persist across page reloads)
@@ -78,26 +79,27 @@ function VerificationFull({ status, userId }: { status: VerificationStatus; user
           .eq('activity_type', 'verification')
           .maybeSingle();
 
-        if (data) {
-          setCollected(true);
-        }
+        setCollected(!!data);
       } catch {
         // Non-critical — if check fails, just show the button
+        setCollected(false);
       }
     };
 
     checkAlreadyCollected();
   }, [userId]);
 
-  // Hide the card entirely if XP was already collected
-  if (collected) return null;
+  // Hide the card while the check is pending or once XP was already collected
+  if (collected === null || collected === true) return null;
 
   const handleCollectXp = async () => {
     if (!userId || collecting) return;
     setCollecting(true);
     try {
-      await logVerificationXp(userId);
-      showToast('+500 XP!');
+      const awarded = await logVerificationXp(userId);
+      if (awarded) {
+        showToast('+500 XP!');
+      }
       setCollected(true);
     } catch {
       showToast('Greska pri dodavanju XP-a');

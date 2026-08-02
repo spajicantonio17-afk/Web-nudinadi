@@ -17,7 +17,7 @@ export default function OnboardingPage() {
   }, [isAuthenticated, isLoading, router]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[var(--c-bg)] text-[var(--c-text)] relative font-sans select-none flex flex-col items-center justify-center p-8">
+    <div className="min-h-[100svh] w-full overflow-x-hidden overflow-y-auto bg-[var(--c-bg)] text-[var(--c-text)] relative font-sans select-none flex flex-col items-center justify-center p-8">
 
       {/* Background Ambience */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">

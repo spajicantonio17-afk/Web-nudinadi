@@ -9,8 +9,9 @@ import FontAwesomeLoader from "@/components/FontAwesomeLoader";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Pinch-zoom must stay available (WCAG 1.4.4). viewportFit: cover is what
+  // makes env(safe-area-inset-*) resolve to real values on notched devices.
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {

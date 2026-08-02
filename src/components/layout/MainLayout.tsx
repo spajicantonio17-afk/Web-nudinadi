@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { getUnreadCount } from '@/services/messageService';
 import NotificationPanel from '@/components/NotificationPanel';
 import SiteFooter from '@/components/layout/SiteFooter';
+import GuestBanner from '@/components/GuestBanner';
 import { isBusiness } from '@/lib/plans';
 
 interface MainLayoutProps {
@@ -199,7 +200,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {/* Cart Icon — responsive size */}
           <Link
             href="/sacuvaj"
-            className={`w-8 sm:w-7 md:w-8 lg:w-10 h-8 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
+            className={`relative w-8 sm:w-7 md:w-8 lg:w-10 h-8 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border before:absolute before:-inset-1.5 before:content-[''] sm:before:hidden ${
               pathname === '/sacuvaj'
                 ? 'bg-emerald-600 text-white border-emerald-600'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -219,7 +220,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           {/* Notification Bell — responsive size */}
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className={`w-8 sm:w-7 md:w-8 lg:w-10 h-8 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border ${
+            className={`relative w-8 sm:w-7 md:w-8 lg:w-10 h-8 sm:h-7 md:h-8 lg:h-10 rounded-[6px] flex items-center justify-center transition-all duration-150 border before:absolute before:-inset-1.5 before:content-[''] sm:before:hidden ${
               showNotifications
                 ? 'bg-amber-600 text-white border-amber-600'
                 : 'bg-[var(--c-card-alt)] border-[var(--c-border)] text-[var(--c-text3)] hover:bg-[var(--c-active)] hover:text-[var(--c-text2)]'
@@ -266,14 +267,14 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             </div>
           ) : isAuthenticated && user ? (
             <button
-              onClick={() => { if (isBusiness(user.accountType)) { router.refresh(); router.push(`/user/${user.username}`); } else { router.push('/profile'); } }}
+              onClick={() => router.push(isBusiness(user.accountType) ? '/moj-biznis' : '/profile')}
               className={`relative group flex items-center gap-2 md:gap-3 pl-1 pr-1 md:pr-4 py-1 rounded-[6px] transition-all duration-150 border ${
-                (isBusiness(user.accountType) ? pathname === `/user/${user.username}` : pathname === '/profile')
+                (isBusiness(user.accountType) ? pathname === '/moj-biznis' : pathname === '/profile')
                   ? 'bg-[var(--c-card-alt)] border-[var(--c-accent)]/50'
                   : 'border-transparent hover:bg-[var(--c-card-alt)]'
               }`}
             >
-              <div className={`w-7 h-7 md:w-9 md:h-9 rounded-full p-[2px] ${(isBusiness(user.accountType) ? pathname === `/user/${user.username}` : pathname === '/profile') ? 'blue-gradient' : 'bg-[var(--c-border)] group-hover:bg-[var(--c-active)]'}`}>
+              <div className={`w-7 h-7 md:w-9 md:h-9 rounded-full p-[2px] ${(isBusiness(user.accountType) ? pathname === '/moj-biznis' : pathname === '/profile') ? 'blue-gradient' : 'bg-[var(--c-border)] group-hover:bg-[var(--c-active)]'}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={user.avatarUrl || '/default-avatar.svg'}
@@ -282,7 +283,7 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
                 />
               </div>
               <div className="hidden md:block text-left">
-                <p className={`text-[13px] font-semibold leading-none ${pathname === `/user/${user.username}` ? 'text-[var(--c-text)]' : 'text-[var(--c-text2)]'}`}>{user.username}</p>
+                <p className={`text-[13px] font-semibold leading-none ${(isBusiness(user.accountType) ? pathname === '/moj-biznis' : pathname === '/profile') ? 'text-[var(--c-text)]' : 'text-[var(--c-text2)]'}`}>{user.username}</p>
                 <p className="text-[11px] text-[var(--c-accent)] font-semibold uppercase tracking-wider mt-0.5">Moj Profil</p>
               </div>
             </button>
@@ -431,19 +432,11 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
         </div>
       )}
 
-      {/* GUEST LOGIN BANNER */}
-      {!authLoading && !isAuthenticated && (
-        <div className="fixed top-12 sm:top-14 md:top-16 left-0 right-0 z-40 bg-[var(--c-accent)] text-white px-3 sm:px-4 py-1.5 sm:py-2 md:py-2.5 flex items-center justify-center gap-1.5 sm:gap-2 md:gap-3">
-          <i className="fa-solid fa-user-plus text-xs opacity-80"></i>
-          <span className="text-[11px] font-bold">Gost si — prijavi se ili napravi profil!</span>
-          <Link href="/login" className="ml-2 px-3 py-1 bg-[var(--c-card)] text-[var(--c-accent)] rounded-[4px] text-[12px] font-bold uppercase tracking-wider hover:bg-[var(--c-accent-light)] transition-all duration-150">
-            Prijavi se
-          </Link>
-        </div>
-      )}
+      {/* GUEST LOGIN BANNER — shown on all pages EXCEPT homepage (/) */}
+      <GuestBanner />
 
       {/* MAIN CONTENT AREA */}
-      <div className={`flex-1 flex flex-col ${!authLoading && !isAuthenticated ? 'pt-20 sm:pt-24 md:pt-28' : 'pt-14 sm:pt-16 md:pt-20'} min-w-0 relative z-10`}>
+      <div className={`flex-1 flex flex-col ${!authLoading && !isAuthenticated && pathname !== '/' ? 'pt-28 sm:pt-32 md:pt-36' : 'pt-14 sm:pt-16 md:pt-20'} min-w-0 relative z-10`}>
 
         {/* SECURITY INFO MODAL */}
         {showSecurityInfo && (
@@ -494,15 +487,15 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
       </div>
 
       {/* MOBILE BOTTOM NAV — Floating Pill */}
-      <nav aria-label="Mobilna navigacija" className="sm:hidden fixed bottom-0 left-0 right-0 z-[90] px-2 pb-3">
+      <nav aria-label="Mobilna navigacija" className="sm:hidden fixed bottom-0 left-0 right-0 z-[90] px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="flex justify-around items-center px-2 sm:px-4 py-2 rounded-[28px] bg-[var(--c-bg)]/80 backdrop-blur-xl border border-[var(--c-glass-border)] shadow-2xl">
-          <Link href="/" aria-label="Početna" aria-current={pathname === '/' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+          <Link href="/" aria-label="Početna" aria-current={pathname === '/' ? 'page' : undefined} className={`flex flex-col items-center justify-center gap-0.5 transition-all px-2 min-h-[44px] ${pathname === '/' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className="fa-solid fa-house text-[17px]" aria-hidden="true"></i>
             <span className="text-[9px] sm:text-[10px] font-semibold">Početna</span>
           </Link>
 
           {isAuthenticated && (
-          <Link href="/messages" aria-label={`Poruke${unreadMessages > 0 ? ` (${unreadMessages} nepročitanih)` : ''}`} aria-current={pathname === '/messages' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 relative ${pathname === '/messages' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+          <Link href="/messages" aria-label={`Poruke${unreadMessages > 0 ? ` (${unreadMessages} nepročitanih)` : ''}`} aria-current={pathname === '/messages' ? 'page' : undefined} className={`flex flex-col items-center justify-center gap-0.5 transition-all px-2 min-h-[44px] relative ${pathname === '/messages' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <div className="relative">
               <i className="fa-solid fa-comment-dots text-[17px]" aria-hidden="true"></i>
               {unreadMessages > 0 && (
@@ -521,13 +514,13 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
             </div>
           </Link>
 
-          <button onClick={() => { if (isAuthenticated && user) { if (isBusiness(user.accountType)) { router.refresh(); router.push(`/user/${user.username}`); } else { router.push('/profile'); } } else { router.push('/login'); } }} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${user && (isBusiness(user.accountType) ? pathname === `/user/${user.username}` : pathname === '/profile') ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+          <button onClick={() => { if (isAuthenticated && user) { router.push(isBusiness(user.accountType) ? '/moj-biznis' : '/profile'); } else { router.push('/login'); } }} aria-label={isAuthenticated ? 'Profil' : 'Prijavi se'} className={`flex flex-col items-center justify-center gap-0.5 transition-all px-2 min-h-[44px] ${user && (isBusiness(user.accountType) ? pathname === '/moj-biznis' : pathname === '/profile') ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className={`fa-solid ${isAuthenticated ? 'fa-user' : 'fa-right-to-bracket'} text-[17px]`} aria-hidden="true"></i>
             <span className="text-[9px] sm:text-[10px] font-semibold">{isAuthenticated ? 'Profil' : 'Prijava'}</span>
           </button>
 
           {isAuthenticated && (
-          <Link href="/menu" aria-label="Meni" aria-current={pathname === '/menu' ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 transition-all px-2 ${pathname === '/menu' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
+          <Link href="/menu" aria-label="Meni" aria-current={pathname === '/menu' ? 'page' : undefined} className={`flex flex-col items-center justify-center gap-0.5 transition-all px-2 min-h-[44px] ${pathname === '/menu' ? 'text-[var(--c-accent)]' : 'text-[var(--c-text3)]'}`}>
             <i className="fa-solid fa-bars text-[17px]" aria-hidden="true"></i>
             <span className="text-[9px] sm:text-[10px] font-semibold">Meni</span>
           </Link>

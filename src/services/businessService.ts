@@ -12,7 +12,6 @@ export async function updateBusinessProfile(userId: string, data: {
   business_address?: string | null;
   business_hours?: Record<string, string> | null;
   business_category?: string | null;
-  business_categories?: string[] | null;
   website_url?: string | null;
 }): Promise<void> {
   const { error } = await supabase
@@ -106,9 +105,10 @@ export async function findUserByEmail(emailOrUsername: string): Promise<Profile 
 // ─── My Invitations (for invited users) ─────────────────
 
 export async function getMyInvitations(userId: string): Promise<Array<BusinessTeamMemberWithProfile & { business?: Profile }>> {
+  // Narrow select — this runs on every /profile load for ALL users
   const { data, error } = await supabase
     .from('business_team_members')
-    .select('*, business:profiles!business_user_id(*)')
+    .select('id, business_user_id, role, invited_at, accepted_at, business:profiles!business_user_id(company_name, full_name, company_logo, avatar_url)')
     .eq('member_user_id', userId)
     .is('accepted_at', null)
     .order('invited_at', { ascending: false })

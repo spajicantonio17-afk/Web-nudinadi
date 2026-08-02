@@ -5,27 +5,36 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/lib/auth';
+import { PLAN_LIMITS } from '@/lib/plans';
+
+// Limits/flags derive from PLAN_LIMITS (single source of truth);
+// marketing-only rows stay literal.
+const { free: F, pro: P, business: B } = PLAN_LIMITS;
+const fmtActive = (n: number) => n === Infinity ? 'Neograničeno' : `${n} aktivnih`;
+const fmtImages = (n: number) => n === Infinity ? 'Neograničeno' : `Do ${n}`;
+// Bosnian paucal: 2-4 → "besplatna", otherwise "besplatnih"
+const fmtCredits = (n: number) => n === 0 ? 'Pojedinačno' : `${n} ${n >= 2 && n <= 4 ? 'besplatna' : 'besplatnih'}/mj`;
 
 const FEATURES = [
-  { name: 'Objavljivanje oglasa', free: '10 aktivnih', pro: '30 aktivnih', business: 'Neograničeno' },
-  { name: 'Slike po oglasu', free: 'Do 7', pro: 'Do 20', business: 'Neograničeno' },
-  { name: 'Istaknuti oglas', free: 'Pojedinačno', pro: '3 besplatna/mj', business: '10 besplatnih/mj' },
+  { name: 'Objavljivanje oglasa', free: fmtActive(F.maxActiveListings), pro: fmtActive(P.maxActiveListings), business: fmtActive(B.maxActiveListings) },
+  { name: 'Slike po oglasu', free: fmtImages(F.maxImagesPerListing), pro: fmtImages(P.maxImagesPerListing), business: fmtImages(B.maxImagesPerListing) },
+  { name: 'Istaknuti oglas', free: fmtCredits(F.promotedCreditsPerMonth), pro: fmtCredits(P.promotedCreditsPerMonth), business: fmtCredits(B.promotedCreditsPerMonth) },
   { name: 'Pretraga i filteri', free: true, pro: true, business: true },
   { name: 'AI Pretraga / Kategorija', free: true, pro: true, business: true },
   { name: 'Chat s kupcima i prodavačima', free: true, pro: true, business: true },
   { name: 'Favoriti', free: true, pro: true, business: true },
   { name: 'AI Link-Import', free: true, pro: true, business: true },
-  { name: 'AI Opis (Generiranje teksta)', free: false, pro: true, business: true },
-  { name: 'Statistike (pregledi, klikovi)', free: false, pro: true, business: true },
+  { name: 'AI Opis (Generiranje teksta)', free: F.aiDescription, pro: P.aiDescription, business: B.aiDescription },
+  { name: 'Statistike (pregledi, klikovi)', free: F.statistics, pro: P.statistics, business: B.statistics },
   { name: 'Pro značka na profilu', free: false, pro: true, business: true },
-  { name: 'Prioritet u rezultatima pretrage', free: false, pro: true, business: true },
+  { name: 'Prioritet u rezultatima pretrage', free: F.searchBoost > 0, pro: P.searchBoost > 0, business: B.searchBoost > 0 },
   { name: 'AI Foto → Oglas (mobilna aplikacija)', free: false, pro: false, business: true },
   { name: 'AI OCR (skeniranje auto dijelova)', free: false, pro: false, business: true },
-  { name: 'Bulk Upload (višestruko objavljivanje)', free: false, pro: false, business: true },
+  { name: 'Bulk Upload (višestruko objavljivanje)', free: F.bulkUpload, pro: P.bulkUpload, business: B.bulkUpload },
   { name: 'Verificirani poslovni profil', free: false, pro: false, business: true },
-  { name: 'Analitički dashboard', free: false, pro: false, business: true },
-  { name: 'Timski računi', free: false, pro: false, business: true },
-  { name: 'Prioritetna podrška', free: false, pro: false, business: true },
+  { name: 'Analitički dashboard', free: F.analyticsDashboard, pro: P.analyticsDashboard, business: B.analyticsDashboard },
+  { name: 'Timski računi', free: F.teamAccounts, pro: P.teamAccounts, business: B.teamAccounts },
+  { name: 'Prioritetna podrška', free: F.prioritySupport, pro: P.prioritySupport, business: B.prioritySupport },
 ];
 
 const FAQ = [
@@ -118,8 +127,8 @@ export default function PlansPage() {
                 <p className="text-[9px] text-[var(--c-text3)]">zauvijek besplatno</p>
               </div>
               <ul className="space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 10 aktivnih oglasa</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 7 slika po oglasu</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do {F.maxActiveListings} aktivnih oglasa</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do {F.maxImagesPerListing} slika po oglasu</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Pretraga</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Chat</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Favoriti</li>
@@ -147,10 +156,10 @@ export default function PlansPage() {
                 <p className="text-[9px] text-[var(--c-text3)]">bez ugovora</p>
               </div>
               <ul className="space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 30 aktivnih oglasa</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do 20 slika po oglasu</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do {P.maxActiveListings} aktivnih oglasa</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Do {P.maxImagesPerListing} slika po oglasu</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>AI Opis (Generiranje teksta)</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>3 besplatna istaknuta oglasa/mj</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>{P.promotedCreditsPerMonth} besplatna istaknuta oglasa/mj</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Statistike i analitika</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Pro značka + prioritet u pretrazi</li>
               </ul>
@@ -188,7 +197,7 @@ export default function PlansPage() {
               </div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Neograničeno oglasa</li>
-                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>10 besplatnih istaknutih oglasa/mj</li>
+                <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>{B.promotedCreditsPerMonth} besplatnih istaknutih oglasa/mj</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Verificirani poslovni profil</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Bulk Upload + Analitički dashboard</li>
                 <li className="flex items-center gap-2 text-[10px] text-[var(--c-text3)]"><i className="fa-solid fa-check text-emerald-400 text-[9px]"></i>Timski računi + prioritetna podrška</li>

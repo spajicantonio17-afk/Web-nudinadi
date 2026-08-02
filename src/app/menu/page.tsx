@@ -14,7 +14,6 @@ import AppSettings from '@/components/settings/AppSettings';
 import LanguageSettings from '@/components/settings/LanguageSettings';
 import EmailNotificationSettings from '@/components/EmailNotificationSettings';
 import { getBlockedUsers, unblockUser } from '@/services/blockService';
-import { isBusiness } from '@/lib/plans';
 import type { Profile } from '@/lib/database.types';
 
 type MenuStep = 'main' | 'account' | 'main-settings' | 'security' | 'devices' | 'notifications' | 'appearance' | 'language' | 'support' | 'verification' | 'blocked-users';
@@ -1164,15 +1163,6 @@ export default function MenuPage() {
             <MenuOption label={t('menu.appearance')} icon="fa-palette" onClick={() => setStep('appearance')} />
             <MenuOption label={t('menu.language')} icon="fa-globe" onClick={() => setStep('language')} />
         </div>
-
-        {/* POSLOVNI ALATI (only for Business users) */}
-        {isBusiness(user?.accountType) && (
-          <div>
-            <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-[var(--c-text-muted)] mb-3 mt-4 px-2">Poslovni alati</h2>
-            <MenuOption label="Analitika" icon="fa-chart-line" onClick={() => router.push('/analytics')} />
-            <MenuOption label="Masovno objavljivanje" icon="fa-layer-group" onClick={() => router.push('/bulk-upload')} />
-          </div>
-        )}
 
         {/* PODRŠKA */}
         <div>

@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
     deviceSizes: [375, 640, 750, 828, 1080],
     imageSizes: [16, 32, 48, 64, 96, 128],
   },
+  async redirects() {
+    return [
+      { source: '/analytics', destination: '/moj-biznis?tab=analitika', permanent: false },
+      { source: '/bulk-upload', destination: '/moj-biznis?tab=objave', permanent: false },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {
