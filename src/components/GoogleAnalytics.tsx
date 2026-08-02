@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Script from 'next/script'
+import { getConsent, COOKIE_CONSENT_EVENT } from '@/lib/cookieConsent'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
@@ -9,21 +10,15 @@ export default function GoogleAnalytics() {
   const [consentGiven, setConsentGiven] = useState(false)
 
   useEffect(() => {
-    const consent = localStorage.getItem('nudinadi_cookie_consent')
-    if (consent === 'all') {
-      setConsentGiven(true)
-    }
+    setConsentGiven(!!getConsent()?.analytics)
 
     const handleConsentChange = () => {
-      const updated = localStorage.getItem('nudinadi_cookie_consent')
-      if (updated === 'all') {
-        setConsentGiven(true)
-      }
+      setConsentGiven(!!getConsent()?.analytics)
     }
 
-    window.addEventListener('cookie-consent-changed', handleConsentChange)
+    window.addEventListener(COOKIE_CONSENT_EVENT, handleConsentChange)
     return () => {
-      window.removeEventListener('cookie-consent-changed', handleConsentChange)
+      window.removeEventListener(COOKIE_CONSENT_EVENT, handleConsentChange)
     }
   }, [])
 

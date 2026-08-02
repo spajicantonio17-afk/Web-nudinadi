@@ -3,14 +3,16 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
+import { hasConsented, acceptAll, acceptEssentialOnly } from '@/lib/cookieConsent'
+import CookiePreferencesModal from '@/components/CookiePreferencesModal'
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [preferencesOpen, setPreferencesOpen] = useState(false)
 
   useEffect(() => {
-    const consent = localStorage.getItem('nudinadi_cookie_consent')
-    if (!consent) {
+    if (!hasConsented()) {
       setMounted(true)
       // Small delay so the slide-up animation is visible
       requestAnimationFrame(() => {
@@ -21,17 +23,23 @@ export default function CookieConsent() {
     }
   }, [])
 
-  const handleAcceptAll = () => {
-    localStorage.setItem('nudinadi_cookie_consent', 'all')
+  const dismiss = () => {
     setVisible(false)
-    window.dispatchEvent(new Event('cookie-consent-changed'))
     setTimeout(() => setMounted(false), 300)
   }
 
+  const handleAcceptAll = () => {
+    acceptAll()
+    dismiss()
+  }
+
   const handleEssentialOnly = () => {
-    localStorage.setItem('nudinadi_cookie_consent', 'essential')
-    setVisible(false)
-    setTimeout(() => setMounted(false), 300)
+    acceptEssentialOnly()
+    dismiss()
+  }
+
+  const handlePreferencesSaved = () => {
+    dismiss()
   }
 
   const { t } = useI18n()
@@ -64,10 +72,10 @@ export default function CookieConsent() {
             {/* Buttons */}
             <div className="flex flex-col gap-2 sm:flex-row sm:shrink-0">
               <button
-                onClick={handleAcceptAll}
-                className="px-4 py-2 text-[11px] font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-[4px] hover:opacity-90 transition-opacity cursor-pointer"
+                onClick={() => setPreferencesOpen(true)}
+                className="px-4 py-2 text-[11px] font-bold text-[var(--c-text3)] border border-[var(--c-border)] rounded-[4px] hover:bg-[var(--c-hover)] transition-colors cursor-pointer"
               >
-                {t('cookie.acceptAll')}
+                {t('cookie.customize')}
               </button>
               <button
                 onClick={handleEssentialOnly}
@@ -75,10 +83,22 @@ export default function CookieConsent() {
               >
                 {t('cookie.essentialOnly')}
               </button>
+              <button
+                onClick={handleAcceptAll}
+                className="px-4 py-2 text-[11px] font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-[4px] hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                {t('cookie.acceptAll')}
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <CookiePreferencesModal
+        open={preferencesOpen}
+        onOpenChange={setPreferencesOpen}
+        onSaved={handlePreferencesSaved}
+      />
     </div>
   )
 }
