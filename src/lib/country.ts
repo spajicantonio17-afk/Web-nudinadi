@@ -4,21 +4,8 @@
 export type CountryPreference = 'ba' | 'hr' | 'rs' | 'all';
 
 const COUNTRY_KEY = 'nudinadi_country';
-const ONBOARDED_KEY = 'nudinadi_onboarded';
 const GPS_KEY = 'nudinadi_gps';
 const RADIUS_KEY = 'nudinadi_radius';
-
-// ── Onboarding ──────────────────────────────────────────────
-
-export function isOnboarded(): boolean {
-  if (typeof window === 'undefined') return true; // SSR: assume onboarded
-  return localStorage.getItem(ONBOARDED_KEY) === 'true';
-}
-
-export function setOnboarded(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(ONBOARDED_KEY, 'true');
-}
 
 // ── Country ─────────────────────────────────────────────────
 

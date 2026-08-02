@@ -7,7 +7,7 @@ import { I18nProvider } from '@/lib/i18n';
 import { ThemeProvider } from '@/lib/theme';
 import { NotificationProvider } from '@/lib/notifications';
 import NetworkStatus from '@/components/NetworkStatus';
-import WelcomePopup from '@/components/WelcomePopup';
+import OnboardingTour from '@/components/OnboardingTour';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Register Service Worker for PWA + push notifications
@@ -23,7 +23,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <ToastProvider>
             <NotificationProvider>
               <NetworkStatus />
-              <WelcomePopup />
+              <OnboardingTour />
               {children}
             </NotificationProvider>
           </ToastProvider>

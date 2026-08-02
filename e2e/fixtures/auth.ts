@@ -4,13 +4,15 @@ import { t, TEST_USERS, SUPABASE_LOCAL } from './i18n'
 type TestUser = (typeof TEST_USERS)[keyof typeof TEST_USERS]
 
 /**
- * The WelcomePopup and CookieConsent components are fixed overlays that
- * intercept clicks. Pre-seed their localStorage flags so neither renders.
+ * CookieConsent is a fixed overlay that intercepts clicks. OnboardingTour
+ * only shows right after a fresh registration (gated by the
+ * nudinadi_just_registered flag, which login()/these fixtures never set),
+ * so it doesn't need dismissing here. Pre-seed CookieConsent's flag and a
+ * fixed country so neither renders and currency formatting is deterministic.
  */
 export async function dismissOverlays(page: Page) {
   await page.addInitScript(() => {
     try {
-      localStorage.setItem('nudinadi_onboarded', 'true')
       localStorage.setItem('nudinadi_cookie_consent', 'all')
       localStorage.setItem('nudinadi_country', 'ba')
     } catch {
