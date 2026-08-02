@@ -487,8 +487,14 @@ const en: Record<string, string> = {
   'auth.or': 'or',
   'auth.emailRequired': 'Email is required',
   'auth.emailInvalid': 'Invalid email format',
+  'auth.emailDisposable': 'This email address is not allowed. Please use your real email address.',
   'auth.passwordRequired': 'Password is required',
   'auth.passwordMin': 'Minimum 6 characters',
+  'auth.passwordWeak': 'Password must be at least 8 characters with an uppercase letter, a lowercase letter, and a number.',
+  'auth.ruleMinLength': 'Min. 8 characters',
+  'auth.ruleUppercase': 'Uppercase letter',
+  'auth.ruleLowercase': 'Lowercase letter',
+  'auth.ruleDigit': 'Number',
   'auth.send': 'Send',
 
   // Auth / Register
@@ -535,7 +541,11 @@ const en: Record<string, string> = {
   'cookie.message': 'We use cookies to improve your experience and analytics. You can accept all cookies or use only essential ones.',
   'cookie.acceptAll': 'Accept all',
   'cookie.essentialOnly': 'Essential only',
+  'cookie.customize': 'Customize',
   'cookie.learnMore': 'Learn more',
+  'cookie.preferencesTitle': 'Cookie preferences',
+  'cookie.preferencesIntro': 'Choose which cookie categories you allow. Necessary cookies can\'t be turned off since they\'re required for the platform to work.',
+  'cookie.savePreferences': 'Save preferences',
 
   // Notification Component
   'notif.noNotifications': 'No notifications',
@@ -989,6 +999,23 @@ const en: Record<string, string> = {
   'onboarding.desc': 'lightning-fast search and a design that breathes.',
   'onboarding.register': 'Register',
   'onboarding.continueAsGuest': 'Continue as Guest',
+
+  // Post-registration tutorial (OnboardingTour)
+  'tour.welcomeTitle': 'Welcome to NudiNađi',
+  'tour.welcomeSubtitle': 'Set your preferences for the best experience',
+  'tour.countryQuestion': 'Where do you want NudiNađi to work for you?',
+  'tour.themeQuestion': 'Choose a theme',
+  'tour.settingsHintShort': 'You can change all of this later in Settings',
+  'tour.uploadTitle': 'Post your first listing',
+  'tour.uploadDesc': 'Tap the + button anywhere in the app to quickly create a new listing — done in a few steps.',
+  'tour.messagesTitle': 'All your messages in one place',
+  'tour.messagesDesc': 'Buyers and sellers message you directly through the app. Find every conversation in the Messages section.',
+  'tour.profileTitle': 'Your profile and settings',
+  'tour.profileDesc': 'From your profile you manage your listings, favorites, and account details.',
+  'tour.settingsHint': 'Tip: anything you set here (language, currency, theme, and more) can be changed later in Menu → Settings.',
+  'tour.next': 'Next',
+  'tour.finish': 'Get started',
+  'tour.skip': 'Skip',
 
   // Credits (Krediti) page
   'credits.title': 'My Credits',

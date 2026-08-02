@@ -487,8 +487,14 @@ const bs: Record<string, string> = {
   'auth.or': 'ili',
   'auth.emailRequired': 'Email je obavezan',
   'auth.emailInvalid': 'Neispravan email format',
+  'auth.emailDisposable': 'Ova email adresa nije dozvoljena. Koristi svoju stvarnu email adresu.',
   'auth.passwordRequired': 'Lozinka je obavezna',
   'auth.passwordMin': 'Minimalno 6 znakova',
+  'auth.passwordWeak': 'Lozinka mora imati min. 8 znakova, veliko i malo slovo i broj.',
+  'auth.ruleMinLength': 'Min. 8 znakova',
+  'auth.ruleUppercase': 'Veliko slovo',
+  'auth.ruleLowercase': 'Malo slovo',
+  'auth.ruleDigit': 'Broj',
   'auth.send': 'Pošalji',
 
   // Auth / Register
@@ -535,7 +541,11 @@ const bs: Record<string, string> = {
   'cookie.message': 'Koristimo kolačiće za poboljšanje vašeg iskustva i analitiku. Možete prihvatiti sve kolačiće ili koristiti samo neophodne.',
   'cookie.acceptAll': 'Prihvati sve',
   'cookie.essentialOnly': 'Samo neophodni',
+  'cookie.customize': 'Prilagodi',
   'cookie.learnMore': 'Saznaj više',
+  'cookie.preferencesTitle': 'Postavke kolačića',
+  'cookie.preferencesIntro': 'Odaberite koje kategorije kolačića dozvoljavate. Neophodni kolačići se ne mogu isključiti jer su potrebni za osnovno funkcionisanje platforme.',
+  'cookie.savePreferences': 'Sačuvaj odabir',
 
   // Notification Component
   'notif.noNotifications': 'Nema obavijesti',
@@ -990,6 +1000,23 @@ const bs: Record<string, string> = {
   'onboarding.desc': 'munjevita pretraga i dizajn koji diše.',
   'onboarding.register': 'Registracija',
   'onboarding.continueAsGuest': 'Nastavi kao Gost',
+
+  // Post-registracijski tutorial (OnboardingTour)
+  'tour.welcomeTitle': 'Dobrodošli na NudiNađi',
+  'tour.welcomeSubtitle': 'Postavi preference za najbolje iskustvo',
+  'tour.countryQuestion': 'Gdje želiš da ti radi NudiNađi?',
+  'tour.themeQuestion': 'Izaberi temu',
+  'tour.settingsHintShort': 'Sve možeš promijeniti u Postavke',
+  'tour.uploadTitle': 'Objavi svoj prvi oglas',
+  'tour.uploadDesc': 'Klikni na dugme + bilo gdje u aplikaciji da brzo napraviš novi oglas — u par koraka je gotovo.',
+  'tour.messagesTitle': 'Poruke na jednom mjestu',
+  'tour.messagesDesc': 'Kupci i prodavci ti pišu direktno kroz aplikaciju. Sve razgovore pronalaziš u sekciji Poruke.',
+  'tour.profileTitle': 'Tvoj profil i postavke',
+  'tour.profileDesc': 'U profilu upravljaš svojim oglasima, favoritima i podacima o računu.',
+  'tour.settingsHint': 'Savjet: sve što ovdje podesiš (jezik, valutu, temu i drugo) možeš kasnije promijeniti u Meni → Postavke.',
+  'tour.next': 'Dalje',
+  'tour.finish': 'Započni',
+  'tour.skip': 'Preskoči',
 
   // Krediti stranica
   'credits.title': 'Moji krediti',

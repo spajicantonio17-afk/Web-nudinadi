@@ -300,6 +300,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (email: string, password: string, username: string, phone?: string): Promise<RegisterResult> => {
   setLastError(null);
 
+  // Server-side disposable-email gate. A client-only check can be bypassed
+  // via DevTools, so this call is the real enforcement point.
+  try {
+    const checkRes = await fetch('/api/auth/check-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (checkRes.ok) {
+      const checkJson = await checkRes.json();
+      if (checkJson.allowed === false) {
+        setLastError(checkJson.error || 'Ova email adresa nije dozvoljena.');
+        return 'error';
+      }
+    }
+    // If the check itself fails (network error, non-200), fail open —
+    // don't block registration over an infra hiccup.
+  } catch (err) {
+    logger.warn('[register] check-email request failed, continuing:', err);
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,

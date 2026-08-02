@@ -6,6 +6,8 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
 import { useI18n } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
+import { registerEmailSchema, getPasswordRuleStatus, isPasswordValid } from '@/lib/validators/auth.schemas';
+import { markJustRegistered } from '@/lib/onboardingTour';
 
 // ─── OTP Code Input Component ────────────────────────────────
 function OtpInput({ length = 6, onComplete }: { length?: number; onComplete: (code: string) => void }) {
@@ -173,14 +175,22 @@ export default function RegisterPage() {
   const validate = () => {
     const e: typeof errors = {};
     if (!formData.email.trim()) e.email = t('auth.emailRequired');
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = t('auth.emailInvalid');
+    else {
+      const emailResult = registerEmailSchema.safeParse(formData.email);
+      if (!emailResult.success) {
+        const isFormatIssue = !/\S+@\S+\.\S+/.test(formData.email);
+        e.email = isFormatIssue ? t('auth.emailInvalid') : t('auth.emailDisposable');
+      }
+    }
     if (!formData.password) e.password = t('auth.passwordRequired');
-    else if (formData.password.length < 6) e.password = t('auth.passwordMin');
+    else if (!isPasswordValid(formData.password)) e.password = t('auth.passwordWeak');
     if (!formData.confirmPassword) e.confirmPassword = t('auth.confirmPasswordRequired');
     else if (formData.password !== formData.confirmPassword) e.confirmPassword = t('auth.passwordsMismatch');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
+
+  const passwordRules = getPasswordRuleStatus(formData.password);
 
   const handleRegister = async () => {
       if (!validate()) return;
@@ -191,10 +201,12 @@ export default function RegisterPage() {
         const result = await register(formData.email, formData.password, username, formData.phone || undefined);
 
         if (result === 'success') {
+          markJustRegistered();
           showToast(t('auth.registerSuccess'));
           setVerifyPhone(formData.phone);
           setShowVerification(true);
         } else if (result === 'needs_confirmation') {
+          markJustRegistered();
           setShowVerification(true);
         } else {
           setTimeout(() => {
@@ -356,6 +368,24 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   {errors.password && <p className="text-[10px] text-red-400 mt-1 ml-3">{errors.password}</p>}
+                  {formData.password.length > 0 && (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 ml-3">
+                      {[
+                        { ok: passwordRules.minLength, label: t('auth.ruleMinLength') },
+                        { ok: passwordRules.hasUppercase, label: t('auth.ruleUppercase') },
+                        { ok: passwordRules.hasLowercase, label: t('auth.ruleLowercase') },
+                        { ok: passwordRules.hasDigit, label: t('auth.ruleDigit') },
+                      ].map((rule, i) => (
+                        <span
+                          key={i}
+                          className={`text-[9px] font-semibold flex items-center gap-1 transition-colors ${rule.ok ? 'text-green-500' : 'text-[var(--c-text3)]'}`}
+                        >
+                          <i className={`fa-solid ${rule.ok ? 'fa-circle-check' : 'fa-circle'} text-[7px]`}></i>
+                          {rule.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
