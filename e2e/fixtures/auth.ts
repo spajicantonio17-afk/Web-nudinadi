@@ -4,7 +4,7 @@ import { t, TEST_USERS, SUPABASE_LOCAL } from './i18n'
 type TestUser = (typeof TEST_USERS)[keyof typeof TEST_USERS]
 
 /**
- * CookieConsent is a fixed overlay that intercepts clicks. OnboardingTour
+ * CookieConsent is a fixed overlay that intercepts clicks. CoachmarkTour
  * only shows right after a fresh registration (gated by the
  * nudinadi_just_registered flag, which login()/these fixtures never set),
  * so it doesn't need dismissing here. Pre-seed CookieConsent's flag and a

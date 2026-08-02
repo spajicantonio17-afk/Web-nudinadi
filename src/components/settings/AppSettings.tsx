@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   getCountryPreference, setCountryPreference, type CountryPreference,
   getGPSPosition, setGPSPosition, clearGPSPosition, type GPSPosition,
@@ -9,8 +10,10 @@ import {
 import { useTheme } from '@/lib/theme';
 import { detectGPSLocation, findNearestCity } from '@/lib/location';
 import { useI18n } from '@/lib/i18n';
+import { requestTourStart } from '@/lib/onboardingTour';
 
 export default function AppSettings() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { t } = useI18n();
   const [country, setCountry] = useState<CountryPreference>('all');
@@ -91,7 +94,7 @@ export default function AppSettings() {
       </div>
 
       {/* ── Country Filter ── */}
-      <section>
+      <section data-tour="settings-market">
         <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">
           {t('settings.market.showFrom')}
         </h2>
@@ -116,7 +119,7 @@ export default function AppSettings() {
       </section>
 
       {/* ── Theme ── */}
-      <section>
+      <section data-tour="settings-theme">
         <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">
           {t('menu.theme')}
         </h2>
@@ -231,6 +234,28 @@ export default function AppSettings() {
             <p className="text-[11px] text-red-400 font-medium">{gpsError}</p>
           </div>
         )}
+      </section>
+
+      {/* ── Tutorial ── */}
+      <section>
+        <h2 className="text-[11px] font-black uppercase tracking-[2px] text-[var(--c-text3)] mb-3 px-2">
+          {t('settings.tutorial.title')}
+        </h2>
+        <div className="bg-[var(--c-card)] border border-[var(--c-border)] rounded-[18px] overflow-hidden">
+          <button
+            onClick={() => { requestTourStart(); router.push('/profile'); }}
+            className="w-full flex items-center gap-3.5 p-4 transition-all text-left hover:bg-[var(--c-hover)]"
+          >
+            <div className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0 border bg-[var(--c-hover)] border-[var(--c-border2)] text-[var(--c-text2)]">
+              <i className="fa-solid fa-circle-play text-sm" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-[13px] font-bold text-[var(--c-text)]">{t('settings.tutorial.restart')}</h4>
+              <p className="text-[10px] text-[var(--c-text3)] mt-0.5">{t('settings.tutorial.restartDesc')}</p>
+            </div>
+            <i className="fa-solid fa-chevron-right text-[10px] text-[var(--c-text-muted)]" />
+          </button>
+        </div>
       </section>
 
       {/* ── Quick Info ── */}

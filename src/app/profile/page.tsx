@@ -819,7 +819,7 @@ function ProfileContent() {
                     </div>
 
                     {/* Level — desktop only (inline), hidden on mobile */}
-                    <div className="shrink-0 hidden md:flex flex-col items-end">
+                    <div data-tour="profile-level-desktop" className="shrink-0 hidden md:flex flex-col items-end">
                         <div className="flex items-center gap-1.5 mb-1">
                             <span className="text-[10px] font-black text-[var(--c-text3)] uppercase tracking-widest">Level</span>
                             <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-indigo-500 italic drop-shadow-[0_0_15px_rgba(59,130,246,0.2)]">{userLevel}</span>
@@ -839,7 +839,7 @@ function ProfileContent() {
                 </div>
 
                 {/* Level — mobile only (full width row below avatar+name) */}
-                <div className="md:hidden flex items-center gap-3 mt-3 px-1">
+                <div data-tour="profile-level-mobile" className="md:hidden flex items-center gap-3 mt-3 px-1">
                     <div className="flex items-center gap-1.5 shrink-0">
                         <span className="text-[9px] font-black text-[var(--c-text3)] uppercase tracking-widest">Level</span>
                         <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-indigo-500 italic">{userLevel}</span>
@@ -857,6 +857,7 @@ function ProfileContent() {
                 {/* Action Buttons Row — wraps on mobile */}
                 <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mt-3">
                     <button
+                        data-tour="profile-edit"
                         onClick={openEdit}
                         className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full hover:bg-blue-500/20 hover:border-blue-500/50 transition-all active:scale-95 group shadow-lg"
                     >
