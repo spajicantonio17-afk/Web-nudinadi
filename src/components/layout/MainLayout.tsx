@@ -289,14 +289,14 @@ export default function MainLayout({ children, headerRight, hideSearchOnMobile, 
           ) : (
             <Link
               href="/login"
-              className="relative group flex items-center gap-1.5 md:gap-2 pl-1.5 md:pl-2 pr-2 md:pr-3 py-1 md:py-1.5 rounded-[6px] transition-all duration-150 border border-[var(--c-border)] hover:bg-[var(--c-card-alt)]"
+              className="relative group flex items-center gap-1.5 md:gap-2.5 pl-1.5 md:pl-2.5 pr-2 md:pr-4 py-1 md:py-2 rounded-[6px] transition-all duration-150 border border-[var(--c-border)] hover:bg-[var(--c-card-alt)]"
             >
-              <div className="w-7 h-7 md:w-9 md:h-9 rounded-[6px] bg-[var(--c-card-alt)] border border-[var(--c-border)] flex items-center justify-center">
-                <i className="fa-solid fa-user-slash text-xs md:text-sm text-[var(--c-text3)]"></i>
+              <div className="w-7 h-7 md:w-9 md:h-9 lg:w-10 lg:h-10 rounded-[6px] bg-[var(--c-card-alt)] border border-[var(--c-border)] flex items-center justify-center">
+                <i className="fa-solid fa-user-slash text-xs md:text-sm lg:text-base text-[var(--c-text3)]"></i>
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-[12px] font-extrabold leading-none text-[var(--c-text2)] uppercase tracking-wider">GOST</p>
-                <p className="text-[11px] text-[var(--c-accent)] font-semibold uppercase tracking-wider mt-0.5">Prijavi se</p>
+                <p className="text-[13px] font-extrabold leading-none text-[var(--c-text2)] uppercase tracking-wider">GOST</p>
+                <p className="text-[12px] text-[var(--c-accent)] font-semibold uppercase tracking-wider mt-0.5">Prijavi se</p>
               </div>
             </Link>
           )}
