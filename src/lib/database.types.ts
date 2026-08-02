@@ -194,6 +194,7 @@ export interface ProductInsert {
   attributes?: Record<string, string | number | boolean | string[]> | null
   tags?: string[]
   is_featured?: boolean
+  has_olx_images?: boolean
 }
 
 export interface CategoryInsert {

@@ -45,6 +45,8 @@ interface ImportedData {
   };
   originalUrl?: string;
   _fallback?: boolean;
+  watermarkDetected?: boolean;
+  watermarkedImages?: number[];
 }
 
 // Human-readable labels for attribute keys
@@ -69,6 +71,7 @@ export default function LinkImportPage() {
   const [status, setStatus] = useState<ImportStatus>('idle');
   const [importedData, setImportedData] = useState<ImportedData | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [warnDismissed, setWarnDismissed] = useState(false);
 
   // Detect which platform from URL
   const detectPlatform = (u: string) => {
@@ -112,6 +115,7 @@ export default function LinkImportPage() {
       if (json.success && json.data) {
         setImportedData(json.data);
         setStatus('success');
+        setWarnDismissed(false);
         showToast(json.data._fallback ? 'Parcijalni import (samo osnovni podaci)' : 'Oglas uspješno importiran!');
       } else {
         setStatus('error');
@@ -304,6 +308,20 @@ export default function LinkImportPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Watermark warning */}
+            {importedData.watermarkDetected && !warnDismissed && (
+              <div className="flex items-center gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-[12px] text-sm">
+                <span className="text-amber-500 shrink-0">⚠️</span>
+                <span className="text-amber-800 flex-1 text-[12px]">
+                  Slike mogu sadržavati vodeni žig s druge platforme.{' '}
+                  <button onClick={handleCreateListing} className="text-blue-600 underline font-semibold whitespace-nowrap">
+                    Zamijeni fotografijama →
+                  </button>
+                </span>
+                <button onClick={() => setWarnDismissed(true)} className="text-amber-400 hover:text-amber-600 shrink-0 text-base leading-none">✕</button>
               </div>
             )}
 

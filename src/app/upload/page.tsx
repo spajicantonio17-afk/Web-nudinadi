@@ -1652,6 +1652,8 @@ function UploadPageInner() {
   // ── All state declarations (must be before any conditional returns) ──
   const [formErrors, setFormErrors] = useState<{ title?: string; price?: string; images?: string; category?: string }>({});
   const [images, setImages] = useState<File[]>([]);
+  const [importHadWatermarks, setImportHadWatermarks] = useState(false);
+  const [uploadWarnDismissed, setUploadWarnDismissed] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showAiWindow, setShowAiWindow] = useState(false);
   const [formData, setFormData] = useState({
@@ -2014,6 +2016,10 @@ function UploadPageInner() {
           }
         };
         downloadImages();
+      }
+
+      if (d.watermarkDetected) {
+        setImportHadWatermarks(true);
       }
 
       showToast('Oglas importiran — provjeri podatke i objavi!');
@@ -2779,6 +2785,7 @@ function UploadPageInner() {
           location: formData.location.trim() || null,
           attributes: mergedAttributes,
           tags,
+          has_olx_images: importHadWatermarks || false,
         });
 
         // Award XP for upload
@@ -5089,6 +5096,23 @@ function UploadPageInner() {
                   <>
                     <ImageUpload images={images} maxImages={effectiveMax} onImagesChange={(imgs) => { setImages(imgs); if (formErrors.images && imgs.length > 0) setFormErrors(prev => ({ ...prev, images: undefined })); }} onImageClick={(idx) => handleImagePreview('new', idx)} selectedIndex={selectedPreviewSource?.type === 'new' ? selectedPreviewSource.index : null} />
                     {formErrors.images && <p className="text-[10px] text-red-400 mt-1 ml-3">{formErrors.images}</p>}
+                    {(() => {
+                      if (!importHadWatermarks || uploadWarnDismissed) return null;
+                      const externalIndices = images
+                        .map((f, i) => (f.name.startsWith('import-') ? i + 1 : null))
+                        .filter((v): v is number => v !== null);
+                      if (externalIndices.length === 0) return null;
+                      const label = externalIndices.length === 1
+                        ? `Slika ${externalIndices[0]} je još s vanjske platforme.`
+                        : `Slike ${externalIndices.join(', ')} su još s vanjske platforme.`;
+                      return (
+                        <div className="flex items-center gap-2 mt-2 p-3 bg-amber-50 border border-amber-200 rounded-[10px] text-[11px]">
+                          <span className="text-amber-500 shrink-0">⚠️</span>
+                          <span className="text-amber-800 flex-1">{label} Mogu sadržavati vodeni žig.</span>
+                          <button onClick={() => setUploadWarnDismissed(true)} className="text-amber-500 underline shrink-0">Preskoči</button>
+                        </div>
+                      );
+                    })()}
                     {isEditMode && atLimit && (
                       <button
                         type="button"

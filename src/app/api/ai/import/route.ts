@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
+import { textWithGemini, analyzeImageWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import { CATEGORIES } from '@/lib/constants';
 import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
@@ -84,6 +84,21 @@ function extractImages(html: string): string[] {
   for (const m of html.matchAll(/srcset=["']([^"']+)["']/gi)) {
     const first = m[1].split(',')[0].trim().split(' ')[0];
     if (first.startsWith('http')) add(first);
+  }
+
+  // OLX.ba / Nuxt inline JS: "photos":[{"url":"https://..."}] or "images":[{"url":"..."}]
+  for (const m of html.matchAll(/"(?:photos|images|media)"\s*:\s*\[([\s\S]*?)\]/g)) {
+    for (const urlMatch of m[1].matchAll(/"(?:url|src|link|href)"\s*:\s*"(https?:[^"]+)"/g)) {
+      add(urlMatch[1]);
+    }
+  }
+
+  // OLX.ba pattern: url:"https://..." inside JS object
+  for (const m of html.matchAll(/url:"(https:\/\/[^"]{10,400})"/g)) {
+    const src = m[1];
+    if (/\.(jpg|jpeg|png|webp)/i.test(src) && !/(?:icon|logo|pixel|tracking|banner|sprite|avatar|\/assets\/|\/medals\/|\/badges\/|\/ui\/)/i.test(src)) {
+      add(src);
+    }
   }
 
   return images.slice(0, 12);
@@ -1828,6 +1843,44 @@ Polje "images" je već popunjeno gore izvučenim slikama — samo ih zadrži ili
 Ako podatak nije pronađen, postavi null. NE izmišljaj podatke koji ne postoje na stranici.`;
 }
 
+// ── Watermark detection helpers ──────────────────────────────
+const KNOWN_PORTAL_DOMAINS = [
+  'olx.ba', 'njuskalo.hr', 'salendo.de', 'ebay.com', 'ebay.de',
+  'willhaben.at', 'autoscout24.de', 'mobile.de', 'kupujemprodajem.com',
+  'halooglasi.com', 'polovniautomobili.com', 'oglasi.hr', 'mojauto.ba',
+];
+
+async function checkImageForWatermark(imageUrl: string): Promise<boolean> {
+  const res = await fetch(imageUrl, { signal: AbortSignal.timeout(6000) });
+  if (!res.ok) return false;
+  const buffer = await res.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString('base64');
+  const mimeType = (res.headers.get('content-type') || 'image/jpeg').split(';')[0];
+  const answer = await analyzeImageWithGemini(
+    base64,
+    mimeType,
+    'Does this image contain a visible watermark, logo, or branding from another marketplace or classified-ads platform? Reply only YES or NO.',
+  );
+  return answer.trim().toUpperCase().startsWith('YES');
+}
+
+async function detectWatermarks(images: string[]): Promise<number[]> {
+  const suspectIndices = images
+    .map((url, i) => ({ url, i }))
+    .filter(({ url }) => KNOWN_PORTAL_DOMAINS.some(d => url.includes(d)))
+    .map(({ i }) => i);
+
+  if (suspectIndices.length === 0) return [];
+
+  const toCheck = suspectIndices.slice(0, 2);
+  let confirmed = false;
+  for (const idx of toCheck) {
+    if (await checkImageForWatermark(images[idx])) { confirmed = true; break; }
+  }
+
+  return confirmed ? suspectIndices : [];
+}
+
 export async function POST(req: NextRequest) {
   const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
   if (!rl.success) return rateLimitResponse(rl.resetAt);
@@ -2119,7 +2172,16 @@ Odgovori SAMO JSON: {"category": "naziv", "subcategory": "potkategorija ili null
       }
     }
 
-    return NextResponse.json({ success: true, data });
+    // ── Watermark detection ──
+    let watermarkedImages: number[] = [];
+    try {
+      const imageUrls = Array.isArray(data.images) ? (data.images as string[]) : [];
+      if (imageUrls.length > 0) {
+        watermarkedImages = await detectWatermarks(imageUrls);
+      }
+    } catch { /* silently fail — import stays functional */ }
+
+    return NextResponse.json({ success: true, data: { ...data, watermarkDetected: watermarkedImages.length > 0, watermarkedImages } });
   } catch (err) {
     logger.error('[/api/ai/import]', err);
     return NextResponse.json(
