@@ -31,10 +31,12 @@ export default function HeroSection() {
       <div className="absolute -top-16 -left-16 w-56 h-56 bg-blue-600/10 rounded-full blur-[60px] pointer-events-none" />
       <div className="absolute -bottom-12 -right-8 w-40 h-40 bg-indigo-500/[0.08] rounded-full blur-[40px] pointer-events-none" />
 
-      {/* Login nudge — arrow pointing up-right toward the header's Gost button */}
+      {/* Login nudge — arrow pointing up-right toward the header's Gost button.
+          Desktop only: on mobile it collided with the headline and the header
+          has no Gost button at that position. */}
       <Link
         href="/login"
-        className="absolute top-3 right-[28px] md:top-4 md:right-[40px] z-10 flex items-start gap-1.5 group"
+        className="hidden sm:flex absolute top-3 right-[28px] md:top-4 md:right-[40px] z-10 items-start gap-1.5 group"
         style={{ animation: 'heroNudgeFloat 2.5s ease-in-out infinite' }}
       >
         <div className="text-right leading-tight pt-1.5">
@@ -70,7 +72,7 @@ export default function HeroSection() {
         </div>
 
         {/* Headline — brand word-play, accent words in gradient */}
-        <h1 className="text-3xl md:text-4xl font-black leading-tight text-[var(--c-text)] mb-3 pr-16 sm:pr-24">
+        <h1 className="text-3xl md:text-4xl font-black leading-tight text-[var(--c-text)] mb-3 sm:pr-24">
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">
             {t('hero.title1Accent')}
           </span>{' '}
