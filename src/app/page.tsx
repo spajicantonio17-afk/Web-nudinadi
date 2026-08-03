@@ -21,7 +21,6 @@ import SearchSuggestions from '@/components/SearchSuggestions';
 import ActiveFilterChips from '@/components/ActiveFilterChips';
 import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import PendingSaleBanner from '@/components/PendingSaleBanner';
-import RecentlyViewed from '@/components/RecentlyViewed';
 import { getCountryPreference, COUNTRY_CHANGE_EVENT, type CountryPreference } from '@/lib/country';
 import CategoryFilterBar, { type AttributeFilters } from '@/components/CategoryFilterBar';
 import { logger } from '@/lib/logger';
@@ -1489,9 +1488,6 @@ function HomeContent() {
             />
           </div>
         )}
-
-        {/* RECENTLY VIEWED */}
-        <RecentlyViewed />
 
         {/* PRODUCT GRID */}
         <div className="pt-2">
