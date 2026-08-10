@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { getRegionsForCountry, getCitiesByRegion } from '@/lib/location';
+import { markJustRegistered } from '@/lib/onboardingTour';
 import type { Profile } from '@/lib/database.types';
 import { logger } from '@/lib/logger';
 
@@ -115,6 +116,11 @@ export default function PostaviProfilPage() {
       // Refresh BEFORE navigating, otherwise the gate still sees
       // usernameChosen === false and bounces us right back here.
       await refreshProfile(json.profile as Profile);
+      // Arm the tour at the one choke point every new account passes
+      // through — email signup and OAuth alike. Set after the await so a
+      // failed refresh never leaves a stale flag behind. It survives the
+      // navigation and is consumed once /profile is the active route.
+      markJustRegistered();
       router.replace('/profile');
     } catch (err) {
       logger.error('[postavi-profil] Save error:', err);

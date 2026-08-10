@@ -10,7 +10,6 @@ import {
 } from '@/lib/onboardingTour';
 import { TOUR_STEPS, resolveTarget } from '@/components/tour/steps';
 import TourSpotlight from '@/components/tour/TourSpotlight';
-import { ONBOARDING_ROUTE } from '@/components/onboarding/OnboardingGate';
 
 const TARGET_POLL_MS = 100;
 const TARGET_TIMEOUT_MS = 5000;
@@ -47,16 +46,17 @@ export default function CoachmarkTour() {
   }, []);
 
   // ── Activation: fresh registration ──
-  // markJustRegistered() runs in register/page.tsx right after register()
-  // resolves, but isAuthenticated can flip true earlier in that same call
-  // (autoconfirm path) — a single check on [isAuthenticated] can fire
-  // before the flag is written. Poll ~2s to catch either ordering.
+  // markJustRegistered() runs at the end of the username step
+  // (postavi-profil/page.tsx) right before router.replace('/profile'), but
+  // the flag can land before this effect sees the new pathname. Poll ~2s
+  // to catch either ordering.
   useEffect(() => {
     if (!isAuthenticated || hasSeenTour()) return;
-    // The mandatory username step owns the screen. Bail WITHOUT consuming
-    // the flag — pathname is in the deps, so this effect re-runs the moment
-    // the user leaves and the tour starts fresh on the destination route.
-    if (pathname === ONBOARDING_ROUTE) return;
+    // Only ever consume the flag on the route step 0 can actually render
+    // on. A blacklist would silently break again the next time a route is
+    // added between signup and /profile — which is exactly how the tour
+    // got burned on /register before.
+    if (pathname !== TOUR_STEPS[0].route) return;
 
     if (consumeJustRegistered()) {
       start(0);
@@ -85,14 +85,14 @@ export default function CoachmarkTour() {
   }, [start]);
 
   // ── Activation: resume after mid-tour page reload ──
-  // Also pathname-gated: a saved tour must not spotlight over the
-  // onboarding step. It resumes once the user moves on.
+  // Resumes only on the saved step's OWN route, so a stale progress entry
+  // can't call start() into a no-op state bailout on a page where the step
+  // has nothing to spotlight.
   useEffect(() => {
-    if (pathname === ONBOARDING_ROUTE) return;
     const saved = loadTourProgress();
-    if (saved !== null && saved < TOUR_STEPS.length && !hasSeenTour()) {
-      start(saved);
-    }
+    if (saved === null || saved >= TOUR_STEPS.length || hasSeenTour()) return;
+    if (pathname !== TOUR_STEPS[saved].route) return;
+    start(saved);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
@@ -158,7 +158,17 @@ export default function CoachmarkTour() {
       waited += TARGET_POLL_MS;
       if (waited >= TARGET_TIMEOUT_MS) {
         clearInterval(poll);
-        // Target never appeared — skip rather than wedge the tour.
+        if (stepIndex === 0) {
+          // /profile renders a spinner until its data lands, so a slow
+          // fetch can outlast the poll. Advancing here would start the
+          // tour at step 1; stand down instead. The just-registered flag
+          // is already spent, so saved progress is the only way back —
+          // keep it and let the resume effect retry on the next /profile.
+          setActive(false);
+          enteredStepRef.current = null;
+          return;
+        }
+        // Later steps: skip rather than wedge the tour.
         if (stepIndex >= TOUR_STEPS.length - 1) finish();
         else setStepIndex((i) => i + 1);
       }

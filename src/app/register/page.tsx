@@ -7,7 +7,6 @@ import { useToast } from '@/components/Toast';
 import { useI18n } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 import { registerEmailSchema, getPasswordRuleStatus, isPasswordValid } from '@/lib/validators/auth.schemas';
-import { markJustRegistered } from '@/lib/onboardingTour';
 
 // ─── OTP Code Input Component ────────────────────────────────
 function OtpInput({ length = 6, onComplete }: { length?: number; onComplete: (code: string) => void }) {
@@ -200,13 +199,15 @@ export default function RegisterPage() {
         const username = formData.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 30);
         const result = await register(formData.email, formData.password, username, formData.phone || undefined);
 
+        // The tour is armed at the end of the username step, not here —
+        // register() flips isAuthenticated while we're still on /register,
+        // and the tour would consume its flag on a route where step 0
+        // can't render. See postavi-profil/page.tsx handleSave.
         if (result === 'success') {
-          markJustRegistered();
           showToast(t('auth.registerSuccess'));
           setVerifyPhone(formData.phone);
           setShowVerification(true);
         } else if (result === 'needs_confirmation') {
-          markJustRegistered();
           setShowVerification(true);
         } else {
           setTimeout(() => {
