@@ -10,6 +10,7 @@ import {
 } from '@/lib/onboardingTour';
 import { TOUR_STEPS, resolveTarget } from '@/components/tour/steps';
 import TourSpotlight from '@/components/tour/TourSpotlight';
+import { ONBOARDING_ROUTE } from '@/components/onboarding/OnboardingGate';
 
 const TARGET_POLL_MS = 100;
 const TARGET_TIMEOUT_MS = 5000;
@@ -52,6 +53,10 @@ export default function CoachmarkTour() {
   // before the flag is written. Poll ~2s to catch either ordering.
   useEffect(() => {
     if (!isAuthenticated || hasSeenTour()) return;
+    // The mandatory username step owns the screen. Bail WITHOUT consuming
+    // the flag — pathname is in the deps, so this effect re-runs the moment
+    // the user leaves and the tour starts fresh on the destination route.
+    if (pathname === ONBOARDING_ROUTE) return;
 
     if (consumeJustRegistered()) {
       start(0);
@@ -70,7 +75,7 @@ export default function CoachmarkTour() {
     }, TARGET_POLL_MS);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, start]);
+  }, [isAuthenticated, pathname, start]);
 
   // ── Activation: manual restart (settings button) ──
   useEffect(() => {
@@ -80,13 +85,16 @@ export default function CoachmarkTour() {
   }, [start]);
 
   // ── Activation: resume after mid-tour page reload ──
+  // Also pathname-gated: a saved tour must not spotlight over the
+  // onboarding step. It resumes once the user moves on.
   useEffect(() => {
+    if (pathname === ONBOARDING_ROUTE) return;
     const saved = loadTourProgress();
     if (saved !== null && saved < TOUR_STEPS.length && !hasSeenTour()) {
       start(saved);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pathname]);
 
   // ── Step lifecycle: navigate if needed, then poll for the target ──
   useEffect(() => {

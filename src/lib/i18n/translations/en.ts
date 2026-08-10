@@ -1079,6 +1079,26 @@ const en: Record<string, string> = {
   'settings.tutorial.restart': 'View the guide again',
   'settings.tutorial.restartDesc': 'Replay the short app walkthrough.',
 
+  // Mandatory step after registration (/postavi-profil)
+  'welcome.title': 'Choose your username',
+  'welcome.subtitle': 'This is how others will see you on NudiNađi.',
+  'welcome.usernameLabel': 'Username',
+  'welcome.usernamePlaceholder': 'your_username',
+  'welcome.usernameHint': 'Min. 3 characters — letters, numbers and _',
+  'welcome.usernameCurrent': 'Currently: @{{username}}',
+  'welcome.usernameMin': 'Minimum 3 characters',
+  'welcome.usernameChars': 'Only letters, numbers and _',
+  'welcome.usernameTaken': 'Username is taken. Try another.',
+  'welcome.usernameFree': 'Available!',
+  'welcome.fullNameLabel': 'Full name',
+  'welcome.fullNamePlaceholder': 'First Last',
+  'welcome.locationLabel': 'Location',
+  'welcome.optional': 'optional',
+  'welcome.optionalNote': 'You can add your name and location later in your profile.',
+  'welcome.save': 'Save and continue',
+  'welcome.saving': 'Saving...',
+  'welcome.saveError': 'Error saving. Please try again.',
+
   // Guest hero on the homepage (HeroSection)
   'hero.eyebrow': 'Free listings · BiH · HR · SRB',
   'hero.title1Accent': 'Offer',

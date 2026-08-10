@@ -1080,6 +1080,26 @@ const bs: Record<string, string> = {
   'settings.tutorial.restart': 'Pogledaj vodič ponovo',
   'settings.tutorial.restartDesc': 'Ponovo pokreni kratki obilazak aplikacije.',
 
+  // Obavezni korak nakon registracije (/postavi-profil)
+  'welcome.title': 'Odaberi korisničko ime',
+  'welcome.subtitle': 'Pod ovim imenom će te drugi vidjeti na NudiNađi.',
+  'welcome.usernameLabel': 'Korisničko ime',
+  'welcome.usernamePlaceholder': 'korisnicko_ime',
+  'welcome.usernameHint': 'Min. 3 znaka — slova, brojevi i _',
+  'welcome.usernameCurrent': 'Trenutno: @{{username}}',
+  'welcome.usernameMin': 'Minimum 3 znaka',
+  'welcome.usernameChars': 'Samo slova, brojevi i _',
+  'welcome.usernameTaken': 'Korisničko ime je zauzeto. Pokušaj drugo.',
+  'welcome.usernameFree': 'Slobodno!',
+  'welcome.fullNameLabel': 'Ime i prezime',
+  'welcome.fullNamePlaceholder': 'Ime Prezime',
+  'welcome.locationLabel': 'Lokacija',
+  'welcome.optional': 'opcionalno',
+  'welcome.optionalNote': 'Ime i lokaciju možeš dodati i kasnije u profilu.',
+  'welcome.save': 'Sačuvaj i nastavi',
+  'welcome.saving': 'Spremam...',
+  'welcome.saveError': 'Greška pri spremanju. Pokušaj ponovo.',
+
   // Gost-Hero na početnoj (HeroSection)
   'hero.eyebrow': 'Besplatni oglasi · BiH · HR · SRB',
   'hero.title1Accent': 'Nudi',

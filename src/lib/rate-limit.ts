@@ -64,5 +64,7 @@ export const RATE_LIMITS = {
   verify:         { limit: 3,  windowSeconds: 3600 },
   support:        { limit: 3,  windowSeconds: 3600 },
   profile_update: { limit: 5,  windowSeconds: 300 },
+  // Debounced live check while typing — `auth` (5/5min) is far too tight.
+  check_username: { limit: 30, windowSeconds: 60 },
   admin:          { limit: 30, windowSeconds: 60 },
 } as const

@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/lib/theme';
 import { NotificationProvider } from '@/lib/notifications';
 import NetworkStatus from '@/components/NetworkStatus';
 import CoachmarkTour from '@/components/tour/CoachmarkTour';
+import OnboardingGate from '@/components/onboarding/OnboardingGate';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Register Service Worker for PWA + push notifications
@@ -24,6 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <NotificationProvider>
               <NetworkStatus />
               <CoachmarkTour />
+              <OnboardingGate />
               {children}
             </NotificationProvider>
           </ToastProvider>

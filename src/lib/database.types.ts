@@ -33,6 +33,7 @@ export interface Profile {
   phone: string | null
   email_verified: boolean
   phone_verified: boolean
+  username_chosen: boolean
   level: number
   xp: number
   total_sales: number
@@ -162,6 +163,7 @@ export interface Transaction {
 export interface ProfileInsert {
   id: string
   username: string
+  username_chosen?: boolean
   full_name?: string | null
   avatar_url?: string | null
   bio?: string | null
@@ -257,6 +259,7 @@ export interface TransactionInsert {
 
 export interface ProfileUpdate {
   username?: string
+  username_chosen?: boolean
   full_name?: string | null
   avatar_url?: string | null
   bio?: string | null

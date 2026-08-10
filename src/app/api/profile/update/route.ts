@@ -55,8 +55,14 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Build update object
-    const updates: Record<string, string | null> = {}
-    if (username !== undefined) updates.username = username
+    const updates: Record<string, string | boolean | null> = {}
+    if (username !== undefined) {
+      updates.username = username
+      // Server-set only, never read from the body — otherwise a client could
+      // mark itself onboarded without ever picking a name. Safe here: this
+      // path already validated the format and proved it isn't taken.
+      updates.username_chosen = true
+    }
     if (full_name !== undefined) updates.full_name = full_name
     if (bio !== undefined) updates.bio = bio
     if (location !== undefined) updates.location = location

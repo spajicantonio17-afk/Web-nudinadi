@@ -41,6 +41,12 @@ export interface AuthUser {
   bio?: string | null;
   phone?: string | null;
   emailVerified: boolean;
+  /**
+   * Whether the user picked their own username on /postavi-profil.
+   * Deliberately optional: `undefined` means "profile unknown" (fetch
+   * timed out), which OnboardingGate treats as "don't gate".
+   */
+  usernameChosen?: boolean;
   location?: string;
   level: number;
   xp: number;
@@ -91,6 +97,10 @@ function toAuthUser(user: User, profile?: Profile | null): AuthUser {
     bio: profile?.bio ?? null,
     phone: profile?.phone ?? null,
     emailVerified: profile?.email_verified || false,
+    // No `?? false` on purpose — when the profile fetch times out we must
+    // stay undefined so the onboarding gate fails open instead of trapping
+    // an existing user behind the username step.
+    usernameChosen: profile?.username_chosen,
     location: profile?.location || undefined,
     level: profile?.level || 1,
     xp: profile?.xp || 0,
