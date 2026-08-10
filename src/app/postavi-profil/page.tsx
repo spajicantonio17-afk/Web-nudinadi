@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { getRegionsForCountry, getCitiesByRegion } from '@/lib/location';
 import { markJustRegistered } from '@/lib/onboardingTour';
+import StepIndicator from '@/components/onboarding/StepIndicator';
 import type { Profile } from '@/lib/database.types';
 import { logger } from '@/lib/logger';
 
@@ -39,6 +40,8 @@ export default function PostaviProfilPage() {
   const usernameTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Bumped on every keystroke so a slow response can't overwrite a newer one.
   const reqIdRef = useRef(0);
+  // Hands navigation control to handleSave — see the bookmark guard below.
+  const justSavedRef = useRef(false);
 
   useEffect(() => () => {
     if (usernameTimer.current) clearTimeout(usernameTimer.current);
@@ -47,6 +50,11 @@ export default function PostaviProfilPage() {
   // Not a dead end if bookmarked: bounce out when there's nothing to do here.
   useEffect(() => {
     if (isLoading) return;
+    // handleSave owns navigation once the save is under way. Without this,
+    // refreshProfile flipping usernameChosen to true re-fires this effect
+    // and its replace('/') beats the save flow's replace('/profile') — the
+    // user lands on the feed and the tour never starts.
+    if (justSavedRef.current) return;
     if (!user) router.replace('/login');
     else if (user.usernameChosen === true) router.replace('/');
   }, [user, isLoading, router]);
@@ -113,17 +121,21 @@ export default function PostaviProfilPage() {
         return;
       }
 
+      // Claim navigation BEFORE the refresh: the bookmark guard re-runs on
+      // the state flip that refreshProfile triggers, which happens before
+      // the next line of code here.
+      justSavedRef.current = true;
       // Refresh BEFORE navigating, otherwise the gate still sees
       // usernameChosen === false and bounces us right back here.
       await refreshProfile(json.profile as Profile);
       // Arm the tour at the one choke point every new account passes
-      // through — email signup and OAuth alike. Set after the await so a
-      // failed refresh never leaves a stale flag behind. It survives the
-      // navigation and is consumed once /profile is the active route.
+      // through — email signup and OAuth alike. It survives the navigation
+      // and is consumed once /profile is the active route.
       markJustRegistered();
       router.replace('/profile');
     } catch (err) {
       logger.error('[postavi-profil] Save error:', err);
+      justSavedRef.current = false; // navigation never happened — re-arm the guard
       setUsernameError(t('welcome.saveError'));
     } finally {
       setSaving(false);
@@ -151,12 +163,14 @@ export default function PostaviProfilPage() {
       <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="w-full max-w-sm space-y-6 animate-[fadeIn_0.3s_ease-out] relative z-10">
+        <StepIndicator current={3} />
+
         {/* Header */}
         <div className="text-center">
           <div className="w-16 h-16 bg-blue-600 rounded-[20px] flex items-center justify-center text-white text-2xl mx-auto mb-4">
             <i className="fa-solid fa-user-pen"></i>
           </div>
-          <h2 className="text-xl font-black">{t('welcome.title')}</h2>
+          <h2 className="text-xl font-black">{t('welcome.headline')}</h2>
           <p className="text-[11px] text-[var(--c-text2)] mt-2 leading-relaxed">
             {t('welcome.subtitle')}
           </p>

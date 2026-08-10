@@ -210,9 +210,14 @@ export default function CoachmarkTour() {
   }, [active, rect === null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleNext = useCallback(() => {
-    if (stepIndex >= TOUR_STEPS.length - 1) finish();
-    else setStepIndex((i) => i + 1);
-  }, [stepIndex, finish]);
+    if (stepIndex >= TOUR_STEPS.length - 1) {
+      finish();
+      // Land on the marketplace feed rather than leaving the user buried
+      // in the settings screen the last step happens to live on. Only on a
+      // real finish — onSkip keeps you where you are.
+      router.push('/');
+    } else setStepIndex((i) => i + 1);
+  }, [stepIndex, finish, router]);
 
   if (!active || !rect) return null;
 

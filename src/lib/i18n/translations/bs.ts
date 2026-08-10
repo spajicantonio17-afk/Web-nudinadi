@@ -590,6 +590,8 @@ const bs: Record<string, string> = {
   'auth.verifyError': 'Greška pri verifikaciji.',
   'auth.verifySuccess': 'Uspješno verificirano!',
   'auth.skip': 'Preskoči',
+  'auth.verifyLater': 'Verificiraj kasnije',
+  'auth.continue': 'Nastavi',
 
   // Error Page
   'error.title': 'Nešto je pošlo po krivu',
@@ -1067,6 +1069,8 @@ const bs: Record<string, string> = {
   'tour.editDesc': 'Ovdje mijenjaš sliku, ime, bio i ostale podatke profila — dobar profil gradi povjerenje kupaca.',
   'tour.levelTitle': 'Tvoj level i XP',
   'tour.levelDesc': 'Aktivnošću skupljaš XP i dižeš level — objavljivanje oglasa, prodaja i ocjene donose bodove. Klikni na Level za detalje.',
+  'tour.uploadTitle': 'Objavi svoj prvi oglas',
+  'tour.uploadDesc': 'Klikni na + i objavi oglas — besplatno i za par minuta. Dodaš slike, cijenu i gotovo.',
   'tour.menuTitle': 'Postavke aplikacije',
   'tour.menuDesc': 'U Meniju upravljaš računom, obavijestima, izgledom i jezikom — sve na jednom mjestu.',
   'tour.marketTitle': 'Tržište i valute',
@@ -1082,7 +1086,9 @@ const bs: Record<string, string> = {
 
   // Obavezni korak nakon registracije (/postavi-profil)
   'welcome.title': 'Odaberi korisničko ime',
-  'welcome.subtitle': 'Pod ovim imenom će te drugi vidjeti na NudiNađi.',
+  'welcome.headline': 'Dobrodošli na NudiNađi! 🎉',
+  'welcome.subtitle': 'Još samo korisničko ime i spreman si. Pod ovim imenom će te drugi vidjeti.',
+  'welcome.step': 'Korak {{current}} od {{total}}',
   'welcome.usernameLabel': 'Korisničko ime',
   'welcome.usernamePlaceholder': 'korisnicko_ime',
   'welcome.usernameHint': 'Min. 3 znaka — slova, brojevi i _',

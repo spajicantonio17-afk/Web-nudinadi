@@ -590,6 +590,8 @@ const en: Record<string, string> = {
   'auth.verifyError': 'Verification error.',
   'auth.verifySuccess': 'Successfully verified!',
   'auth.skip': 'Skip',
+  'auth.verifyLater': 'Verify later',
+  'auth.continue': 'Continue',
 
   // Error Page
   'error.title': 'Something went wrong',
@@ -1066,6 +1068,8 @@ const en: Record<string, string> = {
   'tour.editDesc': 'Change your photo, name, bio and other profile details here — a good profile builds buyer trust.',
   'tour.levelTitle': 'Your level and XP',
   'tour.levelDesc': 'Activity earns you XP and levels — posting listings, selling and ratings all bring points. Tap Level for details.',
+  'tour.uploadTitle': 'Post your first listing',
+  'tour.uploadDesc': 'Tap + to post a listing — free, in a couple of minutes. Add photos, a price, done.',
   'tour.menuTitle': 'App settings',
   'tour.menuDesc': 'The Menu is where you manage your account, notifications, appearance and language — all in one place.',
   'tour.marketTitle': 'Market and currencies',
@@ -1081,7 +1085,9 @@ const en: Record<string, string> = {
 
   // Mandatory step after registration (/postavi-profil)
   'welcome.title': 'Choose your username',
-  'welcome.subtitle': 'This is how others will see you on NudiNađi.',
+  'welcome.headline': 'Welcome to NudiNađi! 🎉',
+  'welcome.subtitle': "Just a username and you're all set. This is how others will see you.",
+  'welcome.step': 'Step {{current}} of {{total}}',
   'welcome.usernameLabel': 'Username',
   'welcome.usernamePlaceholder': 'your_username',
   'welcome.usernameHint': 'Min. 3 characters — letters, numbers and _',

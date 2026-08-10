@@ -86,18 +86,24 @@ INSERT INTO auth.identities (
 
 -- ── Make sure profiles exist with deterministic data ───────────────────────
 -- (handle_new_user trigger should have created them; update for safety)
+-- username_chosen: these fixtures stand in for established accounts. The
+-- trigger defaults new rows to false, and migration 039's backfill only
+-- covered rows that existed when it ran — so seeded users must opt in
+-- explicitly or OnboardingGate drags every spec into /postavi-profil.
 UPDATE profiles
 SET username = 'alice_e2e',
     full_name = 'Alice E2E',
     location = 'Sarajevo',
-    bio = 'E2E test user — Alice'
+    bio = 'E2E test user — Alice',
+    username_chosen = true
 WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
 UPDATE profiles
 SET username = 'bob_e2e',
     full_name = 'Bob E2E',
     location = 'Mostar',
-    bio = 'E2E test user — Bob'
+    bio = 'E2E test user — Bob',
+    username_chosen = true
 WHERE id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
 -- ── Test product owned by Alice (for product-detail + messaging tests) ─────

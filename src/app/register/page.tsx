@@ -7,6 +7,7 @@ import { useToast } from '@/components/Toast';
 import { useI18n } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 import { registerEmailSchema, getPasswordRuleStatus, isPasswordValid } from '@/lib/validators/auth.schemas';
+import StepIndicator from '@/components/onboarding/StepIndicator';
 
 // ─── OTP Code Input Component ────────────────────────────────
 function OtpInput({ length = 6, onComplete }: { length?: number; onComplete: (code: string) => void }) {
@@ -235,6 +236,8 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-[var(--c-bg)] text-[var(--c-text)] flex flex-col items-center justify-center p-8">
         <div className="w-full max-w-sm space-y-6 animate-[fadeIn_0.3s_ease-out]">
+          <StepIndicator current={2} />
+
           {/* Header */}
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-600 rounded-[20px] flex items-center justify-center text-white text-2xl mx-auto mb-4">
@@ -298,7 +301,7 @@ export default function RegisterPage() {
               onClick={() => router.push('/postavi-profil')}
               className="w-full py-3 rounded-[12px] bg-[var(--c-accent)] text-white font-bold text-[14px] hover:opacity-90 transition-opacity mt-4"
             >
-              Nastavi →
+              {t('auth.continue')} →
             </button>
           )}
 
@@ -310,7 +313,7 @@ export default function RegisterPage() {
             onClick={() => router.push('/postavi-profil')}
             className="w-full py-3 text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest hover:text-[var(--c-text)] transition-colors"
           >
-            {t('auth.skip')}
+            {t('auth.verifyLater')}
           </button>
         </div>
       </div>
@@ -323,6 +326,8 @@ export default function RegisterPage() {
         <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
         <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-4 z-10 animate-[fadeIn_0.3s_ease-out]">
+            <StepIndicator current={1} />
+
             <div className="text-center mb-6">
                  {/* eslint-disable-next-line @next/next/no-img-element */}
                  <img onClick={() => router.push('/')} src="/emblem.png" alt="NudiNađi" className="w-16 h-16 rounded-[20px] shadow-lg shadow-purple-500/20 mx-auto mb-6 cursor-pointer object-contain" />

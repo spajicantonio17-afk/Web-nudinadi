@@ -56,6 +56,17 @@ function resolveMenuSettingsSection(): HTMLElement | null {
   return null;
 }
 
+// The + button lives in MainLayout, which is design-frozen — so anchor by
+// href instead of adding a data-tour attribute. First visible match picks
+// the right responsive variant (desktop top nav vs mobile bottom nav).
+function resolveUploadButton(): HTMLElement | null {
+  const links = document.querySelectorAll<HTMLElement>('a[href="/upload"]');
+  for (const el of links) {
+    if (isVisible(el)) return el;
+  }
+  return null;
+}
+
 export const TOUR_STEPS: TourStepConfig[] = [
   {
     id: 'profile-edit',
@@ -72,6 +83,14 @@ export const TOUR_STEPS: TourStepConfig[] = [
     enter: 'passive',
     titleKey: 'tour.levelTitle',
     descKey: 'tour.levelDesc',
+  },
+  {
+    id: 'upload-plus',
+    route: '/profile',
+    resolve: resolveUploadButton,
+    enter: 'passive', // the tour is already on /profile at this point
+    titleKey: 'tour.uploadTitle',
+    descKey: 'tour.uploadDesc',
   },
   {
     id: 'menu-sections',
