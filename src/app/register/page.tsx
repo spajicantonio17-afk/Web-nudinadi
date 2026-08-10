@@ -292,9 +292,6 @@ export default function RegisterPage() {
           )}
 
           {/* Continue Button (after successful verification) */}
-          {/* Next stop is the mandatory username step. No skip button: it
-              couldn't skip anything — OnboardingGate redirects there from
-              every route until a username is picked. */}
           {emailVerified && (
             <button
               onClick={() => router.push('/postavi-profil')}
@@ -303,6 +300,17 @@ export default function RegisterPage() {
               Nastavi →
             </button>
           )}
+
+          {/* Skip Button — skips the EMAIL verification, not the username
+              step: that one is mandatory either way, so both buttons lead
+              to the same place. Without this the user is stuck here
+              whenever the verification mail doesn't arrive. */}
+          <button
+            onClick={() => router.push('/postavi-profil')}
+            className="w-full py-3 text-[10px] font-bold text-[var(--c-text3)] uppercase tracking-widest hover:text-[var(--c-text)] transition-colors"
+          >
+            {t('auth.skip')}
+          </button>
         </div>
       </div>
     );
