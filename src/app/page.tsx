@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import ProductCard from '@/components/ProductCard';
 import CategoryButton from '@/components/CategoryButton';
 import LocationPicker from '@/components/LocationPicker';
-import FilterModal, { DEFAULT_FILTERS, type FilterState } from '@/components/FilterModal';
+import { DEFAULT_FILTERS, type FilterState } from '@/components/filter-state';
 import { CATEGORIES, CATEGORY_IMAGES, BAM_RATE } from '@/lib/constants';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/components/icons/CategoryIcons';
 import { parseAiQuery, type SearchCurrency } from '@/lib/utils';
@@ -19,10 +20,15 @@ import { useFavorites } from '@/lib/favorites';
 import { useToast } from '@/components/Toast';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import ActiveFilterChips from '@/components/ActiveFilterChips';
-import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import PendingSaleBanner from '@/components/PendingSaleBanner';
 import { getCountryPreference, COUNTRY_CHANGE_EVENT, type CountryPreference } from '@/lib/country';
-import CategoryFilterBar, { type AttributeFilters } from '@/components/CategoryFilterBar';
+import type { AttributeFilters } from '@/components/CategoryFilterBar';
+
+// Code-split heavy, not-initially-visible components out of the first-load
+// bundle (FilterModal renders null while closed; CategoryFilterBar renders
+// only when a category is active — `loading: () => null` is pixel-identical).
+const FilterModal = dynamic(() => import('@/components/FilterModal'), { loading: () => null });
+const CategoryFilterBar = dynamic(() => import('@/components/CategoryFilterBar'), { loading: () => null });
 import { logger } from '@/lib/logger';
 import { useI18n } from '@/lib/i18n';
 import HeroSection from '@/components/HeroSection';
@@ -121,6 +127,8 @@ function HomeContent() {
   const [countryPref, setCountryPref] = useState<CountryPreference>('all');
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -131,16 +139,24 @@ function HomeContent() {
   useFavorites(); // keeps Supabase session in sync (used by ProductCard internally)
   const { showToast } = useToast();
 
-  // Load saved location + currency preference on mount
+  // Restore persisted prefs (location, currency, country) BEFORE the first
+  // product fetch. These can't be lazy useState initializers because they are
+  // rendered (location chip) and would cause a hydration mismatch — so the
+  // fetch effect below waits for `prefsRestored` instead, which keeps the cold
+  // load down to a single query rather than fetching once with defaults and
+  // immediately again with the restored values.
+  const [prefsRestored, setPrefsRestored] = useState(false);
+
   useEffect(() => {
     setSelectedLocation(getSelectedLocation());
     const savedCurrency = typeof window !== 'undefined' ? localStorage.getItem('nudinadi_currency') as SearchCurrency : null;
     if (savedCurrency === 'KM' || savedCurrency === 'EUR') setAiCurrency(savedCurrency);
+    setCountryPref(getCountryPreference());
+    setPrefsRestored(true);
   }, []);
 
-  // Country preference: read on mount + react to changes (popup, settings, other tabs)
+  // Country preference: react to changes (popup, settings, other tabs)
   useEffect(() => {
-    setCountryPref(getCountryPreference());
     const sync = () => setCountryPref(getCountryPreference());
     window.addEventListener(COUNTRY_CHANGE_EVENT, sync);
     window.addEventListener('storage', (e) => {
@@ -340,8 +356,12 @@ function HomeContent() {
   // Load products from Supabase (re-fetches when filters change)
   const filterVersion = useRef(0);
   useEffect(() => {
+    // Wait until persisted prefs are restored, otherwise the first fetch runs
+    // with defaults and is immediately superseded — two queries per cold load.
+    if (!prefsRestored) return;
     const version = ++filterVersion.current;
     setIsLoadingProducts(true);
+    setLoadError(false);
     setHasMore(true);
     buildServerFilters(0)
       .then(async (sf) => {
@@ -367,13 +387,18 @@ function HomeContent() {
       })
       .catch(err => {
         if (err?.name === 'AbortError') return; // React Strict Mode cancels in-flight fetches
-        if (version === filterVersion.current) logger.error('Failed to load products:', err);
+        if (version === filterVersion.current) {
+          logger.error('Failed to load products:', err);
+          // Surface the failure — an empty grid alone is indistinguishable
+          // from "no listings match your filters".
+          setLoadError(true);
+        }
       })
       .finally(() => {
         if (version === filterVersion.current) setIsLoadingProducts(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants, countryPref]);
+  }, [prefsRestored, retryNonce, activeCategory, filters, searchQuery, selectedLocation, aiPriceMin, aiPriceMax, aiCurrency, attributeFilters, selectedSubCategory, selectedSubItem, aiSearchVariants, countryPref]);
 
   // Load more products (infinite scroll — uses same server-side filters)
   const loadMoreProducts = useCallback(async () => {
@@ -483,6 +508,9 @@ function HomeContent() {
     const originalQuery = query.trim();
     try {
       // ── Fast path: chassis code / model shortcut → expand search, skip AI ──
+      // Loaded on demand — the chassis/model dataset is ~100KB and is only
+      // needed once the user actually submits a search.
+      const { lookupChassis } = await import('@/lib/vehicle-chassis-codes');
       const chassisHits = lookupChassis(originalQuery);
       if (chassisHits.length > 0) {
         const hit = chassisHits[0];
@@ -1549,7 +1577,24 @@ function HomeContent() {
             </div>
           )}
 
-          {!isLoadingProducts && displayedProducts.length === 0 && (
+          {/* Load failure — otherwise an empty grid looks like "no listings" */}
+          {!isLoadingProducts && loadError && displayedProducts.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-16 h-16 rounded-[14px] bg-[var(--c-card-alt)] border border-[var(--c-border)] flex items-center justify-center mb-4">
+                <i className="fa-solid fa-triangle-exclamation text-2xl text-[var(--c-text-muted)]"></i>
+              </div>
+              <h3 className="text-sm font-bold text-[var(--c-text)] mb-1">Greška pri učitavanju</h3>
+              <p className="text-[12px] text-[var(--c-text3)] max-w-[220px]">Oglasi se trenutno ne mogu učitati. Provjerite internet vezu.</p>
+              <button
+                onClick={() => setRetryNonce(n => n + 1)}
+                className="mt-4 px-4 py-2 bg-[var(--c-accent-light)] border border-[var(--c-accent)]/20 rounded-[6px] text-[12px] font-semibold text-[var(--c-accent)] hover:bg-[var(--c-accent)]/10 transition-all duration-150"
+              >
+                <i className="fa-solid fa-rotate-right mr-1.5"></i> Pokušaj ponovo
+              </button>
+            </div>
+          )}
+
+          {!isLoadingProducts && !loadError && displayedProducts.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-16 h-16 rounded-[14px] bg-[var(--c-card-alt)] border border-[var(--c-border)] flex items-center justify-center mb-4">
                 <i className="fa-solid fa-ghost text-2xl text-[var(--c-text-muted)]"></i>

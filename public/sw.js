@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nudinadi-v1';
+const CACHE_NAME = 'nudinadi-v2';
 const STATIC_ASSETS = ['/', '/manifest.json', '/logo2.jpeg', '/logo-emblem.png'];
 
 // Install: cache static assets
@@ -25,11 +25,17 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('/api/')) return;
 
+  // Hashed build assets are immutable and already handled by the browser's
+  // HTTP cache — caching them here too would grow this cache without bound.
+  const isImmutableBuildAsset =
+    event.request.url.includes('/_next/static/') ||
+    event.request.url.includes('/_next/image');
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
         // Cache successful responses
-        if (response.ok) {
+        if (response.ok && !isImmutableBuildAsset) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }

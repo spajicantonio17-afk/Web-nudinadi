@@ -90,7 +90,29 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 2. Register user ───────────────────────────────────
-  const username = providedUsername?.trim() || makeUsername(claim.seller_name);
+  // Validate a caller-supplied username with the SAME rules as normal signup
+  // (see /api/auth/check-username): 3-30 chars, a-z A-Z 0-9 _ only.
+  let username: string;
+  if (providedUsername != null && String(providedUsername).trim() !== '') {
+    const candidate = String(providedUsername).trim();
+    if (candidate.length < 3 || candidate.length > 30 || !/^[a-zA-Z0-9_]+$/.test(candidate)) {
+      return NextResponse.json(
+        { error: 'Korisničko ime mora imati 3-30 znakova (slova, brojevi i _)' },
+        { status: 400 },
+      );
+    }
+    const { data: taken } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', candidate)
+      .maybeSingle();
+    if (taken) {
+      return NextResponse.json({ error: 'Korisničko ime je zauzeto' }, { status: 409 });
+    }
+    username = candidate;
+  } else {
+    username = makeUsername(claim.seller_name);
+  }
 
   const { data: authData, error: signUpErr } = await supabase.auth.admin.createUser({
     email,

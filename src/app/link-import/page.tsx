@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useToast } from '@/components/Toast';
+import { useAuth } from '@/lib/auth';
 
 // Domain list for auto-detection — names are only shown as detected domain labels, not as brand endorsements
 const SUPPORTED_PLATFORMS = [
@@ -65,7 +66,16 @@ const ATTR_LABELS: Record<string, string> = {
 export default function LinkImportPage() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Import spends AI quota and its result can only be published via /upload
+  // (which is login-gated) — so require login here too, same as /upload.
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState<ImportStatus>('idle');

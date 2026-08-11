@@ -57,11 +57,18 @@ describe('rateLimit', () => {
 });
 
 describe('getIp', () => {
-  it('extracts IP from x-forwarded-for header', () => {
+  it('prefers the trusted x-real-ip header', () => {
+    const req = new Request('http://localhost', {
+      headers: { 'x-real-ip': '9.9.9.9', 'x-forwarded-for': '1.2.3.4, 5.6.7.8' },
+    });
+    expect(getIp(req)).toBe('9.9.9.9');
+  });
+
+  it('uses the LAST x-forwarded-for hop (proxy-appended), not the spoofable first', () => {
     const req = new Request('http://localhost', {
       headers: { 'x-forwarded-for': '1.2.3.4, 5.6.7.8' },
     });
-    expect(getIp(req)).toBe('1.2.3.4');
+    expect(getIp(req)).toBe('5.6.7.8');
   });
 
   it('returns unknown when no header', () => {

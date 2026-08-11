@@ -6,9 +6,18 @@ import { useRouter } from 'next/navigation'
 import { getSearchSuggestions, type SearchSuggestion } from '@/services/productService'
 import { getAllCategories } from '@/services/categoryService'
 import { searchUsers } from '@/services/profileService'
-import { lookupChassis, chassisLabel } from '@/lib/vehicle-chassis-codes'
+import type { ChassisLookupResult } from '@/lib/vehicle-chassis-codes'
 import { getCurrencyMode, eurToKm } from '@/lib/currency'
 import type { Profile } from '@/lib/database.types'
+
+// The chassis/model dataset is ~100KB — loaded on demand the first time the
+// user actually types, instead of shipping it in the homepage's first load.
+type ChassisModule = typeof import('@/lib/vehicle-chassis-codes')
+let chassisModulePromise: Promise<ChassisModule> | null = null
+function loadChassisModule(): Promise<ChassisModule> {
+  if (!chassisModulePromise) chassisModulePromise = import('@/lib/vehicle-chassis-codes')
+  return chassisModulePromise
+}
 
 interface SearchSuggestionsProps {
   query: string
@@ -33,10 +42,18 @@ export default function SearchSuggestions({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router = useRouter()
 
-  // Chassis code lookup (instant, no debounce needed)
-  const chassisMatches = useMemo(
-    () => (visible && query.trim().length >= 2 ? lookupChassis(query) : []),
-    [query, visible]
+  // Chassis code lookup — module loads on first use, then results are instant
+  const [chassisModule, setChassisModule] = useState<ChassisModule | null>(null)
+  useEffect(() => {
+    if (!visible || query.trim().length < 2 || chassisModule) return
+    let cancelled = false
+    loadChassisModule().then(m => { if (!cancelled) setChassisModule(m) })
+    return () => { cancelled = true }
+  }, [visible, query, chassisModule])
+
+  const chassisMatches = useMemo<ChassisLookupResult[]>(
+    () => (chassisModule && visible && query.trim().length >= 2 ? chassisModule.lookupChassis(query) : []),
+    [query, visible, chassisModule]
   )
 
   const doSearch = useCallback(async (q: string) => {
@@ -176,7 +193,7 @@ export default function SearchSuggestions({
                 className="text-left px-3 py-2 rounded-[8px] text-[13px] font-medium text-[var(--c-text2)] hover:bg-blue-500/10 hover:text-blue-500 transition-all duration-150 flex items-center gap-2.5"
               >
                 <i className="fa-solid fa-car text-[12px] text-blue-400" aria-hidden="true"></i>
-                <span className="truncate">{chassisLabel(match)}</span>
+                <span className="truncate">{chassisModule?.chassisLabel(match)}</span>
               </button>
             ))}
           </div>

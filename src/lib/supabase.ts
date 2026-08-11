@@ -10,26 +10,13 @@ export function createClient() {
 }
 
 // Singleton instance for client components
+// Note: token auto-refresh is built into supabase-js (autoRefreshToken defaults
+// to true, ticking every 30s) — no manual refresh interval needed here.
 let browserClient: ReturnType<typeof createClient> | null = null
-let authRefreshInterval: NodeJS.Timeout | null = null
 
 export function getSupabase() {
   if (!browserClient) {
     browserClient = createClient()
-
-    // Auto-refresh auth token every 30 minutes (only once, on first init)
-    if (typeof window !== 'undefined' && !authRefreshInterval) {
-      authRefreshInterval = setInterval(async () => {
-        try {
-          const { data } = await browserClient!.auth.refreshSession()
-          if (data?.session) {
-            console.debug('✓ Auth session refreshed')
-          }
-        } catch (err) {
-          console.error('Auth refresh failed:', err)
-        }
-      }, 30 * 60 * 1000) // 30 minutes
-    }
   }
   return browserClient
 }

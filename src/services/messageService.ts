@@ -1,4 +1,6 @@
 import { getSupabase } from '@/lib/supabase'
+import { subscribeWithReconnect, type ReconnectHandle } from '@/lib/realtime-reconnect'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import type {
   Conversation, ConversationWithUsers,
   Message, MessageInsert, MessageWithSender,
@@ -173,49 +175,74 @@ export async function getUnreadCounts(
 }
 
 // ─── Subscribe to New Messages (Realtime) ─────────────
+//
+// Channel instances are retained in module-level maps so that
+// unsubscribe/track/untrack operate on the LIVE channel.
+// (`supabase.channel(name)` always CREATES a new channel — calling it in an
+// unsubscribe path leaks the real subscription and detaches typing presence.)
+// All subscriptions go through subscribeWithReconnect so a dead websocket
+// (backgrounded tab, network drop) resubscribes automatically.
+
+const messageSubs = new Map<string, ReconnectHandle>()
+const typingSubs = new Map<string, ReconnectHandle>()
+const typingChannels = new Map<string, RealtimeChannel>()
 
 export function subscribeToMessages(
   conversationId: string,
   onNewMessage: (message: Message) => void,
   onMessageUpdated?: (message: Message) => void
 ) {
-  const channel = supabase
-    .channel(`messages:${conversationId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`,
-      },
-      (payload) => {
-        onNewMessage(payload.new as Message)
-      }
-    )
+  // Replace any previous subscription for this conversation
+  messageSubs.get(conversationId)?.unsubscribe()
 
-  if (onMessageUpdated) {
-    channel.on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`,
-      },
-      (payload) => {
-        onMessageUpdated(payload.new as Message)
-      }
-    )
+  const handle = subscribeWithReconnect(`messages:${conversationId}`, () => {
+    const channel = supabase
+      .channel(`messages:${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          onNewMessage(payload.new as Message)
+        }
+      )
+
+    if (onMessageUpdated) {
+      channel.on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          onMessageUpdated(payload.new as Message)
+        }
+      )
+    }
+
+    return channel
+  })
+
+  const wrapped: ReconnectHandle = {
+    unsubscribe() {
+      handle.unsubscribe()
+      if (messageSubs.get(conversationId) === wrapped) messageSubs.delete(conversationId)
+    },
   }
-
-  return channel.subscribe()
+  messageSubs.set(conversationId, wrapped)
+  return wrapped
 }
 
 // ─── Unsubscribe from Messages ────────────────────────
 
 export function unsubscribeFromMessages(conversationId: string) {
-  supabase.channel(`messages:${conversationId}`).unsubscribe()
+  messageSubs.get(conversationId)?.unsubscribe()
 }
 
 // ─── Typing Presence ──────────────────────────────────
@@ -225,9 +252,11 @@ export function subscribeToTyping(
   myUserId: string,
   onTypingChange: (typingUserIds: string[]) => void
 ) {
-  const channel = supabase.channel(`typing:${conversationId}`)
-  channel
-    .on('presence', { event: 'sync' }, () => {
+  typingSubs.get(conversationId)?.unsubscribe()
+
+  const handle = subscribeWithReconnect(`typing:${conversationId}`, () => {
+    const channel = supabase.channel(`typing:${conversationId}`)
+    channel.on('presence', { event: 'sync' }, () => {
       const state = channel.presenceState()
       const typingUserIds = Object.values(state)
         .flat()
@@ -235,20 +264,38 @@ export function subscribeToTyping(
         .map((p: Record<string, unknown>) => p.user_id as string)
       onTypingChange(typingUserIds)
     })
-    .subscribe()
-  return channel
+    // Keep the map pointed at the LIVE channel (factory re-runs on reconnect)
+    typingChannels.set(conversationId, channel)
+    return channel
+  })
+
+  const wrapped: ReconnectHandle = {
+    unsubscribe() {
+      handle.unsubscribe()
+      typingChannels.delete(conversationId)
+      if (typingSubs.get(conversationId) === wrapped) typingSubs.delete(conversationId)
+    },
+  }
+  typingSubs.set(conversationId, wrapped)
+  return wrapped
 }
 
 export function sendTypingStatus(conversationId: string, userId: string) {
-  const channel = supabase.channel(`typing:${conversationId}`)
-  channel.track({ user_id: userId, typing: true })
+  const channel = typingChannels.get(conversationId)
+  if (!channel) return
+  channel.track({ user_id: userId, typing: true }).catch(() => {
+    // presence push failed (channel mid-reconnect) — typing is transient, ignore
+  })
 }
 
 export function clearTypingStatus(conversationId: string) {
-  const channel = supabase.channel(`typing:${conversationId}`)
-  channel.untrack()
+  const channel = typingChannels.get(conversationId)
+  if (!channel) return
+  channel.untrack().catch(() => {
+    // presence push failed — ignore
+  })
 }
 
 export function unsubscribeFromTyping(conversationId: string) {
-  supabase.channel(`typing:${conversationId}`).unsubscribe()
+  typingSubs.get(conversationId)?.unsubscribe()
 }

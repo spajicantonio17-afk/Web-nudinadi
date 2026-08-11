@@ -55,7 +55,18 @@ export function rateLimitResponse(resetAt: number) {
 }
 
 export function getIp(req: Request): string {
-  return (req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()) || 'unknown'
+  // x-real-ip is set by Vercel's proxy and cannot be spoofed by the client.
+  // The FIRST x-forwarded-for segment is client-supplied (spoofable), so as a
+  // fallback we take the LAST hop, which is appended by the trusted proxy.
+  const real = req.headers.get('x-real-ip')?.trim()
+  if (real) return real
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) {
+    const parts = xff.split(',')
+    const last = parts[parts.length - 1]?.trim()
+    if (last) return last
+  }
+  return 'unknown'
 }
 
 export const RATE_LIMITS = {

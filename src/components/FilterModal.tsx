@@ -8,28 +8,12 @@ import type { AttributeFilters } from '@/components/CategoryFilterBar';
 const BAM_RATE = 1.95583;
 
 // ── Filter State Types ───────────────────────────────────────────
+// Definitions live in filter-state.ts (kept out of first-load bundles);
+// re-exported here so existing imports keep working.
 
-export interface FilterState {
-  priceMin: string;
-  priceMax: string;
-  condition: string;
-  sortBy: string;
-  timePosted: string;
-  delivery: string;
-  sellerType: string;
-  radiusKm: number;
-}
-
-export const DEFAULT_FILTERS: FilterState = {
-  priceMin: '',
-  priceMax: '',
-  condition: 'all',
-  sortBy: 'newest',
-  timePosted: 'all',
-  delivery: 'all',
-  sellerType: 'all',
-  radiusKm: 0,
-};
+import { DEFAULT_FILTERS, type FilterState } from '@/components/filter-state';
+export { DEFAULT_FILTERS };
+export type { FilterState };
 
 function countActiveFilters(f: FilterState): number {
   let count = 0;

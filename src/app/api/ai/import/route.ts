@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, analyzeImageWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { lookupChassis } from '@/lib/vehicle-chassis-codes';
 import { CATEGORIES } from '@/lib/constants';
-import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
+import { getAuthenticatedUserId } from '@/lib/api-auth';
 import { logger } from '@/lib/logger';
 
 // ── URL normalization ────────────────────────────────────
@@ -1882,7 +1883,14 @@ async function detectWatermarks(images: string[]): Promise<number[]> {
 }
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
+  // Import fetches remote URLs server-side + spends Gemini quota — login required.
+  // (Publishing an imported listing requires login anyway, via /upload.)
+  const authedUserId = await getAuthenticatedUserId();
+  if (!authedUserId) {
+    return NextResponse.json({ success: false, error: 'Nisi prijavljen.' }, { status: 401 });
+  }
+
+  const rl = rateLimit(`ai:${authedUserId}`, RATE_LIMITS.ai);
   if (!rl.success) return rateLimitResponse(rl.resetAt);
 
   try {

@@ -62,6 +62,11 @@ export interface ProductFilters {
 // PostgREST embeds silently filter products in list queries (works fine with .single()).
 const LIST_SELECT = 'id,title,description,price,currency,country,condition,listing_type,location,images,status,views_count,favorites_count,promoted_until,created_at,updated_at,tags,attributes,seller_id,category_id'
 
+// Seller columns actually consumed by list/detail UI (name, avatar, badges,
+// contact, plan). Deliberately excludes heavy/PII columns (bio, email,
+// settings, addresses) that were pulled in by the previous select('*').
+const SELLER_SELECT = 'id,username,full_name,avatar_url,account_type,email_verified,phone_verified,business_verified,phone,rating_average,total_sales,level,company_name,company_logo,location,created_at'
+
 // ─── Enrich products with seller + category (batch) ──
 
 async function enrichProducts(products: Record<string, unknown>[]): Promise<ProductFull[]> {
@@ -72,7 +77,7 @@ async function enrichProducts(products: Record<string, unknown>[]): Promise<Prod
 
   const [sellersRes, categoriesRes] = await Promise.all([
     sellerIds.length > 0
-      ? supabase.from('profiles').select('*').in('id', sellerIds)
+      ? supabase.from('profiles').select(SELLER_SELECT).in('id', sellerIds)
       : { data: [], error: null },
     categoryIds.length > 0
       ? supabase.from('categories').select('*').in('id', categoryIds)

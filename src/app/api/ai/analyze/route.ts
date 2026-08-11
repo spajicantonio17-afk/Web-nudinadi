@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeImageWithGemini, parseJsonResponse } from '@/lib/gemini';
-import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
+import { getAuthenticatedUserId } from '@/lib/api-auth';
 import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
+  // Only logged-in users may spend Gemini quota (upload flow is login-gated anyway)
+  const userId = await getAuthenticatedUserId();
+  if (!userId) {
+    return NextResponse.json({ error: 'Nisi prijavljen.' }, { status: 401 });
+  }
+
+  const rl = rateLimit(`ai:${userId}`, RATE_LIMITS.ai);
   if (!rl.success) return rateLimitResponse(rl.resetAt);
 
   try {

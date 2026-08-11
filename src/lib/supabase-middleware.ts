@@ -8,6 +8,16 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholde
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  // Guest fast path: with no auth cookie there is no session to refresh, so
+  // skip the Supabase Auth round-trip entirely. This removes a network hop
+  // from the critical path of every navigation for logged-out visitors.
+  // (Chunked cookies are named `sb-<ref>-auth-token.0`, `.1`, … — the
+  // substring check covers those too.)
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some(c => c.name.startsWith('sb-') && c.name.includes('-auth-token'))
+  if (!hasAuthCookie) return supabaseResponse
+
   const supabase = createServerClient(
     supabaseUrl,
     supabaseAnonKey,

@@ -6,6 +6,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import React from 'react';
 import { getSupabase } from '@/lib/supabase';
+import { subscribeWithReconnect } from '@/lib/realtime-reconnect';
 import { useAuth } from '@/lib/auth';
 
 export interface AppNotification {
@@ -96,7 +97,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const supabase = getSupabase();
 
-    const channel = supabase
+    const handle = subscribeWithReconnect(`notif_messages_${user.id}`, () => supabase
       .channel(`notif_messages_${user.id}`)
       .on(
         'postgres_changes',
@@ -154,10 +155,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           });
         }
       )
-      .subscribe();
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      handle.unsubscribe();
     };
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -167,7 +168,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const supabase = getSupabase();
 
-    const channel = supabase
+    const handle = subscribeWithReconnect(`notif_transactions_${user.id}`, () => supabase
       .channel(`notif_transactions_${user.id}`)
       .on(
         'postgres_changes',
@@ -215,10 +216,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           });
         }
       )
-      .subscribe();
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      handle.unsubscribe();
     };
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -228,7 +229,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const supabase = getSupabase();
 
-    const channel = supabase
+    const handle = subscribeWithReconnect(`notif_sales_${user.id}`, () => supabase
       .channel(`notif_sales_${user.id}`)
       .on(
         'postgres_changes',
@@ -280,10 +281,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           });
         }
       )
-      .subscribe();
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      handle.unsubscribe();
     };
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -293,7 +294,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const supabase = getSupabase();
 
-    const channel = supabase
+    const handle = subscribeWithReconnect(`notif_db_${user.id}`, () => supabase
       .channel(`notif_db_${user.id}`)
       .on(
         'postgres_changes',
@@ -338,10 +339,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           });
         }
       )
-      .subscribe();
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      handle.unsubscribe();
     };
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 

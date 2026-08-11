@@ -3,7 +3,8 @@ import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemi
 import { sanitizeTags } from '@/lib/ai-utils';
 import { createClient } from '@supabase/supabase-js';
 import { isPro } from '@/lib/plans';
-import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
+import { getAuthenticatedUserId } from '@/lib/api-auth';
 import { logger } from '@/lib/logger';
 
 // Check user's account type from the auth cookie
@@ -29,7 +30,13 @@ async function getUserAccountType(req: NextRequest): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
+  // Only logged-in users may spend Gemini quota (upload flow is login-gated)
+  const authedUserId = await getAuthenticatedUserId();
+  if (!authedUserId) {
+    return NextResponse.json({ error: 'Nisi prijavljen.' }, { status: 401 });
+  }
+
+  const rl = rateLimit(`ai:${authedUserId}`, RATE_LIMITS.ai);
   if (!rl.success) return rateLimitResponse(rl.resetAt);
 
   try {

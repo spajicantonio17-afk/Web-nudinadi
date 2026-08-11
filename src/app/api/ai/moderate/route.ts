@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { textWithGemini, parseJsonResponse, sanitizeForPrompt } from '@/lib/gemini';
 import { createClient } from '@supabase/supabase-js';
-import { rateLimit, rateLimitResponse, getIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
+import { getAuthenticatedUserId } from '@/lib/api-auth';
 import { logger } from '@/lib/logger';
 
 // Auto-log AI results + auto-flag to moderation_reports if needed
@@ -55,7 +56,13 @@ async function logAiResult(action: string, inputData: Record<string, unknown>, r
 }
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(`ai:${getIp(req)}`, RATE_LIMITS.ai);
+  // Only logged-in users may spend Gemini quota (upload flow + admin panel are login-gated)
+  const authedUserId = await getAuthenticatedUserId();
+  if (!authedUserId) {
+    return NextResponse.json({ error: 'Nisi prijavljen.' }, { status: 401 });
+  }
+
+  const rl = rateLimit(`ai:${authedUserId}`, RATE_LIMITS.ai);
   if (!rl.success) return rateLimitResponse(rl.resetAt);
 
   try {

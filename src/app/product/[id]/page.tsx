@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { useFavorites } from '@/lib/favorites';
@@ -119,6 +120,20 @@ export default function ProductDetailPage() {
   const galleryImages = product?.images?.length
     ? product.images
     : [`https://picsum.photos/seed/${params.id}/800/800`];
+
+  // next/image only accepts hosts whitelisted in next.config.ts. Imported
+  // listings can carry images from arbitrary domains, so anything unknown
+  // falls back to a plain <img> rather than rendering an empty box.
+  const OPTIMIZED_IMAGE_HOSTS = /(^|\.)(supabase\.co|cloudfront\.net|amazonaws\.com|picsum\.photos|unsplash\.com|githubusercontent\.com|pravatar\.cc)$/;
+  const canOptimizeImage = (url: string): boolean => {
+    if (!url) return false;
+    if (url.startsWith('/')) return true;
+    try {
+      return OPTIMIZED_IMAGE_HOSTS.test(new URL(url).hostname);
+    } catch {
+      return false;
+    }
+  };
 
   const handleNextImage = useCallback((e?: React.MouseEvent) => {
       e?.stopPropagation();
@@ -482,8 +497,19 @@ export default function ProductDetailPage() {
             {/* LEFT: IMAGES */}
             <div className="lg:col-span-7 bg-[var(--c-card-alt)] border-b lg:border-b-0 lg:border-r border-[var(--c-border2)] relative">
                 <button onClick={() => setIsGalleryOpen(true)} aria-label={t('product.openGallery', { title: product.title })} className="w-full aspect-square relative group cursor-pointer overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={galleryImages[currentImageIndex]} alt={product.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:opacity-90" />
+                    {canOptimizeImage(galleryImages[currentImageIndex]) ? (
+                        <Image
+                            src={galleryImages[currentImageIndex]}
+                            alt={product.title}
+                            fill
+                            priority
+                            sizes="(max-width: 1024px) 100vw, 58vw"
+                            className="object-cover transition-transform duration-300 group-hover:opacity-90"
+                        />
+                    ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={galleryImages[currentImageIndex]} alt={product.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:opacity-90" />
+                    )}
                     <div className="absolute bottom-0 right-0 bg-[var(--c-overlay)] text-[var(--c-text)] px-4 py-2 text-xs font-bold flex items-center gap-2" aria-hidden="true">
                         <i className="fa-solid fa-expand"></i><span>{t('product.zoom')}</span>
                     </div>
@@ -494,9 +520,19 @@ export default function ProductDetailPage() {
                 {galleryImages.length > 1 && (
                   <div className="flex border-t border-[var(--c-border2)] overflow-x-auto no-scrollbar" role="list" aria-label={t('product.listingImages')}>
                       {galleryImages.map((img, idx) => (
-                          <button key={idx} type="button" role="listitem" onClick={() => setCurrentImageIndex(idx)} aria-label={t('product.showImage', { index: String(idx + 1) })} aria-pressed={idx === currentImageIndex} className={`w-20 h-20 sm:w-24 sm:h-24 border-r border-[var(--c-border2)] cursor-pointer shrink-0 ${idx === currentImageIndex ? 'opacity-100 ring-2 ring-inset ring-blue-500' : 'opacity-60 hover:opacity-100'}`}>
-                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                               <img src={img} alt={`${product.title} — ${t('product.imageAlt', { current: String(idx + 1), total: String(galleryImages.length) })}`} className="w-full h-full object-cover" />
+                          <button key={idx} type="button" role="listitem" onClick={() => setCurrentImageIndex(idx)} aria-label={t('product.showImage', { index: String(idx + 1) })} aria-pressed={idx === currentImageIndex} className={`w-20 h-20 sm:w-24 sm:h-24 border-r border-[var(--c-border2)] cursor-pointer shrink-0 relative ${idx === currentImageIndex ? 'opacity-100 ring-2 ring-inset ring-blue-500' : 'opacity-60 hover:opacity-100'}`}>
+                               {canOptimizeImage(img) ? (
+                                   <Image
+                                       src={img}
+                                       alt={`${product.title} — ${t('product.imageAlt', { current: String(idx + 1), total: String(galleryImages.length) })}`}
+                                       fill
+                                       sizes="96px"
+                                       className="object-cover"
+                                   />
+                               ) : (
+                                   // eslint-disable-next-line @next/next/no-img-element
+                                   <img src={img} alt={`${product.title} — ${t('product.imageAlt', { current: String(idx + 1), total: String(galleryImages.length) })}`} className="w-full h-full object-cover" />
+                               )}
                           </button>
                       ))}
                   </div>
