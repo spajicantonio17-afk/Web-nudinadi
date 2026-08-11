@@ -59,7 +59,7 @@ export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: 
   useEffect(() => {
     if (!user) return;
 
-    const channel = subscribeToObavijesti(user.id, (newNotif) => {
+    const subscription = subscribeToObavijesti(user.id, (newNotif) => {
       setNotifications(prev => {
         if (prev.some(n => n.id === newNotif.id)) return prev;
         return [newNotif, ...prev];
@@ -72,8 +72,7 @@ export default function ObavjestiChat({ isOpen, onClose, onUnreadCountChange }: 
     });
 
     return () => {
-      const { getSupabase } = require('@/lib/supabase');
-      getSupabase().removeChannel(channel);
+      subscription.unsubscribe();
     };
   }, [user?.id, onUnreadCountChange]); // eslint-disable-line react-hooks/exhaustive-deps
 

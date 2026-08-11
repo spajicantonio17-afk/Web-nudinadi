@@ -1,4 +1,5 @@
 import { getSupabase } from '@/lib/supabase'
+import { subscribeWithReconnect, type ReconnectHandle } from '@/lib/realtime-reconnect'
 import type { DbNotification } from '@/services/notificationService'
 
 const supabase = getSupabase()
@@ -156,11 +157,15 @@ export async function markAllObavjestiAsRead(userId: string): Promise<void> {
 
 // ─── Subscribe to Realtime Obavijesti ─────────────────────────
 
+const obavijestiSubs = new Map<string, ReconnectHandle>()
+
 export function subscribeToObavijesti(
   userId: string,
   onNew: (notification: DbNotification) => void
-) {
-  const channel = supabase
+): ReconnectHandle {
+  obavijestiSubs.get(userId)?.unsubscribe()
+
+  const handle = subscribeWithReconnect(`obavijesti_${userId}`, () => supabase
     .channel(`obavijesti_${userId}`)
     .on(
       'postgres_changes',
@@ -177,16 +182,24 @@ export function subscribeToObavijesti(
         }
       }
     )
-    .subscribe()
+  )
 
-  return channel
+  const wrapped: ReconnectHandle = {
+    unsubscribe() {
+      handle.unsubscribe()
+      if (obavijestiSubs.get(userId) === wrapped) obavijestiSubs.delete(userId)
+    },
+  }
+  obavijestiSubs.set(userId, wrapped)
+  return wrapped
 }
 
 // ─── Unsubscribe from Obavijesti ──────────────────────────────
 
 export function unsubscribeFromObavijesti(userId: string) {
-  const sb = getSupabase()
-  sb.removeChannel(sb.channel(`obavijesti_${userId}`))
+  // Must go through the retained handle — `supabase.channel(name)` CREATES a
+  // new channel, so removing that would leave the real subscription alive.
+  obavijestiSubs.get(userId)?.unsubscribe()
 }
 
 // ─── Time Formatting (Bosnian) ────────────────────────────────
