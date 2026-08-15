@@ -22,9 +22,10 @@ interface PendingClaim {
 
 type ImportStep = 'idle' | 'scraping' | 'importing' | 'done' | 'error';
 
-// Listings per request. Keep low — Vercel Hobby caps a function at 60s and a
-// single listing can take ~6s (scraper + Gemini + throttle delay).
-const BATCH_SIZE = 5;
+// Listings per request. The function gets 300s (see maxDuration in the route)
+// and a single listing can take ~50s worst case — scraper timeout is 45s alone.
+// Three keeps a batch under half the budget even when every listing is slow.
+const BATCH_SIZE = 3;
 
 // A 'processing' claim older than this is a leftover from a crashed run.
 const STALE_PROCESSING_MS = 30 * 60 * 1000;

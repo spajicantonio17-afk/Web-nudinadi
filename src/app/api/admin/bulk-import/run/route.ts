@@ -7,11 +7,17 @@ import { logger } from '@/lib/logger';
 import { randomUUID } from 'crypto';
 
 const DELAY_BETWEEN_LISTINGS_MS = 600; // avoid hammering scrapers/Gemini
-const MAX_LISTINGS_PER_RUN = 10;       // hard cap per request — the client batches in 5s
+const MAX_LISTINGS_PER_RUN = 10;       // hard cap per request — the client batches in 3s
 const CLAIM_TTL_DAYS = 30;
 
-// Vercel Hobby maximum. A full batch is ~5 listings x ~6s worst case.
-export const maxDuration = 60;
+// Ceiling per listing. The scraper alone may take 45s and the Gemini call has
+// no timeout of its own, so without this a single slow page can burn the whole
+// function budget and take the entire batch down with it.
+const PER_LISTING_TIMEOUT_MS = 70_000;
+
+// Vercel Pro allows 300s. A listing can take ~45s (scraper timeout) + Gemini,
+// so even a small batch needs far more than the 60s the platform defaults to.
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   const rl = rateLimit(`admin:${getIp(req)}`, RATE_LIMITS.admin);
@@ -112,7 +118,12 @@ export async function POST(req: NextRequest) {
   for (let i = 0; i < urlsToProcess.length; i++) {
     const url = urlsToProcess[i];
     try {
-      const listing = await importSingleListing(url);
+      const listing = await Promise.race([
+        importSingleListing(url),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Isteklo vrijeme za ovaj oglas')), PER_LISTING_TIMEOUT_MS)
+        ),
+      ]);
       imported.push(listing);
       logger.info(`[bulk-import/run] [${i + 1}/${urlsToProcess.length}] OK — ${listing.title}`);
     } catch (err) {
