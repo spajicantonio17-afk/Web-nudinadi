@@ -22,6 +22,13 @@ interface PendingClaim {
 
 type ImportStep = 'idle' | 'scraping' | 'importing' | 'done' | 'error';
 
+// Listings per request. Keep low — Vercel Hobby caps a function at 60s and a
+// single listing can take ~6s (scraper + Gemini + throttle delay).
+const BATCH_SIZE = 5;
+
+// A 'processing' claim older than this is a leftover from a crashed run.
+const STALE_PROCESSING_MS = 30 * 60 * 1000;
+
 // ── Helpers ──────────────────────────────────────────────
 
 function statusBadge(status: PendingClaim['status']) {
@@ -44,6 +51,12 @@ function platformIcon(platform: string) {
   return platform === 'olx' ? 'OLX' : platform === 'njuskalo' ? 'NJU' : platform.toUpperCase();
 }
 
+/** A claim stuck on 'processing' long past any plausible run — the import crashed. */
+function isStaleProcessing(claim: PendingClaim) {
+  if (claim.status !== 'processing') return false;
+  return Date.now() - new Date(claim.created_at).getTime() > STALE_PROCESSING_MS;
+}
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('bs-BA', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
@@ -60,6 +73,7 @@ export default function BulkImportTab() {
   const [stepMsg, setStepMsg] = useState('');
   const [resultUrl, setResultUrl] = useState('');
   const [resultCount, setResultCount] = useState(0);
+  const [failedCount, setFailedCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
 
   // ── Claims list ──────────────────────────────────────
@@ -108,36 +122,111 @@ export default function BulkImportTab() {
     setStepMsg(`Uvoz ${urls.length} oglasa u toku... (može potrajati par minuta)`);
     setErrorMsg('');
     setResultUrl('');
+    setFailedCount(0);
 
     const authToken = await getToken();
 
-    try {
+    // Split into small batches — one request per batch stays under the
+    // 60s serverless limit (≈6s worst case per listing).
+    const batches: string[][] = [];
+    for (let i = 0; i < urls.length; i += BATCH_SIZE) {
+      batches.push(urls.slice(i, i + BATCH_SIZE));
+    }
+
+    const platform = urls[0].includes('olx') ? 'olx' : urls[0].includes('njuskalo') ? 'njuskalo' : 'manual';
+
+    let claimId: string | null = null;
+    let claimUrl = '';
+    let totalImported = 0;
+    let totalFailed = 0;
+    let processed = 0;
+    let finalized = false;
+
+    async function sendBatch(chunk: string[], isFinalBatch: boolean) {
       const res = await fetch('/api/admin/bulk-import/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
         body: JSON.stringify({
           profileUrl: urls[0],
           sellerName: sellerName.trim(),
-          platform: urls[0].includes('olx') ? 'olx' : urls[0].includes('njuskalo') ? 'njuskalo' : 'manual',
-          listingUrls: urls,
+          platform,
+          listingUrls: chunk,
+          claimId,
+          isFinalBatch,
         }),
       });
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.success) {
-        setErrorMsg(json.error || 'Greška pri uvozu oglasa.');
-        setStep('error');
-        return;
+        throw new Error(json.error || 'Greška pri uvozu oglasa.');
       }
-      setResultUrl(json.claimUrl);
-      setResultCount(json.importedCount);
-      setStep('done');
-      setSellerName('');
-      setListingUrlsRaw('');
-      loadClaims();
-    } catch {
-      setErrorMsg('Greška u mreži tokom uvoza.');
-      setStep('error');
+      return json;
     }
+
+    for (let b = 0; b < batches.length; b++) {
+      const chunk = batches[b];
+      const isFinalBatch = b === batches.length - 1;
+
+      let json: { claimId: string; claimUrl: string; totalImported: number; failedCount: number };
+      try {
+        try {
+          json = await sendBatch(chunk, isFinalBatch);
+        } catch {
+          // One retry — a single flaky batch must not kill the whole run.
+          await new Promise(r => setTimeout(r, 2000));
+          json = await sendBatch(chunk, isFinalBatch);
+        }
+      } catch (err) {
+        // Without a claim there is nothing to append to — abort.
+        if (!claimId) {
+          setErrorMsg(err instanceof Error ? err.message : 'Greška u mreži tokom uvoza.');
+          setStep('error');
+          return;
+        }
+        totalFailed += chunk.length;
+        processed += chunk.length;
+        setFailedCount(totalFailed);
+        setStepMsg(`Uvoz u toku... ${processed}/${urls.length} oglasa (${totalImported} uspješno)`);
+        continue;
+      }
+
+      claimId = json.claimId;
+      claimUrl = json.claimUrl;
+      totalImported = json.totalImported;
+      totalFailed += json.failedCount ?? 0;
+      processed += chunk.length;
+      if (isFinalBatch) finalized = true;
+
+      setFailedCount(totalFailed);
+      setStepMsg(`Uvoz u toku... ${processed}/${urls.length} oglasa (${totalImported} uspješno)`);
+    }
+
+    // If the last batch failed, the claim is still 'processing' — close it out
+    // with a one-listing final call so the link becomes usable.
+    if (!finalized && claimId && totalImported > 0) {
+      setStepMsg('Završavanje uvoza...');
+      try {
+        // Empty batch = status-only finalize, no re-import.
+        const json = await sendBatch([], true);
+        claimUrl = json.claimUrl;
+        totalImported = json.totalImported;
+      } catch {
+        // Claim stays 'processing' — the list offers "Otkaži" to clear it.
+      }
+    }
+
+    if (totalImported === 0) {
+      setErrorMsg('Nijedan oglas nije uvezen.');
+      setStep('error');
+      loadClaims();
+      return;
+    }
+
+    setResultUrl(claimUrl);
+    setResultCount(totalImported);
+    setStep('done');
+    setSellerName('');
+    setListingUrlsRaw('');
+    loadClaims();
   }
 
   // ── Copy claim link ──────────────────────────────────
@@ -234,6 +323,11 @@ export default function BulkImportTab() {
               </button>
             </div>
             <p className="text-xs text-green-600 mt-1">Pošalji ovaj link osobi via WhatsApp.</p>
+            {failedCount > 0 && (
+              <p className="text-xs text-[var(--c-text2)] mt-1">
+                {failedCount} oglasa nije uvezeno.
+              </p>
+            )}
           </div>
         )}
 
@@ -321,6 +415,15 @@ export default function BulkImportTab() {
                     >
                       <i className={`fa-solid ${copiedToken === claim.token ? 'fa-check' : 'fa-copy'} text-xs`} />
                       {copiedToken === claim.token ? 'Kopirano' : 'Kopiraj link'}
+                    </button>
+                  )}
+                  {isStaleProcessing(claim) && (
+                    <button
+                      onClick={() => deleteClaim(claim.id)}
+                      className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium transition-colors"
+                      title="Uvoz je prekinut — obriši zapis"
+                    >
+                      Otkaži
                     </button>
                   )}
                   {(claim.status === 'expired' || claim.status === 'failed') && (
